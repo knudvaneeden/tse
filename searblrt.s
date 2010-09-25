@@ -29,6 +29,7 @@ PROC Main()
  // Now changing something [kn, ri, sa, 25-09-2010 20:58:31]
  // Changing again something [kn, ri, sa, 25-09-2010 21:18:25]
  // Changing again something [kn, ri, sa, 25-09-2010 21:25:42]
+ // Changing again something [kn, ri, sa, 25-09-2010 21:33:55]
  STRING s1[255] = FNStringGetInitializeNewStringS()
  STRING s2[255] = FNStringGetInitializeNewStringS()
  STRING s3[255] = FNStringGetInitializeNewStringS()
