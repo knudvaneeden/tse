@@ -26,6 +26,7 @@ FORWARD STRING PROC FNStringGetSearchHistoryFindInputS( STRING s1, STRING s2 )
 // --- MAIN --- //
 
 PROC Main()
+ // Now changing something [kn, ri, sa, 25-09-2010 20:58:31]
  STRING s1[255] = FNStringGetInitializeNewStringS()
  STRING s2[255] = FNStringGetInitializeNewStringS()
  STRING s3[255] = FNStringGetInitializeNewStringS()
