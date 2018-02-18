@@ -103,7 +103,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.17</version> <version control></version control> (filenamemacro=savefivc.s) [<Program>] [<Research>] [kn, ri, su, 18-02-2018 05:40:49]
+// library: file: save: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.20</version> <version control></version control> (filenamemacro=savefivc.s) [<Program>] [<Research>] [kn, ri, su, 18-02-2018 05:40:49]
 INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -159,7 +159,7 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
     RETURN( B )
    ENDIF
    //
-  ELSEIF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( "Do you first want to upload this local GitHub directory to the remote GitHub directory, then overwrite the file?" ) == 1 )
+  ELSEIF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( "Do you first want to upload this local GitHub directory to the remote GitHub directory, then overwrite the old file?" ) == 1 )
    //
    B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, fileNameExecutableTccS, githubUserNameS, githubPasswordS )
    IF ( NOT ( B ) )
@@ -196,6 +196,17 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
    Warn( "could not save the current file as", ":", " ", fileNameS, " ", "in the local GitHub directory. Please check." )
    B = FALSE
    RETURN( B )
+  ENDIF
+  //
+  IF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( "The file was saved. Do you want to upload the local GitHub directory to the remote GitHub directory?" ) == 1 )
+   //
+   B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, fileNameExecutableTccS, githubUserNameS, githubPasswordS )
+   IF ( NOT ( B ) )
+    Warn( "could not upload the local GitHub directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
+    B = FALSE
+    RETURN( B )
+   ENDIF
+   //
   ENDIF
   //
  ENDIF
