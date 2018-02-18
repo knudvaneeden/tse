@@ -103,7 +103,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.11</version> <version control></version control> (filenamemacro=savefivc.s) [<Program>] [<Research>] [kn, ri, su, 18-02-2018 05:40:49]
+// library: file: save: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.13</version> <version control></version control> (filenamemacro=savefivc.s) [<Program>] [<Research>] [kn, ri, su, 18-02-2018 05:40:49]
 INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -132,7 +132,7 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
  //
  INTEGER B = FALSE
  //
- STRING fileNameBatchS[255] = "c:\temp\ddd.bat"
+ // STRING fileNameBatchS[255] = "c:\temp\ddd.bat"
  //
  STRING fileNameCurrentS[255] = CurrFilename()
  //
@@ -159,20 +159,20 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
     RETURN( B )
    ENDIF
    //
-   PushPosition()
-   IF ( EditFile( fileNameBatchS ) )
-    AbandonFile()
-    EraseDiskFile( fileNameBatchS )
-   ENDIF
-   PopPosition()
-   //
-   B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, fileNameExecutableTccS, githubUserNameS, githubPasswordS )
-   IF ( NOT ( B ) )
-    Warn( "could not upload the local GitHub directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
-    B = FALSE
-    RETURN( B )
-   ENDIF
-   //
+   // PushPosition()
+   // IF ( EditFile( fileNameBatchS ) )
+   //  AbandonFile()
+   //  EraseDiskFile( fileNameBatchS )
+   // ENDIF
+   // PopPosition()
+   // //
+   // B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, fileNameExecutableTccS, githubUserNameS, githubPasswordS )
+   // IF ( NOT ( B ) )
+   //  Warn( "could not upload the local GitHub directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
+   //  B = FALSE
+   //  RETURN( B )
+   // ENDIF
+   // //
   ELSEIF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( Format( "Do you want to overwrite the existing file", ":", " ", fileNameS ) ) == 1 )
    //
    EditFile( fileNameCurrentS )
