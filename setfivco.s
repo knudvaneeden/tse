@@ -109,7 +109,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.30</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.31</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
 INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -142,7 +142,7 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  //
  STRING fileNameS[255] = "c:\temp\ddd.bat"
  //
- STRING commitInformationS[255] = Format( '"', "Next commit", ":", " ", GetDateStr(), " ", GetTimeStr(), '"' )
+ STRING commitInformationS[255] = Format( '"', "Last commit", ":", " ", GetDateStr(), " ", GetTimeStr(), '"' )
  //
  IF EditFile( fileNameS )
   AbandonFile()
