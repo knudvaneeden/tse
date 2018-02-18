@@ -57,7 +57,6 @@ FORWARD STRING PROC FNStringGet_FilenameIniDefaultS()
 // --- MAIN --- //
 
 PROC Main()
- //
  // STRING s1[255] = "C:\TEMP\DDDPYTHON01\"
  // STRING s1[255] = "C:\TEMP\DDDPYTHON00\" // change this (this is the directory where your files are saved)
  STRING s1[255] = "C:\TEMP\TSE\" // change this (this is the directory where your files are saved)
