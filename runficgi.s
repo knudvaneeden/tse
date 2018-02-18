@@ -98,7 +98,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: file: run: version: control: github <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=runficgi.s) [<Program>] [<Research>] [kn, ri, sa, 17-02-2018 00:43:44]
+// library: file: run: version: control: github <description></description> <version control></version control> <version>1.0.0.0.6</version> <version control></version control> (filenamemacro=runficgi.s) [<Program>] [<Research>] [kn, ri, sa, 17-02-2018 00:43:44]
 MENU MENUFileRunVersionControlGithub()
  // e.g. PROC Main()
  // e.g.  MENUFileRunVersionControlGithub()
@@ -115,6 +115,8 @@ MENU MENUFileRunVersionControlGithub()
  "&D: operation: get: file: download: github: version: control", PROCMacroRunPurge( "getfivco" ), , "d: operation: get: file: download: github: version: control"
  "", , divide
  "&U: operation: set: file: upload: github: version: control", PROCMacroRunPurge( "setfivco" ), , "u: operation: set: file: upload: github: version: control"
+ "", , divide
+ "&^: operation: run: program: version: control: github", PROCMacroRunPurge( "runprcgi" ), , "^: operation: run: program: version: control: github"
  "", , divide
  "&R: operation: create: file: repository: new: remote: github: file: version: control", PROCMacroRunPurge( "creafivd" ), , "r: operation: create: file: repository: new: remote: github: file: version: control"
 END

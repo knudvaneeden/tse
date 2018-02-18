@@ -103,7 +103,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.16</version> <version control></version control> (filenamemacro=savefivc.s) [<Program>] [<Research>] [kn, ri, su, 18-02-2018 05:40:49]
+// library: file: save: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.17</version> <version control></version control> (filenamemacro=savefivc.s) [<Program>] [<Research>] [kn, ri, su, 18-02-2018 05:40:49]
 INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -142,7 +142,24 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
   //
   Warn( "This file", ":", " ", fileNameS, " ", "exists already in your local GitHub directory", ":", " ", yourLocalDirectoryS )
   //
-  IF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( "Do you first want to upload this local GitHub directory to the remote GitHub directory" ) == 1 )
+  IF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( "Do you first want to overwrite that file, after that upload this local GitHub directory to the remote GitHub directory" ) == 1 )
+   //
+   EditFile( fileNameCurrentS )
+   B = SaveAs( fileNameS, _OVERWRITE_ )
+   IF ( NOT ( B ) )
+    Warn( "could not overwrite the file", ":", " ", fileNameS, " ", "in the local GitHub directory. Please check." )
+    B = FALSE
+    RETURN( B )
+   ENDIF
+   //
+   B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, fileNameExecutableTccS, githubUserNameS, githubPasswordS )
+   IF ( NOT ( B ) )
+    Warn( "could not upload the local GitHub directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
+    B = FALSE
+    RETURN( B )
+   ENDIF
+   //
+  ELSEIF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( "Do you first want to upload this local GitHub directory to the remote GitHub directory, then overwrite the file?" ) == 1 )
    //
    B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, fileNameExecutableTccS, githubUserNameS, githubPasswordS )
    IF ( NOT ( B ) )
@@ -159,21 +176,7 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
     RETURN( B )
    ENDIF
    //
-   // PushPosition()
-   // IF ( EditFile( fileNameBatchS ) )
-   //  AbandonFile()
-   //  EraseDiskFile( fileNameBatchS )
-   // ENDIF
-   // PopPosition()
-   // //
-   // B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, fileNameExecutableTccS, githubUserNameS, githubPasswordS )
-   // IF ( NOT ( B ) )
-   //  Warn( "could not upload the local GitHub directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
-   //  B = FALSE
-   //  RETURN( B )
-   // ENDIF
-   // //
-  ELSEIF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( Format( "Do you want to overwrite the existing file", ":", " ", fileNameS ) ) == 1 )
+  ELSEIF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( Format( "Do you only want to overwrite the existing file", ":", " ", fileNameS ) ) == 1 )
    //
    EditFile( fileNameCurrentS )
    B = SaveAs( fileNameS, _OVERWRITE_ )
@@ -282,15 +285,17 @@ INTEGER PROC FNMathGetNumberInputYesNoCancelPositionDefaultI( STRING infoS )
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.27</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.28</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
 INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  // STRING s1[255] = "C:\TEMP\DDDPYTHON01\"
- // e.g.  STRING s1[255] = "C:\TEMP\DDDPYTHON00\" // change this (this is the directory where your files are saved)
+ // e.g.  // STRING s1[255] = "C:\TEMP\DDDPYTHON00\" // change this (this is the directory where your files are saved)
+ // e.g.  STRING s1[255] = "C:\TEMP\TSE\" // change this (this is the directory where your files are saved)
  // e.g.  //
  // e.g.  // STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-01.git"
- // e.g.  STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-00.git" // change this (this is the remote github repository)
+ // e.g.  // STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-00.git" // change this (this is the remote github repository)
+ // e.g.  STRING s2[255] = "https://github.com/knudvaneeden/tse.git" // change this (this is the remote github repository)
  // e.g.  //
  // e.g.  STRING s3[255] = "g:\cygwin\bin\git.exe" // change this (this is the full path to your git executable)
  // e.g.  //
