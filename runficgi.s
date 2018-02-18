@@ -98,7 +98,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: file: run: version: control: github <description></description> <version control></version control> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=runficgi.s) [<Program>] [<Research>] [kn, ri, sa, 17-02-2018 00:43:44]
+// library: file: run: version: control: github <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=runficgi.s) [<Program>] [<Research>] [kn, ri, sa, 17-02-2018 00:43:44]
 MENU MENUFileRunVersionControlGithub()
  // e.g. PROC Main()
  // e.g.  MENUFileRunVersionControlGithub()
@@ -110,13 +110,13 @@ MENU MENUFileRunVersionControlGithub()
  y = 1
  history
  title = "FILE: VERSION: CONTROL: GITHUB"
- // "&L: operation: create: file: directory: local: github: version: control", PROCMacroRunPurge( "creafivc" ), , "l: operation: create: file: directory: local: github: version: control"
- // "", , divide
- // "&R: operation: create: file: repository: new: remote: github: file: version: control", PROCMacroRunPurge( "creafivd" ), , "r: operation: create: file: repository: new: remote: github: file: version: control"
- // "", , divide
+ "&G: operation: save: current: file: to: directory: local: git: version: control", PROCMacroRunPurge( "savefivc" ), , "g: operation: save: current: file: to: directory: local: git: version: control"
+ "", , divide
  "&D: operation: get: file: download: github: version: control", PROCMacroRunPurge( "getfivco" ), , "d: operation: get: file: download: github: version: control"
  "", , divide
  "&U: operation: set: file: upload: github: version: control", PROCMacroRunPurge( "setfivco" ), , "u: operation: set: file: upload: github: version: control"
+ "", , divide
+ "&R: operation: create: file: repository: new: remote: github: file: version: control", PROCMacroRunPurge( "creafivd" ), , "r: operation: create: file: repository: new: remote: github: file: version: control"
 END
 
 // library: macro: run: purge <description>macro: run a macro, then purge it (this text goes into the main macro file)</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=runmarpu.s) [<Program>] [<Research>] [[kn, zoe, tu, 27-10-1998 18:54:17]
