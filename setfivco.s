@@ -48,10 +48,12 @@ FORWARD STRING PROC FNStringGet_FilenameIniDefaultS()
 PROC Main()
  //
  // STRING s1[255] = "C:\TEMP\DDDPYTHON01\"
- STRING s1[255] = "C:\TEMP\DDDPYTHON00\" // change this (this is the directory where your files are saved)
+ // STRING s1[255] = "C:\TEMP\DDDPYTHON00\" // change this (this is the directory where your files are saved)
+ STRING s1[255] = "C:\TEMP\TSE\" // change this (this is the directory where your files are saved)
  //
  // STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-01.git"
- STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-00.git" // change this (this is the remote github repository)
+ // STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-00.git" // change this (this is the remote github repository)
+ STRING s2[255] = "https://github.com/knudvaneeden/tse.git" // change this (this is the remote github repository)
  //
  STRING s3[255] = "g:\cygwin\bin\git.exe" // change this (this is the full path to your git executable)
  //
@@ -96,15 +98,17 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.27</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.28</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
 INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  // STRING s1[255] = "C:\TEMP\DDDPYTHON01\"
- // e.g.  STRING s1[255] = "C:\TEMP\DDDPYTHON00\" // change this (this is the directory where your files are saved)
+ // e.g.  // STRING s1[255] = "C:\TEMP\DDDPYTHON00\" // change this (this is the directory where your files are saved)
+ // e.g.  STRING s1[255] = "C:\TEMP\TSE\" // change this (this is the directory where your files are saved)
  // e.g.  //
  // e.g.  // STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-01.git"
- // e.g.  STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-00.git" // change this (this is the remote github repository)
+ // e.g.  // STRING s2[255] = "https://github.com/knudvaneeden/python-neuralnetwork-tensorflow-00.git" // change this (this is the remote github repository)
+ // e.g.  STRING s2[255] = "https://github.com/knudvaneeden/tse.git" // change this (this is the remote github repository)
  // e.g.  //
  // e.g.  STRING s3[255] = "g:\cygwin\bin\git.exe" // change this (this is the full path to your git executable)
  // e.g.  //
