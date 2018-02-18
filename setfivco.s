@@ -1,5 +1,7 @@
 FORWARD INTEGER PROC FNErrorCheckSB( STRING s1 )
 FORWARD INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
+FORWARD INTEGER PROC FNMacroCheckExecB( STRING s1 )
+FORWARD INTEGER PROC FNMacroCheckLoadB( STRING s1 )
 FORWARD INTEGER PROC FNMathCheckGetLogicFalseB()
 FORWARD INTEGER PROC FNMathCheckGetLogicTrueB()
 FORWARD INTEGER PROC FNMathCheckLogicNotB( INTEGER i1 )
@@ -11,9 +13,16 @@ FORWARD INTEGER PROC FNStringCheckEqualCharacterLastNB( STRING s1, STRING s2 )
 FORWARD INTEGER PROC FNStringCheckEqualErrorOrEmptyB( STRING s1 )
 FORWARD INTEGER PROC FNStringGetLengthI( STRING s1 )
 FORWARD PROC Main()
+FORWARD PROC PROCBrowserRunDefaultParameter( STRING s1 )
+FORWARD PROC PROCFileRun4NtAliasCommandListUser( STRING s1 )
+FORWARD PROC PROCMacroExec( STRING s1 )
+FORWARD PROC PROCMacroRunKeep( STRING s1 )
+FORWARD PROC PROCMacroRunKeepParameter( STRING s1, STRING s2 )
+FORWARD PROC PROCProgramRunInternetBrowserUrl( STRING s1 )
 FORWARD PROC PROCWarn( STRING s1 )
 FORWARD PROC PROCWarnCons3( STRING s1, STRING s2, STRING s3 )
 FORWARD STRING PROC FNStringGetAsciiToCharacterS( INTEGER i1 )
+FORWARD STRING PROC FNStringGetCarS( STRING s1 )
 FORWARD STRING PROC FNStringGetCharacterEndBackSlashNotEqualInsertEndS( STRING s1 )
 FORWARD STRING PROC FNStringGetCharacterInsertEndIfEqualNotS( STRING s1, STRING s2 )
 FORWARD STRING PROC FNStringGetCharacterSymbolCentralS( INTEGER i1 )
@@ -33,8 +42,10 @@ FORWARD STRING PROC FNStringGetFilenameEndBackSlashNotEqualInsertEndS( STRING s1
 FORWARD STRING PROC FNStringGetFilenameIniDefaultS()
 FORWARD STRING PROC FNStringGetInitializationGlobalS( STRING s1, STRING s2, STRING s3 )
 FORWARD STRING PROC FNStringGetMidStringS( STRING s1, INTEGER i1, INTEGER i2 )
+FORWARD STRING PROC FNStringGetPathFileAliasUnicode4Dos4NtFilenameS()
 FORWARD STRING PROC FNStringGetPathUser_DataApplicationCurrentBackslashNotS()
 FORWARD STRING PROC FNStringGetPathUser_DataApplicationCurrentBackslashS()
+FORWARD STRING PROC FNStringGetProgram4ntFilenameS()
 FORWARD STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
 FORWARD STRING PROC FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
 FORWARD STRING PROC FNStringGetRightStringLengthEqualS( STRING s1, STRING s2 )
@@ -98,7 +109,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.28</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.29</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
 INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -153,11 +164,11 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  //
  SaveAs( fileNameS, _OVERWRITE_ )
  //
- // PROCFileRun4NtAliasCommandListUser( fileNameS ) // run this batch file using tcc.exe
- LDos( fileNameExecutableTccS, fileNameS )
+ // LDos( fileNameExecutableTccS, fileNameS )
+ PROCFileRun4NtAliasCommandListUser( fileNameS ) // run this batch file using tcc.exe
  //
- // PROCProgramRunInternetBrowserUrl( githubRemoteDirectoryUrlS )
- StartPgm( githubRemoteDirectoryUrlS )
+ // StartPgm( githubRemoteDirectoryUrlS )
+ PROCProgramRunInternetBrowserUrl( githubRemoteDirectoryUrlS )
  //
  B = TRUE
  //
@@ -232,6 +243,70 @@ STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  //
 END
 
+// library: file: run: 4: nt: alias: command: list: user <description></description> <version control></version control> <version>1.0.0.0.197</version> (filenamemacro=run4fira.s) [<Program>] [<Research>] [kn, ri, su, 01-03-2009 15:29:03]
+PROC PROCFileRun4NtAliasCommandListUser( STRING s )
+ // e.g. PROC Main()
+ // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
+ // e.g.  INTEGER bufferI = 0
+ // e.g.  INTEGER I = 0
+ // e.g.  STRING fileNameS[255] = FNStringGetProgramAliasRunFilenameListS() // casealiasinputlist.txt
+ // e.g.  PushPosition()
+ // e.g.  bufferI = CreateTempBuffer()
+ // e.g.  GotoBufferId( bufferI )
+ // e.g.  InsertFile( fileNameS )
+ // e.g.  // I = List( "alias command", 115 - 21 )
+ // e.g.  I = List( "FILE: RUN: 4NT: ALIAS: COMMAND: LIST: USER", FNWindowGetScreenWidthI() )
+ // e.g.  IF ( NOT ( I == 0 ) )
+ // e.g.   s1 = SubStr( GetText( 1, 255 ), 1, 188 - 1 )
+ // e.g.   s1 = Trim( s1 )
+ // e.g.   // combobox (but switched off as this is quicker)
+ // e.g.   // s1 = FNStringGetInputS( "file: run: 4nt: alias: s = ", s1 )
+ // e.g.   IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
+ // e.g.   s1 = FNStringGetTagAngularRemoveWhileS( s1, "Please replace it by information to apply" )
+ // e.g.   // do not move the runprmcn line, as it seems to work better [kn, vo, mo, 13-04-2015 19:57:52]
+ // e.g.   PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "Run%3A+Alias%3A+" + s1 + "&submit01=Create" ) )
+ // e.g.   PROCFileRun4NtAliasCommandListUser( s1 )
+ // e.g.  ENDIF
+ // e.g.  PopPosition()
+ // e.g.  PushPosition()
+ // e.g.  GotoBufferId( bufferI )
+ // e.g.  AbandonFile( bufferI )
+ // e.g.  PopPosition()
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ // e.g. <CTRL L> RepeatFind()
+ //
+ // PROCFileChangeEditProgramRunStringAdd( "run", "", Format( "(program: 4nt: alias: general:", " ", s, ")" ) )
+ //
+ // LDos( QuotePath( FNStringGetProgram4ntFilenameS() ), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit && exit" ), _DONT_PROMPT_ )
+ // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit && exit" ), _DONT_PROMPT_ )
+ // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ )
+ // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", "/L", " ", "&&", " ", "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ )
+ // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ ) // old [kn, ri, su, 25-12-2016 02:18:29]
+ LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAliasUnicode4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ ) // new [kn, ri, su, 25-12-2016 02:18:43]
+ //
+ // PROCListSaveHistoryUser( s ) // old [kn, ri, su, 10-06-2012 13:44:33]
+ //
+ Message( Format( s, " ", ": file: run: 4nt/4dos: alias: command: list: user" ) )
+ //
+ // do not enable this runprmcn line, as it is run in the run part of this macro [kn, vo, mo, 13-04-2015 19:57:46]
+ // PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "Run%3A+Alias%3A+" + s + "&submit01=Create" ) )
+ //
+END
+
+// library: program: run: internet: browser: email: knud <description></description> <version control></version control> <version>1.0.0.0.7</version> (filenamemacro=runprekn.s) [<Program>] [<Research>] [kn, am, we, 06-05-2009 15:12:57]
+PROC PROCProgramRunInternetBrowserUrl( STRING s )
+ // e.g. PROC Main()
+ // e.g.  PROCProgramRunInternetBrowserUrl( "http://mail.yahoo.com" )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ PROCBrowserRunDefaultParameter( s )
+ //
+END
+
 // library: file: get: filename: path: default <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getfipde.s) [<Program>] [<Research>] [kn, ri, we, 31-12-2003 02:14:28]
 STRING PROC FNStringGetFileGetFilenamePathDefaultS( STRING searchS )
  // e.g. PROC Main()
@@ -243,6 +318,49 @@ STRING PROC FNStringGetFileGetFilenamePathDefaultS( STRING searchS )
  // RETURN( FNStringGetFileGetFilenamePathS( searchS, FNStringGetFilenameIniDefaultS() ) ) // [kn, ri, mo, 22-05-2006 23:59:52]
  //
  RETURN( FNStringGetInitializationGlobalS( searchS, FNStringGetSectionSeparatorS(), FNStringGetFilenameIniDefaultS() ) )
+ //
+END
+
+// library: string: get: program4nt <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgps.s) [<Program>] [<Research>] [kn, am, we, 29-04-2009 18:53:22]
+STRING PROC FNStringGetProgram4ntFilenameS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetProgram4ntFilenameS() ) // gives e.g. "f:\4dos\4nt.exe"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetFileIniDefaultS( "ProgramName4DosS" ) )
+ //
+END
+
+// library: string: get: path: file: alias: unicode4: dos4: nt: filename <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstnfj.s) [<Program>] [<Research>] [kn, ri, su, 25-12-2016 02:20:20]
+STRING PROC FNStringGetPathFileAliasUnicode4Dos4NtFilenameS()
+ // e.g. PROC Main()
+ // e.g.  IF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( Format( "Alias command (should be similar to computer name)", " ", "=", " ", FNStringGetPathFileAliasUnicode4Dos4NtFilenameS() ) ) == 1 ) // gives e.g. "c:\4dos\aliasUnicode.dok"
+ // e.g.  ENDIF
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // do not add this, it becomes too slow [kn, ri, sa, 09-02-2013 01:49:15]
+ // PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "TSE%3A+String%3A+Get%3A" + "FNStringGetPathFileAlias4Dos4NtS" + "&submit01=Create" ) )
+ //
+ RETURN( FNStringGetFileIniDefaultS( "FNStringGetPathFileAliasUnicode4Dos4NtS" ) )
+ //
+END
+
+// library: browser: run: default: parameter <description></description> <version control></version control> <version>1.0.0.0.10</version> (filenamemacro=runbrdpa.s) [<Program>] [<Research>] [kn, ri, tu, 20-03-2001 19:10:11]
+PROC PROCBrowserRunDefaultParameter( STRING parameterS )
+ // e.g. PROC Main()
+ // e.g.  PROCBrowserRunDefaultParameter( "http://www.google.com/search?hl=en&q=test" )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // PROCBrowserRunMicrosoftExplorer( parameterS ) // [kn, ri, mo, 01-06-2009 14:31:52]
+ //
+ // PROCMacroRunPurgeParameter( "runbrmpa", parameterS ) // run default browser macro with that parameter // old [kn, ri, sa, 08-12-2012 14:47:17]
+ PROCMacroRunKeepParameter( "runbrmpa", parameterS ) // run default browser macro with that parameter // new [kn, ri, sa, 08-12-2012 14:47:21]
  //
 END
 
@@ -281,6 +399,18 @@ STRING PROC FNStringGetFilenameIniDefaultS()
  // RETURN( "c:\dddpath.ini" )
  //
  RETURN( FNStringGetConcatS( FNStringGetPathUser_DataApplicationCurrentBackslashS(), FNStringGet_FilenameIniDefaultS() ) )
+ //
+END
+
+// library: macro: run: keep: parameter <description>macro: run a macro, then keep it, pass parameter string</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=runmakpa.s) [<Program>] [<Research>] [[kn, ri, su, 17-02-2002 16:07:46]
+PROC PROCMacroRunKeepParameter( STRING macronameS, STRING commandlineparameterS )
+ // e.g. PROC Main()
+ // e.g.  PROCMacroRunKeepParameter( macronameS, commandlineparameterS )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ PROCMacroRunKeep( FNStringGetConsS( macronameS, commandlineparameterS ) )
  //
 END
 
@@ -332,6 +462,34 @@ STRING PROC FNStringGet_FilenameIniDefaultS()
  //
 END
 
+// library: macro: run: keep <description>macro: run a macro, then keep it</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=runmarke.s) [<Program>] [<Research>] [[kn, zoe, fr, 27-10-2000 15:59:33]
+PROC PROCMacroRunKeep( STRING macronameS )
+ // e.g. PROC Main()
+ // e.g.  PROCMacroRunKeep( "mysubma1.mac myparameter11 myparameter12" )
+ // e.g.  PROCMacroRunKeep( "mysubma2.mac myparameter21" )
+ // e.g.  PROCMacroRunKeep( "mysubma3.mac myparameter31 myparameter32" )
+ // e.g. END
+ //
+ IF FNMacroCheckLoadB( FNStringGetCarS( macronameS ) ) // necessary if you pass parameters in a string
+  //
+  PROCMacroExec( macronameS )
+  //
+ ENDIF
+ //
+END
+
+// library: string: get: cons: string: concatenation: concatenation 2 words to 1 word (separated by a space) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getstgcx.s) [<Program>] [<Research>] [kn, ri, we, 25-11-1998 20:15:03]
+STRING PROC FNStringGetConsS( STRING s1, STRING s2 ) // version with test if string empty
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetConsS( "john", "doe" ) ) // gives "john doe"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetConcatSeparatorS( s1, s2, FNStringGetCharacterSymbolSpaceS() ) )
+ //
+END
+
 // library: string: get: concat: separator: string: concatenation: concatenate 2 words to 1 word, separated by separator <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstcsg.s) [<Program>] [<Research>] [kn, zoe, th, 01-07-1999 01:33:18]
 STRING PROC FNStringGetConcatSeparatorS( STRING s1, STRING s2, STRING separatorS )
  // e.g. PROC Main()
@@ -379,6 +537,63 @@ STRING PROC FNStringGetPathUser_DataApplicationCurrentBackslashNotS()
  ENDIF
  //
  RETURN( s )
+ //
+END
+
+// library: macro: check: load <description>macro: load: (Loads a Macro File From Disk Into Memory) R    LoadMacro(STRING macro_filename)*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmacl.s) [<Program>] [<Research>] [[kn, zoe, we, 16-06-1999 01:07:06]
+INTEGER PROC FNMacroCheckLoadB( STRING macronameS )
+ // e.g. PROC Main()
+ // e.g.  Message( FNMacroCheckLoadB( macronameS ) ) // gives e.g. ...""
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( LoadMacro( macronameS ) )
+ //
+END
+
+// library: string: get: word: token: get: first: FNStringGetCarS(): Get the first word of a string (words delimited by a space " " (=space delimited list)). <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgca.s) [<Program>] [<Research>] [kn, ni, su, 02-08-1998 15:54:17]
+STRING PROC FNStringGetCarS( STRING s )
+ // e.g. PROC Main()
+ // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s1 = FNStringGetInputS( "string: get: word: token: get: first: s = ", "this is a test" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
+ // e.g.  Message( FNStringGetCarS( s1 ) ) // gives e.g. "this"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // variation: RETURN( FNStringGetTokenFirstS( s, " " ) )
+ //
+ RETURN( GetToken( s, " ", 1 ) ) // faster, but not central
+ //
+END
+
+// library: macro: exec <description>macro: (Executes the Requested Macro) O    ExecMacro([<Program>] [<Research>] [STRING macroname])*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=execmame.s) [[kn, zoe, we, 16-06-1999 01:06:54]
+PROC PROCMacroExec( STRING macronameS )
+ // e.g. PROC Main()
+ // e.g.  PROCMacroExec( "video" )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ IF FNMathCheckLogicNotB( FNMacroCheckExecB( macronameS ) )
+  //
+  PROCWarnCons3( "macro", macronameS, ": could not be executed" )
+  //
+ ENDIF
+ //
+END
+
+// library: string: get: character: symbol: " " <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstssp.s) [<Program>] [<Research>] [kn, zoe, we, 25-10-2000 01:33:39]
+STRING PROC FNStringGetCharacterSymbolSpaceS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetCharacterSymbolSpaceS() ) // gives " "
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetCharacterSymbolCentralS( 32 ) )
  //
 END
 
@@ -464,6 +679,45 @@ STRING PROC FNStringGetErrorS()
  // e.g. END
  //
  RETURN( "<ERROR>" )
+ //
+END
+
+// library: math: check: logic: not <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checmaln.s) [<Program>] [<Research>] [kn, ri, tu, 15-05-2001 16:54:21]
+INTEGER PROC FNMathCheckLogicNotB( INTEGER B )
+ // e.g. PROC Main()
+ // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s = FNStringGetInputS( "math: check: logic: not: number = ", "1" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
+ // e.g.  Message( FNMathCheckLogicNotB( FNStringGetToIntegerI( s ) ) )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( NOT B )
+ //
+END
+
+// library: macro: check: exec <description>macro: (Executes the Requested Macro) O    ExecMacro([<Program>] [<Research>] [STRING macroname])*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmace.s) [[kn, zoe, we, 16-06-1999 01:06:54]
+INTEGER PROC FNMacroCheckExecB( STRING macronameS )
+ // e.g. PROC Main()
+ // e.g.  Message( FNMacroCheckExecB( macronameS ) ) // gives e.g. ...""
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( ExecMacro( macronameS ) )
+ //
+END
+
+// library: string: get: character: symbol: central <description>string: get: character: symbol: central</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstscm.s) [<Program>] [<Research>] [[kn, ri, sa, 07-07-2001 22:35:39]
+STRING PROC FNStringGetCharacterSymbolCentralS( INTEGER I )
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetCharacterSymbolCentralS( I ) ) // gives e.g. ...""
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetAsciiToCharacterS( I ) )
  //
 END
 
@@ -571,18 +825,17 @@ STRING PROC FNStringGetCons3S( STRING s1, STRING s2, STRING s3 )
  //
 END
 
-// library: math: check: logic: not <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checmaln.s) [<Program>] [<Research>] [kn, ri, tu, 15-05-2001 16:54:21]
-INTEGER PROC FNMathCheckLogicNotB( INTEGER B )
+// library: string: get: ascii: to: character (given the ASCII value, what is the corresponding character? (Get Single Character Equivalent of an Integer). Syntax: Chr(INTEGER i)*) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getsttch.s)  [<Program>] [<Research>] [kn, zoe, we, 16-06-1999 01:06:51]
+STRING PROC FNStringGetAsciiToCharacterS( INTEGER asciiI )
  // e.g. PROC Main()
- // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
- // e.g.  s = FNStringGetInputS( "math: check: logic: not: number = ", "1" )
- // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
- // e.g.  Message( FNMathCheckLogicNotB( FNStringGetToIntegerI( s ) ) )
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 65 ) ) // gives "A"
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 66 ) ) // gives "B"
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 100 ) ) // gives "d"
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
  //
- RETURN( NOT B )
+ RETURN( Chr( asciiI ) ) // leave this keyword, otherwise possibly recursive stack overflow
  //
 END
 
@@ -607,18 +860,6 @@ STRING PROC FNStringGetConcatTailS( STRING s, STRING tailS )
  // e.g. <F12> Main()
  //
  RETURN( FNStringGetConcatS( s, tailS ) )
- //
-END
-
-// library: string: get: character: symbol: central <description>string: get: character: symbol: central</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstscm.s) [<Program>] [<Research>] [[kn, ri, sa, 07-07-2001 22:35:39]
-STRING PROC FNStringGetCharacterSymbolCentralS( INTEGER I )
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetCharacterSymbolCentralS( I ) ) // gives e.g. ...""
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetAsciiToCharacterS( I ) )
  //
 END
 
@@ -664,18 +905,6 @@ INTEGER PROC FNErrorCheckSB( STRING s )
  //
 END
 
-// library: string: get: cons: string: concatenation: concatenation 2 words to 1 word (separated by a space) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getstgcx.s) [<Program>] [<Research>] [kn, ri, we, 25-11-1998 20:15:03]
-STRING PROC FNStringGetConsS( STRING s1, STRING s2 ) // version with test if string empty
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetConsS( "john", "doe" ) ) // gives "john doe"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetConcatSeparatorS( s1, s2, FNStringGetCharacterSymbolSpaceS() ) )
- //
-END
-
 // library: STRING: get: right: string: length: equal <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstler.s) [<Program>] [<Research>] [kn, ni, su, 30-11-2003 23:32:40]
 STRING PROC FNStringGetRightStringLengthEqualS( STRING s, STRING tailS )
  // e.g. PROC Main()
@@ -685,20 +914,6 @@ STRING PROC FNStringGetRightStringLengthEqualS( STRING s, STRING tailS )
  // e.g. <F12> Main()
  //
  RETURN( FNStringGetRightStringS( s, FNStringGetLengthI( tailS ) ) )
- //
-END
-
-// library: string: get: ascii: to: character (given the ASCII value, what is the corresponding character? (Get Single Character Equivalent of an Integer). Syntax: Chr(INTEGER i)*) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getsttch.s)  [<Program>] [<Research>] [kn, zoe, we, 16-06-1999 01:06:51]
-STRING PROC FNStringGetAsciiToCharacterS( INTEGER asciiI )
- // e.g. PROC Main()
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 65 ) ) // gives "A"
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 66 ) ) // gives "B"
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 100 ) ) // gives "d"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( Chr( asciiI ) ) // leave this keyword, otherwise possibly recursive stack overflow
  //
 END
 
@@ -723,18 +938,6 @@ INTEGER PROC FNMathCheckGetLogicFalseB()
  // e.g. <F12> Main()
  //
  RETURN( FALSE )
- //
-END
-
-// library: string: get: character: symbol: " " <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstssp.s) [<Program>] [<Research>] [kn, zoe, we, 25-10-2000 01:33:39]
-STRING PROC FNStringGetCharacterSymbolSpaceS()
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetCharacterSymbolSpaceS() ) // gives " "
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetCharacterSymbolCentralS( 32 ) )
  //
 END
 
