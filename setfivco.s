@@ -109,7 +109,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.31</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.32</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
 INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -152,6 +152,7 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  EditFile( fileNameS )
  //
  AddLine( Format( "cdd", " ", yourLocalDirectoryS ) )
+ AddLine( Format( fileNameExecutableGitS, " ", "init", " ", "." ) ) // added [kn, ri, tu, 20-02-2018 00:11:07]
  AddLine( Format( fileNameExecutableGitS, " ", "add", " ", "." ) )
  AddLine( Format( fileNameExecutableGitS, " ", "commit", " ", "-m", " ", commitInformationS ) )
  AddLine( Format( fileNameExecutableGitS, " ", "remote", " ", "add", " ", "origin", " ", githubRemoteDirectoryUrlS ) )
