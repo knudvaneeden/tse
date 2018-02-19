@@ -109,7 +109,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.21</version> <version control></version control> (filenamemacro=savefivc.s) [<Program>] [<Research>] [kn, ri, su, 18-02-2018 05:40:49]
+// library: file: save: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.22</version> <version control></version control> (filenamemacro=savefivc.s) [<Program>] [<Research>] [kn, ri, su, 18-02-2018 05:40:49]
 INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -142,7 +142,7 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
  //
  STRING fileNameCurrentS[255] = CurrFilename()
  //
- STRING fileNameS[255] = Format( yourLocalDirectoryS, SplitPath( fileNameCurrentS, _NAME_ | _EXT_ ) )
+ STRING fileNameS[255] = Format( AddTrailingSlash( yourLocalDirectoryS ), SplitPath( fileNameCurrentS, _NAME_ | _EXT_ ) )
  //
  IF FileExists( fileNameS )
   //
