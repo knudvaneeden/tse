@@ -44,6 +44,7 @@ PROC Main()
   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
   AddLine( "Status" )
   AddLine( "Log" )
+  AddLine( "Diff" )
   AddLine( "Quit" )
   //
   GotoLine( 1 )
@@ -90,7 +91,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.55</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
+// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.57</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
 INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g. PROC Main()
  // e.g.  //
@@ -115,6 +116,7 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g.   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
  // e.g.   AddLine( "Status" )
  // e.g.   AddLine( "Log" )
+ // e.g.   AddLine( "Diff" )
  // e.g.   AddLine( "Quit" )
  // e.g.   //
  // e.g.   GotoLine( 1 )
@@ -294,7 +296,9 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
    // s = Format( s, "keystack", " ", '"', githubUserNameS, '"', " ", "enter", " ", '"', githubPasswordS, '"', " ", "enter" )
    s = Format( s, " ", "&", " " )
    s = Format( s, executableS, " ", "push", " ", "--set-upstream", " ", githubRemoteDirectoryUrlS, " ", nameTrunkS )
-   Dos( Format( s, " ", "2>&1" ), _DONT_PROMPT_ )
+   s = Format( s, " ", "&", " " )
+   s = Format( s, "pause" )
+   Dos( s )
    //
   WHEN "Status"
    //
@@ -320,6 +324,22 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
     s = Format( driveLetterS, " ", "&", " ", "cd", " ", directoryRepositoryS )
     s = Format( s, " ", "&", " " )
     s = Format( s, executableS, " ", "log", " ", "--oneline" )
+    Dos( s )
+    //
+   ENDIF
+   //
+  WHEN "Diff"
+   //
+   IF NOT FileExists( directoryRepositoryS )
+    PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
+    Warn( "Run the initialize step first to create a Git repository" )
+   ELSE
+    //
+    s = Format( driveLetterS, " ", "&", " ", "cd", " ", directoryRepositoryS )
+    s = Format( s, " ", "&", " " )
+    s = Format( s, executableS, " ", "diff", " ", fileNameExtensionS )
+    s = Format( s, " ", "&", " " )
+    s = Format( s, "pause" )
     Dos( s )
     //
    ENDIF
