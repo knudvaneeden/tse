@@ -42,6 +42,7 @@ PROC Main()
   AddLine( "Once initialize your repository directory (and set your name + your email)" )
   AddLine( "Add + Commit your current loaded file in TSE (into your local repository)" )
   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
+  AddLine( "Goto your Git server web page on the Internet (e.g. GitHub)" )
   AddLine( "Status" )
   AddLine( "Log" )
   AddLine( "Diff" )
@@ -91,7 +92,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.58</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
+// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.59</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
 INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g. PROC Main()
  // e.g.  //
@@ -114,6 +115,7 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g.   AddLine( "Once initialize your repository directory (and set your name + your email)" )
  // e.g.   AddLine( "Add + Commit your current loaded file in TSE (into your local repository)" )
  // e.g.   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
+ // e.g.   AddLine( "Goto your Git server web page on the Internet (e.g. GitHub)" )
  // e.g.   AddLine( "Status" )
  // e.g.   AddLine( "Log" )
  // e.g.   AddLine( "Diff" )
@@ -343,6 +345,10 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
     Dos( s )
     //
    ENDIF
+   //
+  WHEN "Goto your Git server web page on the Internet (e.g. GitHub)"
+   //
+   StartPgm( githubRemoteDirectoryUrlS )
    //
  OTHERWISE
   //
