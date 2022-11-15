@@ -90,7 +90,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.54</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
+// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.55</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
 INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g. PROC Main()
  // e.g.  //
@@ -212,9 +212,9 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  STRING userEmailS[255] = GetProfileStr( "git_knud", "userEmailS", "youremail" ) // (this is your e.g. GitHug=b password.
  //
  // fill in your e.g. GitHub user name or password. I store it in my.ini file, you might store it in e.g. tse.ini, or optionally (not recommended) store it hardcoded in this file
- STRING githubUserNameS[255] = GetProfileStr( "git_knud", "FNStringGetProgramRunUsernameFileVersionControlGithubKnudS", "yourusername"  ) // (this is your e.g. GitHug=b user name
- STRING githubPasswordS[255] = GetProfileStr( "git_knud", "FNStringGetProgramRunPasswordFileVersionControlGithubKnudS", "yourpassword" ) // (this is your e.g. GitHug=b password.
- STRING githubRemoteDirectoryUrlS[255] = GetProfileStr( "git_knud", "githubRemoteDirectoryUrlS", "yourremotegitserver", "C:\Users\knud_\AppData\Roaming\dddpath.ini" ) // (this is your e.g. GitHug remote directory
+ STRING githubUserNameS[255] = GetProfileStr( "git_knud", "FNStringGetProgramRunUsernameFileVersionControlGithubKnudS", "yourusername"  ) // (this is your e.g. GitHug user name
+ STRING githubPasswordS[255] = GetProfileStr( "git_knud", "FNStringGetProgramRunPasswordFileVersionControlGithubKnudS", "yourpassword" ) // (this is your e.g. GitHub password.
+ STRING githubRemoteDirectoryUrlS[255] = GetProfileStr( "git_knud", "githubRemoteDirectoryUrlS", "yourremotegitserver" ) // (this is your e.g. GitHub remote directory
  //
  // CHANGE: ONCE: END
  //
