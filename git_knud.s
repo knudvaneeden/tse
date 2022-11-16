@@ -45,8 +45,10 @@ PROC Main()
   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
   AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Goto your Git server web page on the Internet (e.g. GitHub)" )
+  AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Status" )
   AddLine( "Log" )
+  AddLine( "Show" )
   AddLine( "Diff" )
   AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Settings" )
@@ -97,7 +99,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.66</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
+// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.68</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
 INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g. PROC Main()
  // e.g.  //
@@ -123,8 +125,10 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g.   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
  // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Goto your Git server web page on the Internet (e.g. GitHub)" )
+ // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Status" )
  // e.g.   AddLine( "Log" )
+ // e.g.   AddLine( "Show" )
  // e.g.   AddLine( "Diff" )
  // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Settings" )
@@ -338,6 +342,22 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
     s = Format( driveLetterS, " ", "&", " ", "cd", " ", directoryRepositoryS )
     s = Format( s, " ", "&", " " )
     s = Format( s, executableS, " ", "log", " ", "--oneline" )
+    Dos( s )
+    //
+   ENDIF
+   //
+  WHEN "Show"
+   //
+   IF NOT FileExists( directoryRepositoryS )
+    PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
+    Warn( "Run the initialize step first to create a Git repository" )
+   ELSE
+    //
+    s = Format( driveLetterS, " ", "&", " ", "cd", " ", directoryRepositoryS )
+    s = Format( s, " ", "&", " " )
+    s = Format( s, executableS, " ", "show" )
+    s = Format( s, " ", "&", " " )
+    s = Format( s, "pause" )
     Dos( s )
     //
    ENDIF
