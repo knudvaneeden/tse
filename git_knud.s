@@ -40,12 +40,17 @@ PROC Main()
   GotoBufferId( bufferI )
   //
   AddLine( "Once initialize your repository directory (and set your name + your email)" )
+  AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Add + Commit your current loaded file in TSE (into your local repository)" )
   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
+  AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Goto your Git server web page on the Internet (e.g. GitHub)" )
   AddLine( "Status" )
   AddLine( "Log" )
   AddLine( "Diff" )
+  AddLine( "--------------------------------------------------------------------------" )
+  AddLine( "Settings" )
+  AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Quit" )
   //
   GotoLine( 1 )
@@ -92,7 +97,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.59</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
+// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.66</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
 INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g. PROC Main()
  // e.g.  //
@@ -113,12 +118,17 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g.   GotoBufferId( bufferI )
  // e.g.   //
  // e.g.   AddLine( "Once initialize your repository directory (and set your name + your email)" )
+ // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Add + Commit your current loaded file in TSE (into your local repository)" )
  // e.g.   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
+ // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Goto your Git server web page on the Internet (e.g. GitHub)" )
  // e.g.   AddLine( "Status" )
  // e.g.   AddLine( "Log" )
  // e.g.   AddLine( "Diff" )
+ // e.g.   AddLine( "--------------------------------------------------------------------------" )
+ // e.g.   AddLine( "Settings" )
+ // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Quit" )
  // e.g.   //
  // e.g.   GotoLine( 1 )
@@ -203,6 +213,8 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  //
  // CHANGE: ONCE: BEGIN
  //
+ STRING sectionS[255] = "git_knud" // change this optionally. This is the section name that should be used in tse.ini.
+ //
  STRING directoryExecutableS[255] = "g:\versioncontrol\git\gitscm\cmd\" // change this
  //
  // STRING nameTrunkS[255] = "master" // change this (you will first have to pull and merge
@@ -212,13 +224,13 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  //
  STRING directoryRepositoryInS[255] = "C:\TEMP\RG01" // change this (this is your repository directory)
  //
- STRING userNameS[255] = GetProfileStr( "git_knud", "userNameS", "yourusername"  ) // (this is your e.g. GitHug=b user name
- STRING userEmailS[255] = GetProfileStr( "git_knud", "userEmailS", "youremail" ) // (this is your e.g. GitHug=b password.
+ STRING userNameS[255] = GetProfileStr( sectionS, "userNameS", "yourusername"  ) // (this is your e.g. GitHug=b user name
+ STRING userEmailS[255] = GetProfileStr( sectionS, "userEmailS", "youremail" ) // (this is your e.g. GitHug=b password.
  //
  // fill in your e.g. GitHub user name or password. I store it in my.ini file, you might store it in e.g. tse.ini, or optionally (not recommended) store it hardcoded in this file
- STRING githubUserNameS[255] = GetProfileStr( "git_knud", "FNStringGetProgramRunUsernameFileVersionControlGithubKnudS", "yourusername"  ) // (this is your e.g. GitHug user name
- STRING githubPasswordS[255] = GetProfileStr( "git_knud", "FNStringGetProgramRunPasswordFileVersionControlGithubKnudS", "yourpassword" ) // (this is your e.g. GitHub password.
- STRING githubRemoteDirectoryUrlS[255] = GetProfileStr( "git_knud", "githubRemoteDirectoryUrlS", "yourremotegitserver" ) // (this is your e.g. GitHub remote directory
+ STRING githubUserNameS[255] = GetProfileStr( sectionS, "FNStringGetProgramRunUsernameFileVersionControlGithubKnudS", "yourusername"  ) // (this is your e.g. GitHug user name
+ STRING githubPasswordS[255] = GetProfileStr( sectionS, "FNStringGetProgramRunPasswordFileVersionControlGithubKnudS", "yourpassword" ) // (this is your e.g. GitHub password.
+ STRING githubRemoteDirectoryUrlS[255] = GetProfileStr( sectionS, "githubRemoteDirectoryUrlS", "yourremotegitserver" ) // (this is your e.g. GitHub remote directory
  //
  // CHANGE: ONCE: END
  //
@@ -349,6 +361,22 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
   WHEN "Goto your Git server web page on the Internet (e.g. GitHub)"
    //
    StartPgm( githubRemoteDirectoryUrlS )
+   //
+  WHEN "Settings"
+   //
+   PushPosition()
+   PushBlock()
+   EditFile( Format( AddTrailingSlash( LoadDir() ), "tse.ini" ) )
+   IF LFind( sectionS, "" )
+    ScrollToTop()
+   ELSE
+    Warn( "no expected session", ":", " ", "[", sectionS, "]", " ", "found in tse.ini. Please add it + add the parameters" )
+   ENDIF
+   UpDateDisplay() // IF WaitForKeyPressed( 0 ) ENDIF // Activate if using a loop
+   PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
+   Warn( "<Press any key to continue>" )
+   PopBlock()
+   PopPosition()
    //
  OTHERWISE
   //
