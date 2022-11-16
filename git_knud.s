@@ -39,19 +39,24 @@ PROC Main()
   PushBlock()
   GotoBufferId( bufferI )
   //
-  AddLine( "Once initialize your repository directory (and set your name + your email)" )
   AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Add + Commit your current loaded file in TSE (into your local repository)" )
-  AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
   AddLine( "--------------------------------------------------------------------------" )
-  AddLine( "Goto your Git server web page on the Internet (e.g. GitHub)" )
+  AddLine( "Add + Commit your current loaded file in TSE into your remote repository: GitHub" )
+  AddLine( "Add + Commit your current loaded file in TSE into your remote repository: GitLab" )
+  AddLine( "--------------------------------------------------------------------------" )
+  AddLine( "Goto your Git server web page on the Internet: GitHub" )
+  AddLine( "Goto your Git server web page on the Internet: GitLab" )
   AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Status" )
   AddLine( "Log" )
   AddLine( "Show" )
+  AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Diff" )
   AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Settings" )
+  AddLine( "--------------------------------------------------------------------------" )
+  AddLine( "Once initialize your repository directory (and set your name + your email)" )
   AddLine( "--------------------------------------------------------------------------" )
   AddLine( "Quit" )
   //
@@ -99,7 +104,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.68</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
+// library: file: save: file: version: control: git: simplest: case <description></description> <version control></version control> <version>1.0.0.0.71</version> <version control></version control> (filenamemacro=git_knud.s) [<Program>] [<Research>] [kn, ri, su, 13-11-2022 23:45:27]
 INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g. PROC Main()
  // e.g.  //
@@ -119,19 +124,24 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  // e.g.   PushBlock()
  // e.g.   GotoBufferId( bufferI )
  // e.g.   //
- // e.g.   AddLine( "Once initialize your repository directory (and set your name + your email)" )
  // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Add + Commit your current loaded file in TSE (into your local repository)" )
- // e.g.   AddLine( "Add + Commit your current loaded file in TSE (into your remote repository)" )
  // e.g.   AddLine( "--------------------------------------------------------------------------" )
- // e.g.   AddLine( "Goto your Git server web page on the Internet (e.g. GitHub)" )
+ // e.g.   AddLine( "Add + Commit your current loaded file in TSE into your remote repository: GitHub" )
+ // e.g.   AddLine( "Add + Commit your current loaded file in TSE into your remote repository: GitLab" )
+ // e.g.   AddLine( "--------------------------------------------------------------------------" )
+ // e.g.   AddLine( "Goto your Git server web page on the Internet: GitHub" )
+ // e.g.   AddLine( "Goto your Git server web page on the Internet: GitLab" )
  // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Status" )
  // e.g.   AddLine( "Log" )
  // e.g.   AddLine( "Show" )
+ // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Diff" )
  // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Settings" )
+ // e.g.   AddLine( "--------------------------------------------------------------------------" )
+ // e.g.   AddLine( "Once initialize your repository directory (and set your name + your email)" )
  // e.g.   AddLine( "--------------------------------------------------------------------------" )
  // e.g.   AddLine( "Quit" )
  // e.g.   //
@@ -221,8 +231,9 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  //
  STRING directoryExecutableS[255] = "g:\versioncontrol\git\gitscm\cmd\" // change this
  //
- // STRING nameTrunkS[255] = "master" // change this (you will first have to pull and merge
- STRING nameTrunkS[255] = "TRUNK" // change this
+ // STRING githubNameTrunkS[255] = "master" // change this (you will first have to pull and merge
+ STRING githubNameTrunkS[255] = "TRUNK" // change this
+ STRING gitlabNameTrunkS[255] = "" // change this
  //
  STRING messageS[255] = "changes in this revision = draft|backup|works|created|add setm|replace menu hotkey|save|major|minor|recompile|compiles|refactor|original" // change this
  //
@@ -235,6 +246,11 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
  STRING githubUserNameS[255] = GetProfileStr( sectionS, "FNStringGetProgramRunUsernameFileVersionControlGithubKnudS", "yourusername"  ) // (this is your e.g. GitHug user name
  STRING githubPasswordS[255] = GetProfileStr( sectionS, "FNStringGetProgramRunPasswordFileVersionControlGithubKnudS", "yourpassword" ) // (this is your e.g. GitHub password.
  STRING githubRemoteDirectoryUrlS[255] = GetProfileStr( sectionS, "githubRemoteDirectoryUrlS", "yourremotegitserver" ) // (this is your e.g. GitHub remote directory
+ //
+ // fill in your e.g. GitLab user name or password. I store it in my.ini file, you might store it in e.g. tse.ini, or optionally (not recommended) store it hardcoded in this file
+ STRING gitlabUserNameS[255] = GetProfileStr( sectionS, "FNStringGetProgramRunUsernameFileVersionControlGitlabKnudS", "yourusername"  ) // (this is your e.g. GitHug user name
+ STRING gitlabPasswordS[255] = GetProfileStr( sectionS, "FNStringGetProgramRunPasswordFileVersionControlGitlabKnudS", "yourpassword" ) // (this is your e.g. GitLab password.
+ STRING gitlabRemoteDirectoryUrlS[255] = GetProfileStr( sectionS, "gitlabRemoteDirectoryUrlS", "yourremotegitserver" ) // (this is your e.g. GitLab remote directory
  //
  // CHANGE: ONCE: END
  //
@@ -274,7 +290,7 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
    //
    // initialize that repository directory (it will create a hidden .git directory inside the root of that directory)
    //
-   s = Format( driveLetterS, " ", "&", " ", "cd", " ", directoryRepositoryS, " ", "&", " ", executableS, " ", "init", " ", "-b", " ", nameTrunkS, " ", directoryRepositoryS )
+   s = Format( driveLetterS, " ", "&", " ", "cd", " ", directoryRepositoryS, " ", "&", " ", executableS, " ", "init", " ", "-b", " ", githubNameTrunkS, " ", directoryRepositoryS )
    Dos( Format( s, " ", "2>&1" ), _START_HIDDEN_ )
    //
    s = Format( executableS, " ", "config", " ", "--global", " ", "user.name", " ", '"', userNameS, '"' )
@@ -307,13 +323,24 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
    //
    ENDIF
    //
-  WHEN "Add + Commit your current loaded file in TSE (into your remote repository)"
+  WHEN "Add + Commit your current loaded file in TSE into your remote repository: GitHub"
    //
    s = Format( driveLetterS, " ", "&", " ", "cd", " ", directoryRepositoryS )
    // s = Format( s, " ", "&", " " )
    // s = Format( s, "keystack", " ", '"', githubUserNameS, '"', " ", "enter", " ", '"', githubPasswordS, '"', " ", "enter" )
    s = Format( s, " ", "&", " " )
-   s = Format( s, executableS, " ", "push", " ", "--set-upstream", " ", githubRemoteDirectoryUrlS, " ", nameTrunkS )
+   s = Format( s, executableS, " ", "push", " ", "--set-upstream", " ", githubRemoteDirectoryUrlS, " ", githubNameTrunkS )
+   s = Format( s, " ", "&", " " )
+   s = Format( s, "pause" )
+   Dos( s )
+   //
+  WHEN "Add + Commit your current loaded file in TSE into your remote repository: GitLab"
+   //
+   s = Format( driveLetterS, " ", "&", " ", "cd", " ", directoryRepositoryS )
+   // s = Format( s, " ", "&", " " )
+   // s = Format( s, "keystack", " ", '"', githubUserNameS, '"', " ", "enter", " ", '"', githubPasswordS, '"', " ", "enter" )
+   s = Format( s, " ", "&", " " )
+   s = Format( s, executableS, " ", "push", " ", "--set-upstream", " ", gitlabRemoteDirectoryUrlS, " ", gitlabNameTrunkS )
    s = Format( s, " ", "&", " " )
    s = Format( s, "pause" )
    Dos( s )
@@ -378,9 +405,13 @@ INTEGER PROC FNFileSaveFileVersionControlGitSimplestCaseB( STRING caseS )
     //
    ENDIF
    //
-  WHEN "Goto your Git server web page on the Internet (e.g. GitHub)"
+  WHEN "Goto your Git server web page on the Internet: GitHub"
    //
    StartPgm( githubRemoteDirectoryUrlS )
+   //
+  WHEN "Goto your Git server web page on the Internet: GitLab"
+   //
+   StartPgm( gitlabRemoteDirectoryUrlS )
    //
   WHEN "Settings"
    //
