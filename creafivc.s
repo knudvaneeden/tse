@@ -42,6 +42,7 @@ FORWARD STRING PROC FNStringGetRightStringS( STRING s1, INTEGER i1 )
 FORWARD STRING PROC FNStringGetSectionSeparatorS()
 FORWARD STRING PROC FNStringGet_FilenameIniDefaultS()
 
+// test [kn, ri, su, 20-11-2022 03:25:20]
 
 // --- MAIN --- //
 

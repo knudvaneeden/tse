@@ -87,6 +87,7 @@ FORWARD STRING PROC FNStringGetUserNameFirstS()
 FORWARD STRING PROC FNStringGetUserNameLastS()
 FORWARD STRING PROC FNStringGet_FilenameIniDefaultS()
 
+// test [kn, ri, su, 20-11-2022 03:25:45]
 
 // --- MAIN --- //
 
