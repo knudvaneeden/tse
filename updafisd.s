@@ -114,13 +114,13 @@ FORWARD INTEGER PROC FNFileCheckEditMessageB( STRING filenameS )
 PROC Main()
  STRING s[255]  = ""
  STRING s0[255] = SplitPath( CurrFileName(), _NAME_ | _EXT_ )
-
+ //
  // working directory for Git
  STRING s1[255] = FNStringGetDirectoryVersionControlGitWorkingS()
-
+ //
  // not really used for Git, but kept for symmetry / future use
  STRING s2[255] = ""
-
+ //
  STRING s3[255] = ""
  // example extra option, e.g. your main Git working tree
  STRING s4[255] = "GetThisLater" // change this
