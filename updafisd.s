@@ -125,9 +125,9 @@ PROC Main()
  // example extra option, e.g. your main Git working tree
  STRING s4[255] = "GetThisLater" // change this
  STRING s5[255] = "150" // maximum length of description
-
+ //
  INTEGER bufferI = 0
-
+ //
  // ---- find optional macro version in current file ----
  PushPosition()
  PushBlock()
