@@ -1,8 +1,3 @@
-//
-FORWARD PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING s1, STRING s3 )
-FORWARD STRING PROC FNStringGetInitializationGitS()
-FORWARD STRING PROC FNStringGetDirectoryVersionControlGitWorkingS()
-//
 FORWARD INTEGER PROC FNBufferGetBufferIdFileCurrentI()
 FORWARD INTEGER PROC FNBufferGetBufferIdGivenBufferNameI( STRING s1 )
 FORWARD INTEGER PROC FNErrorCheckEscapeB( STRING s1 )
@@ -22,6 +17,9 @@ FORWARD INTEGER PROC FNMathCheckGetLogicTrueB()
 FORWARD INTEGER PROC FNMathCheckLogicNotB( INTEGER i1 )
 FORWARD INTEGER PROC FNMathCheckLogicOrB( INTEGER i1, INTEGER i2 )
 FORWARD INTEGER PROC FNMathGetProgramLineNumberAbsoluteCurrentI()
+FORWARD INTEGER PROC FNProgramGetOperatingSystemLinuxNonWslB()
+FORWARD INTEGER PROC FNProgramGetOperatingSystemLinuxWslB()
+FORWARD INTEGER PROC FNProgramGetOperatingSystemMicrosoftWindowsB()
 FORWARD INTEGER PROC FNStringCheckEmptyB( STRING s1 )
 FORWARD INTEGER PROC FNStringCheckEnvironmentFoundNotB( STRING s1 )
 FORWARD INTEGER PROC FNStringCheckEqualB( STRING s1, STRING s2 )
@@ -37,7 +35,7 @@ FORWARD PROC PROCFileGotoEnd()
 FORWARD PROC PROCFileInsertEndPrepare()
 FORWARD PROC PROCFileInsertTextEnd( STRING s1, STRING s2, INTEGER i1 )
 FORWARD PROC PROCFileRun4NtAliasCommandListUser( STRING s1 )
-FORWARD PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING s1, STRING s2, STRING s3 )
+FORWARD PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING s1, STRING s2 )
 FORWARD PROC PROCLineInsertAfter()
 FORWARD PROC PROCLineInsertAfterLineGotoBeginTextInsert( STRING s1 )
 FORWARD PROC PROCMacroExec( STRING s1 )
@@ -45,6 +43,7 @@ FORWARD PROC PROCMacroPurge( STRING s1 )
 FORWARD PROC PROCMacroRunKeep( STRING s1 )
 FORWARD PROC PROCMacroRunPurge( STRING s1 )
 FORWARD PROC PROCMacroRunPurgeParameter( STRING s1, STRING s2 )
+FORWARD PROC PROCProgramRunFileVersionControlGitSubversion()
 FORWARD PROC PROCTextGotoLineBegin()
 FORWARD PROC PROCTextInsert( STRING s1 )
 FORWARD PROC PROCTextRemovePositionStackPop()
@@ -53,7 +52,6 @@ FORWARD PROC PROCWarn( STRING s1 )
 FORWARD PROC PROCWarnCons3( STRING s1, STRING s2, STRING s3 )
 FORWARD PROC PROCWarnCons4( STRING s1, STRING s2, STRING s3, STRING s4 )
 FORWARD PROC PROCWarnCons5( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5 )
-FORWARD STRING PROC FNBlockGetRecordCurrentTseMacroVersionS()
 FORWARD STRING PROC FNStringGetAsciiToCharacterS( INTEGER i1 )
 FORWARD STRING PROC FNStringGetCarS( STRING s1 )
 FORWARD STRING PROC FNStringGetCharacterEndBackSlashNotEqualInsertEndS( STRING s1 )
@@ -68,27 +66,27 @@ FORWARD STRING PROC FNStringGetCons3S( STRING s1, STRING s2, STRING s3 )
 FORWARD STRING PROC FNStringGetCons4S( STRING s1, STRING s2, STRING s3, STRING s4 )
 FORWARD STRING PROC FNStringGetCons5S( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5 )
 FORWARD STRING PROC FNStringGetConsS( STRING s1, STRING s2 )
-FORWARD STRING PROC FNStringGetDirectoryVersionControlGitRepositoryS()
-FORWARD STRING PROC FNStringGetDirectoryVersionControlSubversionWorkingS()
+FORWARD STRING PROC FNStringGetDirectoryVersionControlGitWorkingS()
 FORWARD STRING PROC FNStringGetEmptyS()
 FORWARD STRING PROC FNStringGetEnvironmentS( STRING s1 )
 FORWARD STRING PROC FNStringGetErrorS()
 FORWARD STRING PROC FNStringGetEscapeS()
-FORWARD STRING PROC FNStringGetFileDirectorySubLastS( STRING s1, STRING s2 )
-FORWARD STRING PROC FNStringGetFileGetFilenamePathDefaultS( STRING s1 )
+FORWARD STRING PROC FNStringGetFileGetFilenamePathDefaultCrossPlatformS( STRING s1 )
+FORWARD STRING PROC FNStringGetFileIniDefaultCrossPlatformS( STRING s1 )
 FORWARD STRING PROC FNStringGetFileIniDefaultS( STRING s1 )
 FORWARD STRING PROC FNStringGetFilenameCurrentS()
 FORWARD STRING PROC FNStringGetFilenameEndBackSlashNotEqualInsertEndS( STRING s1 )
 FORWARD STRING PROC FNStringGetFilenameGlobalErrorS()
-FORWARD STRING PROC FNStringGetFilenameIniDefaultS()
+FORWARD STRING PROC FNStringGetFilenameIniDefaultCrossPlatformS()
 FORWARD STRING PROC FNStringGetGlobalS( STRING s1 )
+FORWARD STRING PROC FNStringGetInitializationGitS()
 FORWARD STRING PROC FNStringGetInitializationGlobalS( STRING s1, STRING s2, STRING s3 )
-FORWARD STRING PROC FNStringGetInitializationSubversionS()
 FORWARD STRING PROC FNStringGetInitializeNewStringS()
 FORWARD STRING PROC FNStringGetLineNumberCurrentS()
 FORWARD STRING PROC FNStringGetMachineNameS()
 FORWARD STRING PROC FNStringGetMathIntegerToStringS( INTEGER i1 )
 FORWARD STRING PROC FNStringGetMidStringS( STRING s1, INTEGER i1, INTEGER i2 )
+FORWARD STRING PROC FNStringGetOperatingSystemS()
 FORWARD STRING PROC FNStringGetPathFileAliasUnicode4Dos4NtFilenameS()
 FORWARD STRING PROC FNStringGetPathUser_DataApplicationCurrentBackslashNotS()
 FORWARD STRING PROC FNStringGetPathUser_DataApplicationCurrentBackslashS()
@@ -100,166 +98,293 @@ FORWARD STRING PROC FNStringGetSectionSeparatorS()
 FORWARD STRING PROC FNStringGetUserNameFirstS()
 FORWARD STRING PROC FNStringGetUserNameLastS()
 FORWARD STRING PROC FNStringGet_FilenameIniDefaultS()
-FORWARD INTEGER PROC FNFileCheckEditMessageB( STRING filenameS )
 
-// ======================================================================
-// Macro     GitSaveAndCommit.s
-// Author    (based on Subversion macro by Knud)
-// Purpose   Save current file into a Git working directory and commit it
-// Key       <F12>
-// ======================================================================
 
 // --- MAIN --- //
 
 PROC Main()
- STRING s[255]  = ""
- STRING s0[255] = SplitPath( CurrFileName(), _NAME_ | _EXT_ )
+ PROCProgramRunFileVersionControlGitSubversion()
+END
+
+<Ctrl F12> Main()
+
+// --- LIBRARY --- //
+
+// library: program: run: file: version: control: git: subversion <description></description> <version control></version control> <version>1.0.0.0.4</version> <version control></version control> (filenamemacro=updafisd.s) [<Program>] [<Research>] [kn, ri, we, 19-11-2025 00:01:07]
+PROC PROCProgramRunFileVersionControlGitSubversion()
+ // e.g. PROC Main()
+ // e.g.  PROCProgramRunFileVersionControlGitSubversion()
+ // e.g. END
+ // e.g.
+ // e.g. <Ctrl F12> Main()
  //
- // working directory for Git
- STRING s1[255] = FNStringGetDirectoryVersionControlGitWorkingS()
+ // ===
  //
- // not really used for Git, but kept for symmetry / future use
- STRING s2[255] = ""
+ // Use case =
  //
- STRING s3[255] = ""
- // example extra option, e.g. your main Git working tree
- STRING s4[255] = "GetThisLater" // change this
- STRING s5[255] = "150" // maximum length of description
+ // ===
  //
- INTEGER bufferI = 0
+ // ===
  //
- // ---- find optional macro version in current file ----
- PushPosition()
- PushBlock()
- s = " "
- IF LFind( Format( "(filenamemacro=", s0, ")" ), "gi" )
-  // PROCMacroRunPurge( "markpamd" ) // operation: select: mark: 1: paragraph: current: fix
-  // s = FNBlockGetRecordCurrentTseMacroVersionS() [kn, ri, su, 16-11-2025 23:32:25]
-  IF NOT EquiStr( Trim( s ), "" )
-   s = Format( " ", "(", s, ")", " " )
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFPROCProgramRunFileVersionControlGitSubversion )
+ // e.g. HELPDEF HELPDEFPROCProgramRunFileVersionControlGitSubversion
+ // e.g.  title = "PROCProgramRunFileVersionControlGitSubversion() help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ //
+ // ======================================================================
+ // Macro     GitSaveAndCommit.s
+ // Author    (based on Subversion macro by Knud)
+ // Purpose   Save current file into a Git working directory and commit it
+ // Key       <F12>
+ // ======================================================================
+ //
+  STRING s[255]  = ""
+  STRING s0[255] = SplitPath( CurrFileName(), _NAME_ | _EXT_ )
+  //
+  // working directory for Git
+  STRING s1[255] = FNStringGetDirectoryVersionControlGitWorkingS()
+  //
+  // not really used for Git, but kept for symmetry / future use
+  STRING s2[255] = ""
+  //
+  STRING s3[255] = ""
+  // example extra option, e.g. your main Git working tree
+  STRING s4[255] = "GetThisLater" // change this
+  STRING s5[255] = "150" // maximum length of description
+  //
+  INTEGER bufferI = 0
+  //
+  // ---- find optional macro version in current file ----
+  PushPosition()
+  PushBlock()
+  s = " "
+  IF LFind( Format( "(filenamemacro=", s0, ")" ), "gi" )
+   // PROCMacroRunPurge( "markpamd" ) // operation: select: mark: 1: paragraph: current: fix
+   // s = FNBlockGetRecordCurrentTseMacroVersionS() [kn, ri, su, 16-11-2025 23:32:25]
+   IF NOT EquiStr( Trim( s ), "" )
+    s = Format( " ", "(", s, ")", " " )
+   ENDIF
   ENDIF
- ENDIF
- PopBlock()
- PopPosition()
-
- // ---- get initial Git commit message options from ini ----
- s3 = FNStringGetInitializationGitS()
-
- // ---- choose working directory (like in SVN macro) ----
- PushPosition()
- bufferI = CreateTempBuffer()
- PopPosition()
-
- PushPosition()
- PushBlock()
- GotoBufferId( bufferI )
-
- AddLine( s1 )
- AddLine( s4 )
-
- // PROCMacroRunKeep( "setwiyde" ) // set warn/yesno window position
- GotoLine( 1 )
- IF List( "Choose a Git working directory", 80 )
-  s1 = Trim( GetText( 1, 255 ) )
- ELSE
+  PopBlock()
+  PopPosition()
+  //
+  // ---- get initial Git commit message options from ini ----
+  s3 = FNStringGetInitializationGitS()
+  //
+  // ---- choose working directory (like in SVN macro) ----
+  PushPosition()
+  bufferI = CreateTempBuffer()
+  PopPosition()
+  //
+  PushPosition()
+  PushBlock()
+  GotoBufferId( bufferI )
+  //
+  AddLine( s1 )
+  AddLine( s4 )
+  //
+  // PROCMacroRunKeep( "setwiyde" ) // set warn/yesno window position
+  GotoLine( 1 )
+  IF List( "Choose a Git working directory", 80 )
+   s1 = Trim( GetText( 1, 255 ) )
+  ELSE
+   AbandonFile( bufferI )
+   PopBlock()
+   PopPosition()
+   RETURN()
+  ENDIF
   AbandonFile( bufferI )
   PopBlock()
   PopPosition()
-  RETURN()
- ENDIF
- AbandonFile( bufferI )
- PopBlock()
- PopPosition()
-
- // Example protection (adapt for your own repository layout)
- IF ( EquiStr( s1, s4 ) ) AND ( EquiStr( "BIBTSE", SplitPath( CurrFilename(), _NAME_ ) ) )
+  //
+  // Example protection (adapt for your own repository layout)
+  IF ( EquiStr( s1, s4 ) ) AND ( EquiStr( "BIBTSE", SplitPath( CurrFilename(), _NAME_ ) ) )
+   // PROCMacroRunKeep( "setwiyde" )
+   Warn( "Do not commit this file", ":", " " , CurrFilename(), " ", "to the Git working directory", ":", " ", s1 )
+   RETURN()
+  ENDIF
+  //
+  // ---- ask commit message ----
   // PROCMacroRunKeep( "setwiyde" )
-  Warn( "Do not commit this file", ":", " " , CurrFilename(), " ", "to the Git working directory", ":", " ", s1 )
-  RETURN()
- ENDIF
-
- // ---- ask commit message ----
- // PROCMacroRunKeep( "setwiyde" )
- IF ( NOT ( Ask( Format( "[", s0, "]", s, "file: save: version: control: git: revisionChangeInformationS = " ),
-                 s3,
-                 _EDIT_HISTORY_ ) )
-      AND ( Length( s3 ) > 0 ) )
-  RETURN()
- ENDIF
-
- s3 = Format( "[", s0, "]", s, s3 )
- // avoid double quotes (they break the git -m "..." shell quoting)
- s3 = StrReplace( '"', s3, "'", "" )
-
- IF ( Length( s3 ) > Val( s5 ) )
-  Warn( "Please choose the description string shorter." )
-  RETURN()
- ENDIF
-
- // ---- do the actual save + git add + git commit ----
- PROCFileUpdateVersionControlGitSaveCreateCurrent( s1, s3 )
-
+  IF ( NOT ( Ask( Format( "[", s0, "]", s, "file: save: version: control: git: revisionChangeInformationS = " ),
+                  s3,
+                  _EDIT_HISTORY_ ) )
+       AND ( Length( s3 ) > 0 ) )
+   RETURN()
+  ENDIF
+  //
+  s3 = Format( "[", s0, "]", s, s3 )
+  // avoid double quotes (they break the git -m "..." shell quoting)
+  s3 = StrReplace( '"', s3, "'", "" )
+  //
+  IF ( Length( s3 ) > Val( s5 ) )
+   Warn( "Please choose the description string shorter." )
+   RETURN()
+  ENDIF
+  //
+  // ---- do the actual save + git add + git commit ----
+  PROCFileUpdateVersionControlGitSaveCreateCurrent( s1, s3 )
+ //
+ RETURN()
+ //
 END
 
-<F12> Main()
-
-// ======================================================================
-// library: string: get: directory: version: control: git: working
-// description: get Git working directory from ini
-// filenamemacro=getstcgw.s
-// ======================================================================
-
+// library: string: get: directory: version: control: git: working <description></description> <version control></version control> <version>1.0.0.0.0</version> <version control></version control> (filenamemacro=getstgwo.s) [<Program>] [<Research>] [kn, ri, su, 16-11-2025 23:59:12]
 STRING PROC FNStringGetDirectoryVersionControlGitWorkingS()
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetDirectoryVersionControlGitWorkingS() )
+ // e.g.  Message( FNStringGetDirectoryVersionControlGitWorkingS() ) // gives e.g. "P:\TEMP\MYWORKINGDIRECTORY\"
  // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
  //
  RETURN( FNStringGetFileIniDefaultS( "FNStringGetDirectoryVersionControlGitWorkingS" ) )
  //
 END
 
-
-// ======================================================================
-// library: string: get: initialization: git
-// description: default list / template for Git commit messages
-// filenamemacro=getstigy.s
-// ======================================================================
-
+// library: string: get: initialization: git <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstigi.s) [<Program>] [<Research>] [kn, ri, we, 19-11-2025 00:22:52]
 STRING PROC FNStringGetInitializationGitS()
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetInitializationGitS() )
-//  // gives e.g. "corrected:changed:added:recompile:backup:created:works:..."
+ // e.g.  Message( FNStringGetInitializationGitS() ) // gives e.g. "corrected:changed:added:recompile:backup:created:works:..."
  // e.g. END
+ //
+ // ======================================================================
+ // library: string: get: initialization: git
+ // description: default list / template for Git commit messages
+ // filenamemacro=getstigy.s
+ // ======================================================================
  //
  RETURN( FNStringGetFileIniDefaultS( "FNStringGetInitializationGitS" ) )
  //
 END
 
-
-// ======================================================================
-// library: file: update: version: control: git: save: create
-// description: Save current file in Git working dir and commit it
-// filenamemacro=updafigc.s
-// ======================================================================
-
+// library: file: update: version: control: git: save: create: current <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=updaficc.s) [<Program>] [<Research>] [kn, ri, we, 19-11-2025 00:05:58]
 PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING fileVersionControlDirectoryWorkingInS, STRING revisionChangeInformationS )
+ // e.g. PROC Main()
+ // e.g.  // STRING s1[255] = GetHistoryStr( _EDIT_HISTORY_, 1 ) // change this
+ // e.g.  STRING s1[255] = "C:\TEMP\DDD01" // change this
+ // e.g.  STRING s2[255] = "" // change this
+ // e.g.  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
+ // e.g.  IF ( NOT ( Ask( " = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+ // e.g.  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
+ // e.g.  IF ( NOT ( Ask( " = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
+ // e.g.  PROCFileUpdateVersionControlGitSaveCreateCurrent( s1, s2 )
+ // e.g. END
+ // e.g.
+ // e.g. <Ctrl F12> Main()
+ //
+ // ===
+ //
+ // Use case =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFPROCFileUpdateVersionControlGitSaveCreateCurrent )
+ // e.g. HELPDEF HELPDEFPROCFileUpdateVersionControlGitSaveCreateCurrent
+ // e.g.  title = "PROCFileUpdateVersionControlGitSaveCreateCurrent( s1, s2 ) help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
  //
  // Parameters:
  //   fileVersionControlDirectoryWorkingInS = Git working directory (with or without trailing "\")
  //   revisionChangeInformationS           = commit message (already sanitized for quotes)
  //
+ // ======================================================================
+ // library: file: update: version: control: git: save: create
+ // description: Save current file in Git working dir and commit it
+ // filenamemacro=updafigc.s
+ // ======================================================================
+ //
  INTEGER fileExistB = FALSE
-
+ //
  STRING fileNameS[255]     = ""
  STRING driveS[255]        = ""
  STRING directoryS[255]    = ""
  STRING fileVersionControlDirectoryWorkingS[255] = ""
  STRING s[255]             = "commit"
  STRING s1[255]            = ""
-
+ //
  STRING fileNameCurrentS[255]      = CurrFilename()
  STRING fileNameExtensionS[255]    = SplitPath( fileNameCurrentS, _NAME_ | _EXT_ )
-
+ //
  // allow override working dir via macro command line
  s1 = Query( MacroCmdLine )
  s1 = Trim( s1 )
@@ -268,17 +393,17 @@ PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING fileVersionControl
  ELSE
   fileVersionControlDirectoryWorkingS = s1
  ENDIF
-
+ //
  fileVersionControlDirectoryWorkingS =
   FNStringGetCharacterEndBackSlashNotEqualInsertEndS( fileVersionControlDirectoryWorkingS )
-
+ //
  fileNameS = Format( fileVersionControlDirectoryWorkingS, fileNameExtensionS )
-
+ //
  driveS     = SplitPath( fileVersionControlDirectoryWorkingS, _DRIVE_ )
  directoryS = SplitPath( fileVersionControlDirectoryWorkingS, _PATH_ )
-
+ //
  // ---- basic checks ---------------------------------------------------
-
+ //
  // working directory must exist
  IF ( NOT ( FileExists( Format( fileVersionControlDirectoryWorkingS, "*.*" ) ) ) )
   CopyToWinclip( "c: && cd \\TEMP\\ && git clone <YOUR_GIT_URL_HERE> W1" )
@@ -289,7 +414,7 @@ PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING fileVersionControl
         "c: && cd \\TEMP\\ && git clone <YOUR_GIT_URL_HERE> W1" )
   RETURN()
  ENDIF
-
+ //
  // must be inside a Git repository (check for .git directory)
  IF ( NOT ( FileExists( Format( fileVersionControlDirectoryWorkingS, ".git" ) ) ) )
   CopyToWinclip( Format( driveS,
@@ -325,15 +450,15 @@ PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING fileVersionControl
         "git init && git add . && git commit -m \'Initial import\'" )
   RETURN()
  ENDIF
-
+ //
  // ---- save file into working tree ------------------------------------
-
+ //
  fileExistB = FileExists( fileNameS )
-
+ //
  SaveAs( fileNameS, _OVERWRITE_ ) // save into Git working directory
-
+ //
  // ---- git add (only for new files we change s, but add is harmless) --
-
+ //
  IF ( NOT ( fileExistB ) )
   PROCFileRun4NtAliasCommandListUser(
    Format( driveS,
@@ -371,9 +496,9 @@ PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING fileVersionControl
            " ",
            "2>&1" ) )
  ENDIF
-
+ //
  // ---- git commit -----------------------------------------------------
-
+ //
  PROCFileRun4NtAliasCommandListUser(
   Format( driveS,
           " ",
@@ -396,49 +521,93 @@ PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING fileVersionControl
           SplitPath( fileNameS, _NAME_ | _EXT_ ),
           " ",
           "2>&1" ) )
-
+ //
  // optional: save editor state macro (as in SVN version)
  PROCMacroRunPurge( "saveprtu" ) // operation: save: program: state+history: editor: text: tse
-
+ //
  Message( s )
  //
 END
+ //
 
-// library: file: edit: edit a file, with test of problems <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=checficf.s) [<Program>] [<Research>] [kn, ni, mo, 03-08-1998 13:08:39]
-INTEGER PROC FNFileCheckEditMessageB( STRING filenameS )
+// library: string: get: file: ini: default <description></description> <version control></version control> <version>1.0.0.0.3</version> <version control></version control> (filenamemacro=getstids.s) [<Program>] [<Research>] [kn, ri, th, 16-10-2025 00:57:40]
+STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  // e.g. PROC Main()
- // e.g.  Message( FNFileCheckEditMessageB( "" ) ) // gives e.g. TRUE when file loaded without problems
+ // e.g.  Message( FNStringGetFileIniDefaultS( "path4dos" ) ) // gives e.g. "c:\4dos"
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
+ // e.g.
  //
- RETURN( FNFileCheckEditCentralMessageB( filenameS, FNMathCheckGetLogicTrueB() ) )
+ RETURN( FNStringGetFileIniDefaultCrossPlatformS( searchS ) )
  //
 END
 
-// --- LIBRARY --- //
-
-// library: string: get: directory: version: control: working <description></description> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=getstcwo.s) [<Program>] [<Research>] [kn, am, mo, 11-10-2010 10:18:56]
-STRING PROC FNStringGetDirectoryVersionControlSubversionWorkingS()
+// library: string: get: backslash: if last character is not equal to '\', then concatenate a backslash to the end of the given string <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstien.s) [<Program>] [<Research>] [kn, ri, sa, 24-02-2001 23:48:15]
+STRING PROC FNStringGetCharacterEndBackSlashNotEqualInsertEndS( STRING s )
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetDirectoryVersionControlSubversionWorkingS() ) // gives e.g. "P:\TEMP\MYWORKINGDIRECTORY\"
+ // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s1 = FNStringGetInputS( "string: get: backslash: if: not equal insert end: string = ", "this is a string without a backslash at end" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
+ // e.g.  Message( FNStringGetCharacterEndBackSlashNotEqualInsertEndS( s1 ) ) // gives e.g. "this is a string with a backslash at end\"
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
  //
- RETURN( FNStringGetFileIniDefaultS( "FNStringGetDirectoryVersionControlSubversionWorkingS" ) )
+ RETURN( FNStringGetCharacterInsertEndIfEqualNotS( s, FNStringGetCharacterSymbolSlashBackwardS() ) )
  //
 END
 
-// library: string: get: directory: version: control: repository <description></description> <version>1.0.0.0.3</version> <version control></version control> (filenamemacro=getstcrg.s) [<Program>] [<Research>] [kn, am, mo, 11-10-2010 10:18:56]
-STRING PROC FNStringGetDirectoryVersionControlSubversionRepositoryS()
+// library: file: run: 4: nt: alias: command: list: user <description></description> <version control></version control> <version>1.0.0.0.201</version> (filenamemacro=run4fira.s) [<Program>] [<Research>] [kn, ri, su, 01-03-2009 15:29:03]
+PROC PROCFileRun4NtAliasCommandListUser( STRING s )
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetDirectoryVersionControlSubversionRepositoryS() ) // gives e.g. "P:\TEMP\MYREPOSITORYDIRECTORY\"
+ // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
+ // e.g.  INTEGER bufferI = 0
+ // e.g.  INTEGER I = 0
+ // e.g.  STRING fileNameS[255] = FNStringGetProgramAliasRunFilenameListS() // casealiasinputlist.txt
+ // e.g.  PushPosition()
+ // e.g.  bufferI = CreateTempBuffer()
+ // e.g.  GotoBufferId( bufferI )
+ // e.g.  InsertFile( fileNameS )
+ // e.g.  // I = List( "alias command", 115 - 21 )
+ // e.g.  I = List( "FILE: RUN: 4NT: ALIAS: COMMAND: LIST: USER", FNWindowGetScreenWidthI() )
+ // e.g.  IF ( NOT ( I == 0 ) )
+ // e.g.   s1 = SubStr( GetText( 1, MAXSTRINGLEN ), 1, 188 - 1 )
+ // e.g.   s1 = Trim( s1 )
+ // e.g.   // combobox (but switched off as this is quicker)
+ // e.g.   // s1 = FNStringGetInputS( "file: run: 4nt: alias: s = ", s1 )
+ // e.g.   IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
+ // e.g.   PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
+ // e.g.   s1 = FNStringGetTagAngularRemoveWhileS( s1, "Please replace it by information to apply" )
+ // e.g.   // do not move the runprmcn line, as it seems to work better [kn, vo, mo, 13-04-2015 19:57:52]
+ // e.g.   PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "Run%3A+Alias%3A+" + s1 + "&submit01=Create" ) )
+ // e.g.   PROCFileRun4NtAliasCommandListUser( s1 )
+ // e.g.  ENDIF
+ // e.g.  PopPosition()
+ // e.g.  PushPosition()
+ // e.g.  GotoBufferId( bufferI )
+ // e.g.  AbandonFile( bufferI )
+ // e.g.  PopPosition()
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
+ // e.g. <CTRL L> RepeatFind()
  //
- RETURN( FNStringGetFileIniDefaultS( "FNStringGetDirectoryVersionControlSubversionRepositoryS" ) )
+ // PROCFileChangeEditProgramRunStringAdd( "run", "", Format( "(program: 4nt: alias: general:", " ", s, ")" ) )
+ //
+ // LDos( QuotePath( FNStringGetProgram4ntFilenameS() ), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit && exit" ), _DONT_PROMPT_ )
+ // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit && exit" ), _DONT_PROMPT_ )
+ // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ )
+ // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", "/L", " ", "&&", " ", "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ )
+ // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ ) // old [kn, ri, su, 25-12-2016 02:18:29]
+ LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAliasUnicode4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ ) // new [kn, ri, su, 25-12-2016 02:18:43]
+ //
+ // PROCListSaveHistoryUser( s ) // old [kn, ri, su, 10-06-2012 13:44:33]
+ //
+ Message( Format( s, " ", ": file: run: 4nt/4dos: alias: command: list: user" ) )
+ //
+ // do not enable this runprmcn line, as it is run in the run part of this macro [kn, vo, mo, 13-04-2015 19:57:46]
+ // PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "Run%3A+Alias%3A+" + s + "&submit01=Create" ) )
  //
 END
 
@@ -470,336 +639,10 @@ PROC PROCMacroRunPurge( STRING macronameS )
  //
 END
 
-// library: block: get: record: current: tse: macro: version <description></description> <version control></version control> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=getblmve.s) [<Program>] [<Research>] [kn, ri, we, 04-01-2023 15:42:36]
-STRING PROC FNBlockGetRecordCurrentTseMacroVersionS()
+// library: string: get: file: ini: default: cross: platform <description></description> <version control></version control> <version>1.0.0.0.9</version> <version control></version control> (filenamemacro=getstcpo.s) [<Program>] [<Research>] [kn, ri, we, 15-10-2025 23:44:08]
+STRING PROC FNStringGetFileIniDefaultCrossPlatformS( STRING searchS )
  // e.g. PROC Main()
- // e.g.  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
- // e.g.  Warn( FNBlockGetRecordCurrentTseMacroVersionS() ) // gives e.g. "1.0.0.3"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- // ===
- //
- // Use case =
- //
- // ===
- //
- // ===
- //
- // Method =
- //
- // ===
- //
- // ===
- //
- // Example:
- //
- // Input:
- //
- /*
---- cut here: begin --------------------------------------------------
---- cut here: end ----------------------------------------------------
- */
- //
- // Output:
- //
- /*
---- cut here: begin --------------------------------------------------
---- cut here: end ----------------------------------------------------
- */
- //
- // ===
- //
- // e.g. // QuickHelp( HELPDEFFNStringGetRecordCurrentTseMacroVersionS )
- // e.g. HELPDEF HELPDEFFNStringGetRecordCurrentTseMacroVersionS
- // e.g.  title = "FNStringGetRecordCurrentTseMacroVersionS() help" // The help's caption
- // e.g.  x = 100 // Location
- // e.g.  y = 3 // Location
- // e.g.  //
- // e.g.  // The actual help text
- // e.g.  //
- // e.g.  "Usage:"
- // e.g.  "//"
- // e.g.  "1. Run this TSE macro"
- // e.g.  "2. Then press <CtrlAlt F1> to show this help."
- // e.g.  "3. Press <Shift Escape> to quit."
- // e.g.  "//"
- // e.g.  ""
- // e.g.  "Key: Definitions:"
- // e.g.  ""
- // e.g.  "<> = do something"
- // e.g. END
- //
- STRING s[255] = ""
- //
- IF ( NOT ( IsBlockInCurrFile() ) ) Warn( "Please mark a block" ) RETURN( FNStringGetEmptyS()  ) ENDIF // return from the current procedure if no block is marked
- //
- PushPosition()
- PushBlock()
- //
- GotoBlockBegin()
- //
- IF LFind( "<version>{.*}</version>", "gilx" )
-  //
-  s = GetFoundText( 1 )
-  //
- ENDIF
- //
- PopBlock()
- PopPosition()
- //
- RETURN( s )
- //
-END
-
-// library: string: get: initialization: subversion <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstisy.s) [<Program>] [<Research>] [kn, ri, tu, 31-12-2024 18:06:19]
-STRING PROC FNStringGetInitializationSubversionS()
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetInitializationSubversionS() ) // gives e.g. ...""
- // e.g. END
- // e.g.
- // e.g. <Ctrl F12> Main()
- //
- // ===
- //
- // Use case =
- //
- // ===
- //
- // ===
- //
- // Method =
- //
- // ===
- //
- // ===
- //
- // Example:
- //
- // Input:
- //
- /*
---- cut here: begin --------------------------------------------------
---- cut here: end ----------------------------------------------------
- */
- //
- // Output:
- //
- /*
---- cut here: begin --------------------------------------------------
---- cut here: end ----------------------------------------------------
- */
- //
- // ===
- //
- // e.g. // QuickHelp( HELPDEFFNStringGetInitializationSubversionS )
- // e.g. HELPDEF HELPDEFFNStringGetInitializationSubversionS
- // e.g.  title = "FNStringGetInitializationSubversionS() help" // The help's caption
- // e.g.  x = 100 // Location
- // e.g.  y = 3 // Location
- // e.g.  //
- // e.g.  // The actual help text
- // e.g.  //
- // e.g.  "Usage:"
- // e.g.  "//"
- // e.g.  "1. Run this TSE macro"
- // e.g.  "2. Then press <CtrlAlt F1> to show this help."
- // e.g.  "3. Press <Shift Escape> to quit."
- // e.g.  "//"
- // e.g.  ""
- // e.g.  "Key: Definitions:"
- // e.g.  ""
- // e.g.  "<> = do something"
- // e.g. END
- //
- RETURN( FNStringGetFileIniDefaultS( "FNStringGetInitializationSubversionS" ) )
- //
-END
-
-// library: macro: run: keep <description>macro: run a macro, then keep it</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=runmarke.s) [<Program>] [<Research>] [[kn, zoe, fr, 27-10-2000 15:59:33]
-PROC PROCMacroRunKeep( STRING macronameS )
- // e.g. PROC Main()
- // e.g.  PROCMacroRunKeep( "mysubma1.mac myparameter11 myparameter12" )
- // e.g.  PROCMacroRunKeep( "mysubma2.mac myparameter21" )
- // e.g.  PROCMacroRunKeep( "mysubma3.mac myparameter31 myparameter32" )
- // e.g. END
- //
- IF FNMacroCheckLoadB( FNStringGetCarS( macronameS ) ) // necessary if you pass parameters in a string
-  //
-  PROCMacroExec( macronameS )
-  //
- ENDIF
- //
-END
-
-// library: file: update: version: control: subversion: save: create <description>CRUD</description> <version control></version control> <version>1.0.0.0.146</version> <version control></version control> (filenamemacro=updafisc.s) [<Program>] [<Research>] [kn, zoe, mo, 20-11-2000 14:31:57]
-PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING fileVersionControlDirectoryWorkingInS, STRING fileVersionControlDirectoryRepositoryS, STRING revisionChangeInformationS )
- // e.g. PROC Main()
- // e.g.  STRING s[255] = ""
- // e.g.  STRING s0[255] = SplitPath( CurrFileName(), _NAME_ | _EXT_ )
- // e.g.  // STRING s1[255] = "C:\TEMP\W1\"
- // e.g.  STRING s1[255] = FNStringGetDirectoryVersionControlSubversionWorkingS()
- // e.g.  // STRING s2[255] = "C:\TEMP\R1\"
- // e.g.  STRING s2[255] = FNStringGetDirectoryVersionControlGitRepositoryS()
- // e.g.  // STRING s3[255] = "changes in this revision = draft|backup|works|created|add setm|replace menu hotkey|save|major|minor|recompile|compiles|refactor|original"
- // e.g.  STRING s3[255] = ""
- // e.g.  STRING s4[255] = "C:\TEMP\the-semware-editor-tse-code\TRUNK\"
- // e.g.  STRING s5[255] = "150" // change this
- // e.g.  //
- // e.g.  INTEGER bufferI = 0
- // e.g.  //
- // e.g.  PushPosition()
- // e.g.  PushBlock()
- // e.g.  s = " "
- // e.g.  IF LFind( Format( "(filenamemacro=", s0, ")" ), "gi" )
- // e.g.   PROCMacroRunPurge( "markpamd" ) // operation: select: mark: 1: paragraph: current: fix [kn, ri, we, 04-01-2023 15:41:30]
- // e.g.   s = FNBlockGetRecordCurrentTseMacroVersionS()
- // e.g.   IF NOT EquiStr( Trim( s ), "" )
- // e.g.    s = Format( " ", "(", s, ")", " " )
- // e.g.   ENDIF
- // e.g.  ENDIF
- // e.g.  // s3 = Format( "[", s0, "]", s, "recompile|draft|backup|works|created|add setm|replace menu hotkey|save|major|minor|compile|refactor|original" ) // old [kn, zoe, mo, 20-11-2000 14:31:57]
- // e.g.  // s3 = Format( "recompile|added|changed|error|warn|backup|created|works|replace menu hotkey|save|major|minor|compile|refactor|original|add setm" ) // old [kn, ri, su, 10-11-2024 15:49:05]
- // e.g.  // s3 = Format( "corrected:changed:added:recompile:backup:created:works:error:warn:replace menu hotkey:save:major:minor:compile:refactor:original:add setm" ) // new [kn, ri, su, 10-11-2024 15:53:57]
- // e.g.  s3 = FNStringGetInitializationSubversionS() // new [kn, ri, tu, 31-12-2024 18:12:11]
- // e.g.  PopBlock()
- // e.g.  PopPosition()
- // e.g.  //
- // e.g.  PushPosition()
- // e.g.  bufferI = CreateTempBuffer()
- // e.g.  PopPosition()
- // e.g.  //
- // e.g.  PushPosition()
- // e.g.  PushBlock()
- // e.g.  GotoBufferId( bufferI )
- // e.g.  //
- // e.g.  AddLine( s1 )
- // e.g.  AddLine( s4 )
- // e.g.  //
- // e.g.  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
- // e.g.  GotoLine( 1 )
- // e.g.  IF List( "Choose an option", 80 )
- // e.g.   s1 = Trim( GetText( 1, 255 ) )
- // e.g.  ELSE
- // e.g.   AbandonFile( bufferI )
- // e.g.   PopBlock()
- // e.g.   PopPosition()
- // e.g.   RETURN()
- // e.g.  ENDIF
- // e.g.  AbandonFile( bufferI )
- // e.g.  PopBlock()
- // e.g.  PopPosition()
- // e.g.  //
- // e.g.  IF ( EquiStr( s1, s4 ) ) AND ( EquiStr( "BIBTSE", SplitPath( CurrFilename(), _NAME_ ) ) )
- // e.g.   PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
- // e.g.   Warn( "Do not upload your file", ":", " " , CurrFilename(), " ", "to the online repository", ":", " ", s1 )
- // e.g.   RETURN()
- // e.g.  ENDIF
- // e.g.  //
- // e.g   PushKey( <Home> )
- // e.g.  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
- // e.g.  // IF ( NOT ( Ask( "file: save: version: control: subversion: revisionChangeInformationS = ", s3, _EDIT_HISTORY_ ) ) AND ( Length( s3 ) > 0 ) ) RETURN() ENDIF // old [kn, ri, fr, 17-05-2024 16:11:35]
- // e.g.  IF ( NOT ( Ask( Format( "[", s0, "]", s, "file: save: version: control: subversion: revisionChangeInformationS = " ), s3, _EDIT_HISTORY_ ) ) AND ( Length( s3 ) > 0 ) ) RETURN() ENDIF // new [kn, ri, fr, 17-05-2024 16:11:40]
- // e.g.  s3 = Format( "[", s0, "]", s, s3 ) // new [kn, ri, fr, 17-05-2024 16:11:15]
- // e.g.  s3 = StrReplace( '"', s3, "'", "" ) // make sure no double quotes are present as this overrules the outer double quote and will cause an 'svn out of date' error.
- // e.g.  //
- // e.g.  IF ( Length( s3 ) > Val( s5 ) )
- // e.g.   Warn( "Please choose the description string shorter." )
- // e.g.   RETURN()
- // e.g.  ENDIF
- // e.g.  //
- // e.g.  PROCFileUpdateVersionControlSubversionSaveCreateCurrent( s1, s2, s3 )
- // e.g.  //
- // e.g.  // Warn( "File", " ", CurrFilename(), " ", "is now saved in your local working directory", " ", s1, " ", "and committed as a next revision to your repository", " ", s2 )
- // e.g.  //
- // e.g.  // Message( Format( CurrFilename(), " ", "saved in time", " ", s + "-" + GetTimeStr() ) )
- // e.g.  //
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- INTEGER fileExistB = FALSE
- //
- STRING fileNameS[255] = ""
- //
- STRING driveS[255] = ""
- //
- STRING directoryS[255] = ""
- //
- STRING fileVersionControlDirectoryWorkingS[255] = ""
- //
- STRING s[255] = "commit"
- //
- STRING s1[255] = ""
- //
- STRING fileNameCurrentS[255] = CurrFilename()
- //
- STRING fileNameExtensionS[255] = SplitPath( fileNameCurrentS, _NAME_ | _EXT_ )
- //
- s1 = Query( MacroCmdLine )
- s1 = Trim( s1 )
- IF EquiStr( s1, "" )
-  fileVersionControlDirectoryWorkingS = fileVersionControlDirectoryWorkingInS
- ELSE
-  fileVersionControlDirectoryWorkingS = s1
- ENDIF
- //
- fileNameS = Format( AddTrailingSlash( fileVersionControlDirectoryWorkingS ), fileNameExtensionS )
- //
- driveS = SplitPath( fileVersionControlDirectoryWorkingS, _DRIVE_ )
- //
- directoryS = SplitPath( fileVersionControlDirectoryWorkingS, _PATH_ )
- //
- IF ( NOT ( FileExists( Format( AddTrailingSlash( fileVersionControlDirectoryRepositoryS ), "*.*" ) ) ) )
-  //
-  // CopyToWinclip( 'c: && cd \TEMP\ && svnadmin create R1 && md T1 && svn import T1 file:///cygdrive/c/temp/R1 -m "This is a test"' )
-  CopyToWinclip( Format( "c: && cd \TEMP\ && svnadmin create R1 && md T1 && svn import T1 file:///cygdrive/c/temp/R1 -m", " ", '"', revisionChangeInformationS, '"' ) )
-  //
-  // Warn( "Repository not found. Please check the URL or create a new repository.", " ", "Copied to Microsoft Windows clipboard:", " ", 'c: && cd \TEMP\ && svnadmin create R1 && md T1 && svn import T1 file:///cygdrive/c/temp/R1 -m "This is a test"' ) // old [kn, ri, su, 14-08-2022 12:08:00]
-  Warn( "Repository not found. Please check the URL or create a new repository.", " ", "Copied to Microsoft Windows clipboard:", " ", "c: && cd \TEMP\ && svnadmin create R1 && md T1 && svn import T1 file:///cygdrive/c/temp/R1 -m", " ", '"', revisionChangeInformationS, '"' ) // new [kn, ri, su, 14-08-2022 12:08:04]
-  //
-  RETURN()
-  //
- ENDIF
- //
- IF ( NOT ( FileExists( Format( AddTrailingSlash( fileVersionControlDirectoryWorkingS ), "*.*" ) ) ) )
-  //
-  CopyToWinclip( "c: && cd \TEMP\ && svn checkout file:///cygdrive/c/temp/R1 W1" )
-  //
-  Warn( "Working directory not found. Please check or create a new working directory. Copied to Microsoft Windows clipboard: 'c: && cd \TEMP\ && svn checkout file:///cygdrive/c/temp/R1 W1'" )
-  //
-  RETURN()
-  //
- ENDIF
- //
- fileExistB = FileExists( fileNameS )
- //
- SaveAs( fileNameS, _OVERWRITE_ ) // saving the file in your Subversion 'working directory'
- //
- IF ( NOT ( fileExistB ) )
-  //
-  // PROCFileRun4NtAliasCommandListHideUser( Format( driveS, " ", "&&", " ", "cd", " ", directoryS, " ", "&&", " ", "svn add", " ", SplitPath( fileNameS, _NAME_ | _EXT_ ) ) )
-  PROCFileRun4NtAliasCommandListUser( Format( driveS, " ", "&&", " ", "cd", " ", directoryS, " ", "&&", " ", "svn add", " ", SplitPath( fileNameS, _NAME_ | _EXT_ ), " ", "2>&1" ) )
-  //
-  s = Format( "add + ", s )
-  //
- ENDIF
- //
- // PROCFileRun4NtAliasCommandListHideUser( Format( driveS, " ", "&&", " ", "cd", " ", directoryS, " ", "&&", " ", "cd ..", " ", "&&", " ", "svn commit", " ", FNStringGetFileDirectorySubLastS( directoryS, "\" ), " ", "-m", " ", '"This is a test"' ) )
- // PROCFileRun4NtAliasCommandListUser( Format( driveS, " ", "&&", " ", "cd", " ", directoryS, " ", "&&", " ", "cd ..", " ", "&&", " ", "svn commit", " ", FNStringGetFileDirectorySubLastS( directoryS, "\" ), " ", "-m", " ", '"This is a test"' ) ) // old [kn, ri, su, 14-08-2022 12:07:49]
- PROCFileRun4NtAliasCommandListUser( Format( driveS, " ", "&&", " ", "cd", " ", directoryS, " ", "&&", " ", "cd ..", " ", "&&", " ", "svn commit", " ", FNStringGetFileDirectorySubLastS( directoryS, "\" ), " ", "-m", " ", '"', revisionChangeInformationS, '"', " ", "2>&1" ) ) // new [kn, ri, su, 14-08-2022 12:07:52]
- //
- PROCMacroRunPurge( "saveprtu" ) // operation: save: program: state+history: editor: text: tse // new [kn, ri, su, 16-07-2023 21:46:34]
- //
- Message( s )
- //
-END
-
-// library: file: get: ini: default: central <description></description> <version control></version control> <version>1.0.0.0.6</version> (filenamemacro=getfiidf.s) [<Program>] [<Research>] [kn, ri, we, 31-12-2003 02:17:48]
-STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetFileIniDefaultS( "path4dos" ) ) // gives e.g. "c:\4dos"
+ // e.g.  Message( FNStringGetFileIniDefaultCrossPlatformS( "path4dos" ) ) // gives e.g. "c:\4dos"
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
@@ -861,14 +704,94 @@ STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  //
  STRING s[255] = ""
  //
- s =FNStringGetFileGetFilenamePathDefaultS( searchS )
+ s = FNStringGetFileGetFilenamePathDefaultCrossPlatformS( searchS )
  //
  IF EquiStr( Trim( s ), "" )
   PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
-  Warn( searchS, ":", " ", "Mot found (or found but the value is the empty string). Please check dddpath.ini and adapt file bibdelphi.del" )
+  Warn( searchS, ":", " ", "Not found (or found but the value is the empty string). Please check dddpath.ini and adapt file bibdelphi.del" )
  ENDIF
  //
- RETURN( FNStringGetFileGetFilenamePathDefaultS( searchS ) )
+ // If a filename it should be checked and converted if applicable in the receiving function, not before that.
+ // IF ( StrFind( "^[A-Za-z]:", s, "gx" ) > 0 ) // is it a filename?
+ // s = FNStringGetMicrosoftWindowsToCrossPlatformS( s )
+ // //
+ // ENDIF
+ //
+ RETURN( s )
+ //
+END
+
+// library: compare if string end is equal, if not so insert that string at the end <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstenp.s) [<Program>] [<Research>] [kn, ri, sa, 24-02-2001 23:06:33]
+STRING PROC FNStringGetCharacterInsertEndIfEqualNotS( STRING inS, STRING tailS )
+ // e.g. PROC Main()
+ // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
+ // e.g.  STRING s2[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s1 = FNStringGetInputS( "string: insert: insert: string = ", "c:\kee" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
+ // e.g.  s2 = FNStringGetInputS( "string: insert: insert: frontS = ", "\" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s2 ) RETURN() ENDIF
+ // e.g.  Message( FNStringGetCharacterInsertEndIfEqualNotS( s1, s2 ) ) // gives e.g. "c:\kee\"
+ // e.g.  GetKey()
+ // e.g.  Message( FNStringGetCharacterInsertEndIfEqualNotS( "c", ":" ) ) // gives "c:"
+ // e.g.  GetKey()
+ // e.g.  Message( FNStringGetCharacterInsertEndIfEqualNotS( "c:", ":" ) ) // gives "c:"
+ // e.g.  GetKey()
+ // e.g.  Message( FNStringGetCharacterInsertEndIfEqualNotS( "c:\kee", FNStringGetCharacterSymbolSlashBackwardS() ) ) // gives "c:\kee\"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ STRING s[255] = inS
+ //
+ IF FNMathCheckLogicNotB( FNStringCheckEqualCharacterLastNB( s, tailS ) )
+  //
+  // s = FNStringGetConcatS( s, tailS )
+  //
+  s = FNStringGetConcatTailS( s, tailS )
+  //
+ ENDIF
+ //
+ RETURN( s )
+ //
+END
+
+// library: string: get: character: symbol: "\" <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstsba.s) [<Program>] [<Research>] [kn, ri, su, 29-07-2001 15:41:11]
+STRING PROC FNStringGetCharacterSymbolSlashBackwardS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetCharacterSymbolSlashBackwardS() ) // gives "\"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetCharacterSymbolCentralS( 92 ) )
+ //
+END
+
+// library: string: get: program4nt <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgps.s) [<Program>] [<Research>] [kn, am, we, 29-04-2009 18:53:22]
+STRING PROC FNStringGetProgram4ntFilenameS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetProgram4ntFilenameS() ) // gives e.g. "f:\4dos\4nt.exe"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetFileIniDefaultS( "ProgramName4DosS" ) )
+ //
+END
+
+// library: string: get: path: file: alias: unicode4: dos4: nt: filename <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstnfj.s) [<Program>] [<Research>] [kn, ri, su, 25-12-2016 02:20:20]
+STRING PROC FNStringGetPathFileAliasUnicode4Dos4NtFilenameS()
+ // e.g. PROC Main()
+ // e.g.  IF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( Format( "Alias command (should be similar to computer name)", " ", "=", " ", FNStringGetPathFileAliasUnicode4Dos4NtFilenameS() ) ) == 1 ) // gives e.g. "c:\4dos\aliasUnicode.dok"
+ // e.g.  ENDIF
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // do not add this, it becomes too slow [kn, ri, sa, 09-02-2013 01:49:15]
+ // PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "TSE%3A+String%3A+Get%3A" + "FNStringGetPathFileAlias4Dos4NtS" + "&submit01=Create" ) )
+ //
+ RETURN( FNStringGetFileIniDefaultS( "FNStringGetPathFileAliasUnicode4Dos4NtS" ) )
  //
 END
 
@@ -944,18 +867,6 @@ STRING PROC FNStringGetCarS( STRING s )
  //
 END
 
-// library: warn: cons3 <description>error: warning: give a warning message via 3 strings</description> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=conswawd.s) [<Program>] [<Research>] [[kn, ri, su, 29-07-2001 18:24:52]
-PROC PROCWarnCons3( STRING s1, STRING s2, STRING s3 )
- // e.g. PROC Main()
- // e.g.  PROCWarnCons3( "error", "1", "2" ) // gives e.g. "error 1 2"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- PROCWarn( FNStringGetCons3S( s1, s2, s3 ) )
- //
-END
-
 // library: macro: exec <description>macro: (Executes the Requested Macro) O    ExecMacro([<Program>] [<Research>] [STRING macroname])*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=execmame.s) [[kn, zoe, we, 16-06-1999 01:06:54]
 PROC PROCMacroExec( STRING macronameS )
  // e.g. PROC Main()
@@ -988,114 +899,85 @@ PROC PROCMacroPurge( STRING macronameS )
  //
 END
 
-// library: string: get: empty (return an empty string) <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgem.s) [<Program>] [<Research>] [kn, ri, sa, 20-05-2000 20:11:03]
-STRING PROC FNStringGetEmptyS()
+// library: string: get: file: get: filename: path: default: cross: platform <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=getstcpn.s) [<Program>] [<Research>] [kn, ri, we, 15-10-2025 23:32:24]
+STRING PROC FNStringGetFileGetFilenamePathDefaultCrossPlatformS( STRING searchS )
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetEmptyS() ) // gives e.g. ...""
+ // e.g.  Message( FNStringGetFileGetFilenamePathDefaultCrossPlatformS( "path4dos" ) ) // gives e.g. "c:\4dos"
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
  //
- RETURN( "" )
+ RETURN( FNStringGetInitializationGlobalS( searchS, FNStringGetSectionSeparatorS(), FNStringGetFilenameIniDefaultCrossPlatformS() ) )
  //
 END
 
-// library: file: run: 4: nt: alias: command: list: user <description></description> <version control></version control> <version>1.0.0.0.200</version> (filenamemacro=run4fira.s) [<Program>] [<Research>] [kn, ri, su, 01-03-2009 15:29:03]
-PROC PROCFileRun4NtAliasCommandListUser( STRING s )
+// library: macro: run: keep <description>macro: run a macro, then keep it</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=runmarke.s) [<Program>] [<Research>] [[kn, zoe, fr, 27-10-2000 15:59:33]
+PROC PROCMacroRunKeep( STRING macronameS )
  // e.g. PROC Main()
- // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
- // e.g.  INTEGER bufferI = 0
- // e.g.  INTEGER I = 0
- // e.g.  STRING fileNameS[255] = FNStringGetProgramAliasRunFilenameListS() // casealiasinputlist.txt
- // e.g.  PushPosition()
- // e.g.  bufferI = CreateTempBuffer()
- // e.g.  GotoBufferId( bufferI )
- // e.g.  InsertFile( fileNameS )
- // e.g.  // I = List( "alias command", 115 - 21 )
- // e.g.  I = List( "FILE: RUN: 4NT: ALIAS: COMMAND: LIST: USER", FNWindowGetScreenWidthI() )
- // e.g.  IF ( NOT ( I == 0 ) )
- // e.g.   s1 = SubStr( GetText( 1, 255 ), 1, 188 - 1 )
- // e.g.   s1 = Trim( s1 )
- // e.g.   // combobox (but switched off as this is quicker)
- // e.g.   // s1 = FNStringGetInputS( "file: run: 4nt: alias: s = ", s1 )
- // e.g.   IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
- // e.g.   PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
- // e.g.   s1 = FNStringGetTagAngularRemoveWhileS( s1, "Please replace it by information to apply" )
- // e.g.   // do not move the runprmcn line, as it seems to work better [kn, vo, mo, 13-04-2015 19:57:52]
- // e.g.   PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "Run%3A+Alias%3A+" + s1 + "&submit01=Create" ) )
- // e.g.   PROCFileRun4NtAliasCommandListUser( s1 )
- // e.g.  ENDIF
- // e.g.  PopPosition()
- // e.g.  PushPosition()
- // e.g.  GotoBufferId( bufferI )
- // e.g.  AbandonFile( bufferI )
- // e.g.  PopPosition()
+ // e.g.  PROCMacroRunKeep( "mysubma1.mac myparameter11 myparameter12" )
+ // e.g.  PROCMacroRunKeep( "mysubma2.mac myparameter21" )
+ // e.g.  PROCMacroRunKeep( "mysubma3.mac myparameter31 myparameter32" )
  // e.g. END
- // e.g.
- // e.g. <F12> Main()
- // e.g. <CTRL L> RepeatFind()
  //
- // PROCFileChangeEditProgramRunStringAdd( "run", "", Format( "(program: 4nt: alias: general:", " ", s, ")" ) )
- //
- // LDos( QuotePath( FNStringGetProgram4ntFilenameS() ), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit && exit" ), _DONT_PROMPT_ )
- // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit && exit" ), _DONT_PROMPT_ )
- // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ )
- // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", "/L", " ", "&&", " ", "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ )
- // LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAlias4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ ) // old [kn, ri, su, 25-12-2016 02:18:29]
- LDos( FNStringGetProgram4ntFilenameS(), Format( "alias", " ", FNStringGetPathFileAliasUnicode4Dos4NtFilenameS(), " ", "&&", " ", s, " ", "&& exit" ), _DONT_PROMPT_ ) // new [kn, ri, su, 25-12-2016 02:18:43]
- //
- // PROCListSaveHistoryUser( s ) // old [kn, ri, su, 10-06-2012 13:44:33]
- //
- Message( Format( s, " ", ": file: run: 4nt/4dos: alias: command: list: user" ) )
- //
- // do not enable this runprmcn line, as it is run in the run part of this macro [kn, vo, mo, 13-04-2015 19:57:46]
- // PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "Run%3A+Alias%3A+" + s + "&submit01=Create" ) )
- //
-END
-
-// library: string: get: file: directory: sub: last <description></description> <version control></version control> <version>1.0.0.0.9</version> (filenamemacro=getstdla.s) [<Program>] [<Research>] [kn, ri, su, 14-02-2010 02:05:36]
-STRING PROC FNStringGetFileDirectorySubLastS( STRING directoryS, STRING separatorS )
- // e.g. PROC Main()
- // e.g.  Warn( FNStringGetFileDirectorySubLastS( "c:\temp\dddd\", "\" ) ) // gives e.g. "dddd"
- // e.g.  Warn( FNStringGetFileDirectorySubLastS( "z:\webmethods7\integrationserver\packages\Default\", "\" ) ) // gives e.g. "Default"
- // e.g.  Warn( FNStringGetFileDirectorySubLastS( "z:\webmethods7\integrationserver\packages\Default", "\" ) ) // gives e.g. "Default"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- STRING s[255] = directoryS
- //
- INTEGER I = 0
- //
- IF ( RightStr( s, 1 ) == separatorS )
+ IF FNMacroCheckLoadB( FNStringGetCarS( macronameS ) ) // necessary if you pass parameters in a string
   //
-  s = LeftStr( s, Length( s ) - 1 )
+  PROCMacroExec( macronameS )
   //
  ENDIF
  //
- I = StrFind( separatorS, s, "b" )
- //
- IF ( I > 0 )
-  //
-  s = RightStr( s, Length( s ) - I )
-  //
- ENDIF
- //
- RETURN( s )
- //
 END
 
-// library: file: get: filename: path: default <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getfipde.s) [<Program>] [<Research>] [kn, ri, we, 31-12-2003 02:14:28]
-STRING PROC FNStringGetFileGetFilenamePathDefaultS( STRING searchS )
+// library: math: check: logic: not <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checmaln.s) [<Program>] [<Research>] [kn, ri, tu, 15-05-2001 16:54:21]
+INTEGER PROC FNMathCheckLogicNotB( INTEGER B )
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetFileGetFilenamePathDefaultS( "path4dos" ) ) // gives e.g. "c:\4dos"
+ // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s = FNStringGetInputS( "math: check: logic: not: number = ", "1" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
+ // e.g.  Message( FNMathCheckLogicNotB( FNStringGetToIntegerI( s ) ) )
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
  //
- // RETURN( FNStringGetFileGetFilenamePathS( searchS, FNStringGetFilenameIniDefaultS() ) ) // [kn, ri, mo, 22-05-2006 23:59:52]
+ RETURN( NOT B )
  //
- RETURN( FNStringGetInitializationGlobalS( searchS, FNStringGetSectionSeparatorS(), FNStringGetFilenameIniDefaultS() ) )
+END
+
+// library: string: word: equal: last: compare if a given string is equal at the end to another given string <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checstln.s) [<Program>] [<Research>] [kn, zoe, we, 29-11-2000 19:08:34]
+INTEGER PROC FNStringCheckEqualCharacterLastNB( STRING s, STRING tailS )
+ // e.g. //
+ // e.g. // version: first parameter s then endS
+ // e.g. //
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringCheckEqualCharacterLastNB( "knud", "d" ) ) //  gives TRUE
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringCheckEqualB( FNStringGetRightStringLengthEqualS( s, tailS ), tailS ) )
+ //
+END
+
+// library: string: get: concat: tail: suffix <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstctb.s) [<Program>] [<Research>] [kn, ri, su, 02-09-2001 03:08:08]
+STRING PROC FNStringGetConcatTailS( STRING s, STRING tailS )
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetConcatTailS( "Knu", "d" ) ) // gives e.g. "Knud"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetConcatS( s, tailS ) )
+ //
+END
+
+// library: string: get: character: symbol: central <description>string: get: character: symbol: central</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstscm.s) [<Program>] [<Research>] [[kn, ri, sa, 07-07-2001 22:35:39]
+STRING PROC FNStringGetCharacterSymbolCentralS( INTEGER I )
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetCharacterSymbolCentralS( I ) ) // gives e.g. ...""
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetAsciiToCharacterS( I ) )
  //
 END
 
@@ -1118,6 +1000,18 @@ INTEGER PROC FNStringCheckEqualB( STRING s1, STRING s2 )
  // e.g. <F12> Main()
  //
  RETURN( s1 == s2 )
+ //
+END
+
+// library: string: get: empty (return an empty string) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getstgem.s) [<Program>] [<Research>] [kn, ri, sa, 20-05-2000 20:11:03]
+STRING PROC FNStringGetEmptyS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetEmptyS() ) // gives e.g. the empty string: ""
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( "" )
  //
 END
 
@@ -1266,21 +1160,6 @@ PROC PROCTextRemovePositionStackPop()
  //
 END
 
-// library: math: check: logic: not <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checmaln.s) [<Program>] [<Research>] [kn, ri, tu, 15-05-2001 16:54:21]
-INTEGER PROC FNMathCheckLogicNotB( INTEGER B )
- // e.g. PROC Main()
- // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
- // e.g.  s = FNStringGetInputS( "math: check: logic: not: number = ", "1" )
- // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
- // e.g.  Message( FNMathCheckLogicNotB( FNStringGetToIntegerI( s ) ) )
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( NOT B )
- //
-END
-
 // library: macro: check: exec <description>macro: (Executes the Requested Macro) O    ExecMacro([<Program>] [<Research>] [STRING macroname])*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmace.s) [[kn, zoe, we, 16-06-1999 01:06:54]
 INTEGER PROC FNMacroCheckExecB( STRING macronameS )
  // e.g. PROC Main()
@@ -1293,6 +1172,18 @@ INTEGER PROC FNMacroCheckExecB( STRING macronameS )
  //
 END
 
+// library: warn: cons3 <description>error: warning: give a warning message via 3 strings</description> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=conswawd.s) [<Program>] [<Research>] [[kn, ri, su, 29-07-2001 18:24:52]
+PROC PROCWarnCons3( STRING s1, STRING s2, STRING s3 )
+ // e.g. PROC Main()
+ // e.g.  PROCWarnCons3( "error", "1", "2" ) // gives e.g. "error 1 2"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ PROCWarn( FNStringGetCons3S( s1, s2, s3 ) )
+ //
+END
+
 // library: macro: check: purge <description>macro: purge</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmacp.s) [<Program>] [<Research>] [[kn, zoe, fr, 13-10-2000 19:03:50]
 INTEGER PROC FNMacroCheckPurgeB( STRING macronameS )
  // e.g. PROC Main()
@@ -1302,34 +1193,6 @@ INTEGER PROC FNMacroCheckPurgeB( STRING macronameS )
  // e.g. <F12> Main()
  //
  RETURN( PurgeMacro( macronameS ) )
- //
-END
-
-// library: string: get: program4nt <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgps.s) [<Program>] [<Research>] [kn, am, we, 29-04-2009 18:53:22]
-STRING PROC FNStringGetProgram4ntFilenameS()
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetProgram4ntFilenameS() ) // gives e.g. "f:\4dos\4nt.exe"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetFileIniDefaultS( "ProgramName4DosS" ) )
- //
-END
-
-// library: string: get: path: file: alias: unicode4: dos4: nt: filename <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstnfj.s) [<Program>] [<Research>] [kn, ri, su, 25-12-2016 02:20:20]
-STRING PROC FNStringGetPathFileAliasUnicode4Dos4NtFilenameS()
- // e.g. PROC Main()
- // e.g.  IF ( FNMathGetNumberInputYesNoCancelPositionDefaultI( Format( "Alias command (should be similar to computer name)", " ", "=", " ", FNStringGetPathFileAliasUnicode4Dos4NtFilenameS() ) ) == 1 ) // gives e.g. "c:\4dos\aliasUnicode.dok"
- // e.g.  ENDIF
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- // do not add this, it becomes too slow [kn, ri, sa, 09-02-2013 01:49:15]
- // PROCMacroRunPurgeParameter( "runprmcn", Format( FNStringGetMachineNameS(), ";", FNStringGetUserNameFirstS(), ";", FNStringGetUserNameLastS(), ";", FNStringGetPortS(), ";", "TSE%3A+String%3A+Get%3A" + "FNStringGetPathFileAlias4Dos4NtS" + "&submit01=Create" ) )
- //
- RETURN( FNStringGetFileIniDefaultS( "FNStringGetPathFileAliasUnicode4Dos4NtS" ) )
  //
 END
 
@@ -1357,6 +1220,62 @@ STRING PROC FNStringGetSectionSeparatorS()
  //
 END
 
+// library: string: get: filename: ini: default: cross: platform <description></description> <version control></version control> <version>1.0.0.0.11</version> <version control></version control> (filenamemacro=getstcpm.s) [<Program>] [<Research>] [kn, ri, we, 15-10-2025 23:15:56]
+STRING PROC FNStringGetFilenameIniDefaultCrossPlatformS()
+ // e.g. PROC Main()
+ // e.g. STRING s[255] = ""
+ // e.g.  s = FNStringGetFilenameIniDefaultCrossPlatformS() // gives e.g. "c:\documents and settings\administrator\application data\dddpath.ini"
+ // e.g.  IF NOT EditFile( QuotePath( s ) )
+ // e.g.   Warn( "could not open the file", ":", " ", s, ".", " ", "Please check." )
+ // e.g.   RETURN()
+ // e.g.  ENDIF
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // RETURN( "c:\dddpath.ini" )
+ //
+ STRING fileNameS[255] = ""
+ //
+ IF FNProgramGetOperatingSystemLinuxNonWslB()
+  //
+  // You will have to hard code the username(s) (or put it in a global variable SetGlobalStr() as the first lines in the start programs. Otherwise it calls itself recursively while searching) [kn, ri, sa, 18-10-2025 20:11:39]
+  // fileNameS = Format( "/home/", FNStringGetUserNameLinuxNonWslS(), "/c/users/", FNStringGetUserNameMicrosoftWindowsS(), "/appdata/roaming/", FNStringGet_FilenameIniDefaultS() )
+  fileNameS = Format( "/home/knudvaneeden/c/users/knud_/appdata/roaming/", FNStringGet_FilenameIniDefaultS() )
+  //
+ ELSEIF FNProgramGetOperatingSystemLinuxWslB()
+  //
+  // You will have to hard code the username(s) (or put it in a global variable SetGlobalStr() as the first lines in the start programs. Otherwise it calls itself recursively while searching) [kn, ri, sa, 18-10-2025 20:11:39]
+  // fileNameS = Format( "/mnt/c/users/", userNameMicrosoftWindowsGS, "/appdata/roaming/", FNStringGet_FilenameIniDefaultS() )
+  fileNameS = Format( "/mnt/c/users/knud_/appdata/roaming/", FNStringGet_FilenameIniDefaultS() )
+  //
+ ELSEIF FNProgramGetOperatingSystemMicrosoftWindowsB()
+  //
+  fileNameS = FNStringGetConcatS( FNStringGetPathUser_DataApplicationCurrentBackslashS(), FNStringGet_FilenameIniDefaultS() )
+  //
+ ELSE
+  //
+  Warn( "Unknown operating system. Please check." )
+  //
+ ENDIF
+ //
+ RETURN( fileNameS )
+ //
+END
+
+// library: STRING: get: right: string: length: equal <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstler.s) [<Program>] [<Research>] [kn, ni, su, 30-11-2003 23:32:40]
+STRING PROC FNStringGetRightStringLengthEqualS( STRING s, STRING tailS
+)
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetRightStringLengthEqualS( "Knud van Eeden", "12345" ) ) // gives e.g. "Eeden"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetRightStringS( s, FNStringGetLengthI( tailS ) ) )
+ //
+END
+
 // library: string: get: concat <description>concatenation 2 words tot 1 word</description> <version>1.0.0.0.3</version> (filenamemacro=getstgch.s) [<Program>] [<Research>] [kn, zoe, th, 01-02-2001 19:32:49]
 STRING PROC FNStringGetConcatS( STRING s1, STRING s2 )
  // e.g. PROC Main()
@@ -1369,17 +1288,17 @@ STRING PROC FNStringGetConcatS( STRING s1, STRING s2 )
  //
 END
 
-// library: filename: get: filename: ini: default <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getfiide.s) [<Program>] [<Research>] [kn, ri, we, 31-12-2003 02:15:47]
-STRING PROC FNStringGetFilenameIniDefaultS()
+// library: string: get: ascii: to: character (given the ASCII value, what is the corresponding character? (Get Single Character Equivalent of an Integer). Syntax: Chr(INTEGER i)*) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getsttch.s)  [<Program>] [<Research>] [kn, zoe, we, 16-06-1999 01:06:51]
+STRING PROC FNStringGetAsciiToCharacterS( INTEGER asciiI )
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetFilenameIniDefaultS() ) // gives e.g. "c:\documents and settings\administrator\application data\dddpath.ini"
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 65 ) ) // gives "A"
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 66 ) ) // gives "B"
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 100 ) ) // gives "d"
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
  //
- // RETURN( "c:\dddpath.ini" )
- //
- RETURN( FNStringGetConcatS( FNStringGetPathUser_DataApplicationCurrentBackslashS(), FNStringGet_FilenameIniDefaultS() ) )
+ RETURN( Chr( asciiI ) ) // leave this keyword, otherwise possibly recursive stack overflow
  //
 END
 
@@ -1417,6 +1336,18 @@ STRING PROC FNStringGetMathIntegerToStringS( INTEGER I )
  // e.g. <F12> Main()
  //
  RETURN( Str( I ) )
+ //
+END
+
+// library: file: edit: edit a file, with test of problems <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=checficf.s) [<Program>] [<Research>] [kn, ni, mo, 03-08-1998 13:08:39]
+INTEGER PROC FNFileCheckEditMessageB( STRING filenameS )
+ // e.g. PROC Main()
+ // e.g.  Message( FNFileCheckEditMessageB( "" ) ) // gives e.g. TRUE when file loaded without problems
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNFileCheckEditCentralMessageB( filenameS, FNMathCheckGetLogicTrueB() ) )
  //
 END
 
@@ -1518,15 +1449,75 @@ STRING PROC FNStringGetCons3S( STRING s1, STRING s2, STRING s3 )
  //
 END
 
-// library: string: get: path: user: data: application: current: backslash <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getstcbe.s) [<Program>] [<Research>] [kn, ri, sa, 21-02-2004 23:01:06]
-STRING PROC FNStringGetPathUser_DataApplicationCurrentBackslashS()
+// library: program: get: operating: system: linux: non: wsl <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getprnws.s) [<Program>] [<Research>] [kn, ri, fr, 10-10-2025 18:38:29]
+INTEGER PROC FNProgramGetOperatingSystemLinuxNonWslB()
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetPathUser_DataApplicationCurrentBackslashS() ) // gives e.g. "c:\documents and settings\administrator\application data\" (this is a hidden directory)
+ // e.g.  Message( FNProgramGetOperatingSystemLinuxNonWslB() ) // gives e.g. TRUE
  // e.g. END
  // e.g.
- // e.g. <F12> Main()
+ // e.g. <Ctrl F12> Main()
  //
- RETURN( FNStringGetFilenameEndBackSlashNotEqualInsertEndS( FNStringGetPathUser_DataApplicationCurrentBackslashNotS() ) )
+ // ===
+ //
+ // Use case =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNProgramGetOperatingSystemLinuxNonWslB )
+ // e.g. HELPDEF HELPDEFFNProgramGetOperatingSystemLinuxNonWslB
+ // e.g.  title = "FNProgramGetOperatingSystemLinuxNonWslB() help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ //
+ INTEGER B = FALSE
+ //
+ STRING s[255] = ""
+ //
+ s = FNStringGetOperatingSystemS()
+ //
+ B = EquiStr( s, "Linux non-WSL" )
+ //
+ RETURN( B )
  //
 END
 
@@ -1539,6 +1530,229 @@ STRING PROC FNStringGet_FilenameIniDefaultS()
  // e.g. <F12> Main()
  //
  RETURN( "dddpath.ini" ) // you can not put this in the global initialization file, because this actually determines the name of that file itself. You could overrule this by passing the filename as a parameter on the command line. (if ( parameter is empty ) then ( defaultfilename = dddpath.ini ), else ( defaultfilename = <that command line parameter> ) )
+ //
+END
+
+// library: program: get: operating: system: linux: wsl <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getprlws.s) [<Program>] [<Research>] [kn, ri, fr, 10-10-2025 18:38:43]
+INTEGER PROC FNProgramGetOperatingSystemLinuxWslB()
+ // e.g. PROC Main() //
+ // e.g.  Message( FNProgramGetOperatingSystemLinuxWslB() ) // gives e.g. TRUE
+ // e.g. END
+ // e.g.
+ // e.g. <Ctrl F12> Main()
+ //
+ // ===
+ //
+ // Use case =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNProgramGetOperatingSystemLinuxWslB )
+ // e.g. HELPDEF HELPDEFFNProgramGetOperatingSystemLinuxWslB
+ // e.g.  title = "FNProgramGetOperatingSystemLinuxWslB() help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ //
+ INTEGER B = FALSE
+ //
+ STRING s[255] = ""
+ //
+ s = FNStringGetOperatingSystemS()
+ //
+ B = EquiStr( s, "Linux WSL" )
+ //
+ RETURN( B )
+ //
+END
+
+// library: program: get: operating: system: microsoft: windows <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getprmwi.s) [<Program>] [<Research>] [kn, ri, fr, 10-10-2025 18:30:02]
+INTEGER PROC FNProgramGetOperatingSystemMicrosoftWindowsB()
+ // e.g. PROC Main()
+ // e.g.  Message( FNProgramGetOperatingSystemMicrosoftWindowsB() ) // gives e.g. TRUE
+ // e.g. END
+ // e.g.
+ // e.g. <Ctrl F12> Main()
+ //
+ // ===
+ //
+ // Use case =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNProgramGetOperatingSystemMicrosoftWindowsB )
+ // e.g. HELPDEF HELPDEFFNProgramGetOperatingSystemMicrosoftWindowsB
+ // e.g.  title = "FNProgramGetOperatingSystemMicrosoftWindowsB() help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ //
+ INTEGER B = FALSE
+ //
+ STRING s[255] = ""
+ //
+ s = FNStringGetOperatingSystemS()
+ //
+ B = EquiStr( s, "Microsoft Windows NT" ) OR EquiStr( s, "Microsoft Windows non-NT" )
+ //
+ RETURN( B )
+ //
+END
+
+// library: string: get: path: user: data: application: current: backslash <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getstcbe.s) [<Program>] [<Research>] [kn, ri, sa, 21-02-2004 23:01:06]
+STRING PROC FNStringGetPathUser_DataApplicationCurrentBackslashS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetPathUser_DataApplicationCurrentBackslashS() ) // gives e.g. "c:\documents and settings\administrator\application data\" (this is a hidden directory)
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetFilenameEndBackSlashNotEqualInsertEndS( FNStringGetPathUser_DataApplicationCurrentBackslashNotS() ) )
+ //
+END
+
+// library: string: get: word: token: last: return a given integer amount of characters from the right of a given string (=RIGHT$ in BASIC) <description></description> <version control></version control> <version>1.0.0.0.5</version> (filenamemacro=stririrs.s) [<Program>] [<Research>] [kn, ri, tu, 13-10-1998 20:05:49]
+STRING PROC FNStringGetRightStringS( STRING s, INTEGER totalI )
+ // e.g. PROC Main()
+ // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
+ // e.g.  STRING charactertotalS[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s = FNStringGetInputS( "string: word: token: get: right: string = ", "knud" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
+ // e.g.  charactertotalS = FNStringGetInputS( "string: word: token: get: right: character total = ", "2" )
+ // e.g.  IF FNKeyCheckPressEscapeB( charactertotalS ) RETURN() ENDIF
+ // e.g.  Message( FNStringGetRightStringS( s, FNStringGetToIntegerI( charactertotalS ) ) ) //  gives e.g. "kn"
+ // e.g.  GetKey()
+ // e.g.  Message( FNStringGetRightStringS( "knud", 1 ) ) // gives "d"
+ // e.g.  GetKey()
+ // e.g.  Message( FNStringGetRightStringS( "knud", 2 ) ) // gives "ud"
+ // e.g.  GetKey()
+ // e.g.  Message( FNStringGetRightStringS( "best", 3 ) ) // gives "est"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ INTEGER lengthI = FNStringGetLengthI( s )
+ //
+ IF FNMathCheckLogicNotB( ( ( 0 <= totalI ) AND ( totalI <= lengthI ) ) ) // if not between 0 and length( string ), return the whole given string
+  //
+  totalI = lengthI
+  //
+ ENDIF
+ //
+ RETURN( FNStringGetMidStringS( s, 1 + lengthI - totalI, lengthI ) )
+ //
+END
+
+// library: string: line: length: what is the length <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgle.s) [<Program>] [<Research>] [kn, ri, we, 25-11-1998 20:20:58]
+INTEGER PROC FNStringGetLengthI( STRING s )
+ // e.g. PROC Main()
+ // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s1 = FNStringGetInputS( "string: line: length: string = ", "this is a test" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
+ // e.g.  Message( FNStringGetLengthI( s1 ) ) // gives e.g. 14
+ // e.g.  GetKey()
+ // e.g.  Message( FNStringGetLengthI( "knud" ) ) // gives 4
+ // e.g.  GetKey()
+ // e.g.  Message( FNStringGetLengthI( "the" ) ) // gives 3
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( Length( s ) )
+ //
+END
+
+// library: string: get: concat: separator: string: concatenation: concatenate 2 words to 1 word, separated by separator <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstcsg.s) [<Program>] [<Research>] [kn, zoe, th, 01-07-1999 01:33:18]
+STRING PROC FNStringGetConcatSeparatorS( STRING s1, STRING s2, STRING separatorS )
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetConcatSeparatorS( "test1", "test2", " " ) ) // gives e.g. "tes1 test2"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ IF FNStringCheckEmptyB( s1 ) RETURN( s2 ) ENDIF
+ //
+ IF FNStringCheckEmptyB( s2 ) RETURN( s1 ) ENDIF
+ //
+ RETURN( s1 + separatorS + s2 ) // leave this like this. Do not call a function, as this is a primitive function, you will get into a recursive loop, and get stack overflow
  //
 END
 
@@ -1627,24 +1841,6 @@ PROC PROCLineInsertAfter()
  //
 END
 
-// library: line: insert: after: line: goto: begin: text: insert <description>line insert after: insert text at first column (text: insert: after each other)</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=inselitj.s) [<Program>] [<Research>] [[kn, zoe, we, 28-02-2001 20:24:53]
-PROC PROCLineInsertAfterLineGotoBeginTextInsert( STRING s )
- // e.g. PROC Main()
- // e.g.  PROCLineInsertAfterLineGotoBeginTextInsert( s )
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- // variation: PROCLineInsertAfter() PROCLineGotoBeginTextInsert( s )
- //
- IF FNMathCheckLogicNotB( FNLineCheckInsertAfterLineGotoBeginTextInsertB( s ) )
-  //
-  // PROCWarn( "line could not be inserted" )
-  //
- ENDIF
- //
-END
-
 // library: text: goto: line: begin // goto begin of line (=column 1 of the current line). If the cursor is already at the beginning of the current line, zero is returned. See also: EndLine() <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=gotolibe.s) [<Program>] [<Research>] [kn, zoe, th, 17-06-1999 00:12:52]
 PROC PROCTextGotoLineBegin()
  // e.g. PROC Main()
@@ -1719,19 +1915,182 @@ STRING PROC FNStringGetErrorS()
  //
 END
 
-// library: string: get: concat: separator: string: concatenation: concatenate 2 words to 1 word, separated by separator <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstcsg.s) [<Program>] [<Research>] [kn, zoe, th, 01-07-1999 01:33:18]
-STRING PROC FNStringGetConcatSeparatorS( STRING s1, STRING s2, STRING separatorS )
+// library: string: get: operating: system <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstosy.s) [<Program>] [<Research>] [kn, ri, fr, 10-10-2025 18:26:13]
+STRING PROC FNStringGetOperatingSystemS()
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetConcatSeparatorS( "test1", "test2", " " ) ) // gives e.g. "tes1 test2"
+ // e.g.  Message( FNStringGetOperatingSystemS() ) // gives e.g. "Microsoft Windows"
  // e.g. END
  // e.g.
- // e.g. <F12> Main()
+ // e.g. <Ctrl F12> Main()
  //
- IF FNStringCheckEmptyB( s1 ) RETURN( s2 ) ENDIF
+ // ===
  //
- IF FNStringCheckEmptyB( s2 ) RETURN( s1 ) ENDIF
+ // Use case =
  //
- RETURN( s1 + separatorS + s2 ) // leave this like this. Do not call a function, as this is a primitive function, you will get into a recursive loop, and get stack overflow
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNStringGetOperatingSystemS )
+ // e.g. HELPDEF HELPDEFFNStringGetOperatingSystemS
+ // e.g.  title = "FNStringGetOperatingSystemS() help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetOperatingSystemS() ) // gives e.g. ...""
+ // e.g. END
+ // e.g.
+ // e.g. <Ctrl F12> Main()
+ //
+ // ===
+ //
+ // Use case =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNStringGetOperatingSystemS )
+ // e.g. HELPDEF HELPDEFFNStringGetOperatingSystemS
+ // e.g.  title = "FNStringGetOperatingSystemS() help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ //
+ // create a temporary filename in the current directory
+ STRING fileNameS[255] = QuotePath( MakeTempName( ".", ".TMP" ) )
+ //
+ INTEGER linuxWslB = FALSE
+ //
+ STRING s[255] = ""
+ //
+ PushPosition()
+ PushBlock()
+ //
+ IF ( WhichOS() == _LINUX_ )
+  //
+  PushPosition()
+  PushBlock()
+  //
+  Dos( Format( "cat /proc/version", " ", ">", " ", fileNameS ), _DONT_PROMPT_ )
+  //
+  EditFile( fileNameS )
+  //
+  linuxWslB = LFind( "microsoft", "gi" )
+  //
+  IF linuxWslB
+   //
+   s = "Linux WSL"
+   //
+  ELSE
+   //
+   s = "Linux non-WSL"
+   //
+  ENDIF
+  //
+ ELSEIF ( WhichOS() == _WINDOWS_ )
+  //
+  s = "Microsoft Windows non-NT"
+  //
+ ELSEIF ( WhichOS() == _WINDOWS_NT_ )
+  //
+  s = "Microsoft Windows NT"
+  //
+ ELSE
+  //
+  Warn( "Unknown operating system. Please check." )
+  //
+  s = FNStringGetErrorS()
+  //
+ ENDIF
+ //
+ IF EditFile( fileNameS )
+  //
+  AbandonFile()
+  //
+ ENDIF
+ //
+ EraseDiskFile( fileNameS )
+ //
+ PopBlock()
+ PopPosition()
+ //
+ RETURN( s )
  //
 END
 
@@ -1744,30 +2103,6 @@ STRING PROC FNStringGetFilenameEndBackSlashNotEqualInsertEndS( STRING s )
  // e.g. <F12> Main()
  //
  RETURN( FNStringGetCharacterEndBackSlashNotEqualInsertEndS( s ) )
- //
-END
-
-// library: environment: string: get (Searches for and Returns a Specified Environment Str) R    GetEnvStr(STRING s)* <description></description> <version control></version control> <version>1.0.0.0.4</version> (filenamemacro=getstgen.s) [<Program>] [<Research>] [kn, ri, th, 25-10-2001 01:44:48]
-STRING PROC FNStringGetEnvironmentS( STRING s )
- // e.g. PROC Main()
- // e.g.  STRING s[255] = FNStringGetInputS( "value: environment variable = ", "windir" )
- // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
- // e.g.  PROCMessageCons3( s, "=", FNStringGetEnvironmentS( s ) ) // gives e.g. "windir=C:\WINNT", when working on a Windows2000 machine
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- STRING valueS[255] = GetEnvStr( s )
- //
- IF FNStringCheckEmptyB( valueS )
-  //
-  // PROCMessageCons3( "environment variable", s, ": not found" ) // old [kn, vo, fr, 08-02-2013 10:14:48]
-  //
-  valueS = FNStringGetErrorS()
-  //
- ENDIF
- //
- RETURN( valueS )
  //
 END
 
@@ -1790,6 +2125,31 @@ STRING PROC FNStringGetPathUser_DataApplicationCurrentBackslashNotS()
  ENDIF
  //
  RETURN( s )
+ //
+END
+
+// library: string: get: mid: string <description></description> <version control>string: get: word: token: middle: return a given integer amount of characters from the a given startposition</version control> <version>1.0.0.0.9</version> (=MID$ in BASIC) <version>1.0.0.0.9</version> (filenamemacro=getstmid.s) [<Program>] [<Research>] [kn, ri, tu, 13-10-1998 20:29:00]
+STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI )
+ // e.g. PROC Main()
+ // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
+ // e.g.  STRING positionBeginS[255] = FNStringGetInitializeNewStringS()
+ // e.g.  STRING characterTotalS[255] = FNStringGetInitializeNewStringS()   d
+ // e.g.  s = FNStringGetInputS( "string: get: MIDSTRING: string = ", "testing" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
+ // e.g.  positionBeginS = FNStringGetInputS( "string: get: MIDSTRING: beginposition = ", "2" )
+ // e.g.  IF FNKeyCheckPressEscapeB( positionBeginS ) RETURN() ENDIF
+ // e.g.  characterTotalS = FNStringGetInputS( "string: get: MIDSTRING: character total = ", "3" )
+ // e.g.  IF FNKeyCheckPressEscapeB( characterTotalS ) RETURN() ENDIF
+ // e.g.  Message( FNStringGetMidStringS( s, FNStringGetToIntegerI( positionBeginS ), FNStringGetToIntegerI( characterTotalS ) ) )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // Message( FNStringGetMidStringS( "knud", 2, 3 ) ) // gives "nud"
+ //
+ // Message( FNStringGetMidStringS( "knud", 3, 2 ) ) // gives "ud"
+ //
+ RETURN( SubStr( s, beginI, totalI ) )
  //
 END
 
@@ -1901,6 +2261,24 @@ STRING PROC FNStringGetPortS()
  //
 END
 
+// library: line: insert: after: line: goto: begin: text: insert <description>line insert after: insert text at first column (text: insert: after each other)</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=inselitj.s) [<Program>] [<Research>] [[kn, zoe, we, 28-02-2001 20:24:53]
+PROC PROCLineInsertAfterLineGotoBeginTextInsert( STRING s )
+ // e.g. PROC Main()
+ // e.g.  PROCLineInsertAfterLineGotoBeginTextInsert( s )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // variation: PROCLineInsertAfter() PROCLineGotoBeginTextInsert( s )
+ //
+ IF FNMathCheckLogicNotB( FNLineCheckInsertAfterLineGotoBeginTextInsertB( s ) )
+  //
+  // PROCWarn( "line could not be inserted" )
+  //
+ ENDIF
+ //
+END
+
 // library: line: check: goto: begin <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checligb.s) [<Program>] [<Research>] [kn, ni, mo, 03-08-1998 13:36:31]
 INTEGER PROC FNLineCheckGotoBeginB()
  // e.g. //
@@ -1940,18 +2318,27 @@ STRING PROC FNStringGetCons5S( STRING s1, STRING s2, STRING s3, STRING s4, STRIN
  //
 END
 
-// library: string: get: backslash: if last character is not equal to '\', then concatenate a backslash to the end of the given string <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstien.s) [<Program>] [<Research>] [kn, ri, sa, 24-02-2001 23:48:15]
-STRING PROC FNStringGetCharacterEndBackSlashNotEqualInsertEndS( STRING s )
+// library: environment: string: get (Searches for and Returns a Specified Environment Str) R    GetEnvStr(STRING s)* <description></description> <version control></version control> <version>1.0.0.0.4</version> (filenamemacro=getstgen.s) [<Program>] [<Research>] [kn, ri, th, 25-10-2001 01:44:48]
+STRING PROC FNStringGetEnvironmentS( STRING s )
  // e.g. PROC Main()
- // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
- // e.g.  s1 = FNStringGetInputS( "string: get: backslash: if: not equal insert end: string = ", "this is a string without a backslash at end" )
- // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
- // e.g.  Message( FNStringGetCharacterEndBackSlashNotEqualInsertEndS( s1 ) ) // gives e.g. "this is a string with a backslash at end\"
+ // e.g.  STRING s[255] = FNStringGetInputS( "value: environment variable = ", "windir" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
+ // e.g.  PROCMessageCons3( s, "=", FNStringGetEnvironmentS( s ) ) // gives e.g. "windir=C:\WINNT", when working on a Windows2000 machine
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
  //
- RETURN( FNStringGetCharacterInsertEndIfEqualNotS( s, FNStringGetCharacterSymbolSlashBackwardS() ) )
+ STRING valueS[255] = GetEnvStr( s )
+ //
+ IF FNStringCheckEmptyB( valueS )
+  //
+  // PROCMessageCons3( "environment variable", s, ": not found" ) // old [kn, vo, fr, 08-02-2013 10:14:48]
+  //
+  valueS = FNStringGetErrorS()
+  //
+ ENDIF
+ //
+ RETURN( valueS )
  //
 END
 
@@ -1964,18 +2351,6 @@ INTEGER PROC FNStringCheckEnvironmentFoundNotB( STRING s )
  // e.g. <F12> Main()
  //
  RETURN( FNStringCheckEqualErrorOrEmptyB( s ) )
- //
-END
-
-// library: string: get: character: symbol: central <description>string: get: character: symbol: central</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstscm.s) [<Program>] [<Research>] [[kn, ri, sa, 07-07-2001 22:35:39]
-STRING PROC FNStringGetCharacterSymbolCentralS( INTEGER I )
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetCharacterSymbolCentralS( I ) ) // gives e.g. ...""
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetAsciiToCharacterS( I ) )
  //
 END
 
@@ -2024,52 +2399,6 @@ INTEGER PROC FNLineCheckInsertAfterLineGotoBeginTextInsertB( STRING s )
  //
 END
 
-// library: compare if string end is equal, if not so insert that string at the end <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstenp.s) [<Program>] [<Research>] [kn, ri, sa, 24-02-2001 23:06:33]
-STRING PROC FNStringGetCharacterInsertEndIfEqualNotS( STRING inS, STRING tailS )
- // e.g. PROC Main()
- // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
- // e.g.  STRING s2[255] = FNStringGetInitializeNewStringS()
- // e.g.  s1 = FNStringGetInputS( "string: insert: insert: string = ", "c:\kee" )
- // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
- // e.g.  s2 = FNStringGetInputS( "string: insert: insert: frontS = ", "\" )
- // e.g.  IF FNKeyCheckPressEscapeB( s2 ) RETURN() ENDIF
- // e.g.  Message( FNStringGetCharacterInsertEndIfEqualNotS( s1, s2 ) ) // gives e.g. "c:\kee\"
- // e.g.  GetKey()
- // e.g.  Message( FNStringGetCharacterInsertEndIfEqualNotS( "c", ":" ) ) // gives "c:"
- // e.g.  GetKey()
- // e.g.  Message( FNStringGetCharacterInsertEndIfEqualNotS( "c:", ":" ) ) // gives "c:"
- // e.g.  GetKey()
- // e.g.  Message( FNStringGetCharacterInsertEndIfEqualNotS( "c:\kee", FNStringGetCharacterSymbolSlashBackwardS() ) ) // gives "c:\kee\"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- STRING s[255] = inS
- //
- IF FNMathCheckLogicNotB( FNStringCheckEqualCharacterLastNB( s, tailS ) )
-  //
-  // s = FNStringGetConcatS( s, tailS )
-  //
-  s = FNStringGetConcatTailS( s, tailS )
-  //
- ENDIF
- //
- RETURN( s )
- //
-END
-
-// library: string: get: character: symbol: "\" <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstsba.s) [<Program>] [<Research>] [kn, ri, su, 29-07-2001 15:41:11]
-STRING PROC FNStringGetCharacterSymbolSlashBackwardS()
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetCharacterSymbolSlashBackwardS() ) // gives "\"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetCharacterSymbolCentralS( 92 ) )
- //
-END
-
 // library: environment: check: found: not <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=checenfn.s) [<Program>] [<Research>] [kn, ri, sa, 27-05-2006 20:20:03]
 INTEGER PROC FNStringCheckEqualErrorOrEmptyB( STRING s )
  // e.g. PROC Main()
@@ -2079,20 +2408,6 @@ INTEGER PROC FNStringCheckEqualErrorOrEmptyB( STRING s )
  // e.g. <F12> Main()
  //
  RETURN( FNMathCheckLogicOrB( FNErrorCheckSB( s ), FNStringCheckEmptyB( s ) ) )
- //
-END
-
-// library: string: get: ascii: to: character (given the ASCII value, what is the corresponding character? (Get Single Character Equivalent of an Integer). Syntax: Chr(INTEGER i)*) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getsttch.s)  [<Program>] [<Research>] [kn, zoe, we, 16-06-1999 01:06:51]
-STRING PROC FNStringGetAsciiToCharacterS( INTEGER asciiI )
- // e.g. PROC Main()
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 65 ) ) // gives "A"
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 66 ) ) // gives "B"
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 100 ) ) // gives "d"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( Chr( asciiI ) ) // leave this keyword, otherwise possibly recursive stack overflow
  //
 END
 
@@ -2150,45 +2465,6 @@ INTEGER PROC FNBufferGetBufferIdFileCurrentI()
  //
 END
 
-// library: STRING: get: right: string: length: equal <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstler.s) [<Program>] [<Research>] [kn, ni, su, 30-11-2003 23:32:40]
-STRING PROC FNStringGetRightStringLengthEqualS( STRING s, STRING tailS )
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetRightStringLengthEqualS( "Knud van Eeden", "12345" ) ) // gives e.g. "Eeden"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetRightStringS( s, FNStringGetLengthI( tailS ) ) )
- //
-END
-
-// library: string: word: equal: last: compare if a given string is equal at the end to another given string <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checstln.s) [<Program>] [<Research>] [kn, zoe, we, 29-11-2000 19:08:34]
-INTEGER PROC FNStringCheckEqualCharacterLastNB( STRING s, STRING tailS )
- // e.g. //
- // e.g. // version: first parameter s then endS
- // e.g. //
- // e.g. PROC Main()
- // e.g.  Message( FNStringCheckEqualCharacterLastNB( "knud", "d" ) ) //  gives TRUE
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringCheckEqualB( FNStringGetRightStringLengthEqualS( s, tailS ), tailS ) )
- //
-END
-
-// library: string: get: concat: tail: suffix <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstctb.s) [<Program>] [<Research>] [kn, ri, su, 02-09-2001 03:08:08]
-STRING PROC FNStringGetConcatTailS( STRING s, STRING tailS )
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetConcatTailS( "Knu", "d" ) ) // gives e.g. "Knud"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetConcatS( s, tailS ) )
- //
-END
-
 // library: math: check: logic: or: 2 arguments <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=checmalo.s) [<Program>] [<Research>] [kn, ri, tu, 15-05-2001 16:54:17]
 INTEGER PROC FNMathCheckLogicOrB( INTEGER B1, INTEGER B2 )
  // e.g. PROC Main()
@@ -2230,80 +2506,3 @@ INTEGER PROC FNBufferGetBufferIdGivenBufferNameI( STRING bufferNameS )
  RETURN( GetBufferId( bufferNameS ) )
  //
 END
-
-// library: string: get: word: token: last: return a given integer amount of characters from the right of a given string (=RIGHT$ in BASIC) <description></description> <version control></version control> <version>1.0.0.0.5</version> (filenamemacro=stririrs.s) [<Program>] [<Research>] [kn, ri, tu, 13-10-1998 20:05:49]
-STRING PROC FNStringGetRightStringS( STRING s, INTEGER totalI )
- // e.g. PROC Main()
- // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
- // e.g.  STRING charactertotalS[255] = FNStringGetInitializeNewStringS()
- // e.g.  s = FNStringGetInputS( "string: word: token: get: right: string = ", "knud" )
- // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
- // e.g.  charactertotalS = FNStringGetInputS( "string: word: token: get: right: character total = ", "2" )
- // e.g.  IF FNKeyCheckPressEscapeB( charactertotalS ) RETURN() ENDIF
- // e.g.  Message( FNStringGetRightStringS( s, FNStringGetToIntegerI( charactertotalS ) ) ) //  gives e.g. "kn"
- // e.g.  GetKey()
- // e.g.  Message( FNStringGetRightStringS( "knud", 1 ) ) // gives "d"
- // e.g.  GetKey()
- // e.g.  Message( FNStringGetRightStringS( "knud", 2 ) ) // gives "ud"
- // e.g.  GetKey()
- // e.g.  Message( FNStringGetRightStringS( "best", 3 ) ) // gives "est"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- INTEGER lengthI = FNStringGetLengthI( s )
- //
- IF FNMathCheckLogicNotB( ( ( 0 <= totalI ) AND ( totalI <= lengthI ) ) ) // if not between 0 and length( string ), return the whole given string
-  //
-  totalI = lengthI
-  //
- ENDIF
- //
- RETURN( FNStringGetMidStringS( s, 1 + lengthI - totalI, lengthI ) )
- //
-END
-
-// library: string: line: length: what is the length <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgle.s) [<Program>] [<Research>] [kn, ri, we, 25-11-1998 20:20:58]
-INTEGER PROC FNStringGetLengthI( STRING s )
- // e.g. PROC Main()
- // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
- // e.g.  s1 = FNStringGetInputS( "string: line: length: string = ", "this is a test" )
- // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
- // e.g.  Message( FNStringGetLengthI( s1 ) ) // gives e.g. 14
- // e.g.  GetKey()
- // e.g.  Message( FNStringGetLengthI( "knud" ) ) // gives 4
- // e.g.  GetKey()
- // e.g.  Message( FNStringGetLengthI( "the" ) ) // gives 3
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( Length( s ) )
- //
-END
-
-// library: string: get: mid: string <description></description> <version control>string: get: word: token: middle: return a given integer amount of characters from the a given startposition</version control> <version>1.0.0.0.9</version> (=MID$ in BASIC) <version>1.0.0.0.9</version> (filenamemacro=getstmid.s) [<Program>] [<Research>] [kn, ri, tu, 13-10-1998 20:29:00]
-STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI )
- // e.g. PROC Main()
- // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
- // e.g.  STRING positionBeginS[255] = FNStringGetInitializeNewStringS()
- // e.g.  STRING characterTotalS[255] = FNStringGetInitializeNewStringS()   d
- // e.g.  s = FNStringGetInputS( "string: get: MIDSTRING: string = ", "testing" )
- // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
- // e.g.  positionBeginS = FNStringGetInputS( "string: get: MIDSTRING: beginposition = ", "2" )
- // e.g.  IF FNKeyCheckPressEscapeB( positionBeginS ) RETURN() ENDIF
- // e.g.  characterTotalS = FNStringGetInputS( "string: get: MIDSTRING: character total = ", "3" )
- // e.g.  IF FNKeyCheckPressEscapeB( characterTotalS ) RETURN() ENDIF
- // e.g.  Message( FNStringGetMidStringS( s, FNStringGetToIntegerI( positionBeginS ), FNStringGetToIntegerI( characterTotalS ) ) )
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- // Message( FNStringGetMidStringS( "knud", 2, 3 ) ) // gives "nud"
- //
- // Message( FNStringGetMidStringS( "knud", 3, 2 ) ) // gives "ud"
- //
- RETURN( SubStr( s, beginI, totalI ) )
- //
-END
-
