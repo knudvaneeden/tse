@@ -113,6 +113,8 @@ FORWARD STRING PROC FNStringGet_FilenameIniDefaultS()
 
 PROC Main()
  //
+ STRING choiceS[255] = ""
+ //
  STRING s[255] = ""
  //
  STRING s0[255] = SplitPath( CurrFileName(), _NAME_ | _EXT_ )
@@ -170,7 +172,7 @@ PROC Main()
  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
  GotoLine( 1 )
  IF List( "Choose an option", 80 )
-  s = Trim( GetText( 1, MAXSTRINGLEN ) )
+  choiceS = Trim( GetText( 1, MAXSTRINGLEN ) )
  ELSE
   AbandonFile( bufferI )
   PopBlock()
@@ -181,15 +183,14 @@ PROC Main()
  PopBlock()
  PopPosition()
  //
- IF ( EquiStr( s, s2 ) ) AND ( EquiStr( "BIBTSE", SplitPath( CurrFilename(), _NAME_ ) ) )
+ IF ( EquiStr( choiceS, s2 ) ) AND ( EquiStr( "BIBTSE", SplitPath( CurrFilename(), _NAME_ ) ) )
   PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
   Warn( "Do not upload your file", ":", " " , CurrFilename(), " ", "to the online repository", ":", " ", s1 )
   RETURN()
  ENDIF
  //
- IF ( EquiStr( s, s2 ) )
+ IF ( EquiStr( choiceS, s2 ) )
   //
-  s2 = s1
   s7 = "1"
   //
   ELSE
@@ -200,23 +201,15 @@ PROC Main()
  //
 // e.g   PushKey( <Home> )
  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
- // IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s3, _EDIT_HISTORY_ ) ) AND ( Length( s3 ) > 0 ) ) RETURN() ENDIF // old [kn, ri, fr, 17-05-2024 16:11:35]
- IF ( NOT ( Ask( Format( "[", s0, "]", s, "file: save: version: control: git: revisionChangeInformationS = " ), s3, _EDIT_HISTORY_ ) ) AND ( Length( s3 ) > 0 ) ) RETURN() ENDIF // new [kn, ri, fr, 17-05-2024 16:11:40]
- s6 = Format( "[", s0, "]", s, s3 ) // new [kn, ri, fr, 17-05-2024 16:11:15]
- s6 = StrReplace( '"', s3, "'", "" ) // make sure no double quotes are present as this overrules the outer double quote and will cause an 'svn out of date' error.
+ // IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s6, _EDIT_HISTORY_ ) ) AND ( Length( s3 ) > 0 ) ) RETURN() ENDIF // old [kn, ri, fr, 17-05-2024 16:11:35]
+ IF ( NOT ( Ask( Format( "[", s0, "]", s, "file: save: version: control: git: revisionChangeInformationS = " ), s6, _EDIT_HISTORY_ ) ) AND ( Length( s6 ) > 0 ) ) RETURN() ENDIF // new [kn, ri, fr, 17-05-2024 16:11:40]
+ s6 = Format( "[", s0, "]", s, s6 ) // new [kn, ri, fr, 17-05-2024 16:11:15]
+ s6 = StrReplace( '"', s6, "'", "" ) // make sure no double quotes are present as this overrules the outer double quote and will cause an 'svn out of date' error.
  //
  IF ( Length( s6 ) > Val( s8 ) )
   Warn( "Please choose the description string shorter." )
   RETURN()
  ENDIF
- //
- Warn( "s1";s1 )
- Warn( "s2";s2 )
- Warn( "s3";s3 )
- Warn( "s4";s4 )
- Warn( "s5";s5 )
- Warn( "s6";s6 )
- Warn( "s7";s7 )
  //
  PROCFileUpdateVersionControlGitSaveCreateCurrent( s1, s2, s3, s4, s5, s6, Val( s7 ) ) // gives e.g. TRUE if successful
  //
@@ -381,9 +374,11 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: update: version: control: git: save: create: current <description></description> <version control></version control> <version>1.0.0.0.11</version> <version control></version control> (filenamemacro=updaficd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 18:53:49]
+// library: file: update: version: control: git: save: create: current <description></description> <version control></version control> <version>1.0.0.0.16</version> <version control></version control> (filenamemacro=updaficd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 18:53:49]
 PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
+ // e.g.  //
+ // e.g.  STRING choiceS[255] = ""
  // e.g.  //
  // e.g.  STRING s[255] = ""
  // e.g.  //
@@ -442,7 +437,7 @@ PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING yourLocalDirectory
  // e.g.  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
  // e.g.  GotoLine( 1 )
  // e.g.  IF List( "Choose an option", 80 )
- // e.g.   s = Trim( GetText( 1, MAXSTRINGLEN ) )
+ // e.g.   choiceS = Trim( GetText( 1, MAXSTRINGLEN ) )
  // e.g.  ELSE
  // e.g.   AbandonFile( bufferI )
  // e.g.   PopBlock()
@@ -453,15 +448,14 @@ PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING yourLocalDirectory
  // e.g.  PopBlock()
  // e.g.  PopPosition()
  // e.g.  //
- // e.g.  IF ( EquiStr( s, s2 ) ) AND ( EquiStr( "BIBTSE", SplitPath( CurrFilename(), _NAME_ ) ) )
+ // e.g.  IF ( EquiStr( choiceS, s2 ) ) AND ( EquiStr( "BIBTSE", SplitPath( CurrFilename(), _NAME_ ) ) )
  // e.g.   PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
  // e.g.   Warn( "Do not upload your file", ":", " " , CurrFilename(), " ", "to the online repository", ":", " ", s1 )
  // e.g.   RETURN()
  // e.g.  ENDIF
  // e.g.  //
- // e.g.  IF ( EquiStr( s, s2 ) )
+ // e.g.  IF ( EquiStr( choiceS, s2 ) )
  // e.g.   //
- // e.g.   s2 = s1
  // e.g.   s7 = "1"
  // e.g.   //
  // e.g.   ELSE
@@ -472,10 +466,10 @@ PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING yourLocalDirectory
  // e.g.  //
  // e.g   PushKey( <Home> )
  // e.g.  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
- // e.g.  // IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s3, _EDIT_HISTORY_ ) ) AND ( Length( s3 ) > 0 ) ) RETURN() ENDIF // old [kn, ri, fr, 17-05-2024 16:11:35]
- // e.g.  IF ( NOT ( Ask( Format( "[", s0, "]", s, "file: save: version: control: git: revisionChangeInformationS = " ), s3, _EDIT_HISTORY_ ) ) AND ( Length( s3 ) > 0 ) ) RETURN() ENDIF // new [kn, ri, fr, 17-05-2024 16:11:40]
- // e.g.  s6 = Format( "[", s0, "]", s, s3 ) // new [kn, ri, fr, 17-05-2024 16:11:15]
- // e.g.  s6 = StrReplace( '"', s3, "'", "" ) // make sure no double quotes are present as this overrules the outer double quote and will cause an 'svn out of date' error.
+ // e.g.  // IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s6, _EDIT_HISTORY_ ) ) AND ( Length( s3 ) > 0 ) ) RETURN() ENDIF // old [kn, ri, fr, 17-05-2024 16:11:35]
+ // e.g.  IF ( NOT ( Ask( Format( "[", s0, "]", s, "file: save: version: control: git: revisionChangeInformationS = " ), s6, _EDIT_HISTORY_ ) ) AND ( Length( s6 ) > 0 ) ) RETURN() ENDIF // new [kn, ri, fr, 17-05-2024 16:11:40]
+ // e.g.  s6 = Format( "[", s0, "]", s, s6 ) // new [kn, ri, fr, 17-05-2024 16:11:15]
+ // e.g.  s6 = StrReplace( '"', s6, "'", "" ) // make sure no double quotes are present as this overrules the outer double quote and will cause an 'svn out of date' error.
  // e.g.  //
  // e.g.  IF ( Length( s6 ) > Val( s8 ) )
  // e.g.   Warn( "Please choose the description string shorter." )
