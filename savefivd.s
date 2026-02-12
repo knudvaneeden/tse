@@ -117,7 +117,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.4</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
 INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -184,7 +184,7 @@ STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.35</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.36</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
 INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -243,8 +243,8 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  AddLine( Format( 'set "GITHUB_PAT=', githubPasswordS, '"' ) ) // githubPasswordS is expected to be a GitHub PAT (Personal Access Token)
  AddLine( Format( 'set "GITHUB_REMOTE=', githubRemoteDirectoryUrlS, '"' ) )
  AddLine( Format( 'set "WIN_DIR=', yourLocalDirectoryS, '"' ) )
-  AddLine( Format( 'set "COMMIT_MSG=', "tse_autocommit_", GetDateStr(), "_", GetTimeStr(), '"' ) )
-AddLine( "" )
+ AddLine( Format( 'set "COMMIT_MSG=', "tse_autocommit_", GetDateStr(), "_", GetTimeStr(), '"' ) )
+ AddLine( "" )
  AddLine( "if not defined GITHUB_PAT (" )
  AddLine( "  echo ERROR: GITHUB_PAT is empty. Set it in your TSE ini and try again." )
  AddLine( "  pause" )
@@ -267,8 +267,8 @@ AddLine( "" )
  AddLine( 'if [ -n $UPSTREAM ]; then PUSH_REMOTE=$(echo $UPSTREAM | cut -d/ -f1); PUSH_BRANCH=$(echo $UPSTREAM | cut -d/ -f2-); else PUSH_REMOTE=origin; PUSH_BRANCH=main; fi; ^' )
  AddLine( 'git push -u $PUSH_REMOTE HEAD:$PUSH_BRANCH; ^' )
  AddLine( 'git remote set-url origin $GITHUB_REMOTE"' )
-AddLine( "" )
- AddLine( "pause" )
+ AddLine( "" )
+ // AddLine( "pause" )
  //
  SaveAs( fileNameS, _OVERWRITE_ )
  //
