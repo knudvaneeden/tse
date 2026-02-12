@@ -99,7 +99,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: string: get: program: run: username: file: version: control: github: knud <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=getstgkp.s) [<Program>] [<Research>] [kn, ri, mo, 12-02-2018 17:42:32]
+// library: string: get: program: run: username: file: version: control: github: knud <description></description> <version control></version control> <version>1.0.0.0.6</version> <version control></version control> (filenamemacro=getstgkp.s) [<Program>] [<Research>] [kn, ri, mo, 12-02-2018 17:42:32]
 STRING PROC FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
  // e.g. PROC Main()
  // e.g.  Message( FNStringGetProgramRunUsernameFileVersionControlGithubKnudS() ) // gives e.g. "<your GitHub user name>"
@@ -320,37 +320,53 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  AddLine( '  exit /b 1' )
  AddLine( ')' )
  AddLine( "" )
- AddLine( "REM --- GitHub authentication (PAT) ---" )
- AddLine( Format( 'set "GITHUB_USER=', githubUserNameS, '"' ) )
- AddLine( Format( 'set "GITHUB_PAT=', githubPasswordS, '"' ) ) // githubPasswordS is expected to be a GitHub PAT (Personal Access Token)
- AddLine( Format( 'set "GITHUB_REMOTE=', githubRemoteDirectoryUrlS, '"' ) )
+  AddLine( "REM --- Commit message ---" )
  AddLine( Format( 'set "WIN_DIR=', yourLocalDirectoryS, '"' ) )
  AddLine( Format( 'set "COMMIT_MSG=', revisionChangeInformationS, '"' ) )
  AddLine( 'if "%COMMIT_MSG%"=="" set COMMIT_MSG=tse_autocommit_%DATE%_%TIME%' )
  AddLine( "" )
- AddLine( "if not defined GITHUB_PAT (" )
- AddLine( "  echo ERROR: GITHUB_PAT is empty. Set it in your TSE ini and try again." )
- AddLine( "  pause" )
- AddLine( "  exit /b 1" )
- AddLine( ")" )
- AddLine( "" )
- AddLine( "REM --- Run all git commands inside bash (Cygwin) ---" )
- AddLine( 'REM --- Run git via bash with cmd line-continuations (avoid AddLine length limit) ---' )
- AddLine( '"%BASH_CMD%" --login -c "cd $(cygpath -u $WIN_DIR) && ^' )
- AddLine( 'COMMIT_MSG=${COMMIT_MSG//\//-}; COMMIT_MSG=${COMMIT_MSG//:/}; COMMIT_MSG=${COMMIT_MSG// /_}; ^' )
- AddLine( "COMMIT_MSG=$(echo $COMMIT_MSG | tr -d '\\042'); ^" )
- AddLine( 'git rev-parse --git-dir >/dev/null 2>&1 || git init .; ^' )
- AddLine( 'git add .; ^' )
- AddLine( 'git commit -m $COMMIT_MSG >/dev/null 2>&1 || true; ^' )
- AddLine( 'git branch -M main; ^' )
- AddLine( 'git remote get-url origin >/dev/null 2>&1 || git remote add origin $GITHUB_REMOTE; ^' )
- AddLine( 'REMOTE_NOAUTH=${GITHUB_REMOTE#https://}; ^' )
- AddLine( 'case $REMOTE_NOAUTH in *.git) ;; *) REMOTE_NOAUTH=$REMOTE_NOAUTH.git ;; esac; ^' )
- AddLine( 'git remote set-url origin https://$GITHUB_USER:$GITHUB_PAT@$REMOTE_NOAUTH; ^' )
- AddLine( 'UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true); ^' )
- AddLine( 'if [ -n $UPSTREAM ]; then PUSH_REMOTE=$(echo $UPSTREAM | cut -d/ -f1); PUSH_BRANCH=$(echo $UPSTREAM | cut -d/ -f2-); else PUSH_REMOTE=origin; PUSH_BRANCH=main; fi; ^' )
- AddLine( 'git push -u $PUSH_REMOTE HEAD:$PUSH_BRANCH; ^' )
- AddLine( 'git remote set-url origin $GITHUB_REMOTE"' )
+
+ IF ( B1 )
+  AddLine( "REM --- GitHub authentication (PAT) ---" )
+  AddLine( Format( 'set "GITHUB_USER=', githubUserNameS, '"' ) )
+  AddLine( Format( 'set "GITHUB_PAT=', githubPasswordS, '"' ) ) // githubPasswordS is expected to be a GitHub PAT (Personal Access Token)
+  AddLine( Format( 'set "GITHUB_REMOTE=', githubRemoteDirectoryUrlS, '"' ) )
+  AddLine( "" )
+  AddLine( "if not defined GITHUB_PAT (" )
+  AddLine( "  echo ERROR: GITHUB_PAT is empty. Set it in your TSE ini and try again." )
+  AddLine( "  pause" )
+  AddLine( "  exit /b 1" )
+  AddLine( ")" )
+  AddLine( "" )
+  AddLine( "REM --- Run all git commands inside bash (Cygwin) ---" )
+  AddLine( 'REM --- Run git via bash with cmd line-continuations (avoid AddLine length limit) ---' )
+  AddLine( '"%BASH_CMD%" --login -c "cd $(cygpath -u $WIN_DIR) && ^' )
+  AddLine( 'COMMIT_MSG=${COMMIT_MSG//\//-}; COMMIT_MSG=${COMMIT_MSG//:/}; COMMIT_MSG=${COMMIT_MSG// /_}; ^' )
+  AddLine( "COMMIT_MSG=$(echo $COMMIT_MSG | tr -d '\\042'); ^" )
+  AddLine( 'git rev-parse --git-dir >/dev/null 2>&1 || git init .; ^' )
+  AddLine( 'git add .; ^' )
+  AddLine( 'git commit -m $COMMIT_MSG >/dev/null 2>&1 || true; ^' )
+  AddLine( 'git branch -M main; ^' )
+  AddLine( 'git remote get-url origin >/dev/null 2>&1 || git remote add origin $GITHUB_REMOTE; ^' )
+  AddLine( 'REMOTE_NOAUTH=${GITHUB_REMOTE#https://}; ^' )
+  AddLine( 'case $REMOTE_NOAUTH in *.git) ;; *) REMOTE_NOAUTH=$REMOTE_NOAUTH.git ;; esac; ^' )
+  AddLine( 'git remote set-url origin https://$GITHUB_USER:$GITHUB_PAT@$REMOTE_NOAUTH; ^' )
+  AddLine( 'UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true); ^' )
+  AddLine( 'if [ -n $UPSTREAM ]; then PUSH_REMOTE=$(echo $UPSTREAM | cut -d/ -f1); PUSH_BRANCH=$(echo $UPSTREAM | cut -d/ -f2-); else PUSH_REMOTE=origin; PUSH_BRANCH=main; fi; ^' )
+  AddLine( 'git push -u $PUSH_REMOTE HEAD:$PUSH_BRANCH; ^' )
+  AddLine( 'git remote set-url origin $GITHUB_REMOTE"' )
+ ELSE
+  AddLine( "REM --- Local-only: commit to local repository (no remote push) ---" )
+  AddLine( 'REM --- Run git via bash with cmd line-continuations (avoid AddLine length limit) ---' )
+  AddLine( '"%BASH_CMD%" --login -c "cd $(cygpath -u $WIN_DIR) && ^' )
+  AddLine( 'COMMIT_MSG=${COMMIT_MSG//\//-}; COMMIT_MSG=${COMMIT_MSG//:/}; COMMIT_MSG=${COMMIT_MSG// /_}; ^' )
+  AddLine( "COMMIT_MSG=$(echo $COMMIT_MSG | tr -d '\\042'); ^" )
+  AddLine( 'git rev-parse --git-dir >/dev/null 2>&1 || git init .; ^' )
+  AddLine( 'git add .; ^' )
+  AddLine( 'git commit -m $COMMIT_MSG >/dev/null 2>&1 || true; ^' )
+  AddLine( 'git branch -M main"' )
+ ENDIF
+
  AddLine( "" )
  // AddLine( "pause" )
  //
@@ -360,7 +376,9 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  PROCFileRun4NtAliasCommandListUser( fileNameS ) // run this batch file using tcc.exe
  //
  // StartPgm( githubRemoteDirectoryUrlS )
- PROCProgramRunInternetBrowserUrl( githubRemoteDirectoryUrlS )
+ IF ( B1 )
+  PROCProgramRunInternetBrowserUrl( githubRemoteDirectoryUrlS )
+ ENDIF
  //
  B = TRUE
  //
