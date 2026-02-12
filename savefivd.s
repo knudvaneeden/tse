@@ -1,6 +1,6 @@
 FORWARD INTEGER PROC FNErrorCheckSB( STRING s1 )
-FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
-FORWARD INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
+FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5 )
+FORWARD INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5 )
 FORWARD INTEGER PROC FNMacroCheckExecB( STRING s1 )
 FORWARD INTEGER PROC FNMacroCheckLoadB( STRING s1 )
 FORWARD INTEGER PROC FNMathCheckGetLogicFalseB()
@@ -74,19 +74,17 @@ PROC Main()
  //
  STRING s3[255] = "g:\cygwin\bin\git.exe" // change this (this is the full path to your git executable)
  //
- STRING s4[255] = "g:\utils\jpsoft\tcmd\tcc.exe" // change this to your JPSoft tcc.exe
+ // STRING s4[255] = "yourGithubUserName" // you *must* change this to your own GitHub username and recompile this TSE macro
+ STRING s4[255] = FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
  //
- // STRING s5[255] = "yourGithubUserName" // you *must* change this to your own GitHub username and recompile this TSE macro
- STRING s5[255] = FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
+ // STRING s5[255] = "yourGithubPassword" // you *must* change this to your own GitHub password and recompile this TSE macro
+ STRING s5[255] = FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
- // STRING s6[255] = "yourGithubPassword" // you *must* change this to your own GitHub password and recompile this TSE macro
- STRING s6[255] = FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
+ // IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  //
- IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+ // IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
  //
- IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
- //
- Message( FNFileSaveCurrentToDirectoryLocalGitVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ Message( FNFileSaveCurrentToDirectoryLocalGitVersionControlB( s1, s2, s3, s4, s5 ) ) // gives e.g. TRUE if successful
 END
 
 <F12> Main()
@@ -117,8 +115,8 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
-INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
+// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.7</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  STRING s1[255] = "G:\VERSIONCONTROL\GIT\DDD01\" // optionally change this (this is the (GIT) directory where your (e.g. TSE) files are saved)
@@ -127,19 +125,17 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
  // e.g.  //
  // e.g.  STRING s3[255] = "g:\cygwin\bin\git.exe" // change this (this is the full path to your git executable)
  // e.g.  //
- // e.g.  STRING s4[255] = "g:\utils\jpsoft\tcmd\tcc.exe" // change this to your JPSoft tcc.exe
+ // e.g.  // STRING s4[255] = "yourGithubUserName" // you *must* change this to your own GitHub username and recompile this TSE macro
+ // e.g.  STRING s4[255] = FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
  // e.g.  //
- // e.g.  // STRING s5[255] = "yourGithubUserName" // you *must* change this to your own GitHub username and recompile this TSE macro
- // e.g.  STRING s5[255] = FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
+ // e.g.  // STRING s5[255] = "yourGithubPassword" // you *must* change this to your own GitHub password and recompile this TSE macro
+ // e.g.  STRING s5[255] = FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  // e.g.  //
- // e.g.  // STRING s6[255] = "yourGithubPassword" // you *must* change this to your own GitHub password and recompile this TSE macro
- // e.g.  STRING s6[255] = FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
+ // e.g.  // IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+ // e.g.  // IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
- // e.g.  //
- // e.g.  Message( FNFileSaveCurrentToDirectoryLocalGitVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ // e.g.  Message( FNFileSaveCurrentToDirectoryLocalGitVersionControlB( s1, s2, s3, s4, s5 ) ) // gives e.g. TRUE if successful
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
@@ -159,7 +155,7 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
   RETURN( B )
  ENDIF
  //
- B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, fileNameExecutableTccS, githubUserNameS, githubPasswordS )
+ B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, githubUserNameS, githubPasswordS )
  IF ( NOT ( B ) )
   Warn( "Could not upload the local GitHub directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
   B = FALSE
@@ -184,8 +180,8 @@ STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.36</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
-INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.37</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  STRING s1[255] = "G:\VERSIONCONTROL\GIT\DDD01\" // change this (this is the (GIT) directory where your files are saved)
@@ -194,19 +190,17 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  // e.g.  //
  // e.g.  STRING s3[255] = "g:\cygwin\bin\git.exe" // change this (this is the full path to your git executable)
  // e.g.  //
- // e.g.  STRING s4[255] = "g:\utils\jpsoft\tcmd\tcc.exe" // change this to your JPSoft tcc.exe
+ // e.g.  STRING s4[255] = FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
+ // e.g.  // STRING s4[255] = "yourGithubUserName" // you *must* change this to your own GitHub username and recompile this TSE macro
  // e.g.  //
- // e.g.  STRING s5[255] = FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
- // e.g.  // STRING s5[255] = "yourGithubUserName" // you *must* change this to your own GitHub username and recompile this TSE macro
- // e.g.  //
- // e.g.  STRING s6[255] = FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
- // e.g.  // STRING s6[255] = "yourGithubPassword" // you *must* change this to your own GitHub password and recompile this TSE macro
+ // e.g.  STRING s5[255] = FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
+ // e.g.  // STRING s5[255] = "yourGithubPassword" // you *must* change this to your own GitHub password and recompile this TSE macro
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  Message( FNFileSetUploadGithubFileVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ // e.g.  Message( FNFileSetUploadGithubFileVersionControlB( s1, s2, s3, s4, s5 ) ) // gives e.g. TRUE if successful
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
@@ -215,7 +209,7 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  //
  STRING fileNameS[255] = "c:\temp\ddd.bat" // change this // temporary batch file
  //
- STRING commitInformationS[255] = Format( '"', "Last commit", ":", " ", GetDateStr(), " ", GetTimeStr(), '"' )
+ // STRING commitInformationS[255] = Format( '"', "Last commit", ":", " ", GetDateStr(), " ", GetTimeStr(), '"' )
  //
  IF EditFile( fileNameS )
   AbandonFile()
