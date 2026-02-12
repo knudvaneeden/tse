@@ -115,7 +115,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.7</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.8</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
 INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
@@ -146,12 +146,17 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
  //
  STRING fileNameS[255] = Format( AddTrailingSlash( yourLocalDirectoryS ), SplitPath( fileNameCurrentS, _NAME_ | _EXT_ ) )
  //
+ PushPosition()
+ PushBlock()
+ //
  EditFile( fileNameCurrentS )
  //
  B = SaveAs( fileNameS, _OVERWRITE_ )
  IF ( NOT ( B ) )
   Warn( "Could not overwrite the file", ":", " ", fileNameS, " ", "in the local GitHub directory. Please check." )
   B = FALSE
+  PopBlock()
+  PopPosition()
   RETURN( B )
  ENDIF
  //
@@ -159,10 +164,16 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
  IF ( NOT ( B ) )
   Warn( "Could not upload the local GitHub directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
   B = FALSE
+  PopBlock()
+  PopPosition()
   RETURN( B )
  ENDIF
  //
  B = TRUE
+ //
+ PopBlock()
+ PopPosition()
+ //
  RETURN( B )
 //
 END
