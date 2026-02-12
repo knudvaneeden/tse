@@ -1,5 +1,5 @@
 // savefivd.s
-// Version 2.20 - 2026-02-12 - Run git via Cygwin bash.exe; fix Windows quoting by removing embedded double-quotes in -c script
+// Version 2.21 - 2026-02-12 - Run git via Cygwin bash.exe; fix Windows quoting by removing embedded double-quotes in -c script
 
 FORWARD INTEGER PROC FNErrorCheckSB( STRING s1 )
 FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
@@ -264,10 +264,10 @@ AddLine( "" )
  AddLine( 'git branch -M main; ^' )
  AddLine( 'git remote get-url origin >/dev/null 2>&1 || git remote add origin $GITHUB_REMOTE; ^' )
  AddLine( 'REMOTE_NOAUTH=${GITHUB_REMOTE#https://}; ^' )
- AddLine( '[ ${REMOTE_NOAUTH%.git} = $REMOTE_NOAUTH ] && REMOTE_NOAUTH=$REMOTE_NOAUTH.git; ^' )
+ AddLine( 'case $REMOTE_NOAUTH in *.git) ;; *) REMOTE_NOAUTH=$REMOTE_NOAUTH.git ;; esac; ^' )
  AddLine( 'git remote set-url origin https://$GITHUB_USER:$GITHUB_PAT@$REMOTE_NOAUTH; ^' )
  AddLine( 'UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true); ^' )
- AddLine( 'if [ -n "$UPSTREAM" ]; then PUSH_REMOTE=${UPSTREAM%/*}; PUSH_BRANCH=${UPSTREAM#*/}; else PUSH_REMOTE=origin; PUSH_BRANCH=main; fi; ^' )
+ AddLine( 'if [ -n $UPSTREAM ]; then PUSH_REMOTE=$(echo $UPSTREAM | cut -d/ -f1); PUSH_BRANCH=$(echo $UPSTREAM | cut -d/ -f2-); else PUSH_REMOTE=origin; PUSH_BRANCH=main; fi; ^' )
  AddLine( 'git push -u $PUSH_REMOTE HEAD:$PUSH_BRANCH; ^' )
  AddLine( 'git remote set-url origin $GITHUB_REMOTE"' )
 AddLine( "" )
