@@ -1,4 +1,4 @@
-// Revision: 14971
+// Revision: 14972
 //
 // ===
 //
@@ -160,20 +160,26 @@ STRING PROC GitCmd( STRING repo, STRING cmd )
 END
 
 STRING PROC BashQuote( STRING s )
- // Return a single-quoted bash string, escaping any embedded single quotes.
- // Example:  abc'd  ->  'abc'"'"'d'
- STRING t[ MAXSTRINGLEN ] = s
- STRING out[ MAXSTRINGLEN ] = "'"
+ // Return a bash-safe single-quoted string.
+ // Any embedded single quote is escaped using the bash sequence:  '\''
  INTEGER i = 1
- WHILE i <= Length( t )
-  IF SubStr( t, i, 1 ) == "'"
-   out = out + "'"'"'"
-   ELSE
-   out = out + SubStr( t, i, 1 )
+ STRING out[ MAXSTRINGLEN ] = ""
+ STRING ch[2] = ""
+
+ out = Chr(39)   // opening '
+
+ WHILE i <= Length( s )
+  ch = SubStr( s, i, 1 )
+  IF Asc( ch ) == 39
+   // Append: '''  (singlequote, backslash, singlequote, singlequote)
+   out = out + Chr(39) + Chr(92) + Chr(39) + Chr(39)
+  ELSE
+   out = out + ch
   ENDIF
   i = i + 1
  ENDWHILE
- out = out + "'"
+
+ out = out + Chr(39)  // closing '
  RETURN( out )
 END
 
@@ -236,7 +242,6 @@ INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING s
  INTEGER state = STATE_OK
  STRING request[ MAXSTRINGLEN ] = workingDirectoryGS
  STRING repoRoot[ MAXSTRINGLEN ] = ''
- STRING relPath[ MAXSTRINGLEN ] = ''
  request = Trim( request )
  WHILE SubStr( request, Length( request ), 1 ) == '/'
   request = SubStr( request, 1, Length( request ) - 1 )
@@ -426,7 +431,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   ENDIF
   WHEN 'log'
   list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:"%h# | %an | %ad | %s" -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
+  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:'%h# | %an | %ad | %s' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
    // ------------------------------------------------------------------------
