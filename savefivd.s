@@ -99,7 +99,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: string: get: program: run: username: file: version: control: github: knud <description></description> <version control></version control> <version>1.0.0.0.6</version> <version control></version control> (filenamemacro=getstgkp.s) [<Program>] [<Research>] [kn, ri, mo, 12-02-2018 17:42:32]
+// library: string: get: program: run: username: file: version: control: github: knud <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=getstgkp.s) [<Program>] [<Research>] [kn, ri, mo, 12-02-2018 17:42:32]
 STRING PROC FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
  // e.g. PROC Main()
  // e.g.  Message( FNStringGetProgramRunUsernameFileVersionControlGithubKnudS() ) // gives e.g. "<your GitHub user name>"
@@ -123,7 +123,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.12</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.13</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
 INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  //
@@ -261,7 +261,7 @@ STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.42</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.43</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
 INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  //
@@ -320,12 +320,12 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  AddLine( '  exit /b 1' )
  AddLine( ')' )
  AddLine( "" )
-  AddLine( "REM --- Commit message ---" )
+ AddLine( "REM --- Commit message ---" )
  AddLine( Format( 'set "WIN_DIR=', yourLocalDirectoryS, '"' ) )
  AddLine( Format( 'set "COMMIT_MSG=', revisionChangeInformationS, '"' ) )
  AddLine( 'if "%COMMIT_MSG%"=="" set COMMIT_MSG=tse_autocommit_%DATE%_%TIME%' )
  AddLine( "" )
-
+ //
  IF ( B1 )
   AddLine( "REM --- GitHub authentication (PAT) ---" )
   AddLine( Format( 'set "GITHUB_USER=', githubUserNameS, '"' ) )
@@ -366,7 +366,7 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
   AddLine( 'git commit -m $COMMIT_MSG >/dev/null 2>&1 || true; ^' )
   AddLine( 'git branch -M main"' )
  ENDIF
-
+ //
  AddLine( "" )
  // AddLine( "pause" )
  //
