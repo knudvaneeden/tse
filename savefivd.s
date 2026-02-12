@@ -1,6 +1,6 @@
 FORWARD INTEGER PROC FNErrorCheckSB( STRING s1 )
-FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
-FORWARD INTEGER PROC FNFileSetUploadGithubRemoteFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
+FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6, INTEGER i1 )
+FORWARD INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6, INTEGER i1 )
 FORWARD INTEGER PROC FNMacroCheckExecB( STRING s1 )
 FORWARD INTEGER PROC FNMacroCheckLoadB( STRING s1 )
 FORWARD INTEGER PROC FNMathCheckGetLogicFalseB()
@@ -82,13 +82,17 @@ PROC Main()
  //
  STRING s6[255] = "recompile"
  //
+ STRING s7[255] = "1" // If this is a "1" then B1 = true and upload to remote repository / if this is "0" then B1 = false and upload only to local repository
+ //
  IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  //
  IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
  //
  IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s6, _EDIT_HISTORY_ ) ) AND ( Length( s6 ) > 0 ) ) RETURN() ENDIF
+
+ IF ( NOT ( Ask( "file: save: version: control: git: B1 = ", s7, _EDIT_HISTORY_ ) ) AND ( Length( s7 ) > 0 ) ) RETURN() ENDIF
  //
- Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ) ) ) // gives e.g. TRUE if successful
 END
 
 <F12> Main()
@@ -119,8 +123,8 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.10</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
-INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS )
+// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.12</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  STRING s1[255] = "G:\VERSIONCONTROL\GIT\DDD01\" // optionally change this (this is the (GIT) directory where your (e.g. TSE) files are saved)
@@ -137,13 +141,17 @@ INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLo
  // e.g.  //
  // e.g.  STRING s6[255] = "recompile"
  // e.g.  //
+ // e.g.  STRING s7[255] = "1" // If this is a "1" then B1 = true and upload to remote repository / if this is "0" then B1 = false and upload only to local repository
+ // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s6, _EDIT_HISTORY_ ) ) AND ( Length( s6 ) > 0 ) ) RETURN() ENDIF
+ // e.g.
+ // e.g.  IF ( NOT ( Ask( "file: save: version: control: git: B1 = ", s7, _EDIT_HISTORY_ ) ) AND ( Length( s7 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ // e.g.  Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ) ) ) // gives e.g. TRUE if successful
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
@@ -222,7 +230,7 @@ INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLo
   RETURN( B )
  ENDIF
  //
- B = FNFileSetUploadGithubRemoteFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, githubUserNameS, githubPasswordS, revisionChangeInformationS )
+ B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, githubUserNameS, githubPasswordS, revisionChangeInformationS, B1 )
  IF ( NOT ( B ) )
   Warn( "Could not upload the current file from your local directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
   B = FALSE
@@ -253,8 +261,8 @@ STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  //
 END
 
-// library: file: set: upload: github: remote: file: version: control <description></description> <version control></version control> <version>1.0.0.0.40</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
-INTEGER PROC FNFileSetUploadGithubRemoteFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS )
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.42</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  STRING s1[255] = "G:\VERSIONCONTROL\GIT\DDD01\" // change this (this is the (GIT) directory where your files are saved)
@@ -272,13 +280,17 @@ INTEGER PROC FNFileSetUploadGithubRemoteFileVersionControlB( STRING yourLocalDir
  // e.g.  // STRING revisionInformationS[255] = Format( '"', "Last commit", ":", " ", GetDateStr(), " ", GetTimeStr(), '"' )
  // e.g.  STRING s6[255] = "recompile"
  // e.g.  //
+ // e.g.  STRING s7[255] = "1" // If this is a "1" then B1 = true and upload to remote repository / if this is "0" then B1 = false and upload only to local repository
+ // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s6, _EDIT_HISTORY_ ) ) AND ( Length( s6 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  Message( FNFileSetUploadGithubRemoteFileVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ // e.g.  IF ( NOT ( Ask( "file: save: version: control: git: B1 = ", s7, _EDIT_HISTORY_ ) ) AND ( Length( s7 ) > 0 ) ) RETURN() ENDIF
+ // e.g.  //
+ // e.g.  Message( FNFileSetUploadGithubFileVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ) ) ) // gives e.g. TRUE if successful
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
