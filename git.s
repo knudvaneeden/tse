@@ -1,4 +1,4 @@
-// Revision: 14970
+// Revision: 14971
 //
 // ===
 //
@@ -68,6 +68,9 @@
 // 0.9.2  25 Feb 2013
 //     - Changed the helptext and a warning to English.
 //
+
+FORWARD STRING PROC BashQuote( STRING s )
+
 #DEFINE LANGUAGE _DEFAULT_
 //
 DATADEF help_text
@@ -113,8 +116,7 @@ STRING fileNameCurrentGS[ MAXSTRINGLEN ] = '' // [kn, ri, fr, 30-01-2026 12:22:5
 STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\bash.exe" // change this // [kn, ri, fr, 19-08-2022 12:22:17]
 STRING gitExecutableGS[ MAXSTRINGLEN ] = "git" // git executable inside Cygwin bash PATH
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = "/cygdrive/c/TEMP/W1" // old [kn, ri, sa, 13-08-2022 16:00:23] // new [kn, ri, mo, 14-10-2024 00:33:40]
-// STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
-STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/GIT/DDD01' // new [kn, ri, fr, 13-02-2026 00:00:01]
+STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
 //
 KEYDEF extra_list_keys
  <f1> next_list = 'help' PushKey(<Enter>)
@@ -153,18 +155,36 @@ STRING PROC GitCmd( STRING repo, STRING cmd )
  WHILE SubStr( fullRepo, Length( fullRepo ), 1 ) == '/'
   fullRepo = SubStr( fullRepo, 1, Length( fullRepo ) - 1 )
  ENDWHILE
- bashCommand = 'cd "' + fullRepo + '" && ' + gitExecutableGS + ' ' + cmd
+ bashCommand = 'cd ' + BashQuote( fullRepo ) + ' && ' + gitExecutableGS + ' ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
-//
-STRING PROC BashCmd( STRING dir, STRING cmd )
+
+STRING PROC BashQuote( STRING s )
+ // Return a single-quoted bash string, escaping any embedded single quotes.
+ // Example:  abc'd  ->  'abc'"'"'d'
+ STRING t[ MAXSTRINGLEN ] = s
+ STRING out[ MAXSTRINGLEN ] = "'"
+ INTEGER i = 1
+ WHILE i <= Length( t )
+  IF SubStr( t, i, 1 ) == "'"
+   out = out + "'"'"'"
+   ELSE
+   out = out + SubStr( t, i, 1 )
+  ENDIF
+  i = i + 1
+ ENDWHILE
+ out = out + "'"
+ RETURN( out )
+END
+
+PROC BashCmd( STRING dir, STRING cmd )
  STRING fullDir[ MAXSTRINGLEN ] = dir
  STRING bashCommand[ MAXSTRINGLEN ] = ''
  fullDir = Trim( fullDir )
  WHILE SubStr( fullDir, Length( fullDir ), 1 ) == '/'
   fullDir = SubStr( fullDir, 1, Length( fullDir ) - 1 )
  ENDWHILE
- bashCommand = 'cd "' + fullDir + '" && ' + cmd
+ bashCommand = 'cd ' + BashQuote( fullDir ) + ' && ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
 //
@@ -325,7 +345,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   LFind( selected_file, 'g' )
   WHEN 'cat'
   list_footer = '{Enter}-Edit {Escape}-Back'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ), GitCmd( repository, 'show ' + file_revision + ':"' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) ) )
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), GitCmd( repository, 'show ' + BashQuote( file_revision + ':' + IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
   // c:\temp\w1 Sun 16-11-25 00:14:37>g:\cygwin\bin\svn.exe cat /cygdrive/c/TEMP/W1/svn.s
    //
    // Revision: 14970
@@ -356,7 +376,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'edit'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ), GitCmd( repository, 'show ' + file_revision + ':"' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) ) )
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), GitCmd( repository, 'show ' + BashQuote( file_revision + ':' + IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:27:05>g:\cygwin\bin\svn.exe info /cygdrive/c/TEMP/W1/svn.s
    // Path: svn.s
@@ -399,14 +419,14 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    InsertData( help_text )
    BegFile()
   WHEN 'info'
-  get_dos( GitCmd( repository, 'log -1 --date=iso --pretty=fuller -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+  get_dos( GitCmd( repository, 'log -1 --date=iso --pretty=fuller -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'log'
   list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:"%h# | %an | %ad | %s" -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:"%h# | %an | %ad | %s" -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
    // ------------------------------------------------------------------------
@@ -436,7 +456,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    ENDWHILE
   ENDIF
   WHEN 'proplist'
-  get_dos( GitCmd( repository, 'status --porcelain=v1 -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+  get_dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
