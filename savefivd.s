@@ -1,6 +1,6 @@
 FORWARD INTEGER PROC FNErrorCheckSB( STRING s1 )
-FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
-FORWARD INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
+FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
+FORWARD INTEGER PROC FNFileSetUploadGithubRemoteFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
 FORWARD INTEGER PROC FNMacroCheckExecB( STRING s1 )
 FORWARD INTEGER PROC FNMacroCheckLoadB( STRING s1 )
 FORWARD INTEGER PROC FNMathCheckGetLogicFalseB()
@@ -88,14 +88,14 @@ PROC Main()
  //
  IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s6, _EDIT_HISTORY_ ) ) AND ( Length( s6 ) > 0 ) ) RETURN() ENDIF
  //
- Message( FNFileSaveCurrentToDirectoryLocalGitVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
 END
 
 <F12> Main()
 
 // --- LIBRARY --- //
 
-// library: string: get: program: run: username: file: version: control: github: knud <description></description> <version control></version control> <version>1.0.0.0.6</version> <version control></version control> (filenamemacro=getstgkp.s) [<Program>] [<Research>] [kn, ri, mo, 12-02-2018 17:42:32]
+// library: string: get: program: run: username: file: version: control: github: knud <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=getstgkp.s) [<Program>] [<Research>] [kn, ri, mo, 12-02-2018 17:42:32]
 STRING PROC FNStringGetProgramRunUsernameFileVersionControlGithubKnudS()
  // e.g. PROC Main()
  // e.g.  Message( FNStringGetProgramRunUsernameFileVersionControlGithubKnudS() ) // gives e.g. "<your GitHub user name>"
@@ -119,8 +119,8 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.9</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
-INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS )
+// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.10</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  STRING s1[255] = "G:\VERSIONCONTROL\GIT\DDD01\" // optionally change this (this is the (GIT) directory where your (e.g. TSE) files are saved)
@@ -143,10 +143,64 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s6, _EDIT_HISTORY_ ) ) AND ( Length( s6 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  Message( FNFileSaveCurrentToDirectoryLocalGitVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ // e.g.  Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
+ //
+ // ===
+ //
+ // Use case = Upload your current file in TSE to your remote GitHub repository
+ //
+ //  Tested only for and only working with Cygwin git.exe + Cygwin bash.exe
+ //
+ //  Tested only with JPSoft tcc.exe
+ //
+ // ===
+ //
+ // Method = Create a .bat file containing the necessary GIT commands, then running that .bat file
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNFileSaveCurrentToDirectoryLocalGitVersionControlB )
+ // e.g. HELPDEF HELPDEFFNFileSaveCurrentToDirectoryLocalGitVersionControlB
+ // e.g.  title = "FNFileSaveCurrentToDirectoryLocalGitVersionControlB( s1, s2, s3, s4, s5, s6 ) help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
  //
  INTEGER B = FALSE
  //
@@ -168,9 +222,9 @@ INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLoc
   RETURN( B )
  ENDIF
  //
- B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, githubUserNameS, githubPasswordS, revisionChangeInformationS )
+ B = FNFileSetUploadGithubRemoteFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, githubUserNameS, githubPasswordS, revisionChangeInformationS )
  IF ( NOT ( B ) )
-  Warn( "Could not upload the local GitHub directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
+  Warn( "Could not upload the current file from your local directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
   B = FALSE
   PopBlock()
   PopPosition()
@@ -199,8 +253,8 @@ STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.39</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
-INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS )
+// library: file: set: upload: github: remote: file: version: control <description></description> <version control></version control> <version>1.0.0.0.40</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+INTEGER PROC FNFileSetUploadGithubRemoteFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  STRING s1[255] = "G:\VERSIONCONTROL\GIT\DDD01\" // change this (this is the (GIT) directory where your files are saved)
@@ -224,7 +278,7 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: save: version: control: git: revisionChangeInformationS = ", s6, _EDIT_HISTORY_ ) ) AND ( Length( s6 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  Message( FNFileSetUploadGithubFileVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
+ // e.g.  Message( FNFileSetUploadGithubRemoteFileVersionControlB( s1, s2, s3, s4, s5, s6 ) ) // gives e.g. TRUE if successful
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
