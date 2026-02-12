@@ -210,6 +210,14 @@ PROC Main()
   RETURN()
  ENDIF
  //
+ Warn( "s1";s1 )
+ Warn( "s2";s2 )
+ Warn( "s3";s3 )
+ Warn( "s4";s4 )
+ Warn( "s5";s5 )
+ Warn( "s6";s6 )
+ Warn( "s7";s7 )
+ //
  PROCFileUpdateVersionControlGitSaveCreateCurrent( s1, s2, s3, s4, s5, s6, Val( s7 ) ) // gives e.g. TRUE if successful
  //
  // Warn( "File", " ", CurrFilename(), " ", "is now saved in your local working directory", " ", s1, " ", "and committed as a next revision to your repository", " ", s2 )
