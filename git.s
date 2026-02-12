@@ -183,7 +183,7 @@ STRING PROC BashQuote( STRING s )
  RETURN( out )
 END
 
-PROC BashCmd( STRING dir, STRING cmd )
+STRING PROC BashCmd( STRING dir, STRING cmd )
  STRING fullDir[ MAXSTRINGLEN ] = dir
  STRING bashCommand[ MAXSTRINGLEN ] = ''
  fullDir = Trim( fullDir )
@@ -193,7 +193,7 @@ PROC BashCmd( STRING dir, STRING cmd )
  bashCommand = 'cd ' + BashQuote( fullDir ) + ' && ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
-//
+
 //
 PROC show_dos_error( STRING text )
  STRING warning[ MAXSTRINGLEN ] = text
@@ -431,7 +431,8 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   ENDIF
   WHEN 'log'
   list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:'%h# | %an | %ad | %s' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
+  // get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:'%h# | %an | %ad | %s' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
+  get_dos( GitCmd( repository, "log --follow --date=iso --pretty=format:'%h# | %an | %ad | %s' -- " + BashQuote( IIF( dir == "", selected_file, dir + "/" + selected_file ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
    // ------------------------------------------------------------------------
