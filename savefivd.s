@@ -1,6 +1,3 @@
-// savefivd.s
-// Version 2.21 - 2026-02-12 - Run git via Cygwin bash.exe; fix Windows quoting by removing embedded double-quotes in -c script
-
 FORWARD INTEGER PROC FNErrorCheckSB( STRING s1 )
 FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
 FORWARD INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6 )
@@ -120,7 +117,7 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.3</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+// library: file: save: current: to: directory: local: git: version: control <description></description> <version control></version control> <version>1.0.0.0.4</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
 INTEGER PROC FNFileSaveCurrentToDirectoryLocalGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING fileNameExecutableTccS, STRING githubUserNameS, STRING githubPasswordS )
  // e.g. PROC Main()
  // e.g.  //
