@@ -1,4 +1,4 @@
-// Revision: 14972
+// Revision: 14973
 //
 // ===
 //
@@ -113,6 +113,15 @@ STRING fileNameCurrentGS[ MAXSTRINGLEN ] = '' // [kn, ri, fr, 30-01-2026 12:22:5
 STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\bash.exe" // change this // [kn, ri, fr, 19-08-2022 12:22:17]
 STRING gitExecutableGS[ MAXSTRINGLEN ] = "git" // git executable inside Cygwin bash PATH
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = "/cygdrive/c/TEMP/W1" // old [kn, ri, sa, 13-08-2022 16:00:23] // new [kn, ri, mo, 14-10-2024 00:33:40]
+
+INTEGER debugGitI = 0 // set to 1 for Warn() debugging
+
+PROC DebugGit( STRING msg )
+ IF debugGitI
+  Warn( msg )
+ ENDIF
+END
+
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
 STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\' // [kn, ri, tu, 30-12-2025 21:32:56]
 //
@@ -125,6 +134,7 @@ KEYDEF extra_list_keys
 END
 //
 INTEGER PROC get_dos( STRING cmd )
+  DebugGit( 'DOS: ' + cmd )
  INTEGER result = FALSE
  EraseDiskFile( log_file )
  IF Dos( cmd + ' > ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
@@ -427,6 +437,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'log'
+    DebugGit( 'LOG: Enter pressed' )
   list_footer = '{Enter}-Read {Esc}-Back'
   get_dos( GitCmd( repository, "log --follow --date=iso --pretty=format:'%%h# | %%an | %%ad | %%s' -- " + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )//
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
@@ -513,15 +524,16 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     IF LFind( '^-#$', 'cgx' )
      next_list = 'log'
      ELSE
-     IF NOT LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
+     IF NOT LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cgx' )
       Up()
-      IF NOT LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
+      IF NOT LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cgx' )
        Down()
       ENDIF
      ENDIF
-     IF LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
-      LFind( '[0-9a-fA-F]+#', 'cgx' )
+     IF LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cgx' )
+      LFind( '[0-9a-fA-F][0-9a-fA-F]*#', 'cgx' )
       file_revision = SubStr( GetFoundText(), 1, Length( GetFoundText() ) - 1 )
+       DebugGit( 'LOG: revision=' + file_revision )
       next_list     = 'cat'
       ELSE
       next_list     = 'log'
