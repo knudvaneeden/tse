@@ -8,17 +8,17 @@ PROC Main()
  Message( FNBlockRunTseB() ) // gives e.g. TRUE
 END
 
-<Ctrl F12> Main()
+<Ctrl F12> ExecMacro( "runblrts" )
 
 // --- LIBRARY --- //
 
-// library: block: run: tse <description>Run automatically a block of TSE source code (e.g. a one-liner TSE program, a block of text program, ...)</description> <version control></version control> <version>1.0.0.0.12</version> <version control></version control> (filenamemacro=runblrts.s) [<Program>] [<Research>] [kn, ri, fr, 13-02-2026 16:56:38]
+// library: block: run: tse <description>Run automatically a block of TSE source code (e.g. a one-liner TSE program, a block of text program, ...)</description> <version control></version control> <version>1.0.0.0.14</version> <version control></version control> (filenamemacro=runblrts.s) [<Program>] [<Research>] [kn, ri, fr, 13-02-2026 16:56:38]
 INTEGER PROC FNBlockRunTseB()
  // e.g. PROC Main()
  // e.g.  Message( FNBlockRunTseB() ) // gives e.g. TRUE
  // e.g. END
  // e.g.
- // e.g. <Ctrl F12> Main()
+ // e.g. <Ctrl F12> ExecMacro( "runblrts" )
  //
  // ===
  //
@@ -54,6 +54,7 @@ INTEGER PROC FNBlockRunTseB()
  //
  /*
 --- cut here: begin --------------------------------------------------
+ Hello world
 --- cut here: end ----------------------------------------------------
  */
  //
