@@ -1,4 +1,4 @@
-// Revision: 14974
+// Revision: 14973
 //
 // ===
 //
@@ -68,6 +68,9 @@
 // 0.9.2  25 Feb 2013
 //     - Changed the helptext and a warning to English.
 //
+
+FORWARD STRING PROC BashQuote( STRING s )
+
 #DEFINE LANGUAGE _DEFAULT_
 //
 DATADEF help_text
@@ -113,8 +116,7 @@ STRING fileNameCurrentGS[ MAXSTRINGLEN ] = '' // [kn, ri, fr, 30-01-2026 12:22:5
 STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\bash.exe" // change this // [kn, ri, fr, 19-08-2022 12:22:17]
 STRING gitExecutableGS[ MAXSTRINGLEN ] = "git" // git executable inside Cygwin bash PATH
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = "/cygdrive/c/TEMP/W1" // old [kn, ri, sa, 13-08-2022 16:00:23] // new [kn, ri, mo, 14-10-2024 00:33:40]
-// STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
-STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\'
+STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\' // [kn, ri, tu, 30-12-2025 21:32:56]
 //
 KEYDEF extra_list_keys
  <f1> next_list = 'help' PushKey(<Enter>)
@@ -146,26 +148,6 @@ INTEGER PROC get_dos( STRING cmd )
  RETURN( result )
 END get_dos
 //
-//
-STRING PROC BashQuote( STRING s )
- INTEGER i = 0
- STRING out[ MAXSTRINGLEN ] = ''
- STRING ch[2] = ''
- out = Chr( 39 ) // opening single quote
- FOR i = 1 TO Length( s )
-  ch = SubStr( s, i, 1 )
-  IF Asc( ch ) == 39
-   // append: '\''  (end quote, escaped quote, start quote)
-   out = out + Chr( 39 ) + Chr( 92 ) + Chr( 39 ) + Chr( 39 )
-  ELSE
-   out = out + ch
-  ENDIF
- ENDFOR
- out = out + Chr( 39 ) // closing single quote
- RETURN( out )
-END
-
-
 STRING PROC GitCmd( STRING repo, STRING cmd )
  STRING fullRepo[ MAXSTRINGLEN ] = repo
  STRING bashCommand[ MAXSTRINGLEN ] = ''
@@ -176,7 +158,31 @@ STRING PROC GitCmd( STRING repo, STRING cmd )
  bashCommand = 'cd ' + BashQuote( fullRepo ) + ' && ' + gitExecutableGS + ' ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
-//
+
+STRING PROC BashQuote( STRING s )
+ // Return a bash-safe single-quoted string.
+ // Any embedded single quote is escaped using the bash sequence:  '\''
+ INTEGER i = 1
+ STRING out[ MAXSTRINGLEN ] = ""
+ STRING ch[2] = ""
+
+ out = Chr(39)   // opening '
+
+ WHILE i <= Length( s )
+  ch = SubStr( s, i, 1 )
+  IF Asc( ch ) == 39
+   // Append: '''  (singlequote, backslash, singlequote, singlequote)
+   out = out + Chr(39) + Chr(92) + Chr(39) + Chr(39)
+  ELSE
+   out = out + ch
+  ENDIF
+  i = i + 1
+ ENDWHILE
+
+ out = out + Chr(39)  // closing '
+ RETURN( out )
+END
+
 STRING PROC BashCmd( STRING dir, STRING cmd )
  STRING fullDir[ MAXSTRINGLEN ] = dir
  STRING bashCommand[ MAXSTRINGLEN ] = ''
@@ -187,7 +193,6 @@ STRING PROC BashCmd( STRING dir, STRING cmd )
  bashCommand = 'cd ' + BashQuote( fullDir ) + ' && ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
-//
 //
 //
 PROC show_dos_error( STRING text )
@@ -234,17 +239,9 @@ INTEGER PROC set_log_file()
 END set_log_file
 //
 INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING selected )
-  INTEGER state = STATE_OK
- STRING urlLocal[ MAXSTRINGLEN ] = ''
- STRING topLocal[ MAXSTRINGLEN ] = ''
- STRING headLocal[ MAXSTRINGLEN ] = ''
- STRING rootLocal[ MAXSTRINGLEN ] = ''
- STRING lastAuthorLocal[ MAXSTRINGLEN ] = ''
- STRING lastRevLocal[ MAXSTRINGLEN ] = ''
- STRING lastDateLocal[ MAXSTRINGLEN ] = ''
+ INTEGER state = STATE_OK
  STRING request[ MAXSTRINGLEN ] = workingDirectoryGS
  STRING repoRoot[ MAXSTRINGLEN ] = ''
- // STRING relPath[ MAXSTRINGLEN ] = ''
  request = Trim( request )
  WHILE SubStr( request, Length( request ), 1 ) == '/'
   request = SubStr( request, 1, Length( request ) - 1 )
@@ -287,14 +284,6 @@ END list_cleanup
 INTEGER PROC browse_repository( string repository, VAR STRING dir )
  INTEGER old_msglevel = 0
  INTEGER state = STATE_OK
- STRING relPathLocal[255] = ""
- STRING topLocal[255] = ""
- STRING headLocal[255] = ""
- STRING rootLocal[255] = ""
- STRING lastAuthorLocal[255] = ""
- STRING lastRevLocal[255] = ""
- STRING lastDateLocal[255] = ""
- STRING urlLocal[255] = ""
  list_header = repository + IIF( dir == '', '', '/' + dir ) + IIF( selected_file == '', '', '/' + selected_file ) + IIF( file_revision == '', '', '@' + file_revision )
  list_footer = '{Enter}-Back {Escape}-Back'
  curr_list   = next_list
@@ -435,51 +424,14 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    InsertData( help_text )
    BegFile()
   WHEN 'info'
-  // SVN-like info for Git (assembled from multiple short git commands)
-  relPathLocal = IIF( dir == '', selected_file, dir + '/' + selected_file )
-
-  // Collect values (each command kept short to avoid command-length limits)
-  get_dos( GitCmd( repository, 'config --get remote.origin.url' ) )
-  urlLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
-
-  get_dos( GitCmd( repository, 'rev-parse --show-toplevel' ) )
-  topLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
-
-  get_dos( GitCmd( repository, 'rev-parse --short HEAD' ) )
-  headLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
-
-  get_dos( GitCmd( repository, 'rev-list --max-parents=0 HEAD' ) )
-  rootLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
-
-  get_dos( GitCmd( repository, 'log -1 --pretty=format:' + Chr(39) + '%%an' + Chr(39) + ' -- ' + BashQuote( relPathLocal ) ) )
-  lastAuthorLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
-
-  get_dos( GitCmd( repository, 'log -1 --pretty=format:' + Chr(39) + '%%h' + Chr(39) + ' -- ' + BashQuote( relPathLocal ) ) )
-  lastRevLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
-
-  get_dos( GitCmd( repository, 'log -1 --date=iso --pretty=format:' + Chr(39) + '%%ad' + Chr(39) + ' -- ' + BashQuote( relPathLocal ) ) )
-  lastDateLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
-
-  // Build an svn-info-like output in the log buffer
-  GotoBufferId( log_id )
-  EmptyBuffer()
-  AddLine( 'Path: ' + relPathLocal )
-  AddLine( 'Name: ' + selected_file )
-  AddLine( 'URL: ' + urlLocal )
-  AddLine( 'Relative URL: ^/' + relPathLocal )
-  AddLine( 'Repository Root: ' + urlLocal )
-  AddLine( 'Repository UUID: ' + rootLocal )
-  AddLine( 'Revision: ' + headLocal )
-  AddLine( 'Node Kind: file' )
-  AddLine( 'Schedule: normal' )
-  AddLine( 'Working Copy Root Path: ' + topLocal )
-  AddLine( 'Last Changed Author: ' + lastAuthorLocal )
-  AddLine( 'Last Changed Rev: ' + lastRevLocal )
-  AddLine( 'Last Changed Date: ' + lastDateLocal )
-  BegFile()
+  get_dos( GitCmd( repository, 'log -1 --date=iso --pretty=fuller -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
+  IF LFind( '^fatal: ', 'gx' )
+   state = STATE_ERROR
+   show_dos_error( 'Error:' )
+  ENDIF
   WHEN 'log'
   list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:' + Chr(39) + '%%h# | %%an | %%ad | %%s' + Chr(39) + ' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
+  get_dos( GitCmd( repository, "log --follow --date=iso --pretty=format:'%%h# | %%an | %%ad | %%s' -- " + BashQuote( IIF( dir == "", selected_file, dir + "/" + selected_file ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
    // ------------------------------------------------------------------------
@@ -509,12 +461,50 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    ENDWHILE
   ENDIF
   WHEN 'proplist'
-  get_dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
+  // Git "properties" (closest SVN-style): status + index entry + attributes
+  EraseDiskFile( log_file )
+  // Path / Name
+  Dos( BashCmd( repository, 'echo Path: ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' > '  + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo Name: ' + BashQuote( selected_file ) )                                      + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Status
+  Dos( BashCmd( repository, 'echo Status:' )                                                                  + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Index / staged entry
+  Dos( BashCmd( repository, 'echo Index:' )                                                                   + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'ls-files --stage -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Attributes (.gitattributes)
+  Dos( BashCmd( repository, 'echo Attributes:' )                                                              + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'check-attr -a -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Load result into the log buffer
+  GotoBufferId( log_id )
+  EmptyBuffer()
+  IF FileExists( log_file )
+   InsertFile( log_file, _DONT_PROMPT_ )
+   UnMarkBlock()
+   EndFile()
+   WHILE ( CurrLine() > 1 ) AND ( CurrLineLen() == 0 )
+    KillLine()
+    Up()
+   ENDWHILE
+   BegFile()
+  ENDIF
+  EraseDiskFile( log_file )
+
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
    ELSE
-   LFind( selected_property, 'g' )
+   // Position on previous selection if any
+   IF Length( selected_property ) > 0
+    LFind( selected_property, 'g' )
+   ENDIF
   ENDIF
   OTHERWISE
   Warn( 'Error: unknown action ( 1 ).' )
@@ -562,17 +552,17 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     WHEN 'info'
     next_list = 'browse'
     WHEN 'log'
-    IF LFind( '^-\#$', 'cgx' )
+    IF LFind( '^-#$', 'cgx' )
      next_list = 'log'
      ELSE
-     IF NOT LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
+     IF NOT LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
       Up()
-      IF NOT LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
+      IF NOT LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
        Down()
       ENDIF
      ENDIF
-     IF LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
-      LFind( '[0-9a-fA-F]+\#', 'cgx' )
+     IF LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
+      LFind( '[0-9a-fA-F]+#', 'cgx' )
       file_revision = SubStr( GetFoundText(), 1, Length( GetFoundText() ) - 1 )
       next_list     = 'cat'
       ELSE
