@@ -1,4 +1,4 @@
-// Revision: 14970
+// Revision: 14971
 //
 // ===
 //
@@ -153,7 +153,7 @@ STRING PROC GitCmd( STRING repo, STRING cmd )
  WHILE SubStr( fullRepo, Length( fullRepo ), 1 ) == '/'
   fullRepo = SubStr( fullRepo, 1, Length( fullRepo ) - 1 )
  ENDWHILE
- bashCommand = 'cd "' + fullRepo + '" && ' + gitExecutableGS + ' ' + cmd
+ bashCommand = 'cd ' + BashQuote( fullRepo ) + ' && ' + gitExecutableGS + ' ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
 //
@@ -164,9 +164,29 @@ STRING PROC BashCmd( STRING dir, STRING cmd )
  WHILE SubStr( fullDir, Length( fullDir ), 1 ) == '/'
   fullDir = SubStr( fullDir, 1, Length( fullDir ) - 1 )
  ENDWHILE
- bashCommand = 'cd "' + fullDir + '" && ' + cmd
+ bashCommand = 'cd ' + BashQuote( fullDir ) + ' && ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
+//
+//
+STRING PROC BashQuote( STRING s )
+ INTEGER i = 0
+ STRING out[ MAXSTRINGLEN ] = ''
+ STRING ch[2] = ''
+ out = Chr( 39 ) // opening single quote
+ FOR i = 1 TO Length( s )
+  ch = SubStr( s, i, 1 )
+  IF Asc( ch ) == 39
+   // append: '\''  (end quote, escaped quote, start quote)
+   out = out + Chr( 39 ) + Chr( 92 ) + Chr( 39 ) + Chr( 39 )
+  ELSE
+   out = out + ch
+  ENDIF
+ ENDFOR
+ out = out + Chr( 39 ) // closing single quote
+ RETURN( out )
+END
+
 //
 //
 PROC show_dos_error( STRING text )
@@ -325,7 +345,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   LFind( selected_file, 'g' )
   WHEN 'cat'
   list_footer = '{Enter}-Edit {Escape}-Back'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ), GitCmd( repository, 'show ' + file_revision + ':"' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) ) )
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), GitCmd( repository, 'show ' + BashQuote( file_revision + ':' + IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
   // c:\temp\w1 Sun 16-11-25 00:14:37>g:\cygwin\bin\svn.exe cat /cygdrive/c/TEMP/W1/svn.s
    //
    // Revision: 14970
@@ -356,7 +376,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'edit'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ), GitCmd( repository, 'show ' + file_revision + ':"' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) ) )
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), GitCmd( repository, 'show ' + BashQuote( file_revision + ':' + IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:27:05>g:\cygwin\bin\svn.exe info /cygdrive/c/TEMP/W1/svn.s
    // Path: svn.s
@@ -399,14 +419,14 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    InsertData( help_text )
    BegFile()
   WHEN 'info'
-  get_dos( GitCmd( repository, 'log -1 --date=iso --pretty=fuller -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+  get_dos( GitCmd( repository, 'log -1 --date=iso --pretty=fuller -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'log'
   list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:"%h# | %an | %ad | %s" -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:\'%%h# | %%an | %%ad | %%s\' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
    // ------------------------------------------------------------------------
@@ -436,7 +456,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    ENDWHILE
   ENDIF
   WHEN 'proplist'
-  get_dos( GitCmd( repository, 'status --porcelain=v1 -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+  get_dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
@@ -489,17 +509,17 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     WHEN 'info'
     next_list = 'browse'
     WHEN 'log'
-    IF LFind( '^-\\#$', 'cgx' )
+    IF LFind( '^-\#$', 'cgx' )
      next_list = 'log'
      ELSE
-     IF NOT LFind( '^[0-9a-fA-F]+\\#\\x20\\|\\x20', 'cgx' )
+     IF NOT LFind( '^[0-9a-fA-F]+\#\20\|\20', 'cgx' )
       Up()
-      IF NOT LFind( '^[0-9a-fA-F]+\\#\\x20\\|\\x20', 'cgx' )
+      IF NOT LFind( '^[0-9a-fA-F]+\#\20\|\20', 'cgx' )
        Down()
       ENDIF
      ENDIF
-     IF LFind( '^[0-9a-fA-F]+\\#\\x20\\|\\x20', 'cgx' )
-      LFind( '[0-9a-fA-F]+\\#', 'cgx' )
+     IF LFind( '^[0-9a-fA-F]+\#\20\|\20', 'cgx' )
+      LFind( '[0-9a-fA-F]+\#', 'cgx' )
       file_revision = SubStr( GetFoundText(), 1, Length( GetFoundText() ) - 1 )
       next_list     = 'cat'
       ELSE
