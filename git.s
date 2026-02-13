@@ -1,4 +1,4 @@
-// Revision: 14974
+// Revision: 14970
 //
 // ===
 //
@@ -113,17 +113,7 @@ STRING fileNameCurrentGS[ MAXSTRINGLEN ] = '' // [kn, ri, fr, 30-01-2026 12:22:5
 STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\bash.exe" // change this // [kn, ri, fr, 19-08-2022 12:22:17]
 STRING gitExecutableGS[ MAXSTRINGLEN ] = "git" // git executable inside Cygwin bash PATH
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = "/cygdrive/c/TEMP/W1" // old [kn, ri, sa, 13-08-2022 16:00:23] // new [kn, ri, mo, 14-10-2024 00:33:40]
-
-INTEGER debugGitI = 0 // set to 1 for Warn() debugging
-
-PROC DebugGit( STRING msg )
- IF debugGitI
-  Warn( msg )
- ENDIF
-END
-
-// STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
-STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\' // [kn, ri, tu, 30-12-2025 21:32:56]
+STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
 //
 KEYDEF extra_list_keys
  <f1> next_list = 'help' PushKey(<Enter>)
@@ -135,7 +125,6 @@ END
 //
 INTEGER PROC get_dos( STRING cmd )
  INTEGER result = FALSE
- DebugGit( 'DOS: ' + cmd )
  EraseDiskFile( log_file )
  IF Dos( cmd + ' > ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
   GotoBufferId( log_id )
@@ -156,28 +145,6 @@ INTEGER PROC get_dos( STRING cmd )
  RETURN( result )
 END get_dos
 //
-STRING PROC BashQuote( STRING s )
- INTEGER i = 0
- STRING out[ MAXSTRINGLEN ] = ""
- STRING ch[ 2 ] = ""
-
- // Build a bash single-quoted string, escaping embedded single quotes as: '\''
- out = Chr(39)   // opening '
-
- FOR i = 1 TO Length( s )
-  ch = SubStr( s, i, 1 )
-  IF Asc( ch ) == 39
-   // append: '\''
-   out = out + Chr(39) + Chr(92) + Chr(39) + Chr(39)
-  ELSE
-   out = out + ch
-  ENDIF
- ENDFOR
-
- out = out + Chr(39) // closing '
- RETURN( out )
-END
-
 STRING PROC GitCmd( STRING repo, STRING cmd )
  STRING fullRepo[ MAXSTRINGLEN ] = repo
  STRING bashCommand[ MAXSTRINGLEN ] = ''
@@ -185,7 +152,7 @@ STRING PROC GitCmd( STRING repo, STRING cmd )
  WHILE SubStr( fullRepo, Length( fullRepo ), 1 ) == '/'
   fullRepo = SubStr( fullRepo, 1, Length( fullRepo ) - 1 )
  ENDWHILE
- bashCommand = 'cd ' + BashQuote( fullRepo ) + ' && ' + gitExecutableGS + ' ' + cmd
+ bashCommand = 'cd "' + fullRepo + '" && ' + gitExecutableGS + ' ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
 //
@@ -196,7 +163,7 @@ STRING PROC BashCmd( STRING dir, STRING cmd )
  WHILE SubStr( fullDir, Length( fullDir ), 1 ) == '/'
   fullDir = SubStr( fullDir, 1, Length( fullDir ) - 1 )
  ENDWHILE
- bashCommand = 'cd ' + BashQuote( fullDir ) + ' && ' + cmd
+ bashCommand = 'cd "' + fullDir + '" && ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
 //
@@ -248,7 +215,7 @@ INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING s
  INTEGER state = STATE_OK
  STRING request[ MAXSTRINGLEN ] = workingDirectoryGS
  STRING repoRoot[ MAXSTRINGLEN ] = ''
- // STRING relPath[ MAXSTRINGLEN ] = ''
+ STRING relPath[ MAXSTRINGLEN ] = ''
  request = Trim( request )
  WHILE SubStr( request, Length( request ), 1 ) == '/'
   request = SubStr( request, 1, Length( request ) - 1 )
@@ -437,9 +404,9 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'log'
-    DebugGit( 'LOG: Enter pressed' )
   list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( GitCmd( repository, "log --follow --date=iso --pretty=format:'%%h# | %%an | %%ad | %%s' -- " + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )//
+  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:"%h# | %an | %ad | %s" -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+   //
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
    // ------------------------------------------------------------------------
    // r2213 | knud_ | 2025-11-16 00:31:57 +0100 (Sun, 16 Nov 2025) | 1 line
@@ -521,19 +488,18 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     WHEN 'info'
     next_list = 'browse'
     WHEN 'log'
-    IF LFind( '^-#$', 'cg' )
+    IF LFind( '^-\\#$', 'cgx' )
      next_list = 'log'
      ELSE
-     IF NOT LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cg' )
+     IF NOT LFind( '^[0-9a-fA-F]+\\#\\x20\\|\\x20', 'cgx' )
       Up()
-      IF NOT LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cg' )
+      IF NOT LFind( '^[0-9a-fA-F]+\\#\\x20\\|\\x20', 'cgx' )
        Down()
       ENDIF
      ENDIF
-     IF LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cg' )
-      LFind( '[0-9a-fA-F][0-9a-fA-F]*#', 'cg' )
+     IF LFind( '^[0-9a-fA-F]+\\#\\x20\\|\\x20', 'cgx' )
+      LFind( '[0-9a-fA-F]+\\#', 'cgx' )
       file_revision = SubStr( GetFoundText(), 1, Length( GetFoundText() ) - 1 )
-       DebugGit( 'LOG: revision=' + file_revision )
       next_list     = 'cat'
       ELSE
       next_list     = 'log'
