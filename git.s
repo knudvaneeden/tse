@@ -1,4 +1,4 @@
-// Revision: 14975
+// Revision: 14976
 //
 // ===
 //
@@ -406,12 +406,12 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    UnMarkBlock()
    ChangeCurrFilename( list_header, _DONT_EXPAND_ )
    // IF ( ( GetGlobalInt( "diffGI" ) MOD 2 ) == 0 )
-    IF YesNo( "Run diff?" ) == 1
-     ExecMacro( "compblct" ) // operation: compare: block: two: difference: all
-     PurgeMacro( "compblct" ) // operation: compare: block: two: difference: all
-    // ENDIF
-   // SetGlobalInt( "diffGI", 0 ) // reset
-   ENDIF
+   // IF YesNo( "Run diff?" ) == 1
+   //  ExecMacro( "compblct" ) // operation: compare: block: two: difference: all
+   //  PurgeMacro( "compblct" ) // operation: compare: block: two: difference: all
+   // // ENDIF
+   // // SetGlobalInt( "diffGI", 0 ) // reset
+   // ENDIF
    state = STATE_STOPPED
   ENDIF
   WHEN 'help'
@@ -493,26 +493,64 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    ENDWHILE
   ENDIF
   WHEN 'proplist'
-  // Git "properties" (closest SVN-style): status + index entry + attributes
+  // Git "properties" (closest SVN-style): status + index + head + size + last commit + attributes
   EraseDiskFile( log_file )
+
+  relPathLocal = IIF( dir == '', selected_file, dir + '/' + selected_file )
+
   // Path / Name
-  Dos( BashCmd( repository, 'echo Path: ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' > '  + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
-  Dos( BashCmd( repository, 'echo Name: ' + BashQuote( selected_file ) )                                      + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
-  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo Path: ' + BashQuote( relPathLocal ) ) + ' > '  + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo Name: ' + BashQuote( selected_file ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
 
   // Status
-  Dos( BashCmd( repository, 'echo Status:' )                                                                  + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
-  Dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
-  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo Status:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
 
   // Index / staged entry
-  Dos( BashCmd( repository, 'echo Index:' )                                                                   + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
-  Dos( GitCmd( repository, 'ls-files --stage -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
-  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo Index:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'ls-files --stage -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // HEAD blob entry
+  Dos( BashCmd( repository, 'echo HEAD:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'ls-tree HEAD -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // File size (working-tree)
+  Dos( BashCmd( repository, 'echo File Size:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'wc -c -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Last commit affecting file
+  Dos( BashCmd( repository, 'echo Last Commit:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'log -1 --date=iso --pretty=format:' + Chr(39) + '%%h | %%an | %%ad | %%s' + Chr(39) + ' -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // core.autocrlf
+  Dos( BashCmd( repository, 'echo core.autocrlf:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'config --get core.autocrlf' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // eol attribute
+  Dos( BashCmd( repository, 'echo eol attribute:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'check-attr eol -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Ignored? (prints the path when ignored, prints nothing otherwise)
+  Dos( BashCmd( repository, 'echo Ignored:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'check-ignore -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Flags (assume-unchanged / skip-worktree show up here)
+  Dos( BashCmd( repository, 'echo Flags:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'ls-files -v -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
 
   // Attributes (.gitattributes)
-  Dos( BashCmd( repository, 'echo Attributes:' )                                                              + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
-  Dos( GitCmd( repository, 'check-attr -a -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo Attributes:' ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'check-attr -a -- ' + BashQuote( relPathLocal ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
 
   // Load result into the log buffer
   GotoBufferId( log_id )
@@ -521,7 +559,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    InsertFile( log_file, _DONT_PROMPT_ )
    UnMarkBlock()
    EndFile()
-   WHILE ( CurrLine() > 1 ) AND ( CurrLineLen() == 0 )
+   WHILE ( ( CurrLine() > 1 ) AND ( CurrLineLen() == 0 ) )
     KillLine()
     Up()
    ENDWHILE
