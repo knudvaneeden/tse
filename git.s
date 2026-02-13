@@ -1,4 +1,4 @@
-// Revision: 14972
+// Revision: 14973
 //
 // ===
 //
@@ -420,27 +420,23 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    InsertData( help_text )
    BegFile()
   WHEN 'info'
+  // SVN-like info for Git (assembled from multiple git commands)
   get_dos( BashCmd( repository,
-   'rel=' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) +
-   '; name=' + BashQuote( selected_file ) +
-   '; origin=$( ' + gitExecutableGS + ' config --get remote.origin.url )' +
-   '; uuid=$( ' + gitExecutableGS + ' rev-list --max-parents=0 HEAD | head -n 1 )' +
-   '; head=$( ' + gitExecutableGS + ' rev-parse --short HEAD )' +
-   '; lca=$( ' + gitExecutableGS + ' log -1 --pretty=format:%%an -- \"$rel\" )' +
-   '; lcr=$( ' + gitExecutableGS + ' log -1 --pretty=format:%%h -- \"$rel\" )' +
-   '; lcd=$( ' + gitExecutableGS + ' log -1 --date=iso --pretty=format:%%ad -- \"$rel\" )' +
-   '; echo Path: $rel' +
-   '; echo Name: $name' +
-   '; echo URL: $origin' +
-   '; echo Relative\ URL: ^/$rel' +
-   '; echo Repository\ Root: $origin' +
-   '; echo Repository\ UUID: $uuid' +
-   '; echo Revision: $head' +
-   '; echo Node\ Kind: file' +
-   '; echo Schedule: normal' +
-   '; echo Last\ Changed\ Author: $lca' +
-   '; echo Last\ Changed\ Rev: $lcr' +
-   '; echo Last\ Changed\ Date: $lcd' ) )
+     'echo Path: ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) +
+     ' ; echo Name: ' + BashQuote( selected_file ) +
+     ' ; url=$(git config --get remote.origin.url 2>/dev/null) ; top=$(git rev-parse --show-toplevel 2>/dev/null) ; head=$(git rev-parse --short HEAD 2>/dev/null) ; root=$(git rev-list --max-parents=0 HEAD 2>/dev/null | tail -n 1)' +
+     ' ; echo URL: $url' +
+     ' ; echo Relative\ URL: ^/$(echo ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) + ')' +
+     ' ; echo Repository\ Root: $url' +
+     ' ; echo Repository\ UUID: $root' +
+     ' ; echo Revision: $head' +
+     ' ; echo Node\ Kind: file' +
+     ' ; echo Schedule: normal' +
+     ' ; echo Working\ Copy\ Root\ Path: $top' +
+     ' ; git log -1 --date=iso --pretty=format:' + Chr(39) +
+        'Last Changed Author: %%an%nLast Changed Rev: %%h%nLast Changed Date: %%ad' +
+       Chr(39) + ' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) )
+    ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
