@@ -1,4 +1,4 @@
-// Revision: 14973
+// Revision: 14974
 //
 // ===
 //
@@ -521,17 +521,17 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     WHEN 'info'
     next_list = 'browse'
     WHEN 'log'
-    IF LFind( '^-#$', 'cgx' )
+    IF LFind( '^-#$', 'cg' )
      next_list = 'log'
      ELSE
-     IF NOT LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cgx' )
+     IF NOT LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cg' )
       Up()
-      IF NOT LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cgx' )
+      IF NOT LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cg' )
        Down()
       ENDIF
      ENDIF
-     IF LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cgx' )
-      LFind( '[0-9a-fA-F][0-9a-fA-F]*#', 'cgx' )
+     IF LFind( '^[0-9a-fA-F][0-9a-fA-F]*# \| ', 'cg' )
+      LFind( '[0-9a-fA-F][0-9a-fA-F]*#', 'cg' )
       file_revision = SubStr( GetFoundText(), 1, Length( GetFoundText() ) - 1 )
        DebugGit( 'LOG: revision=' + file_revision )
       next_list     = 'cat'
