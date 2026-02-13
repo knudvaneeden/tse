@@ -1,4 +1,4 @@
-// Revision: 14974
+// Revision: 14975
 //
 // ===
 //
@@ -218,7 +218,7 @@ INTEGER PROC set_log_file()
 END set_log_file
 //
 INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING selected )
-  INTEGER state = STATE_OK
+ INTEGER state = STATE_OK
  STRING urlLocal[ MAXSTRINGLEN ] = ''
  STRING topLocal[ MAXSTRINGLEN ] = ''
  STRING headLocal[ MAXSTRINGLEN ] = ''
@@ -493,12 +493,50 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    ENDWHILE
   ENDIF
   WHEN 'proplist'
-  get_dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
+  // Git "properties" (closest SVN-style): status + index entry + attributes
+  EraseDiskFile( log_file )
+  // Path / Name
+  Dos( BashCmd( repository, 'echo Path: ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' > '  + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo Name: ' + BashQuote( selected_file ) )                                      + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Status
+  Dos( BashCmd( repository, 'echo Status:' )                                                                  + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Index / staged entry
+  Dos( BashCmd( repository, 'echo Index:' )                                                                   + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'ls-files --stage -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( BashCmd( repository, 'echo' )                                                                          + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Attributes (.gitattributes)
+  Dos( BashCmd( repository, 'echo Attributes:' )                                                              + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+  Dos( GitCmd( repository, 'check-attr -a -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) + ' >> ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+
+  // Load result into the log buffer
+  GotoBufferId( log_id )
+  EmptyBuffer()
+  IF FileExists( log_file )
+   InsertFile( log_file, _DONT_PROMPT_ )
+   UnMarkBlock()
+   EndFile()
+   WHILE ( CurrLine() > 1 ) AND ( CurrLineLen() == 0 )
+    KillLine()
+    Up()
+   ENDWHILE
+   BegFile()
+  ENDIF
+  EraseDiskFile( log_file )
+
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
    ELSE
-   LFind( selected_property, 'g' )
+   // Position on previous selection if any
+   IF Length( selected_property ) > 0
+    LFind( selected_property, 'g' )
+   ENDIF
   ENDIF
   OTHERWISE
   Warn( 'Error: unknown action ( 1 ).' )
