@@ -1,4 +1,4 @@
-// Revision: 14973
+// Revision: 14974
 //
 // ===
 //
@@ -234,7 +234,15 @@ INTEGER PROC set_log_file()
 END set_log_file
 //
 INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING selected )
- INTEGER state = STATE_OK
+  INTEGER state = STATE_OK
+ STRING relPathLocal[ MAXSTRINGLEN ] = ''
+ STRING urlLocal[ MAXSTRINGLEN ] = ''
+ STRING topLocal[ MAXSTRINGLEN ] = ''
+ STRING headLocal[ MAXSTRINGLEN ] = ''
+ STRING rootLocal[ MAXSTRINGLEN ] = ''
+ STRING lastAuthorLocal[ MAXSTRINGLEN ] = ''
+ STRING lastRevLocal[ MAXSTRINGLEN ] = ''
+ STRING lastDateLocal[ MAXSTRINGLEN ] = ''
  STRING request[ MAXSTRINGLEN ] = workingDirectoryGS
  STRING repoRoot[ MAXSTRINGLEN ] = ''
  // STRING relPath[ MAXSTRINGLEN ] = ''
@@ -420,27 +428,48 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    InsertData( help_text )
    BegFile()
   WHEN 'info'
-  // SVN-like info for Git (assembled from multiple git commands)
-  get_dos( BashCmd( repository,
-     'echo Path: ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) +
-     ' ; echo Name: ' + BashQuote( selected_file ) +
-     ' ; url=$(git config --get remote.origin.url 2>/dev/null) ; top=$(git rev-parse --show-toplevel 2>/dev/null) ; head=$(git rev-parse --short HEAD 2>/dev/null) ; root=$(git rev-list --max-parents=0 HEAD 2>/dev/null | tail -n 1)' +
-     ' ; echo URL: $url' +
-     ' ; echo Relative\ URL: ^/$(echo ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) + ')' +
-     ' ; echo Repository\ Root: $url' +
-     ' ; echo Repository\ UUID: $root' +
-     ' ; echo Revision: $head' +
-     ' ; echo Node\ Kind: file' +
-     ' ; echo Schedule: normal' +
-     ' ; echo Working\ Copy\ Root\ Path: $top' +
-     ' ; git log -1 --date=iso --pretty=format:' + Chr(39) +
-        'Last Changed Author: %%an%nLast Changed Rev: %%h%nLast Changed Date: %%ad' +
-       Chr(39) + ' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) )
-    ) )
-  IF LFind( '^fatal: ', 'gx' )
-   state = STATE_ERROR
-   show_dos_error( 'Error:' )
-  ENDIF
+  // SVN-like info for Git (assembled from multiple short git commands)
+  relPathLocal = IIF( dir == '', selected_file, dir + '/' + selected_file )
+
+  // Collect values (each command kept short to avoid command-length limits)
+  get_dos( GitCmd( repository, 'config --get remote.origin.url' ) )
+  urlLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
+
+  get_dos( GitCmd( repository, 'rev-parse --show-toplevel' ) )
+  topLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
+
+  get_dos( GitCmd( repository, 'rev-parse --short HEAD' ) )
+  headLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
+
+  get_dos( GitCmd( repository, 'rev-list --max-parents=0 HEAD' ) )
+  rootLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
+
+  get_dos( GitCmd( repository, 'log -1 --pretty=format:' + Chr(39) + '%%an' + Chr(39) + ' -- ' + BashQuote( relPathLocal ) ) )
+  lastAuthorLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
+
+  get_dos( GitCmd( repository, 'log -1 --pretty=format:' + Chr(39) + '%%h' + Chr(39) + ' -- ' + BashQuote( relPathLocal ) ) )
+  lastRevLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
+
+  get_dos( GitCmd( repository, 'log -1 --date=iso --pretty=format:' + Chr(39) + '%%ad' + Chr(39) + ' -- ' + BashQuote( relPathLocal ) ) )
+  lastDateLocal = Trim( GetText( 1, MAXSTRINGLEN ) )
+
+  // Build an svn-info-like output in the log buffer
+  GotoBufferId( log_id )
+  EmptyBuffer()
+  AddLine( 'Path: ' + relPathLocal )
+  AddLine( 'Name: ' + selected_file )
+  AddLine( 'URL: ' + urlLocal )
+  AddLine( 'Relative URL: ^/' + relPathLocal )
+  AddLine( 'Repository Root: ' + urlLocal )
+  AddLine( 'Repository UUID: ' + rootLocal )
+  AddLine( 'Revision: ' + headLocal )
+  AddLine( 'Node Kind: file' )
+  AddLine( 'Schedule: normal' )
+  AddLine( 'Working Copy Root Path: ' + topLocal )
+  AddLine( 'Last Changed Author: ' + lastAuthorLocal )
+  AddLine( 'Last Changed Rev: ' + lastRevLocal )
+  AddLine( 'Last Changed Date: ' + lastDateLocal )
+  BegFile()
   WHEN 'log'
   list_footer = '{Enter}-Read {Esc}-Back'
   get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:' + Chr(39) + '%%h# | %%an | %%ad | %%s' + Chr(39) + ' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
