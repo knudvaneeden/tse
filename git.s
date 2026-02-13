@@ -235,7 +235,6 @@ END set_log_file
 //
 INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING selected )
   INTEGER state = STATE_OK
- STRING relPathLocal[ MAXSTRINGLEN ] = ''
  STRING urlLocal[ MAXSTRINGLEN ] = ''
  STRING topLocal[ MAXSTRINGLEN ] = ''
  STRING headLocal[ MAXSTRINGLEN ] = ''
@@ -288,6 +287,14 @@ END list_cleanup
 INTEGER PROC browse_repository( string repository, VAR STRING dir )
  INTEGER old_msglevel = 0
  INTEGER state = STATE_OK
+ STRING relPathLocal[255] = ""
+ STRING topLocal[255] = ""
+ STRING headLocal[255] = ""
+ STRING rootLocal[255] = ""
+ STRING lastAuthorLocal[255] = ""
+ STRING lastRevLocal[255] = ""
+ STRING lastDateLocal[255] = ""
+ STRING urlLocal[255] = ""
  list_header = repository + IIF( dir == '', '', '/' + dir ) + IIF( selected_file == '', '', '/' + selected_file ) + IIF( file_revision == '', '', '@' + file_revision )
  list_footer = '{Enter}-Back {Escape}-Back'
  curr_list   = next_list
