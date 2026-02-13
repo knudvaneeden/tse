@@ -374,7 +374,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: update: version: control: git: save: create: current <description></description> <version control></version control> <version>1.0.0.0.16</version> <version control></version control> (filenamemacro=updaficd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 18:53:49]
+// library: file: update: version: control: git: save: create: current <description></description> <version control></version control> <version>1.0.0.0.17</version> <version control></version control> (filenamemacro=updaficd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 18:53:49]
 PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  //
@@ -619,7 +619,7 @@ STRING PROC FNStringGetEmptyS()
  //
 END
 
-// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.13</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.14</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
 INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  //
@@ -1045,7 +1045,7 @@ INTEGER PROC FNMacroCheckPurgeB( STRING macronameS )
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.43</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.44</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
 INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  //
@@ -1162,6 +1162,14 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  // StartPgm( githubRemoteDirectoryUrlS )
  IF ( B1 )
   PROCProgramRunInternetBrowserUrl( githubRemoteDirectoryUrlS )
+ ENDIF
+ //
+ // clean up the .bat file
+ //
+ IF EditFile( fileNameS )
+  //
+  AbandonFile()
+  //
  ENDIF
  //
  B = TRUE
