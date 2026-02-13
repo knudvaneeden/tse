@@ -1,6 +1,3 @@
-// Revision: 14976
-//
-// ===
 //
 // Macro     Git.s
 // Author    Knud van Eeden (adapted from the file 'svn.s' by author Carlo Hogeveen)
@@ -8,6 +5,14 @@
 // Version   See the history and the help_text.
 //
 // ===
+//
+// Download the latest version here:
+//
+//  https://sourceforge.net/p/the-semware-editor-tse/code/HEAD/tree/TRUNK/git.s?format=raw
+//
+//   or here (click in the right top on the download button)
+//
+//  https://github.com/knudvaneeden/tse/blob/TRUNK/git.s
 //
 // Purpose:
 //   The fastest possible Git browser.
