@@ -113,7 +113,8 @@ STRING fileNameCurrentGS[ MAXSTRINGLEN ] = '' // [kn, ri, fr, 30-01-2026 12:22:5
 STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\bash.exe" // change this // [kn, ri, fr, 19-08-2022 12:22:17]
 STRING gitExecutableGS[ MAXSTRINGLEN ] = "git" // git executable inside Cygwin bash PATH
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = "/cygdrive/c/TEMP/W1" // old [kn, ri, sa, 13-08-2022 16:00:23] // new [kn, ri, mo, 14-10-2024 00:33:40]
-STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
+// STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
+STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/GIT/DDD01/' // [kn, ri, tu, 30-12-2025 21:32:56]
 //
 KEYDEF extra_list_keys
  <f1> next_list = 'help' PushKey(<Enter>)
@@ -215,7 +216,7 @@ INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING s
  INTEGER state = STATE_OK
  STRING request[ MAXSTRINGLEN ] = workingDirectoryGS
  STRING repoRoot[ MAXSTRINGLEN ] = ''
- STRING relPath[ MAXSTRINGLEN ] = ''
+ // STRING relPath[ MAXSTRINGLEN ] = ''
  request = Trim( request )
  WHILE SubStr( request, Length( request ), 1 ) == '/'
   request = SubStr( request, 1, Length( request ) - 1 )
