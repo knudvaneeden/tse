@@ -1,4 +1,4 @@
-// Revision: 14971
+// Revision: 14972
 //
 // ===
 //
@@ -113,6 +113,7 @@ STRING fileNameCurrentGS[ MAXSTRINGLEN ] = '' // [kn, ri, fr, 30-01-2026 12:22:5
 STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\bash.exe" // change this // [kn, ri, fr, 19-08-2022 12:22:17]
 STRING gitExecutableGS[ MAXSTRINGLEN ] = "git" // git executable inside Cygwin bash PATH
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = "/cygdrive/c/TEMP/W1" // old [kn, ri, sa, 13-08-2022 16:00:23] // new [kn, ri, mo, 14-10-2024 00:33:40]
+// STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
 STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\'
 //
 KEYDEF extra_list_keys
@@ -145,6 +146,26 @@ INTEGER PROC get_dos( STRING cmd )
  RETURN( result )
 END get_dos
 //
+//
+STRING PROC BashQuote( STRING s )
+ INTEGER i = 0
+ STRING out[ MAXSTRINGLEN ] = ''
+ STRING ch[2] = ''
+ out = Chr( 39 ) // opening single quote
+ FOR i = 1 TO Length( s )
+  ch = SubStr( s, i, 1 )
+  IF Asc( ch ) == 39
+   // append: '\''  (end quote, escaped quote, start quote)
+   out = out + Chr( 39 ) + Chr( 92 ) + Chr( 39 ) + Chr( 39 )
+  ELSE
+   out = out + ch
+  ENDIF
+ ENDFOR
+ out = out + Chr( 39 ) // closing single quote
+ RETURN( out )
+END
+
+
 STRING PROC GitCmd( STRING repo, STRING cmd )
  STRING fullRepo[ MAXSTRINGLEN ] = repo
  STRING bashCommand[ MAXSTRINGLEN ] = ''
@@ -152,7 +173,7 @@ STRING PROC GitCmd( STRING repo, STRING cmd )
  WHILE SubStr( fullRepo, Length( fullRepo ), 1 ) == '/'
   fullRepo = SubStr( fullRepo, 1, Length( fullRepo ) - 1 )
  ENDWHILE
- bashCommand = 'cd "' + fullRepo + '" && ' + gitExecutableGS + ' ' + cmd
+ bashCommand = 'cd ' + BashQuote( fullRepo ) + ' && ' + gitExecutableGS + ' ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
 //
@@ -163,28 +184,12 @@ STRING PROC BashCmd( STRING dir, STRING cmd )
  WHILE SubStr( fullDir, Length( fullDir ), 1 ) == '/'
   fullDir = SubStr( fullDir, 1, Length( fullDir ) - 1 )
  ENDWHILE
- bashCommand = 'cd "' + fullDir + '" && ' + cmd
+ bashCommand = 'cd ' + BashQuote( fullDir ) + ' && ' + cmd
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
 //
 //
-
-
-STRING PROC GitOneLine( STRING repo, STRING cmd )
- INTEGER org_id = GetBufferId()
- INTEGER tmp_id = CreateTempBuffer()
- STRING line[ MAXSTRINGLEN ] = ''
- GotoBufferId( tmp_id )
- EmptyBuffer()
- get_dos( GitCmd( repo, cmd ) )
- IF NumLines() > 0
-  line = RTrim( GetText( 1, MAXSTRINGLEN ) )
- ENDIF
- AbandonFile( tmp_id )
- GotoBufferId( org_id )
- RETURN( line )
-END
-
+//
 PROC show_dos_error( STRING text )
  STRING warning[ MAXSTRINGLEN ] = text
  BegFile()
@@ -232,7 +237,7 @@ INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING s
  INTEGER state = STATE_OK
  STRING request[ MAXSTRINGLEN ] = workingDirectoryGS
  STRING repoRoot[ MAXSTRINGLEN ] = ''
- STRING relPath[ MAXSTRINGLEN ] = ''
+ // STRING relPath[ MAXSTRINGLEN ] = ''
  request = Trim( request )
  WHILE SubStr( request, Length( request ), 1 ) == '/'
   request = SubStr( request, 1, Length( request ) - 1 )
@@ -275,17 +280,6 @@ END list_cleanup
 INTEGER PROC browse_repository( string repository, VAR STRING dir )
  INTEGER old_msglevel = 0
  INTEGER state = STATE_OK
- STRING relPathInfoGS[ MAXSTRINGLEN ] = ''
- STRING repoTopInfoGS[ MAXSTRINGLEN ] = ''
- STRING remoteUrlInfoGS[ MAXSTRINGLEN ] = ''
- STRING headShortInfoGS[ MAXSTRINGLEN ] = ''
- STRING rootCommitInfoGS[ MAXSTRINGLEN ] = ''
- STRING lastLineInfoGS[ MAXSTRINGLEN ] = ''
- STRING lastAuthorInfoGS[ MAXSTRINGLEN ] = ''
- STRING lastRevInfoGS[ MAXSTRINGLEN ] = ''
- STRING lastDateInfoGS[ MAXSTRINGLEN ] = ''
- INTEGER p1InfoI = 0
- INTEGER p2InfoI = 0
  list_header = repository + IIF( dir == '', '', '/' + dir ) + IIF( selected_file == '', '', '/' + selected_file ) + IIF( file_revision == '', '', '@' + file_revision )
  list_footer = '{Enter}-Back {Escape}-Back'
  curr_list   = next_list
@@ -352,7 +346,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   LFind( selected_file, 'g' )
   WHEN 'cat'
   list_footer = '{Enter}-Edit {Escape}-Back'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ), GitCmd( repository, 'show ' + file_revision + ':"' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) ) )
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), GitCmd( repository, 'show ' + BashQuote( file_revision + ':' + IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
   // c:\temp\w1 Sun 16-11-25 00:14:37>g:\cygwin\bin\svn.exe cat /cygdrive/c/TEMP/W1/svn.s
    //
    // Revision: 14970
@@ -383,7 +377,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'edit'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ), GitCmd( repository, 'show ' + file_revision + ':"' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) ) )
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), GitCmd( repository, 'show ' + BashQuote( file_revision + ':' + IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:27:05>g:\cygwin\bin\svn.exe info /cygdrive/c/TEMP/W1/svn.s
    // Path: svn.s
@@ -426,65 +420,14 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    InsertData( help_text )
    BegFile()
   WHEN 'info'
-  // SVN-like "info" output (approximation for Git)
-  relPathInfoGS = IIF( dir == '', selected_file, dir + '/' + selected_file )
-
-  repoTopInfoGS    = GitOneLine( repository, 'rev-parse --show-toplevel' )
-  remoteUrlInfoGS  = GitOneLine( repository, 'config --get remote.origin.url' )
-  headShortInfoGS  = GitOneLine( repository, 'rev-parse --short HEAD' )
-  rootCommitInfoGS = GitOneLine( repository, 'rev-list --max-parents=0 HEAD' )
-  IF Length( rootCommitInfoGS ) > 12
-   rootCommitInfoGS = SubStr( rootCommitInfoGS, 1, 12 )
-  ENDIF
-
-  // Last change for this file: author|rev|date
-  get_dos( GitCmd( repository,
-        'log -1 --date=iso --pretty=format:' + Chr(39) + '%%an|%%h|%%ad' + Chr(39) +
-        ' -- ' + BashQuote( relPathInfoGS ) ) )
-  lastLineInfoGS = RTrim( GetText( 1, MAXSTRINGLEN ) )
+  get_dos( GitCmd( repository, 'log -1 --date=iso --pretty=fuller -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
-  ELSE
-   lastAuthorInfoGS = ''
-   lastRevInfoGS    = ''
-   lastDateInfoGS   = ''
-
-   p1InfoI = Pos( '|', lastLineInfoGS )
-   IF p1InfoI > 0
-    lastAuthorInfoGS = SubStr( lastLineInfoGS, 1, p1InfoI - 1 )
-    p2InfoI = Pos( '|', SubStr( lastLineInfoGS, p1InfoI + 1, Length( lastLineInfoGS ) - p1InfoI ) )
-    IF p2InfoI > 0
-     lastRevInfoGS  = SubStr( lastLineInfoGS, p1InfoI + 1, p2InfoI - 1 )
-     lastDateInfoGS = SubStr( lastLineInfoGS, p1InfoI + 1 + p2InfoI, Length( lastLineInfoGS ) - ( p1InfoI + p2InfoI ) )
-    ENDIF
-   ENDIF
-
-   EmptyBuffer()
-   AddLine( 'Path: ' + relPathInfoGS )
-   AddLine( 'Name: ' + selected_file )
-   IF remoteUrlInfoGS == ''
-    AddLine( 'URL: (no remote origin)' )
-    AddLine( 'Relative URL: ^/' + relPathInfoGS )
-    AddLine( 'Repository Root: (no remote origin)' )
-   ELSE
-    AddLine( 'URL: ' + remoteUrlInfoGS )
-    AddLine( 'Relative URL: ^/' + relPathInfoGS )
-    AddLine( 'Repository Root: ' + remoteUrlInfoGS )
-   ENDIF
-   AddLine( 'Repository UUID: ' + rootCommitInfoGS )
-   AddLine( 'Revision: ' + headShortInfoGS )
-   AddLine( 'Node Kind: file' )
-   AddLine( 'Schedule: normal' )
-   AddLine( 'Last Changed Author: ' + lastAuthorInfoGS )
-   AddLine( 'Last Changed Rev: ' + lastRevInfoGS )
-   AddLine( 'Last Changed Date: ' + lastDateInfoGS )
-   BegFile()
   ENDIF
-
   WHEN 'log'
   list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:"%h# | %an | %ad | %s" -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:' + Chr(39) + '%%h# | %%an | %%ad | %%s' + Chr(39) + ' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
    // ------------------------------------------------------------------------
@@ -514,7 +457,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    ENDWHILE
   ENDIF
   WHEN 'proplist'
-  get_dos( GitCmd( repository, 'status --porcelain=v1 -- "' + IIF( dir == '', selected_file, dir + '/' + selected_file ) + '"' ) )
+  get_dos( GitCmd( repository, 'status --porcelain=v1 -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
@@ -567,17 +510,17 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     WHEN 'info'
     next_list = 'browse'
     WHEN 'log'
-    IF LFind( '^-#$', 'cgx' )
+    IF LFind( '^-\#$', 'cgx' )
      next_list = 'log'
      ELSE
-     IF NOT LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
+     IF NOT LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
       Up()
-      IF NOT LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
+      IF NOT LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
        Down()
       ENDIF
      ENDIF
-     IF LFind( '^[0-9a-fA-F]+# \| ', 'cgx' )
-      LFind( '[0-9a-fA-F]+#', 'cgx' )
+     IF LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
+      LFind( '[0-9a-fA-F]+\#', 'cgx' )
       file_revision = SubStr( GetFoundText(), 1, Length( GetFoundText() ) - 1 )
       next_list     = 'cat'
       ELSE
