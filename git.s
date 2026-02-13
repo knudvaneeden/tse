@@ -1,8 +1,6 @@
 //
 // Macro     Git.s
 // Author    Knud van Eeden (adapted from the file 'svn.s' by author Carlo Hogeveen)
-// Date      12 February 2026
-// Version   See the history and the help_text.
 //
 // ===
 //
@@ -24,34 +22,30 @@
 //   A selected file's Git-properties are initially not shown.
 //
 // Installation:
-//   The "git" macro is "just" a shell around the "git.exe" commandline tool,
-//   which is [a part of] the actual Git tool.
-//   Therefore the commandline-tool "git" must be installed and in the PATH
-//   environment variable, either in general or from where TSE is started.
+//
+//  1. Needs git.exe (you have to install Cygwin git)
+//
+//  2. Change the working directory to your working directory\
+//
+//      STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\'
+//
+//  3. Run this program git.s that will show a list of TSE programs
+//     under git control. It searches automatically for the current
+//     filename.
+//
+//  4. Select the filename
+//
+//  5. Then press <F5> to see the file content of that revision
+//
+//  6. Press <F8> to view some more information about the file revision for that filename
+//
+//  6. Press <F9> to view some more other information about the file revision for that filename
 //
 // Features:
+//
 //   Browsing the HEAD of a Git repository's directories and files,
 //   view their info, properties, and history, and read or edit [the historic
 //   version of] a file (without saving to the repository).
-//
-// NOT a feature:
-//   Git security: the repository must either be publicly accessible,
-//   or the username and password must already be locally stored
-//   by GIT itself.
-//
-// Wishlist:
-// MUST
-// - Being asked for a username and password when required by the repository.
-// SHOULD
-// - Closing a selected historic object should return to the history-list.
-// - Being able to browse historic repository directories.
-// - In the history-list you should not be able to select the separation lines.
-// - Putting the @<revision> before the file-extension to enable
-//   syntax-hiliting.
-// COULD
-// - Being able to compare two versions.
-// WOULD
-// - Make the macro also compileable to a .exe.
 //
 // History:
 //
