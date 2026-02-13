@@ -1,4 +1,4 @@
-// Revision: 14971
+// Revision: 14972
 //
 // ===
 //
@@ -114,7 +114,7 @@ STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\bash.exe" // 
 STRING gitExecutableGS[ MAXSTRINGLEN ] = "git" // git executable inside Cygwin bash PATH
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = "/cygdrive/c/TEMP/W1" // old [kn, ri, sa, 13-08-2022 16:00:23] // new [kn, ri, mo, 14-10-2024 00:33:40]
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
-STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/GIT/DDD01/' // [kn, ri, tu, 30-12-2025 21:32:56]
+STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\'
 //
 KEYDEF extra_list_keys
  <f1> next_list = 'help' PushKey(<Enter>)
@@ -146,6 +146,26 @@ INTEGER PROC get_dos( STRING cmd )
  RETURN( result )
 END get_dos
 //
+//
+STRING PROC BashQuote( STRING s )
+ INTEGER i = 0
+ STRING out[ MAXSTRINGLEN ] = ''
+ STRING ch[2] = ''
+ out = Chr( 39 ) // opening single quote
+ FOR i = 1 TO Length( s )
+  ch = SubStr( s, i, 1 )
+  IF Asc( ch ) == 39
+   // append: '\''  (end quote, escaped quote, start quote)
+   out = out + Chr( 39 ) + Chr( 92 ) + Chr( 39 ) + Chr( 39 )
+  ELSE
+   out = out + ch
+  ENDIF
+ ENDFOR
+ out = out + Chr( 39 ) // closing single quote
+ RETURN( out )
+END
+
+
 STRING PROC GitCmd( STRING repo, STRING cmd )
  STRING fullRepo[ MAXSTRINGLEN ] = repo
  STRING bashCommand[ MAXSTRINGLEN ] = ''
@@ -168,25 +188,6 @@ STRING PROC BashCmd( STRING dir, STRING cmd )
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
 //
-//
-STRING PROC BashQuote( STRING s )
- INTEGER i = 0
- STRING out[ MAXSTRINGLEN ] = ''
- STRING ch[2] = ''
- out = Chr( 39 ) // opening single quote
- FOR i = 1 TO Length( s )
-  ch = SubStr( s, i, 1 )
-  IF Asc( ch ) == 39
-   // append: '\''  (end quote, escaped quote, start quote)
-   out = out + Chr( 39 ) + Chr( 92 ) + Chr( 39 ) + Chr( 39 )
-  ELSE
-   out = out + ch
-  ENDIF
- ENDFOR
- out = out + Chr( 39 ) // closing single quote
- RETURN( out )
-END
-
 //
 //
 PROC show_dos_error( STRING text )
@@ -426,7 +427,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   ENDIF
   WHEN 'log'
   list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:\'%%h# | %%an | %%ad | %%s\' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
+  get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:' + Chr(39) + '%%h# | %%an | %%ad | %%s' + Chr(39) + ' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
    //
    // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
    // ------------------------------------------------------------------------
@@ -512,13 +513,13 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     IF LFind( '^-\#$', 'cgx' )
      next_list = 'log'
      ELSE
-     IF NOT LFind( '^[0-9a-fA-F]+\#\20\|\20', 'cgx' )
+     IF NOT LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
       Up()
-      IF NOT LFind( '^[0-9a-fA-F]+\#\20\|\20', 'cgx' )
+      IF NOT LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
        Down()
       ENDIF
      ENDIF
-     IF LFind( '^[0-9a-fA-F]+\#\20\|\20', 'cgx' )
+     IF LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
       LFind( '[0-9a-fA-F]+\#', 'cgx' )
       file_revision = SubStr( GetFoundText(), 1, Length( GetFoundText() ) - 1 )
       next_list     = 'cat'
