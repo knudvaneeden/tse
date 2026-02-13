@@ -12,7 +12,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: run: tse <description>Run automatically a block of TSE source code (e.g. a one-liner TSE program, a block of text program, ...)</description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=runblrts.s) [<Program>] [<Research>] [kn, ri, fr, 13-02-2026 16:56:38]
+// library: block: run: tse <description>Run automatically a block of TSE source code (e.g. a one-liner TSE program, a block of text program, ...)</description> <version control></version control> <version>1.0.0.0.6</version> <version control></version control> (filenamemacro=runblrts.s) [<Program>] [<Research>] [kn, ri, fr, 13-02-2026 16:56:38]
 INTEGER PROC FNBlockRunTseB()
  // e.g. PROC Main()
  // e.g.  Message( FNBlockRunTseB() ) // gives e.g. TRUE
@@ -26,9 +26,9 @@ INTEGER PROC FNBlockRunTseB()
  //
  //  https://sourceforge.net/p/the-semware-editor-tse/code/HEAD/tree/TRUNK/runblrts.s?format=raw
  //
- //  or here:
+ //   or here (click in the right top on the download button)
  //
- //
+ //  https://github.com/knudvaneeden/tse/blob/TRUNK/runblrts.s
  //
  // ===
  //
