@@ -123,7 +123,7 @@ PROC DebugGit( STRING msg )
 END
 
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
-STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G//VERSIONCONTROL/GIT/DDD01/' // [kn, ri, tu, 30-12-2025 21:32:56]
+STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\' // [kn, ri, tu, 30-12-2025 21:32:56]
 //
 KEYDEF extra_list_keys
  <f1> next_list = 'help' PushKey(<Enter>)
@@ -134,8 +134,8 @@ KEYDEF extra_list_keys
 END
 //
 INTEGER PROC get_dos( STRING cmd )
+  DebugGit( 'DOS: ' + cmd )
  INTEGER result = FALSE
- DebugGit( 'DOS: ' + cmd )
  EraseDiskFile( log_file )
  IF Dos( cmd + ' > ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
   GotoBufferId( log_id )
@@ -248,7 +248,7 @@ INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING s
  INTEGER state = STATE_OK
  STRING request[ MAXSTRINGLEN ] = workingDirectoryGS
  STRING repoRoot[ MAXSTRINGLEN ] = ''
- // STRING relPath[ MAXSTRINGLEN ] = ''
+ STRING relPath[ MAXSTRINGLEN ] = ''
  request = Trim( request )
  WHILE SubStr( request, Length( request ), 1 ) == '/'
   request = SubStr( request, 1, Length( request ) - 1 )
