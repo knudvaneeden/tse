@@ -70,7 +70,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: run: tse <description>Run automatically a block of TSE source code (e.g. a one-liner TSE program, a block of text program, ...)</description> <version control></version control> <version>1.0.0.0.20</version> <version control></version control> (filenamemacro=runblrts.s) [<Program>] [<Research>] [kn, ri, fr, 13-02-2026 16:56:38]
+// library: block: run: tse <description>Run automatically a block of TSE source code (e.g. a one-liner TSE program, a block of text program, ...)</description> <version control></version control> <version>1.0.0.0.21</version> <version control></version control> (filenamemacro=runblrts.s) [<Program>] [<Research>] [kn, ri, fr, 13-02-2026 16:56:38]
 INTEGER PROC FNBlockRunTseB()
  // e.g. PROC Main()
  // e.g.  Message( FNBlockRunTseB() ) // gives e.g. TRUE
@@ -81,7 +81,7 @@ INTEGER PROC FNBlockRunTseB()
  //
  // ===
  //
- // Download the (always) latest version here:
+ // Download the latest version here:
  //
  //  https://sourceforge.net/p/the-semware-editor-tse/code/HEAD/tree/TRUNK/runblrts.s?format=raw
  //
@@ -95,7 +95,7 @@ INTEGER PROC FNBlockRunTseB()
  //
  // ===
  //
- // Method = Copy to select the marked text, clean the destination filename, paste and run
+ // Method = Mark the TSE source code (e.g. one-liner). copy, clean the destination filename, paste and run
  //
  // ===
  //
