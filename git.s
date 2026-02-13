@@ -13,13 +13,14 @@
 //  https://github.com/knudvaneeden/tse/blob/TRUNK/git.s
 //
 // Purpose:
-//   The fastest possible Git browser.
 //
-// Why:
-//   Tortoisesvn is beyond too slow for directories with many files.
+//  Git browser (and can do manual DIFFs and you can go back to older working versions)
 //
-// Trade-off:
-//   A selected file's Git-properties are initially not shown.
+// Features:
+//
+//   Browsing the HEAD of a Git repository's directories and files,
+//   view their info, properties, and history, and read or edit [the historic
+//   version of] a file (without saving to the repository).
 //
 // Installation:
 //
@@ -29,23 +30,29 @@
 //
 //      STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\'
 //
-//  3. Run this program git.s that will show a list of TSE programs
+//  3. Recompile once
+//
+// Running:
+//
+//  1. Running this program git.s that will show a list of TSE programs
 //     under git control. It searches automatically for the current
 //     filename.
 //
-//  4. Select the filename
+//  2. Select the filename from the list
 //
-//  5. Then press <F5> to see the file content of that revision
+//  3. Then while on that filename press <F5> to see the file content of that revision
 //
-//  6. Press <F8> to view some more information about the file revision for that filename
+//  4. Then while on that filename press <F8> to view some more information about the file revision for that filename
 //
-//  6. Press <F9> to view some more other information about the file revision for that filename
+//  5. Then while on that filename press <F9> to view some more other information about the file revision for that filename
 //
-// Features:
+// Creating a DIFF between 2 versions
 //
-//   Browsing the HEAD of a Git repository's directories and files,
-//   view their info, properties, and history, and read or edit [the historic
-//   version of] a file (without saving to the repository).
+//  1. What I do is opening 2 different revisions of the file by using <F5>
+//
+//  2. Then I use e.g. Larry Hayes difference program to watch the DIFFs.
+//
+//  3. Otherwise do I save these 2 files and run a DIFF (e.g. using BeyondCompare) from the DOS command line.
 //
 // History:
 //
