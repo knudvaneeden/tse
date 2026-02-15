@@ -68,7 +68,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: compare: two <author>Hayes Larry Smith</author> </<description></description> <version control></version control> <version>1.0.0.0.90</version> (filenamemacro=compblct.s) [<Program>] [<Research>] [kn, ri, we, 08-09-2010 01:15:44]
+// library: block: compare: two <author>Larry Hayes Smith</author> </<description></description> <version control></version control> <version>1.0.0.0.91</version> (filenamemacro=compblct.s) [<Program>] [<Research>] [kn, ri, we, 08-09-2010 01:15:44]
 PROC PROCBlockCompareTwo()
  // e.g. PROC Main()
  // e.g.  PROCBlockCompareTwo()
