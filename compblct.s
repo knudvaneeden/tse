@@ -68,19 +68,13 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: compare: two <author>Larry Hayes Smith</author> </<description></description> <version control></version control> <version>1.0.0.0.92</version> (filenamemacro=compblct.s) [<Program>] [<Research>] [kn, ri, we, 08-09-2010 01:15:44]
+// library: block: compare: two <author>Larry Hayes Smith</author> </<description></description> <version control></version control> <version>1.0.0.0.93</version> (filenamemacro=compblct.s) [<Program>] [<Research>] [kn, ri, we, 08-09-2010 01:15:44]
 PROC PROCBlockCompareTwo()
  // e.g. PROC Main()
  // e.g.  PROCBlockCompareTwo()
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
- //
- // File: version: control: Download: Latest: Version: see also:
- //
- // SubVersion: https://sourceforge.net/p/the-semware-editor-tse/code/HEAD/tree/TRUNK/compblct.s?format=raw
- //
- // GIT: https://github.com/knudvaneeden/tse/blob/TRUNK/compblct.s
  //
  INTEGER k = 0
  INTEGER stateI = 0
