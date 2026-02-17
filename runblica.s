@@ -140,7 +140,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.12</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
+// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.14</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
 INTEGER PROC FNBlockRunArtificialIntelligenceCase()
  // e.g. PROC Main()
  // e.g.  Message( FNBlockRunArtificialIntelligenceCase() ) // gives e.g. TRUE
@@ -225,7 +225,7 @@ INTEGER PROC FNBlockRunArtificialIntelligenceCase()
  s = FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  //
  GotoBufferId( bufferI )
- AddLine( Format( "Q. Computer: Editor: Text: TSE:", ":", " ", s, ":", " ", s1, ":", "[<", s, ">", "]" ) )
+ AddLine( Format( "Q. Computer: Editor: Text: TSE", ":", " ", s, ":", " ", s1, ":", " ", "[<", s, ">]", " ", "[<How to>]", " ", "[<Research>]" ) )
  AddLine()
  AddLine( "A." )
  AddLine( FNStringGetDateTodayFormatKnudDefaultS() )
