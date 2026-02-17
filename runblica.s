@@ -140,7 +140,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.14</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
+// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.16</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
 INTEGER PROC FNBlockRunArtificialIntelligenceCase()
  // e.g. PROC Main()
  // e.g.  Message( FNBlockRunArtificialIntelligenceCase() ) // gives e.g. TRUE
@@ -212,13 +212,18 @@ INTEGER PROC FNBlockRunArtificialIntelligenceCase()
  //
  INTEGER bufferI = 0
  //
+ STRING dateS[255] = FNStringGetDateTodayFormatKnudDefaultS()
+ //
+ PushPosition()
+ PushBlock()
+ //
  PushPosition()
  bufferI = CreateTempBuffer()
  PopPosition()
  //
  IF ( NOT ( IsBlockInCurrFile() ) ) Warn( "Please mark a block" ) B = FALSE RETURN( B ) ENDIF // return from the current procedure if no block is marked
  //
- s1 = GetText( CurrCol(), 255 )
+ s1 = GetText( CurrCol(), Query( blockEndLine ) - CurrCol() + 1 )
  CopyToWinClip()
  Warn( LeftStr( s1, 20 ), "...", ":", " ", infoS )
  //
@@ -228,16 +233,45 @@ INTEGER PROC FNBlockRunArtificialIntelligenceCase()
  AddLine( Format( "Q. Computer: Editor: Text: TSE", ":", " ", s, ":", " ", s1, ":", " ", "[<", s, ">]", " ", "[<How to>]", " ", "[<Research>]" ) )
  AddLine()
  AddLine( "A." )
- AddLine( FNStringGetDateTodayFormatKnudDefaultS() )
+ AddLine( dateS )
  AddLine()
  BegLine()
  PROCTextGetAbbreviationTemplateDataExtractDefault( "gf" )
  AddLine()
  AddLine( Format( "컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴" ) )
  //
+ // remove the file from the ring so as to refresh the file
+ //
+ IF EditFile( fileNameS )
+  QuitFile()
+ ENDIF
+ //
+ GotoBufferId( bufferI )
  SaveAs( fileNameS, _APPEND_ )
+ AbandonFile( bufferI )
+ //
+ // making sure you view the latest version
+ //
+ EditFile( fileNameS )
+ //
+ PopBlock()
+ PopPosition()
  //
  RETURN( B )
+ //
+END
+
+// library: string: get: date: today: format: knud: default <description></description> <version control></version control> <version>1.0.0.0.9</version> (filenamemacro=formdakd.s) [<Program>] [<Research>] [kn, ri, fr, 12-04-2002 02:58:56]
+STRING PROC FNStringGetDateTodayFormatKnudDefaultS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetDateTodayFormatKnudDefaultS() ) // gives e.g. [kn, ri, su, 21-04-2002 02:19:16]
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // RETURN( FNStringGetDateTodayFormatKnudS( "kn", FNStringGetLocationS( "eng" ) ) )
+ //
+ RETURN( FNStringGetDateTodayFormatKnudS( "kn", FNStringGetLocationGeographyDefaultS() ) )
  //
 END
 
@@ -479,20 +513,6 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  //
 END
 
-// library: string: get: date: today: format: knud: default <description></description> <version control></version control> <version>1.0.0.0.9</version> (filenamemacro=formdakd.s) [<Program>] [<Research>] [kn, ri, fr, 12-04-2002 02:58:56]
-STRING PROC FNStringGetDateTodayFormatKnudDefaultS()
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetDateTodayFormatKnudDefaultS() ) // gives e.g. [kn, ri, su, 21-04-2002 02:19:16]
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- // RETURN( FNStringGetDateTodayFormatKnudS( "kn", FNStringGetLocationS( "eng" ) ) )
- //
- RETURN( FNStringGetDateTodayFormatKnudS( "kn", FNStringGetLocationGeographyDefaultS() ) )
- //
-END
-
 // library: text: get: abbreviation: template: data: extract: default <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getteede.s) [<Program>] [<Research>] [kn, ri, su, 23-09-2007 21:35:09]
 PROC PROCTextGetAbbreviationTemplateDataExtractDefault( STRING s )
  // e.g. PROC Main()
@@ -502,16 +522,6 @@ PROC PROCTextGetAbbreviationTemplateDataExtractDefault( STRING s )
  // e.g. <F12> Main()
  //
  PROCTextGetAbbreviation_TemplateDataExtract( s, "template.mac" )
- //
-END
-
-// library: string: get: error <description>general output string to recognize an error (e.g. in another routine). Central routine, only one occurrence of this constant string</description> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=getstger.s) [<Program>] [<Research>] [kn, ri, sa, 05-12-1998 20:58:17]
-STRING PROC FNStringGetErrorS()
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetErrorS() ) // gives e.g. "<ERROR>"
- // e.g. END
- //
- RETURN( "<ERROR>" )
  //
 END
 
@@ -625,6 +635,16 @@ STRING PROC FNStringGetLocationGeographyDefaultS()
  // ENDIF
  //
  RETURN( s )
+ //
+END
+
+// library: string: get: error <description>general output string to recognize an error (e.g. in another routine). Central routine, only one occurrence of this constant string</description> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=getstger.s) [<Program>] [<Research>] [kn, ri, sa, 05-12-1998 20:58:17]
+STRING PROC FNStringGetErrorS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetErrorS() ) // gives e.g. "<ERROR>"
+ // e.g. END
+ //
+ RETURN( "<ERROR>" )
  //
 END
 
