@@ -1,4 +1,4 @@
-FORWARD INTEGER PROC FNBlockRunArtificialIntelligenceCase()
+FORWARD INTEGER PROC FNBlockRunArtificialIntelligenceCaseB()
 FORWARD INTEGER PROC FNBufferGetBufferIdFileCurrentI()
 FORWARD INTEGER PROC FNBufferGetBufferIdGivenBufferNameI( STRING s1 )
 FORWARD INTEGER PROC FNErrorCheckEscapeB( STRING s1 )
@@ -133,17 +133,17 @@ FORWARD STRING PROC FNStringGet_FilenameIniDefaultS()
 // --- MAIN --- //
 
 PROC Main()
- Message( FNBlockRunArtificialIntelligenceCase() ) // gives e.g. TRUE
+ Message( FNBlockRunArtificialIntelligenceCaseB() ) // gives e.g. TRUE
 END
 
 <Ctrl F12> Main()
 
 // --- LIBRARY --- //
 
-// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.16</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
-INTEGER PROC FNBlockRunArtificialIntelligenceCase()
+// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.17</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
+INTEGER PROC FNBlockRunArtificialIntelligenceCaseB()
  // e.g. PROC Main()
- // e.g.  Message( FNBlockRunArtificialIntelligenceCase() ) // gives e.g. TRUE
+ // e.g.  Message( FNBlockRunArtificialIntelligenceCaseB() ) // gives e.g. TRUE
  // e.g. END
  // e.g.
  // e.g. <Ctrl F12> Main()
@@ -180,9 +180,9 @@ INTEGER PROC FNBlockRunArtificialIntelligenceCase()
  //
  // ===
  //
- // e.g. // QuickHelp( HELPDEFFNBlockRunArtificialIntelligenceCase )
- // e.g. HELPDEF HELPDEFFNBlockRunArtificialIntelligenceCase
- // e.g.  title = "FNBlockRunArtificialIntelligenceCase() help" // The help's caption
+ // e.g. // QuickHelp( HELPDEFFNBlockRunArtificialIntelligenceCaseB )
+ // e.g. HELPDEF HELPDEFFNBlockRunArtificialIntelligenceCaseB
+ // e.g.  title = "FNBlockRunArtificialIntelligenceCaseB() help" // The help's caption
  // e.g.  x = 100 // Location
  // e.g.  y = 3 // Location
  // e.g.  //
@@ -223,7 +223,7 @@ INTEGER PROC FNBlockRunArtificialIntelligenceCase()
  //
  IF ( NOT ( IsBlockInCurrFile() ) ) Warn( "Please mark a block" ) B = FALSE RETURN( B ) ENDIF // return from the current procedure if no block is marked
  //
- s1 = GetText( CurrCol(), Query( blockEndLine ) - CurrCol() + 1 )
+ s1 = GetText( CurrCol(), Query( blockEndCol ) - CurrCol() + 1 )
  CopyToWinClip()
  Warn( LeftStr( s1, 20 ), "...", ":", " ", infoS )
  //
