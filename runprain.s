@@ -13,7 +13,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.21</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
+// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.22</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
 STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  // e.g. PROC Main()
  // e.g.  Message( FNProgramRunBrowserInternetUrlArtificialIntelligenceS() ) // gives e.g. TRUE
@@ -108,7 +108,7 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  AddLine( "glm                               https://chat.z.ai" )
  AddLine( "grok                              https://grok.com/chat" )
  AddLine( "kimi                              https://kimi.ai" )
- AddLine( "minimax                           https://www.minimax.io" )
+ AddLine( "minimax                           https://chat.minimax.io" )
  AddLine( "mistral                           https://chat.mistral.ai/chat" )
  AddLine( "notebooklm                        https://notebooklm.google.com" )
  AddLine( "perplexity                        https://www.perplexity.ai" )
