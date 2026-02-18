@@ -140,7 +140,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.18</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
+// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.19</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
 INTEGER PROC FNBlockRunArtificialIntelligenceCaseB()
  // e.g. PROC Main()
  // e.g.  Message( FNBlockRunArtificialIntelligenceCaseB() ) // gives e.g. TRUE
@@ -247,6 +247,8 @@ INTEGER PROC FNBlockRunArtificialIntelligenceCaseB()
  ENDIF
  //
  GotoBufferId( bufferI )
+ BegFile()
+ InsertLine()
  SaveAs( fileNameS, _APPEND_ )
  AbandonFile( bufferI )
  //
