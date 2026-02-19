@@ -140,7 +140,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.19</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
+// library: block: run: artificial: intelligence: case <description></description> <version control></version control> <version>1.0.0.0.20</version> <version control></version control> (filenamemacro=runblica.s) [<Program>] [<Research>] [kn, ri, su, 15-02-2026 22:19:54]
 INTEGER PROC FNBlockRunArtificialIntelligenceCaseB()
  // e.g. PROC Main()
  // e.g.  Message( FNBlockRunArtificialIntelligenceCaseB() ) // gives e.g. TRUE
@@ -223,6 +223,7 @@ INTEGER PROC FNBlockRunArtificialIntelligenceCaseB()
  //
  IF ( NOT ( IsBlockInCurrFile() ) ) Warn( "Please mark a block" ) B = FALSE RETURN( B ) ENDIF // return from the current procedure if no block is marked
  //
+ GotoBlockBegin()
  s1 = GetText( CurrCol(), Query( blockEndCol ) - CurrCol() + 1 )
  CopyToWinClip()
  Warn( LeftStr( s1, 20 ), "...", ":", " ", infoS )
