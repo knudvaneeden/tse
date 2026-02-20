@@ -13,7 +13,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.22</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
+// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.23</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
 STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  // e.g. PROC Main()
  // e.g.  Message( FNProgramRunBrowserInternetUrlArtificialIntelligenceS() ) // gives e.g. TRUE
@@ -103,6 +103,8 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  AddLine( "------------------------------------------------------------------" )
  AddLine( "chatgpt                           http://chat.openai.com" )
  AddLine( "claude                            https://claude.ai/chats" )
+ AddLine( "copilotgithub                     https://github.com/copilot/" )
+ AddLine( "copilotmicrosoft                  https://copilot.microsoft.com" )
  AddLine( "deepseek                          https://chat.deepseek.com" )
  AddLine( "gemini                            https://gemini.google.com" )
  AddLine( "glm                               https://chat.z.ai" )
@@ -130,8 +132,6 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  AddLine( "comet                             browserinternetperplexitycomet" )
  AddLine( "contextual                        https://contextual.ai" )
  AddLine( "convergence                       https://convergence.ai" )
- AddLine( "copilotgithub                     https://github.com/features/copilot" )
- AddLine( "copilotmicrosoft                  https://copilot.microsoft.com" )
  AddLine( "devinaiorg                        https://devinai.org" )
  AddLine( "elicit                            https://elicit.com" )
  AddLine( "everythinguniverse                https://anything.world" )
