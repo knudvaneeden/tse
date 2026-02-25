@@ -374,7 +374,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: update: version: control: git: save: create: current <description></description> <version control></version control> <version>1.0.0.0.18</version> <version control></version control> (filenamemacro=updaficd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 18:53:49]
+// library: file: update: version: control: git: save: create: current <description></description> <version control></version control> <version>1.0.0.0.20</version> <version control></version control> (filenamemacro=updaficd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 18:53:49]
 PROC PROCFileUpdateVersionControlGitSaveCreateCurrent( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  //
