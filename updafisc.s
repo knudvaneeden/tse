@@ -424,7 +424,7 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: update: version: control: subversion: save: create <description>CRUD</description> <version control></version control> <version>1.0.0.0.159</version> <version control></version control> (filenamemacro=updafisc.s) [<Program>] [<Research>] [kn, zoe, mo, 20-11-2000 14:31:57]
+// library: file: update: version: control: subversion: save: create <description>CRUD</description> <version control></version control> <version>1.0.0.0.160</version> <version control></version control> (filenamemacro=updafisc.s) [<Program>] [<Research>] [kn, zoe, mo, 20-11-2000 14:31:57]
 PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING fileVersionControlDirectoryWorkingInS, STRING fileVersionControlDirectoryRepositoryS, STRING revisionChangeInformationS, INTEGER B1 )
  // e.g. PROC Main()
  // e.g.  STRING s[255] = ""
