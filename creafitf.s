@@ -68,7 +68,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: file: create: screenshot: to: file <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=creafitf.s) [<Program>] [<Research>] [kn, ri, fr, 20-02-2026 15:18:24]
+// library: file: create: screenshot: to: file <description></description> <version control></version control> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=creafitf.s) [<Program>] [<Research>] [kn, ri, fr, 20-02-2026 15:18:24]
 INTEGER PROC FNFileCreateScreenshotToFileB()
  // e.g. PROC Main()
  // e.g.  Message( FNFileCreateScreenshotToFileB() ) // gives e.g. TRUE
@@ -130,7 +130,7 @@ INTEGER PROC FNFileCreateScreenshotToFileB()
  //
  INTEGER B = FALSE
  //
- PROCFileRun4NtAliasCommandListUser( Format( "stf" ) )
+ PROCFileRun4NtAliasCommandListUser( Format( "stf" ) ) // stf = ScreenshotToFile
  //
  B = TRUE
  //
