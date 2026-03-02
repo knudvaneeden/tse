@@ -9,7 +9,7 @@ FORWARD INTEGER PROC FNFileCheckInsertLineAfterLineGotoBeginTextInsertB( STRING 
 FORWARD INTEGER PROC FNKeyCheckPressEscapeB( STRING s1 )
 FORWARD INTEGER PROC FNLineCheckGotoBeginB()
 FORWARD INTEGER PROC FNLineCheckInsertAfterLineGotoBeginTextInsertB( STRING s1 )
-FORWARD INTEGER PROC FNLineCreateRecordQaTseB()
+FORWARD INTEGER PROC FNLineCreateRecordQaTseB( STRING s1 )
 FORWARD INTEGER PROC FNMacroCheckExecB( STRING s1 )
 FORWARD INTEGER PROC FNMacroCheckLoadB( STRING s1 )
 FORWARD INTEGER PROC FNMacroCheckPurgeB( STRING s1 )
@@ -132,17 +132,41 @@ FORWARD STRING PROC FNStringGet_FilenameIniDefaultS()
 // --- MAIN --- //
 
 PROC Main()
- Message( FNLineCreateRecordQaTseB() ) // gives e.g. TRUE
+ // STRING s1[255] = GetHistoryStr( _EDIT_HISTORY_, 1 ) // change this
+ STRING s1[255] = "Computer: Editor: Text: TSE" // change this
+ PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
+ IF ( NOT ( Ask( "line: create: record: qa: tse: qS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+ Message( FNLineCreateRecordQaTseB( s1 ) ) // gives e.g. TRUE
 END
 
 <Ctrl F12> Main()
 
 // --- LIBRARY --- //
 
-// library: line: create: record: qa: tse <description></description> <version control></version control> <version>1.0.0.0.4</version> <version control></version control> (filenamemacro=crealiqt.s) [<Program>] [<Research>] [kn, ri, mo, 02-03-2026 16:11:30]
-INTEGER PROC FNLineCreateRecordQaTseB()
+// library: macro: run: keep <description>macro: run a macro, then keep it</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=runmarke.s) [<Program>] [<Research>] [[kn, zoe, fr, 27-10-2000 15:59:33]
+PROC PROCMacroRunKeep( STRING macronameS )
  // e.g. PROC Main()
- // e.g.  Message( FNLineCreateRecordQaTseB() ) // gives e.g. TRUE
+ // e.g.  PROCMacroRunKeep( "mysubma1.mac myparameter11 myparameter12" )
+ // e.g.  PROCMacroRunKeep( "mysubma2.mac myparameter21" )
+ // e.g.  PROCMacroRunKeep( "mysubma3.mac myparameter31 myparameter32" )
+ // e.g. END
+ //
+ IF FNMacroCheckLoadB( FNStringGetCarS( macronameS ) ) // necessary if you pass parameters in a string
+  //
+  PROCMacroExec( macronameS )
+  //
+ ENDIF
+ //
+END
+
+// library: line: create: record: qa: tse <description></description> <version control></version control> <version>1.0.0.0.8</version> <version control></version control> (filenamemacro=crealiqt.s) [<Program>] [<Research>] [kn, ri, mo, 02-03-2026 16:11:30]
+INTEGER PROC FNLineCreateRecordQaTseB( STRING qS )
+ // e.g. PROC Main()
+ // e.g.  // STRING s1[255] = GetHistoryStr( _EDIT_HISTORY_, 1 ) // change this
+ // e.g.  STRING s1[255] = "Computer: Editor: Text: TSE" // change this
+ // e.g.  PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new
+ // e.g.  IF ( NOT ( Ask( "line: create: record: qa: tse: qS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+ // e.g.  Message( FNLineCreateRecordQaTseB( s1 ) ) // gives e.g. TRUE
  // e.g. END
  // e.g.
  // e.g. <Ctrl F12> Main()
@@ -227,7 +251,7 @@ INTEGER PROC FNLineCreateRecordQaTseB()
  Warn( LeftStr( s1, 20 ), "...", ":", " ", infoS )
  //
  GotoBufferId( bufferI )
- AddLine( Format( "Q. Computer: Editor: Text: TSE", ":", " ", s1, " ", "[<How to>]", " ", "[<Research>]" ) )
+ AddLine( Format( "Q.", " ", qS, ":", " ", s1, " ", "[<How to>]", " ", "[<Research>]" ) )
  AddLine()
  AddLine( "A." )
  AddLine( dateS )
@@ -275,6 +299,51 @@ INTEGER PROC FNLineCreateRecordQaTseB()
  EditFile( fileNameS )
  //
  RETURN( B )
+ //
+END
+
+// library: macro: check: load <description>macro: load: (Loads a Macro File From Disk Into Memory) R    LoadMacro(STRING macro_filename)*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmacl.s) [<Program>] [<Research>] [[kn, zoe, we, 16-06-1999 01:07:06]
+INTEGER PROC FNMacroCheckLoadB( STRING macronameS )
+ // e.g. PROC Main()
+ // e.g.  Message( FNMacroCheckLoadB( macronameS ) ) // gives e.g. TRUE
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( LoadMacro( macronameS ) )
+ //
+END
+
+// library: string: get: word: token: get: first: FNStringGetCarS(): Get the first word of a string (words delimited by a space " " (=space delimited list)). <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgca.s) [<Program>] [<Research>] [kn, ni, su, 02-08-1998 15:54:17]
+STRING PROC FNStringGetCarS( STRING s )
+ // e.g. PROC Main()
+ // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s1 = FNStringGetInputS( "string: get: word: token: get: first: s = ", "this is a test" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
+ // e.g.  Message( FNStringGetCarS( s1 ) ) // gives e.g. "this"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // variation: RETURN( FNStringGetTokenFirstS( s, " " ) )
+ //
+ RETURN( GetToken( s, " ", 1 ) ) // faster, but not central
+ //
+END
+
+// library: macro: exec <description>macro: (Executes the Requested Macro) O    ExecMacro([<Program>] [<Research>] [STRING macroname])*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=execmame.s) [[kn, zoe, we, 16-06-1999 01:06:54]
+PROC PROCMacroExec( STRING macronameS )
+ // e.g. PROC Main()
+ // e.g.  PROCMacroExec( "video" )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ IF FNMathCheckLogicNotB( FNMacroCheckExecB( macronameS ) )
+  //
+  PROCWarnCons3( "macro", macronameS, ": could not be executed" )
+  //
+ ENDIF
  //
 END
 
@@ -329,6 +398,45 @@ PROC PROCMacroRunPurge( STRING macronameS )
  ENDIF
  //
  // PROCFileInsertStringEndFilenameDefault( macronameS ) // if you want to count the frequency a certain macro has been called
+ //
+END
+
+// library: math: check: logic: not <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checmaln.s) [<Program>] [<Research>] [kn, ri, tu, 15-05-2001 16:54:21]
+INTEGER PROC FNMathCheckLogicNotB( INTEGER B )
+ // e.g. PROC Main()
+ // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
+ // e.g.  s = FNStringGetInputS( "math: check: logic: not: number = ", "1" )
+ // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
+ // e.g.  Message( FNMathCheckLogicNotB( FNStringGetToIntegerI( s ) ) )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( NOT B )
+ //
+END
+
+// library: macro: check: exec <description>macro: (Executes the Requested Macro) O    ExecMacro([<Program>] [<Research>] [STRING macroname])*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmace.s) [[kn, zoe, we, 16-06-1999 01:06:54]
+INTEGER PROC FNMacroCheckExecB( STRING macronameS )
+ // e.g. PROC Main()
+ // e.g.  Message( FNMacroCheckExecB( macronameS ) ) // gives e.g. TRUE
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( ExecMacro( macronameS ) )
+ //
+END
+
+// library: warn: cons3 <description>error: warning: give a warning message via 3 strings</description> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=conswawd.s) [<Program>] [<Research>] [[kn, ri, su, 29-07-2001 18:24:52]
+PROC PROCWarnCons3( STRING s1, STRING s2, STRING s3 )
+ // e.g. PROC Main()
+ // e.g.  PROCWarnCons3( "error", "1", "2" ) // gives e.g. "error 1 2"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ PROCWarn( FNStringGetCons3S( s1, s2, s3 ) )
  //
 END
 
@@ -502,51 +610,6 @@ PROC PROCError( STRING s )
  //
 END
 
-// library: macro: check: load <description>macro: load: (Loads a Macro File From Disk Into Memory) R    LoadMacro(STRING macro_filename)*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmacl.s) [<Program>] [<Research>] [[kn, zoe, we, 16-06-1999 01:07:06]
-INTEGER PROC FNMacroCheckLoadB( STRING macronameS )
- // e.g. PROC Main()
- // e.g.  Message( FNMacroCheckLoadB( macronameS ) ) // gives e.g. TRUE
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( LoadMacro( macronameS ) )
- //
-END
-
-// library: string: get: word: token: get: first: FNStringGetCarS(): Get the first word of a string (words delimited by a space " " (=space delimited list)). <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgca.s) [<Program>] [<Research>] [kn, ni, su, 02-08-1998 15:54:17]
-STRING PROC FNStringGetCarS( STRING s )
- // e.g. PROC Main()
- // e.g.  STRING s1[255] = FNStringGetInitializeNewStringS()
- // e.g.  s1 = FNStringGetInputS( "string: get: word: token: get: first: s = ", "this is a test" )
- // e.g.  IF FNKeyCheckPressEscapeB( s1 ) RETURN() ENDIF
- // e.g.  Message( FNStringGetCarS( s1 ) ) // gives e.g. "this"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- // variation: RETURN( FNStringGetTokenFirstS( s, " " ) )
- //
- RETURN( GetToken( s, " ", 1 ) ) // faster, but not central
- //
-END
-
-// library: macro: exec <description>macro: (Executes the Requested Macro) O    ExecMacro([<Program>] [<Research>] [STRING macroname])*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=execmame.s) [[kn, zoe, we, 16-06-1999 01:06:54]
-PROC PROCMacroExec( STRING macronameS )
- // e.g. PROC Main()
- // e.g.  PROCMacroExec( "video" )
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- IF FNMathCheckLogicNotB( FNMacroCheckExecB( macronameS ) )
-  //
-  PROCWarnCons3( "macro", macronameS, ": could not be executed" )
-  //
- ENDIF
- //
-END
-
 // library: macro: purge <description>macro: (Purges a Macro File From Memory) R    PurgeMacro(STRING s)*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=purgmamp.s) [<Program>] [<Research>] [[kn, zoe, fr, 13-10-2000 19:09:32]
 PROC PROCMacroPurge( STRING macronameS )
  // e.g. PROC Main()
@@ -560,6 +623,31 @@ PROC PROCMacroPurge( STRING macronameS )
   PROCWarnCons3( "macro", macronameS, ": could not be found" )
   //
  ENDIF
+ //
+END
+
+// library: warn <description>error: warning: give a warning message</description> <version>1.0.0.0.3</version> <version control></version control> (filenamemacro=wawarn.s)  [<Program>] [<Research>] [kn, zoe, we, 09-06-1999 22:11:07]
+PROC PROCWarn( STRING s )
+ // e.g. PROC Main()
+ // e.g.  PROCWarn( "you have forgotten to input a value" )
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new [kn, ri, fr, 22-05-2020 20:12:39]
+ Warn( s )
+ //
+END
+
+// library: string: get: cons3: string: concatenation: 3 strings <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgcy.s) [<Program>] [<Research>] [kn, zoe, fr, 17-11-2000 13:52:07]
+STRING PROC FNStringGetCons3S( STRING s1, STRING s2, STRING s3 )
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetCons3S( "a", "b", "c" ) ) // gives e.g. "a b c"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetConsS( FNStringGetConsS( s1, s2 ), s3 ) )
  //
 END
 
@@ -796,22 +884,6 @@ PROC PROCTextInsert( STRING s )
  //
 END
 
-// library: macro: run: keep <description>macro: run a macro, then keep it</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=runmarke.s) [<Program>] [<Research>] [[kn, zoe, fr, 27-10-2000 15:59:33]
-PROC PROCMacroRunKeep( STRING macronameS )
- // e.g. PROC Main()
- // e.g.  PROCMacroRunKeep( "mysubma1.mac myparameter11 myparameter12" )
- // e.g.  PROCMacroRunKeep( "mysubma2.mac myparameter21" )
- // e.g.  PROCMacroRunKeep( "mysubma3.mac myparameter31 myparameter32" )
- // e.g. END
- //
- IF FNMacroCheckLoadB( FNStringGetCarS( macronameS ) ) // necessary if you pass parameters in a string
-  //
-  PROCMacroExec( macronameS )
-  //
- ENDIF
- //
-END
-
 // library: string: check: equal <description>string: equal: are two given strings equal? (stored in 'checstcf.s')</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checstcy.s) [<Program>] [<Research>] [[kn, zoe, we, 04-10-2000 18:23:27]
 INTEGER PROC FNStringCheckEqualB( STRING s1, STRING s2 )
  // e.g. PROC Main()
@@ -991,45 +1063,6 @@ PROC PROCTextRemovePositionStackPop()
  //
 END
 
-// library: math: check: logic: not <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=checmaln.s) [<Program>] [<Research>] [kn, ri, tu, 15-05-2001 16:54:21]
-INTEGER PROC FNMathCheckLogicNotB( INTEGER B )
- // e.g. PROC Main()
- // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
- // e.g.  s = FNStringGetInputS( "math: check: logic: not: number = ", "1" )
- // e.g.  IF FNKeyCheckPressEscapeB( s ) RETURN() ENDIF
- // e.g.  Message( FNMathCheckLogicNotB( FNStringGetToIntegerI( s ) ) )
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( NOT B )
- //
-END
-
-// library: macro: check: exec <description>macro: (Executes the Requested Macro) O    ExecMacro([<Program>] [<Research>] [STRING macroname])*</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmace.s) [[kn, zoe, we, 16-06-1999 01:06:54]
-INTEGER PROC FNMacroCheckExecB( STRING macronameS )
- // e.g. PROC Main()
- // e.g.  Message( FNMacroCheckExecB( macronameS ) ) // gives e.g. TRUE
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( ExecMacro( macronameS ) )
- //
-END
-
-// library: warn: cons3 <description>error: warning: give a warning message via 3 strings</description> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=conswawd.s) [<Program>] [<Research>] [[kn, ri, su, 29-07-2001 18:24:52]
-PROC PROCWarnCons3( STRING s1, STRING s2, STRING s3 )
- // e.g. PROC Main()
- // e.g.  PROCWarnCons3( "error", "1", "2" ) // gives e.g. "error 1 2"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- PROCWarn( FNStringGetCons3S( s1, s2, s3 ) )
- //
-END
-
 // library: macro: check: purge <description>macro: purge</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=checmacp.s) [<Program>] [<Research>] [[kn, zoe, fr, 13-10-2000 19:03:50]
 INTEGER PROC FNMacroCheckPurgeB( STRING macronameS )
  // e.g. PROC Main()
@@ -1039,6 +1072,21 @@ INTEGER PROC FNMacroCheckPurgeB( STRING macronameS )
  // e.g. <F12> Main()
  //
  RETURN( PurgeMacro( macronameS ) )
+ //
+END
+
+// library: string: get: cons: string: concatenation: concatenation 2 words to 1 word (separated by a space) <description></description> <version control></version control> <version>1.0.0.0.3</version> (filenamemacro=getstgcx.s) [<Program>] [<Research>] [kn, ri, we, 25-11-1998 20:15:03]
+STRING PROC FNStringGetConsS( STRING s1, STRING s2 )
+ // e.g. //
+ // e.g. // version with test if string empty
+ // e.g. //
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetConsS( "john", "doe" ) ) // gives "john doe"
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetConcatSeparatorS( s1, s2, FNStringGetCharacterSymbolSpaceS() ) )
  //
 END
 
@@ -1440,19 +1488,6 @@ STRING PROC FNStringGetFilenameCurrentS()
  //
 END
 
-// library: warn <description>error: warning: give a warning message</description> <version>1.0.0.0.3</version> <version control></version control> (filenamemacro=wawarn.s)  [<Program>] [<Research>] [kn, zoe, we, 09-06-1999 22:11:07]
-PROC PROCWarn( STRING s )
- // e.g. PROC Main()
- // e.g.  PROCWarn( "you have forgotten to input a value" )
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- PROCMacroRunKeep( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new [kn, ri, fr, 22-05-2020 20:12:39]
- Warn( s )
- //
-END
-
 // library: string: get: math: get: integer: to: convert an integer to a string <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getsttsu.s) [<Program>] [<Research>] [number to string] [kn, ni, mo, 03-08-1998 00:34:05]
 STRING PROC FNStringGetMathIntegerToStringS( INTEGER I )
  // e.g. PROC Main()
@@ -1536,15 +1571,31 @@ STRING PROC FNStringGetGlobalS( STRING stringglobalnameS )
  //
 END
 
-// library: string: get: cons3: string: concatenation: 3 strings <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstgcy.s) [<Program>] [<Research>] [kn, zoe, fr, 17-11-2000 13:52:07]
-STRING PROC FNStringGetCons3S( STRING s1, STRING s2, STRING s3 )
+// library: string: get: concat: separator: string: concatenation: concatenate 2 words to 1 word, separated by separator <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstcsg.s) [<Program>] [<Research>] [kn, zoe, th, 01-07-1999 01:33:18]
+STRING PROC FNStringGetConcatSeparatorS( STRING s1, STRING s2, STRING separatorS )
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetCons3S( "a", "b", "c" ) ) // gives e.g. "a b c"
+ // e.g.  Message( FNStringGetConcatSeparatorS( "test1", "test2", " " ) ) // gives e.g. "tes1 test2"
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
  //
- RETURN( FNStringGetConsS( FNStringGetConsS( s1, s2 ), s3 ) )
+ IF FNStringCheckEmptyB( s1 ) RETURN( s2 ) ENDIF
+ //
+ IF FNStringCheckEmptyB( s2 ) RETURN( s1 ) ENDIF
+ //
+ RETURN( s1 + separatorS + s2 ) // leave this like this. Do not call a function, as this is a primitive function, you will get into a recursive loop, and get stack overflow
+ //
+END
+
+// library: string: get: character: symbol: " " <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstssp.s) [<Program>] [<Research>] [kn, zoe, we, 25-10-2000 01:33:39]
+STRING PROC FNStringGetCharacterSymbolSpaceS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetCharacterSymbolSpaceS() ) // gives " "
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetCharacterSymbolCentralS( 32 ) )
  //
 END
 
@@ -1563,21 +1614,6 @@ STRING PROC FNStringGetLeftStringS( STRING s, INTEGER totalI )
  // e.g. <F12> Main()
  //
  RETURN( FNStringGetMidStringS( s, 1, totalI ) )
- //
-END
-
-// library: string: get: cons: string: concatenation: concatenation 2 words to 1 word (separated by a space) <description></description> <version control></version control> <version>1.0.0.0.3</version> (filenamemacro=getstgcx.s) [<Program>] [<Research>] [kn, ri, we, 25-11-1998 20:15:03]
-STRING PROC FNStringGetConsS( STRING s1, STRING s2 )
- // e.g. //
- // e.g. // version with test if string empty
- // e.g. //
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetConsS( "john", "doe" ) ) // gives "john doe"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetConcatSeparatorS( s1, s2, FNStringGetCharacterSymbolSpaceS() ) )
  //
 END
 
@@ -1800,8 +1836,20 @@ PROC PROCWarnCons5( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5 )
  //
 END
 
+// library: string: get: character: symbol: central <description>string: get: character: symbol: central</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstscm.s) [<Program>] [<Research>] [[kn, ri, sa, 07-07-2001 22:35:39]
+STRING PROC FNStringGetCharacterSymbolCentralS( INTEGER I )
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetCharacterSymbolCentralS( I ) ) // gives e.g. ...""
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ RETURN( FNStringGetAsciiToCharacterS( I ) )
+ //
+END
+
 // library: string: get: mid: string <description></description> <version control>string: get: word: token: middle: return a given integer amount of characters from a given startposition</version control> <version>1.0.0.0.9</version> (=MID$ in BASIC) <version>1.0.0.0.9</version> (filenamemacro=getstmid.s) [<Program>] [<Research>] [kn, ri, tu, 13-10-1998 20:29:00]
-STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI  )
+STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI )
  // e.g. PROC Main()
  // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
  // e.g.  STRING positionBeginS[255] = FNStringGetInitializeNewStringS()
@@ -1822,34 +1870,6 @@ STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI  )
  // Message( FNStringGetMidStringS( "knud", 3, 2 ) ) // gives "ud"
  //
  RETURN( SubStr( s, beginI, totalI ) )
- //
-END
-
-// library: string: get: concat: separator: string: concatenation: concatenate 2 words to 1 word, separated by separator <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstcsg.s) [<Program>] [<Research>] [kn, zoe, th, 01-07-1999 01:33:18]
-STRING PROC FNStringGetConcatSeparatorS( STRING s1, STRING s2, STRING separatorS )
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetConcatSeparatorS( "test1", "test2", " " ) ) // gives e.g. "tes1 test2"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- IF FNStringCheckEmptyB( s1 ) RETURN( s2 ) ENDIF
- //
- IF FNStringCheckEmptyB( s2 ) RETURN( s1 ) ENDIF
- //
- RETURN( s1 + separatorS + s2 ) // leave this like this. Do not call a function, as this is a primitive function, you will get into a recursive loop, and get stack overflow
- //
-END
-
-// library: string: get: character: symbol: " " <description></description> <version control></version control> <version>1.0.0.0.1</version> (filenamemacro=getstssp.s) [<Program>] [<Research>] [kn, zoe, we, 25-10-2000 01:33:39]
-STRING PROC FNStringGetCharacterSymbolSpaceS()
- // e.g. PROC Main()
- // e.g.  Message( FNStringGetCharacterSymbolSpaceS() ) // gives " "
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( FNStringGetCharacterSymbolCentralS( 32 ) )
  //
 END
 
@@ -2241,15 +2261,17 @@ INTEGER PROC FNLineCheckGotoBeginB()
  //
 END
 
-// library: string: get: character: symbol: central <description>string: get: character: symbol: central</description> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstscm.s) [<Program>] [<Research>] [[kn, ri, sa, 07-07-2001 22:35:39]
-STRING PROC FNStringGetCharacterSymbolCentralS( INTEGER I )
+// library: string: get: ascii: to: character (given the ASCII value, what is the corresponding character? (Get Single Character Equivalent of an Integer). Syntax: Chr(INTEGER i)*) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getsttch.s)  [<Program>] [<Research>] [kn, zoe, we, 16-06-1999 01:06:51]
+STRING PROC FNStringGetAsciiToCharacterS( INTEGER asciiI )
  // e.g. PROC Main()
- // e.g.  Message( FNStringGetCharacterSymbolCentralS( I ) ) // gives e.g. ...""
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 65 ) ) // gives "A"
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 66 ) ) // gives "B"
+ // e.g.  Warn( FNStringGetAsciiToCharacterS( 100 ) ) // gives "d"
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
  //
- RETURN( FNStringGetAsciiToCharacterS( I ) )
+ RETURN( Chr( asciiI ) ) // leave this keyword, otherwise possibly recursive stack overflow
  //
 END
 
@@ -2547,20 +2569,6 @@ INTEGER PROC FNLineCheckInsertAfterLineGotoBeginTextInsertB( STRING s )
  // RETURN( AddLine( s ) )
  //
  RETURN( FNFileCheckInsertLineAfterLineGotoBeginTextInsertB( s, FNBufferGetBufferIdFileCurrentI() ) )
- //
-END
-
-// library: string: get: ascii: to: character (given the ASCII value, what is the corresponding character? (Get Single Character Equivalent of an Integer). Syntax: Chr(INTEGER i)*) <description></description> <version control></version control> <version>1.0.0.0.2</version> (filenamemacro=getsttch.s)  [<Program>] [<Research>] [kn, zoe, we, 16-06-1999 01:06:51]
-STRING PROC FNStringGetAsciiToCharacterS( INTEGER asciiI )
- // e.g. PROC Main()
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 65 ) ) // gives "A"
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 66 ) ) // gives "B"
- // e.g.  Warn( FNStringGetAsciiToCharacterS( 100 ) ) // gives "d"
- // e.g. END
- // e.g.
- // e.g. <F12> Main()
- //
- RETURN( Chr( asciiI ) ) // leave this keyword, otherwise possibly recursive stack overflow
  //
 END
 
