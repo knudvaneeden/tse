@@ -69,11 +69,11 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: program: search: browser: source: all <description></description> <version control></version control> <version>1.0.0.0.21</version> <version control></version control> (filenamemacro=searchall.s) [<Program>] [<Research>] [kn, ri, mo, 19-12-2022 21:25:29]
+// library: program: search: browser: source: all <description></description> <version control></version control> <version>1.0.0.0.22</version> <version control></version control> (filenamemacro=searchall.s) [<Program>] [<Research>] [kn, ri, mo, 19-12-2022 21:25:29]
 INTEGER PROC FNProgramSearchBrowserSourceAllB( STRING searchS )
  // e.g. PROC Main()
  // e.g.  // STRING s1[255] = "XBUTTON1 C++"
- // e.g.  // STRING s1[255] = "What is the difference between a working directory and a repository?"
+ // e.g.  // STRING s1[255] = "What is the difference between a working directory and a repository"
  // e.g.  STRING s1[255] = ""
  // e.g.  //
  // e.g.  IF ( IsBlockInCurrFile() )
