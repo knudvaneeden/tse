@@ -4,7 +4,7 @@ or another process.
 
 Jul 02, 2010:   GetTime() - of course this wraps around after midnight :-)
                 Take that into account.
-Mar 03, 2026:   OpenAI (for Knud van Eeden) - version 1.0.1
+Mar 05, 2026:   OpenAI (for Knud van Eeden) - version 1.0.2
                 Fix external-change detection so one failed/ignored reload
                 does not permanently stop future change detection.
 May 16, 2001:   Sammy Mitchell - initial version
@@ -65,10 +65,6 @@ string proc GetIgnoredSizeVarName()
     return (last_time_check_buffer_var + "ignored size")
 end
 
-integer proc AskReload(string fn)
-    return (MsgBox(fn, "File has been updated by another process. Reload it?", _YES_NO_CANCEL_) == 1)
-end
-
 integer proc replace_file(string fn)
     integer line, row, column, xoffset
 
@@ -90,19 +86,37 @@ integer proc replace_file(string fn)
 end
 
 /**************************************************************************
+  Reload a file while preserving any originally marked block, even if the
+  marked block lives in another buffer.
+ **************************************************************************/
+integer proc ReplaceFilePreserveMarkedBlock(string fn)
+    integer ok = FALSE
+
+    PushBlock()
+    if EquiStr(fn, CurrFilename())
+        ok = replace_file(fn)
+    else
+        PushPosition()
+        EditThisFile(fn)
+        ok = replace_file(fn)
+        PopPosition()
+    endif
+    PopBlock()
+
+    return (ok)
+end
+
+integer proc AskReload(string fn)
+    return (MsgBox(fn, "File has been updated by another process. Reload it?", _YES_NO_CANCEL_) == 1)
+end
+
+/**************************************************************************
   See if the user wants to reload a file that was changed by another process
  **************************************************************************/
 proc MaybeReload(string fn, var integer file_reloaded)
     file_reloaded = FALSE
     while not file_reloaded and AskReload(fn)
-        if EquiStr(fn, CurrFilename())
-            file_reloaded = replace_file(fn)
-        else
-            PushPosition()
-            EditThisFile(fn)
-            file_reloaded = replace_file(fn)
-            PopPosition()
-        endif
+        file_reloaded = ReplaceFilePreserveMarkedBlock(fn)
     endwhile
 end
 
