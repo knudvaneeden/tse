@@ -68,7 +68,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.26</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
+// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.27</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
 STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  // e.g. PROC Main()
  // e.g.  Message( FNProgramRunBrowserInternetUrlArtificialIntelligenceS() ) // gives e.g. TRUE
@@ -284,6 +284,7 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  AddLine( "pika                              https://pika.art" )
  AddLine( "pinokio                           https://pinokio.computer" )
  AddLine( "recraft                           https://recraft.ai" )
+ AddLine( "runway                            https://runway.ai" )
  AddLine( "saiyan                            https://saiyan-world.github.io/goku/" )
  AddLine( "sora                              https://openai.com/index/sora/" )
  AddLine( "veo                               https://deepmind.google/technologies/veo/veo-2/" )
