@@ -3819,10 +3819,10 @@ proc Main()
           ok = FALSE
         else
           load_disk_file(file1)
-          UnMarkBlock() // [kn, ri, we, 11-03-2026 18:13:32]
+          // UnMarkBlock() // [kn, ri, we, 11-03-2026 18:13:32]
           if g_in1_id
             load_disk_file2(file2)
-            UnMarkBlock() // [kn, ri, we, 11-03-2026 18:13:32]
+            // UnMarkBlock() // [kn, ri, we, 11-03-2026 18:13:32]
             if g_in2_id
               in2_id = g_in2_id
             else
