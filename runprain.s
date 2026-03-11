@@ -68,7 +68,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.29</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
+// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.30</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
 STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  // e.g. PROC Main()
  // e.g.  Message( FNProgramRunBrowserInternetUrlArtificialIntelligenceS() ) // gives e.g. TRUE
@@ -193,6 +193,7 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  AddLine( "opencodedesktop                   opencodedesktop" )
  AddLine( "replit                            replit" )
  AddLine( "windsurf                          windsurf" )
+ AddLine( "zapier                            zapier" )
  AddLine( "------------------------------------------------------------------" )
  AddLine( "+ARTIFICIAL: INTELLIGENCE: GENERAL" )
  AddLine( "------------------------------------------------------------------" )
