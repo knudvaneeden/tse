@@ -68,7 +68,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.27</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
+// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.28</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
 STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  // e.g. PROC Main()
  // e.g.  Message( FNProgramRunBrowserInternetUrlArtificialIntelligenceS() ) // gives e.g. TRUE
@@ -142,7 +142,7 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  STRING s2[255] = ""
  INTEGER B = FALSE
  //
- INTEGER bufferI = 0
+  INTEGER bufferI = 0
  //
  PushPosition()
  bufferI = CreateTempBuffer()
@@ -153,6 +153,24 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  //
  GotoBufferId( bufferI )
  //
+ AddLine( "------------------------------------------------------------------" )
+ AddLine( "+ARTIFICIAL: INTELLIGENCE: MOST: FREQUENTLY: USED" )
+ AddLine( "------------------------------------------------------------------" )
+ AddLine( "chatgpt                           http://chat.openai.com" )
+ AddLine( "claude                            https://claude.ai/chats" )
+ AddLine( "copilotgithub                     https://github.com/copilot/" )
+ AddLine( "copilotmicrosoft                  https://copilot.microsoft.com" )
+ AddLine( "deepseek                          https://chat.deepseek.com" )
+ AddLine( "gemini                            https://gemini.google.com" )
+ AddLine( "glm                               https://chat.z.ai" )
+ AddLine( "grok                              https://grok.com/chat" )
+ AddLine( "kimi                              https://kimi.ai" )
+ AddLine( "minimax                           https://chat.minimax.io" )
+ AddLine( "mistral                           https://chat.mistral.ai/chat" )
+ AddLine( "notebooklm                        https://notebooklm.google.com" )
+ AddLine( "perplexity                        https://www.perplexity.ai" )
+ AddLine( "perplexity computer               https://www.perplexity.ai/computer/tasks" )
+ AddLine( "qwen                              https://chat.qwenlm.ai" )
  AddLine( "------------------------------------------------------------------" )
  AddLine( "+ARTIFICIAL: INTELLIGENCE: COMMAND: LINE" )
  AddLine( "------------------------------------------------------------------" )
@@ -174,23 +192,6 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  AddLine( "opencodedesktop                   opencodedesktop" )
  AddLine( "replit                            replit" )
  AddLine( "windsurf                          windsurf" )
- AddLine( "------------------------------------------------------------------" )
- AddLine( "+ARTIFICIAL: INTELLIGENCE: MOST: FREQUENTLY: USED" )
- AddLine( "------------------------------------------------------------------" )
- AddLine( "chatgpt                           http://chat.openai.com" )
- AddLine( "claude                            https://claude.ai/chats" )
- AddLine( "copilotgithub                     https://github.com/copilot/" )
- AddLine( "copilotmicrosoft                  https://copilot.microsoft.com" )
- AddLine( "deepseek                          https://chat.deepseek.com" )
- AddLine( "gemini                            https://gemini.google.com" )
- AddLine( "glm                               https://chat.z.ai" )
- AddLine( "grok                              https://grok.com/chat" )
- AddLine( "kimi                              https://kimi.ai" )
- AddLine( "minimax                           https://chat.minimax.io" )
- AddLine( "mistral                           https://chat.mistral.ai/chat" )
- AddLine( "notebooklm                        https://notebooklm.google.com" )
- AddLine( "perplexity                        https://www.perplexity.ai" )
- AddLine( "qwen                              https://chat.qwenlm.ai" )
  AddLine( "------------------------------------------------------------------" )
  AddLine( "+ARTIFICIAL: INTELLIGENCE: GENERAL" )
  AddLine( "------------------------------------------------------------------" )
