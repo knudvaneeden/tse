@@ -68,7 +68,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: block: compare: two <author>Larry Hayes Smith</author> </<description></description> <version control></version control> <version>1.0.0.0.93</version> (filenamemacro=compblct.s) [<Program>] [<Research>] [kn, ri, we, 08-09-2010 01:15:44]
+// library: block: compare: two <author>Larry Hayes Smith</author> </<description></description> <version control></version control> <version>1.0.0.0.95</version> (filenamemacro=compblct.s) [<Program>] [<Research>] [kn, ri, we, 08-09-2010 01:15:44]
 PROC PROCBlockCompareTwo()
  // e.g. PROC Main()
  // e.g.  PROCBlockCompareTwo()
@@ -130,8 +130,8 @@ PROC PROCBlockCompareTwo()
   //
   // StartPgm( fileNameExecutableS, Format( QuotePath( fileName1S ), " ", QuotePath( fileName2S ) ) )
   //
-  IF ( YesNo( "Run BeyondCompare?" ) == 1 )
-   PROCFileRun4NtAliasCommandListUser( Format( "beyondcompare", " ", Format( QuotePath( fileName1S ), " ", QuotePath( fileName2S ) ), " ", "&&", " ", "exit" ) )
+  IF ( YesNo( "Run TSE macro CmpBuffers?" ) == 1 )
+   ExecMacro( Format( "CmpBuffers", " ", QuotePath( fileName1S ), " ", QuotePath( fileName2S ) ) )
    stateI = stateI + 1
   ENDIF
   //
@@ -147,14 +147,19 @@ PROC PROCBlockCompareTwo()
    //
   ENDIF
   //
-  IF ( YesNo( "Run Total Commander?" ) == 1 )
-   PROCFileRun4NtAliasCommandListUser( Format( "totalcommander", " ", "/S=C", " ", Format( QuotePath( fileName1S ), " ", QuotePath( fileName2S ) ), " ", "&&", " ", "exit" ) )
-   stateI = stateI + 1
-  ENDIF
-  //
   IF ( YesNo( "Run TSE macro CmpFiles?" ) == 1 )
    EditFile( fileName1S )
    ExecMacro( Format( "CmpFiles", " ", QuotePath( fileName2S ) ) )
+   stateI = stateI + 1
+  ENDIF
+  //
+  IF ( YesNo( "Run BeyondCompare?" ) == 1 )
+   PROCFileRun4NtAliasCommandListUser( Format( "beyondcompare", " ", Format( QuotePath( fileName1S ), " ", QuotePath( fileName2S ) ), " ", "&&", " ", "exit" ) )
+   stateI = stateI + 1
+  ENDIF
+  //
+  IF ( YesNo( "Run Total Commander?" ) == 1 )
+   PROCFileRun4NtAliasCommandListUser( Format( "totalcommander", " ", "/S=C", " ", Format( QuotePath( fileName1S ), " ", QuotePath( fileName2S ) ), " ", "&&", " ", "exit" ) )
    stateI = stateI + 1
   ENDIF
   //
@@ -1822,7 +1827,7 @@ INTEGER PROC FNStringGetLengthI( STRING s )
 END
 
 // library: string: get: mid: string <description></description> <version control>string: get: word: token: middle: return a given integer amount of characters from a given startposition</version control> <version>1.0.0.0.9</version> (=MID$ in BASIC) <version>1.0.0.0.9</version> (filenamemacro=getstmid.s) [<Program>] [<Research>] [kn, ri, tu, 13-10-1998 20:29:00]
-STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI  )
+STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI )
  // e.g. PROC Main()
  // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
  // e.g.  STRING positionBeginS[255] = FNStringGetInitializeNewStringS()
