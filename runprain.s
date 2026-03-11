@@ -68,7 +68,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.28</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
+// library: program: run: browser: internet: url: artificial: intelligence <description></description> <version control></version control> <version>1.0.0.0.29</version> <version control></version control> (filenamemacro=runprain.s) [<Program>] [<Research>] [kn, ri, sa, 14-12-2024 21:13:47]
 STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  // e.g. PROC Main()
  // e.g.  Message( FNProgramRunBrowserInternetUrlArtificialIntelligenceS() ) // gives e.g. TRUE
@@ -187,6 +187,7 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  AddLine( "jules                             jules" )
  AddLine( "lovable                           lovable" )
  AddLine( "manus                             manus" )
+ AddLine( "n8n                               n8n" )
  AddLine( "openclaw                          openclaw" )
  AddLine( "opencodecommandline               opencodecommandline" )
  AddLine( "opencodedesktop                   opencodedesktop" )
@@ -224,6 +225,7 @@ STRING PROC FNProgramRunBrowserInternetUrlArtificialIntelligenceS()
  AddLine( "julius                            https://julius.ai" )
  AddLine( "llama2                            https://huggingface.co/blog/llama2" )
  AddLine( "llama3                            https://huggingface.co/chat/models/meta-llama/Llama-3.3-70B-Instruct" )
+ AddLine( "make.com                          https://make.com" )
  AddLine( "manus                             https://manus.im" )
  AddLine( "meta                              https://meta.ai" )
  AddLine( "minimaxagent                      https://hailuo.ai" )
