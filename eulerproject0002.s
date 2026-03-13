@@ -1,0 +1,107 @@
+FORWARD INTEGER PROC FNMathGetSerieFibonacciSumUntilMaxI( INTEGER i1 )
+FORWARD INTEGER PROC FNMathGetSeriesFibonacciI( INTEGER i1 )
+FORWARD PROC Main()
+
+
+// --- MAIN --- //
+
+PROC Main()
+ STRING s1[255] = "10"
+ Warn( FNMathGetSerieFibonacciSumUntilMaxI( 4000000 ) ) // gives e.g. the sum of the even numbers smaller than 4 million, which is 4613732
+ REPEAT
+  IF ( NOT ( Ask( "math: get: serie: fibonacci: sum: until: max: maxI = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+  Warn( FNMathGetSerieFibonacciSumUntilMaxI( Val( s1 ) ) ) // // gives e.g. the sum of the even numbers in 1, 2, 3, 5, 8 which is 2 + 8 = 10
+ UNTIL FALSE
+END
+
+<F12> Main()
+
+// --- LIBRARY --- //
+
+// library: math: get: serie: fibonacci: sum: until: max <description></description> <version control></version control> <version>1.0.0.0.10</version> <version control></version control> (filenamemacro=getmauma.s) [<Program>] [<Research>] [kn, ri, su, 27-01-2013 00:40:51]
+INTEGER PROC FNMathGetSerieFibonacciSumUntilMaxI( INTEGER maxI )
+ // e.g. PROC Main()
+ // e.g.  STRING s1[255] = "10"
+ // e.g.  Warn( FNMathGetSerieFibonacciSumUntilMaxI( 4000000 ) ) // gives e.g. the sum of the even numbers smaller than 4 million, which is 4613732
+ // e.g.  REPEAT
+ // e.g.   IF ( NOT ( Ask( "math: get: serie: fibonacci: sum: until: max: maxI = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+ // e.g.   Warn( FNMathGetSerieFibonacciSumUntilMaxI( Val( s1 ) ) ) // // gives e.g. the sum of the even numbers in 1, 2, 3, 5, 8 which is 2 + 8 = 10
+ // e.g.  UNTIL FALSE
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ INTEGER minI = 1
+ //
+ INTEGER I = 0
+ //
+ INTEGER termI = 0
+ //
+ INTEGER sumI = 0
+ //
+ I = minI - 1
+ //
+ WHILE ( termI < maxI )
+  //
+  I = I + 1
+  //
+  termI = FNMathGetSeriesFibonacciI( I )
+  //
+  IF ( ( termI MOD 2 ) == 0 ) // term divisible by 2? (that is its division rest is 0)
+   //
+   sumI = sumI + termI
+   //
+  ENDIF
+  //
+ ENDWHILE
+ //
+ RETURN( sumI )
+ //
+END
+//
+
+// library: math: get: series: fibonacci <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=getmasfi.s) [<Program>] [<Research>] [kn, ri, su, 20-01-2013 22:04:02]
+INTEGER PROC FNMathGetSeriesFibonacciI( INTEGER  nI )
+ // e.g. PROC Main()
+ // e.g.  STRING s1[255] = "3"
+ // e.g.  REPEAT
+ // e.g.   IF ( NOT ( Ask( " = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+ // e.g.   Warn( FNMathGetSeriesFibonacciI( Val( s1 ) ) ) // gives e.g. "3"
+ // e.g.  UNTIL FALSE
+ // e.g. END
+ // e.g.
+ // e.g. <F12> Main()
+ //
+ // Method:
+ //
+ // 1. Take the sum of the last 2 terms
+ //
+ // 2. Let the sum be the last term
+ //    and goto step 1
+ //
+ INTEGER I = 0
+ INTEGER minI = 1
+ INTEGER maxI = nI
+ INTEGER term1I = 0
+ INTEGER term2I = 1
+ INTEGER term3I = 0
+ //
+ FOR I = minI TO maxI
+  //
+  // make value 3 equal to sum of two previous values 1 and 2
+  //
+  term3I = term1I + term2I
+  //
+  // make value 1 equal to next value 2
+  //
+  term1I = term2I
+  //
+  // make value 2 equal to next value 3
+  //
+  term2I = term3I
+  //
+  ENDFOR
+  //
+ RETURN( term3I )
+ //
+END
