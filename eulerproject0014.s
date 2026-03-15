@@ -56,6 +56,7 @@ PROC Main()
     endfor
 
     Warn("Longest Collatz chain under one million starts at"; bestStartI)
+    CopyToWinClip( Str( bestStartI ) )
     Warn("Number of terms in that chain is"; bestLenI)
 END
 
