@@ -106,7 +106,7 @@ INTEGER PROC FNFileSaveVersionControlAllB()
  PushKey( <CursorDown> )
  ExecMacro( "updaficd" )
  //
- PurgeMacro( CurrMacroFilename() )
+ // PurgeMacro( CurrMacroFilename() )
  //
  B = TRUE
  //
