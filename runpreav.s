@@ -13,7 +13,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: program: run: project: euler: all <description></description> <version control></version control> <version>1.0.0.0.4</version> <version control></version control> (filenamemacro=runpreav.s) [<Program>] [<Research>] [kn, ri, su, 15-03-2026 14:42:23]
+// library: program: run: project: euler: all <description></description> <version control></version control> <version>1.0.0.0.8</version> <version control></version control> (filenamemacro=runpreav.s) [<Program>] [<Research>] [kn, ri, su, 15-03-2026 14:42:23]
 STRING PROC FNProgramRunProjectEulerAllS()
  // e.g. PROC Main()
  // e.g.  Message( FNProgramRunProjectEulerAllS() ) // gives e.g. ...""
@@ -89,15 +89,15 @@ STRING PROC FNProgramRunProjectEulerAllS()
  AddLine( "------------------------------------------------------------------" )
  AddLine( "+EULER: PROJECT" )
  AddLine( "------------------------------------------------------------------" )
- AddLine( "01 Multiples of 3 or 5                        " )
- AddLine( "02 Even Fibonacci Numbers                     " )
- AddLine( "03 Largest Prime Factor                       " )
- AddLine( "04 Largest Palindrome Product                 " )
- AddLine( "05 Smallest Multiple                          " )
- AddLine( "06 Sum Square Difference                      " )
- AddLine( "07 10 001st Prime                             " )
- AddLine( "08 Largest Product in a Series                " )
- AddLine( "09 Special Pythagorean Triplet                " )
+ AddLine( "1  Multiples of 3 or 5                        " )
+ AddLine( "2  Even Fibonacci Numbers                     " )
+ AddLine( "3  Largest Prime Factor                       " )
+ AddLine( "4  Largest Palindrome Product                 " )
+ AddLine( "5  Smallest Multiple                          " )
+ AddLine( "6  Sum Square Difference                      " )
+ AddLine( "7  10 001st Prime                             " )
+ AddLine( "8  Largest Product in a Series                " )
+ AddLine( "9  Special Pythagorean Triplet                " )
  AddLine( "10 Summation of Primes                        " )
  AddLine( "11 Largest Product in a Grid                  " )
  AddLine( "12 Highly Divisible Triangular Number         " )
@@ -155,9 +155,11 @@ STRING PROC FNProgramRunProjectEulerAllS()
  PopPosition()
  //
  s = GetToken( s, " ", 1 )
+ s = Trim( s )
  //
- s = Format( "eulerproject", "00", s )
+ StartPgm( Format( "https://projecteuler.net/problem=", s ) )
  //
+ s = Format( "eulerproject", Format( s : 4 : "0" ) )
  ExecMacro( s )
  //
  RETURN( s )
