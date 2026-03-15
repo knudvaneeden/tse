@@ -12,7 +12,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: file: save: version: control: all <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=saveficj.s) [<Program>] [<Research>] [kn, ri, su, 15-03-2026 22:44:25]
+// library: file: save: version: control: all <description></description> <version control></version control> <version>1.0.0.0.2</version> <version control></version control> (filenamemacro=saveficj.s) [<Program>] [<Research>] [kn, ri, su, 15-03-2026 22:44:25]
 INTEGER PROC FNFileSaveVersionControlAllB()
  // e.g. PROC Main()
  // e.g.  Message( FNFileSaveVersionControlAllB() ) // gives e.g. TRUE
@@ -106,7 +106,7 @@ INTEGER PROC FNFileSaveVersionControlAllB()
  PushKey( <CursorDown> )
  ExecMacro( "updaficd" )
  //
- // PurgeMacro( CurrMacroFilename() )
+ PurgeMacro( CurrMacroFilename() )
  //
  B = TRUE
  //
