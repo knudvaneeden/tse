@@ -185,4 +185,5 @@ PROC Main()
 
     Warn('Full sum  :' ; total)
     Warn('First 10  :' ; first10)
+    CopyToWinClip( first10 )
 END
