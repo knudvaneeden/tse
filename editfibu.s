@@ -111,7 +111,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: file: edit: input: list: history: bbc: taal: knud (the lines are pushed like on a stack, 'last one in, first out') (file: load: edit + add 'bbc\taal\', 'bbc\taal\bib, 'bbc\taal\qed', 'knud\', ... to file load history first) / <description></description> <version control></version control> <version>1.0.0.0.46</version> (filenamemacro=editfibu.s) [<Program>] [<Research>] [kn, ni, tu, 22-07-2003 13:18:26]
+// library: file: edit: input: list: history: bbc: taal: knud (the lines are pushed like on a stack, 'last one in, first out') (file: load: edit + add 'bbc\taal\', 'bbc\taal\bib, 'bbc\taal\qed', 'knud\', ... to file load history first) / <description></description> <version control></version control> <version>1.0.0.0.47</version> (filenamemacro=editfibu.s) [<Program>] [<Research>] [kn, ni, tu, 22-07-2003 13:18:26]
 PROC PROCFileEditInputListHistoryBbcTaalKnud()
  // e.g. PROC Main()
  // e.g.  PROCFileEditInputListHistoryBbcTaalKnud()
@@ -181,8 +181,6 @@ PROC PROCFileEditInputListHistoryBbcTaalKnud()
   //
  ENDIF
  //
- PROCHistoryAddString( "~\Downloads\",  _EDIT_HISTORY_ ) // added [kn, ri, su, 15-03-2026 19:07:32]
- //
  PROCHistoryAddString( "f:\wordproc\tse_beta\read.me",  _EDIT_HISTORY_ ) // added [kn, ri, sa, 30-11-2024 21:24:19]
  //
  PROCMacroRunPurge( "editfitd" ) // add history '<drive>:\wordproc\tse32_vxxxxx' to edit file history
@@ -216,6 +214,8 @@ PROC PROCFileEditInputListHistoryBbcTaalKnud()
  PROCHistoryAddString( "c:\temp\tse_linux\knud\",  _EDIT_HISTORY_ ) // added [kn, ri, tu, 24-06-2025 15:30:35]
  //
  PROCMacroRunPurge( "editfidt" ) // add history '<drive>:\temp\' to edit file history
+ //
+ PROCHistoryAddString( "~\Downloads\",  _EDIT_HISTORY_ ) // added [kn, ri, su, 15-03-2026 19:07:32]
  //
  PROCHistoryAddString( s, _EDIT_HISTORY_ ) // add the last history entry on top
  //
