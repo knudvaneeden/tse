@@ -14,6 +14,8 @@
 // Correct result for the supplied cipher file:
 //   Key    : exp
 //   Answer : 129448
+//
+// Author = ChatGPT
 
 string CIPHER_FILE[255] = "p059_cipher.txt"
 
