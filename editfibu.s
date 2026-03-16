@@ -217,9 +217,9 @@ PROC PROCFileEditInputListHistoryBbcTaalKnud()
  //
  PROCHistoryAddString( s, _EDIT_HISTORY_ ) // add the last history entry on top
  //
- PROCMacroRunPurge( "editfiil" ) // input files to edit
- //
  PROCHistoryAddString( "~\Downloads\",  _EDIT_HISTORY_ ) // added [kn, ri, su, 15-03-2026 19:07:32]
+ //
+ PROCMacroRunPurge( "editfiil" ) // input files to edit
  //
 END
 
