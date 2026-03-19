@@ -1,0 +1,524 @@
+Q. Computer: Editor: Text: TSE: Documentation: Bitwise: Operations: What is [<Definition>] [<Research>]
+
+A.
+[kn, ri, we, 18-03-2026 18:34:18]
+[.gf compedittexttsedocubitwoperwhat_]
+---
+Computer: Editor: Text: TSE: Documentation: Bitwise: Operations: What is
+
+
+Bitwise Logical Operators
+
+Bitwise operators are used to manipulate individual bits of numeric
+expressions.
+
+The bitwise operators are:
+
+    shr       shifts bits right
+
+    shl       shifts bits left
+
+    &         bitwise AND
+
+    ^         bitwise XOR
+
+    |         bitwise OR
+
+    ~         bitwise NOT
+
+For integer m and n:
+
+    m shr n     // shifts the bits comprising m, n positions to
+                // the right.  Zeros fill the high bits as the
+                // low bits are shifted out.
+
+    m shl n     // shifts the bits comprising m, n positions to
+                // the left.  Zeros fill the low bits as the high
+                // bits are shifted out.
+
+For individual bits b1 and b2:
+
+    b1 & b2     // returns 1 if and only if b1 == 1 and b2 == 1.
+
+    b1 | b2     // returns 1 if either b1 == 1 or b2 == 1.
+
+    b1 ^ b2     // returns 1 if and only if b1 <> b2.
+
+    ~b1         // returns 1 if b1 is 0 returns 0 if b1 is 1.
+
+When using &, ^, and | on integers m and n, each bit position of m acts on the
+corresponding bit position in n.
+
+For example, given:
+
+    integer a =   1111b
+    integer b = 100001b
+
+then:
+
+    a shl 2     // is 111100b since 1111b is shifted left two bits
+                // and zeros fill the low bits.
+
+    b shr 2     // is 1000b since 100001b is shifted right two
+                // bits and zeros fill the high bits.
+
+    a           // is   1111b      (15 decimal)
+
+    a shl 2     // is 111100b      (60 decimal)
+
+    a & b       // is 1, because:
+                //
+                //                a      001111b     (15 decimal)
+                //                b      100001b     (33 decimal)
+                //              _____    _______     ____________
+                //              a & b    000001b     ( 1 decimal)
+
+    a | b       // is 47, because:
+                //
+                //                a      001111b     (15 decimal)
+                //                b      100001b     (33 decimal)
+                //              _____    _______     ____________
+                //              a | b    101111b     (47 decimal)
+
+    a ^ b       // is 46, because:
+                //
+                //                a      001111b     (15 decimal)
+                //                b      100001b     (33 decimal)
+                //              _____    _______     ____________
+                //              a ^ b    101110b     (46 decimal)
+
+    ~a      // is -16, because:
+            //
+            //   a  00000000000000000000000000001111b  (15 decimal)
+            //  __  _________________________________  _____________
+            //  ~a  11111111111111111111111111110000b  (-16 decimal)
+            //
+            // Note that ~a is negative because sign bit (highest
+            // bit) changed from 0 (positive) to 1 (negative).
+
+Given the following:
+
+    constant KEYWORD = 1, GLOBAL = 2, LOCAL = 4
+    integer flags
+
+common bitwise operator idioms are:
+
+    flags = flags | (KEYWORD | GLOBAL)      // turns on KEYWORD
+                                            // and GLOBAL flag bits
+
+    flags = flags & ~(KEYWORD | GLOBAL)     // turns off KEYWORD
+                                            // and GLOBAL flag bits
+
+    if (flags & (KEYWORD | GLOBAL)) <> 0    // is nonzero if either
+                                            // KEYWORD or GLOBAL
+                                            // flag bits are set
+
+The result of a bitwise expression is a bitwise expression and has a value
+between MININT and MAXINT (editor constants defined under "Numbers" earlier in
+this chapter).
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+Q. Computer: Editor: Text: TSE: Documentation: Bitwise: Operator: AND: What is [bitwise operations] [<Definition>] [<Research>]
+
+A.
+[kn, ri, we, 18-03-2026 19:25:12]
+[.gf compedittexttsedocubitwoperandwhat_]
+---
+Computer: Editor: Text: TSE: Documentation: Bitwise: Operator: AND: What is
+
+Syntax:
+
+  m & n        // bitwise AND
+
+where m and n can be integer names and or integer values.
+
+---
+
+When using &, ^, and | on integers m and n, each bit position of m acts
+on the corresponding bit position in n.
+
+===
+
+For individual bits b1 and b2:
+
+    b1 & b2     // returns 1 if and only if b1 == 1 and b2 == 1.
+
+===
+
+Returns: integer value
+
+===
+
+Examples:
+
+===
+
+For example, given:
+
+    integer a =   1111b
+    integer b = 100001b
+
+then:
+
+    a & b       // is 1, because:
+                //
+                //                a      001111b     (15 decimal)
+                //                b      100001b     (33 decimal)
+                //              _____    _______     ____________
+                //              a & b    000001b     ( 1 decimal)
+
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a =   1111b
+  INTEGER b = 100001b
+  Warn( a ) // gives decimal 15      (=00000000000000000000000000001111b in 32 bits)
+  Warn( b ) // gives decimal 33      (=00000000000000000000000000100001b in 32 bits)
+  Warn( a & b ) // gives decimal 1   (=00000000000000000000000000000001b in 32 bits)
+  Warn( 15 & 33 ) // gives decimal 1 (=00000000000000000000000000000001b in 32 bits)
+ END
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER remaining =          00000000000000000000000000001111b
+  INTEGER negativeremaining =  11111111111111111111111111110001b
+  Warn( remaining ) // shows decimal 15 or thus                 00000000000000000000000000001111b
+  Warn( -remaining ) // shows decimal -15 or thus               11111111111111111111111111110001b
+  Warn( negativeremaining ) // shows decimal -15 or thus        11111111111111111111111111110001b
+  Warn( remaining & ( -remaining ) ) // gives decimal 1 or thus 00000000000000000000000000000001b in 32 bits)
+ END
+--- cut here: end ----------------------------------------------------
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+Q. Computer: Editor: Text: TSE: Documentation: Bitwise: Operator: OR: What is [bitwise operations] [<Definition>] [<Research>]
+
+A.
+[kn, ri, we, 18-03-2026 19:25:08]
+[.gf compedittexttsedocubitwoperorwhat_]
+---
+Computer: Editor: Text: TSE: Documentation: Bitwise: Operator: OR: What is
+
+Syntax:
+
+  m | n    // bitwise OR
+
+where m and n can be integer names and or integer values
+
+---
+
+When using &, ^, and | on integers m and n, each bit position of m acts
+on the corresponding bit position in n.
+
+===
+
+For individual bits b1 and b2:
+
+    b1 | b2     // returns 1 if either b1 == 1 or b2 == 1.
+
+===
+
+Returns: integer value
+
+===
+
+Examples:
+
+===
+
+For example, given:
+
+    integer a =   1111b
+    integer b = 100001b
+
+then:
+
+    a | b       // is 47, because:
+                //
+                //                a      001111b     (15 decimal)
+                //                b      100001b     (33 decimal)
+                //              _____    _______     ____________
+                //              a | b    101111b     (47 decimal)
+
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a =   1111b
+  INTEGER b = 100001b
+  Warn( a ) // gives decimal 15       (=00000000000000000000000000001111b in 32 bits)
+  Warn( b ) // gives decimal 33       (=00000000000000000000000000100001b in 32 bits)
+  Warn( a | b ) // gives decimal 47   (=00000000000000000000000000101111b in 32 bits)
+  Warn( 15 | 33 ) // gives decimal 47 (=00000000000000000000000000101111b in 32 bits)
+ END
+--- cut here: end ----------------------------------------------------
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+Q. Computer: Editor: Text: TSE: Documentation: Bitwise: Operator: XOR: What is [bitwise operations] [<Definition>] [<Research>]
+
+A.
+[kn, ri, we, 18-03-2026 19:24:32]
+[.gf compedittexttsedocubitwoperxorwhat_]
+---
+Computer: Editor: Text: TSE: Documentation: Bitwise: Operator: XOR: What is
+
+Syntax:
+
+  m ^ n    // bitwise XOR
+
+where a and b can be integer names and or integer values
+
+---
+
+When using &, ^, and | on integers m and n, each bit position of m acts
+on the corresponding bit position in n.
+
+===
+
+For individual bits b1 and b2:
+
+    b1 ^ b2     // returns 1 if and only if b1 <> b2.
+
+===
+
+Returns: integer value
+
+===
+
+Examples:
+
+===
+
+For example, given:
+
+    integer a =   1111b
+    integer b = 100001b
+
+then:
+
+    a ^ b       // is 46, because:
+                //
+                //                a      001111b     (15 decimal)
+                //                b      100001b     (33 decimal)
+                //              _____    _______     ____________
+                //              a ^ b    101110b     (46 decimal)
+
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a =   1111b
+  INTEGER b = 100001b
+  Warn( a ) // gives decimal 15     (=00000000000000000000000000001111b in 32 bits)
+  Warn( b ) // gives decimal 33     (=00000000000000000000000000100001b in 32 bits)
+  Warn( a ^ b ) // gives decimal 46 (=00000000000000000000000000101110b in 32 bits)
+  Warn( 15^33) // gives decimal 46  (=00000000000000000000000000101110b in 32 bits)
+ END
+--- cut here: end ----------------------------------------------------
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+Q. Computer: Editor: Text: TSE: Documentation: Bitwise: Operator: NOT: What is [bitwise operations] [<Definition>] [<Research>]
+
+A.
+[kn, ri, we, 18-03-2026 19:25:05]
+[.gf compedittexttsedocubitwopernotwhat_]
+---
+Computer: Editor: Text: TSE: Documentation: Bitwise: Operator: NOT: What is
+
+Syntax:
+
+   ~m     // bitwise NOT
+
+where m can be an integer name or an integer value
+
+===
+
+For individual bits b1 and b2:
+
+ ~b1         // returns 1 if b1 is 0 returns 0 if b1 is 1.
+
+===
+
+Returns: integer value
+
+===
+
+Examples:
+
+===
+
+For example, given:
+
+    integer a =   1111b
+
+then:
+
+    ~a      // is -16, because:
+            //
+            //   a  00000000000000000000000000001111b  (15 decimal)
+            //  __  _________________________________  _____________
+            //  ~a  11111111111111111111111111110000b  (-16 decimal)
+            //
+            // Note that ~a is negative because sign bit (highest
+            // bit) changed from 0 (positive) to 1 (negative).
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a =   1111b
+  Warn( a ) // gives decimal 15    (=00000000000000000000000000001111b in 32 bits)
+  Warn( ~a ) // gives decimal -16  (=11111111111111111111111111110000b in 32 bits)
+  Warn( ~15 ) // gives decimal -16 (=11111111111111111111111111110000b in 32 bits)
+ END
+--- cut here: end ----------------------------------------------------
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+Q. Computer: Editor: Text: TSE: Documentation: ShiftLeft: What is [shr / shl / bitwise operations] [<Definition>] [<Research>]
+
+A.
+[kn, ri, we, 18-03-2026 19:00:33]
+[.gf compedittexttsedocushifwhau62531_]
+---
+Computer: Editor: Text: TSE: Documentation: ShiftLeft: What is
+
+Syntax:
+
+    m shl n     // shifts the bits comprising m, n positions to
+                // the left.  Zeros fill the low bits as the high
+                // bits are shifted out.
+
+where m and n can be integer names and or integer values
+
+===
+
+
+Note: It behaves like a circular chain (like used on a bicycle): (the total amount of bits shifted to the left at the end, then pushing out the bits at the front are appearing again at the end)
+
+===
+
+Returns: integer value
+
+===
+
+Examples:
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a = 1111b
+  Warn( a ) // gives decimal 15        (=00000000000000000000000000001111b)
+  Warn( a Shl 1 ) // gives decimal 30  (=00000000000000000000000000011110b) since 1111b is shifted left one bit and zeros fill the low bits.
+  Warn( 15 Shl 1 ) // gives decimal 30 (=00000000000000000000000000011110b)
+ END
+
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a = 1111b
+  Warn( a ) // gives decimal 15        (=00000000000000000000000000001111b)
+  Warn( a Shl 2 ) // gives decimal 60  (=00000000000000000000000000111100b) since 1111b is shifted left two bits and zeros fill the low bits.
+  Warn( 15 Shl 2 ) // gives decimal 60 (=00000000000000000000000000111100b)
+ END
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a = 1111b
+  Warn( a ) // gives decimal 15         (=00000000000000000000000000001111b)
+  Warn( a Shl 3 ) // gives decimal 120  (=00000000000000000000000001111000b) since 1111b is shifted left three bits and zeros fill the low bits.
+  Warn( 15 Shl 3 ) // gives decimal 120 (=00000000000000000000000001111000b)
+ END
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a = 1111b
+  Warn( a ) // gives decimal 15         (=00000000000000000000000000001111b)
+  Warn( a Shl 4 ) // gives decimal 240  (=00000000000000000000000011110000b) since 1111b is shifted left four bits and zeros fill the low bits.
+  Warn( 15 Shl 4 ) // gives decimal 240 (=00000000000000000000000011110000b)
+ END
+--- cut here: end ----------------------------------------------------
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+Q. Computer: Editor: Text: TSE: Documentation: ShiftRight: What is [shr / shl / bitwise operations] [<Definition>] [<Research>]
+
+A.
+[kn, ri, we, 18-03-2026 19:00:33]
+[.gf compedittexttsedocushifwhau44489_]
+---
+Computer: Editor: Text: TSE: Documentation: ShiftRight: What is
+
+Syntax:
+
+    m shr n     // shifts the bits comprising m, n positions to
+                // the right.  Zeros fill the high bits as the
+                // low bits are shifted out.
+
+where m and n can be integer names and or integer values
+
+===
+
+Note: It behaves like a circular chain (like used on a bicycle): (the total amount of bits shifted to the right at the end, then pushing out the bits at the end are appearing again at the front)
+
+===
+
+Returns: integer value
+
+===
+
+Examples:
+
+    b shr 2     // is 1000b since 100001b is shifted right two
+                // bits and zeros fill the high bits.
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a = 1111b
+  Warn( a ) // gives decimal 15       (=00000000000000000000000000001111b)
+  Warn( a Shr 1 ) // gives decimal 7  (=00000000000000000000000000000111b)
+  Warn( 15 Shr 1 ) // gives decimal 7 (=00000000000000000000000000000111b)
+ END
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a = 1111b
+  Warn( a ) // gives decimal 15       (=00000000000000000000000000001111b)
+  Warn( a Shr 2 ) // gives decimal 3  (=00000000000000000000000000000011b)
+  Warn( 15 Shr 2 ) // gives decimal 3 (=00000000000000000000000000000011b)
+ END
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a = 1111b
+  Warn( a ) // gives decimal 15       (=00000000000000000000000000001111b)
+  Warn( a Shr 3 ) // gives decimal 1  (=00000000000000000000000000000001b)
+  Warn( 15 Shr 3 ) // gives decimal 1 (=00000000000000000000000000000001b)
+ END
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+ PROC Main()
+  INTEGER a = 1111b
+  Warn( a ) // gives decimal 15       (=00000000000000000000000000001111b)
+  Warn( a Shr 4 ) // gives decimal 0  (=00000000000000000000000000000000b)
+  Warn( 15 Shr 4 ) // gives decimal 0 (=00000000000000000000000000000000b)
+ END
+--- cut here: end ----------------------------------------------------
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
