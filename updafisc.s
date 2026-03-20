@@ -36,7 +36,7 @@ FORWARD PROC PROCFileGotoEnd()
 FORWARD PROC PROCFileInsertEndPrepare()
 FORWARD PROC PROCFileInsertTextEnd( STRING s1, STRING s2, INTEGER i1 )
 FORWARD PROC PROCFileRun4NtAliasCommandListUser( STRING s1 )
-FORWARD PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING s1, STRING s2, STRING s3, INTEGER i1 )
+FORWARD PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING s1, STRING s2, STRING s3, INTEGER i1, INTEGER i2 )
 FORWARD PROC PROCLineInsertAfter()
 FORWARD PROC PROCLineInsertAfterLineGotoBeginTextInsert( STRING s1 )
 FORWARD PROC PROCMacroExec( STRING s1 )
@@ -80,6 +80,7 @@ FORWARD STRING PROC FNStringGetFileGetFilenamePathDefaultCrossPlatformS( STRING 
 FORWARD STRING PROC FNStringGetFileIniDefaultCrossPlatformS( STRING s1 )
 FORWARD STRING PROC FNStringGetFileIniDefaultS( STRING s1 )
 FORWARD STRING PROC FNStringGetFileNameMicrosoftwindowsToCygwinS( STRING s1 )
+FORWARD STRING PROC FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS()
 FORWARD STRING PROC FNStringGetFilenameCurrentS()
 FORWARD STRING PROC FNStringGetFilenameEndBackSlashNotEqualInsertEndS( STRING s1 )
 FORWARD STRING PROC FNStringGetFilenameGlobalErrorS()
@@ -132,6 +133,9 @@ PROC Main()
  STRING s5[255] = "150" // change this
  //
  STRING s6[255] = "1" // If this is a "1" then B1 = true and upload to remote repository / if this is "0" then B1 = false and upload only to local repository
+ //
+ // STRING s7[255] = "0" // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
+ STRING s7[255] = FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS() // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
  //
  INTEGER bufferI = 0
  //
@@ -197,7 +201,7 @@ PROC Main()
   RETURN()
  ENDIF
  //
- PROCFileUpdateVersionControlSubversionSaveCreateCurrent( s1, s2, s3, Val( s6 ) )
+ PROCFileUpdateVersionControlSubversionSaveCreateCurrent( s1, s2, s3, Val( s6 ), Val( s7 ) )
  //
  // Warn( "File", " ", CurrFilename(), " ", "is now saved in your local working directory", " ", s1, " ", "and committed as a next revision to your repository", " ", s2 )
  //
@@ -230,6 +234,70 @@ STRING PROC FNStringGetDirectoryVersionControlSubversionRepositoryS()
  // e.g. <F12> Main()
  //
  RETURN( FNStringGetFileIniDefaultS( "FNStringGetDirectoryVersionControlSubversionRepositoryS" ) )
+ //
+END
+
+// library: string: get: file: update: version: control: git: save: create: current: browser <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstcbr.s) [<Program>] [<Research>] [kn, ri, fr, 20-03-2026 15:44:40]
+STRING PROC FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS() ) // gives e.g. "0" // does not run browser with remote online repository
+ // e.g. END
+ // e.g.
+ // e.g. <Ctrl F12> Main()
+ //
+ // ===
+ //
+ // Use case =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS( )
+ // e.g. HELPDEF HELPDEFFNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS(
+ // e.g.  title = "FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS( help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ //
+ RETURN( FNStringGetFileIniDefaultS( "FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS" ) )
  //
 END
 
@@ -424,8 +492,8 @@ PROC PROCMacroRunKeep( STRING macronameS )
  //
 END
 
-// library: file: update: version: control: subversion: save: create <description>CRUD</description> <version control></version control> <version>1.0.0.0.160</version> <version control></version control> (filenamemacro=updafisc.s) [<Program>] [<Research>] [kn, zoe, mo, 20-11-2000 14:31:57]
-PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING fileVersionControlDirectoryWorkingInS, STRING fileVersionControlDirectoryRepositoryS, STRING revisionChangeInformationS, INTEGER B1 )
+// library: file: update: version: control: subversion: save: create <description>CRUD</description> <version control></version control> <version>1.0.0.0.162</version> <version control></version control> (filenamemacro=updafisc.s) [<Program>] [<Research>] [kn, zoe, mo, 20-11-2000 14:31:57]
+PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING fileVersionControlDirectoryWorkingInS, STRING fileVersionControlDirectoryRepositoryS, STRING revisionChangeInformationS, INTEGER B1, INTEGER B2 )
  // e.g. PROC Main()
  // e.g.  STRING s[255] = ""
  // e.g.  //
@@ -446,6 +514,9 @@ PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING fileVersion
  // e.g.  STRING s5[255] = "150" // change this
  // e.g.  //
  // e.g.  STRING s6[255] = "1" // If this is a "1" then B1 = true and upload to remote repository / if this is "0" then B1 = false and upload only to local repository
+ // e.g.  //
+ // e.g.  // STRING s7[255] = "0" // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
+ // e.g.  STRING s7[255] = FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS() // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
  // e.g.  //
  // e.g.  INTEGER bufferI = 0
  // e.g.  //
@@ -511,7 +582,7 @@ PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING fileVersion
  // e.g.   RETURN()
  // e.g.  ENDIF
  // e.g.  //
- // e.g.  PROCFileUpdateVersionControlSubversionSaveCreateCurrent( s1, s2, s3, Val( s6 ) )
+ // e.g.  PROCFileUpdateVersionControlSubversionSaveCreateCurrent( s1, s2, s3, Val( s6 ), Val( s7 ) )
  // e.g.  //
  // e.g.  // Warn( "File", " ", CurrFilename(), " ", "is now saved in your local working directory", " ", s1, " ", "and committed as a next revision to your repository", " ", s2 )
  // e.g.  //
@@ -621,7 +692,11 @@ PROC PROCFileUpdateVersionControlSubversionSaveCreateCurrent( STRING fileVersion
  // StartPgm( "https://sourceforge.net/p/the-semware-editor-tse/code/HEAD/tree/TRUNK/" )
  IF ( B1 )
   //
-  PROCProgramRunInternetBrowserUrl( "https://sourceforge.net/p/the-semware-editor-tse/code/HEAD/tree/TRUNK/" )
+  IF ( B2 )
+   //
+   PROCProgramRunInternetBrowserUrl( "https://sourceforge.net/p/the-semware-editor-tse/code/HEAD/tree/TRUNK/" )
+   //
+  ENDIF
   //
  ENDIF
  //
@@ -3065,7 +3140,7 @@ INTEGER PROC FNStringGetLengthI( STRING s )
 END
 
 // library: string: get: mid: string <description></description> <version control>string: get: word: token: middle: return a given integer amount of characters from a given startposition</version control> <version>1.0.0.0.9</version> (=MID$ in BASIC) <version>1.0.0.0.9</version> (filenamemacro=getstmid.s) [<Program>] [<Research>] [kn, ri, tu, 13-10-1998 20:29:00]
-STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI  )
+STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI )
  // e.g. PROC Main()
  // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
  // e.g.  STRING positionBeginS[255] = FNStringGetInitializeNewStringS()
