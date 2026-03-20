@@ -1,6 +1,6 @@
 FORWARD INTEGER PROC FNErrorCheckSB( STRING s1 )
-FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6, INTEGER i1 )
-FORWARD INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6, INTEGER i1 )
+FORWARD INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6, INTEGER i1, INTEGER i2 )
+FORWARD INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING s1, STRING s2, STRING s3, STRING s4, STRING s5, STRING s6, INTEGER i1, INTEGER i2 )
 FORWARD INTEGER PROC FNMacroCheckExecB( STRING s1 )
 FORWARD INTEGER PROC FNMacroCheckLoadB( STRING s1 )
 FORWARD INTEGER PROC FNMathCheckGetLogicFalseB()
@@ -43,6 +43,7 @@ FORWARD STRING PROC FNStringGetErrorS()
 FORWARD STRING PROC FNStringGetFileGetFilenamePathDefaultCrossPlatformS( STRING s1 )
 FORWARD STRING PROC FNStringGetFileIniDefaultCrossPlatformS( STRING s1 )
 FORWARD STRING PROC FNStringGetFileIniDefaultS( STRING s1 )
+FORWARD STRING PROC FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS()
 FORWARD STRING PROC FNStringGetFilenameEndBackSlashNotEqualInsertEndS( STRING s1 )
 FORWARD STRING PROC FNStringGetFilenameIniDefaultCrossPlatformS()
 FORWARD STRING PROC FNStringGetInitializationGlobalS( STRING s1, STRING s2, STRING s3 )
@@ -84,6 +85,9 @@ PROC Main()
  //
  STRING s7[255] = "1" // If this is a "1" then B1 = true and upload to remote repository / if this is "0" then B1 = false and upload only to local repository
  //
+ // STRING s8[255] = "0" // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
+ STRING s8[255] = FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS() // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
+ //
  IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  //
  IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
@@ -92,7 +96,8 @@ PROC Main()
 
  IF ( NOT ( Ask( "file: save: version: control: git: B1 = ", s7, _EDIT_HISTORY_ ) ) AND ( Length( s7 ) > 0 ) ) RETURN() ENDIF
  //
- Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ) ) ) // gives e.g. TRUE if successful
+ Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ), Val( s8 ) ) ) // gives e.g. TRUE if successful
+ //
 END
 
 <F12> Main()
@@ -123,8 +128,72 @@ STRING PROC FNStringGetProgramRunPasswordFileVersionControlGithubKnudS()
  //
 END
 
-// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.13</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
-INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
+// library: string: get: file: update: version: control: git: save: create: current: browser <description></description> <version control></version control> <version>1.0.0.0.1</version> <version control></version control> (filenamemacro=getstcbr.s) [<Program>] [<Research>] [kn, ri, fr, 20-03-2026 15:44:40]
+STRING PROC FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS()
+ // e.g. PROC Main()
+ // e.g.  Message( FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS() ) // gives e.g. "0" // does not run browser with remote online repository
+ // e.g. END
+ // e.g.
+ // e.g. <Ctrl F12> Main()
+ //
+ // ===
+ //
+ // Use case =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS( )
+ // e.g. HELPDEF HELPDEFFNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS(
+ // e.g.  title = "FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS( help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ //
+ RETURN( FNStringGetFileIniDefaultS( "FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS" ) )
+ //
+END
+
+// library: file: save: current: to: directory: remote: git: version: control <description></description> <version control></version control> <version>1.0.0.0.16</version> <version control></version control> (filenamemacro=savefivd.s) [<Program>] [<Research>] [kn, ri, th, 12-02-2026 02:34:14]
+INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLocalDirectoryS,STRING githubRemoteDirectoryUrlS,STRING fileNameExecutableGitS,STRING githubUserNameS,STRING githubPasswordS,STRING revisionChangeInformationS,INTEGER B1,INTEGER B2 )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  STRING s1[255] = "G:\VERSIONCONTROL\GIT\DDD01\" // optionally change this (this is the (GIT) directory where your (e.g. TSE) files are saved)
@@ -143,6 +212,9 @@ INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLo
  // e.g.  //
  // e.g.  STRING s7[255] = "1" // If this is a "1" then B1 = true and upload to remote repository / if this is "0" then B1 = false and upload only to local repository
  // e.g.  //
+ // e.g.  // STRING s8[255] = "0" // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
+ // e.g.  STRING s8[255] = FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS() // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
+ // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
@@ -151,7 +223,8 @@ INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLo
  // e.g.
  // e.g.  IF ( NOT ( Ask( "file: save: version: control: git: B1 = ", s7, _EDIT_HISTORY_ ) ) AND ( Length( s7 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ) ) ) // gives e.g. TRUE if successful
+ // e.g.  Message( FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ), Val( s8 ) ) ) // gives e.g. TRUE if successful
+ // e.g.  //
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
@@ -230,7 +303,7 @@ INTEGER PROC FNFileSaveCurrentToDirectoryRemoteGitVersionControlB( STRING yourLo
   RETURN( B )
  ENDIF
  //
- B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, githubUserNameS, githubPasswordS, revisionChangeInformationS, B1 )
+ B = FNFileSetUploadGithubFileVersionControlB( yourLocalDirectoryS, githubRemoteDirectoryUrlS, fileNameExecutableGitS, githubUserNameS, githubPasswordS, revisionChangeInformationS, B1, B2 )
  IF ( NOT ( B ) )
   Warn( "Could not upload the current file from your local directory", ":", " ", yourLocalDirectoryS, " ", ". Please check." )
   B = FALSE
@@ -261,8 +334,8 @@ STRING PROC FNStringGetFileIniDefaultS( STRING searchS )
  //
 END
 
-// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.43</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
-INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1 )
+// library: file: set: upload: github: file: version: control <description></description> <version control></version control> <version>1.0.0.0.46</version> <version control></version control> (filenamemacro=setfivco.s) [<Program>] [<Research>] [kn, ri, fr, 09-02-2018 01:56:32]
+INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectoryS, STRING githubRemoteDirectoryUrlS, STRING fileNameExecutableGitS, STRING githubUserNameS, STRING githubPasswordS, STRING revisionChangeInformationS, INTEGER B1, INTEGER B2 )
  // e.g. PROC Main()
  // e.g.  //
  // e.g.  STRING s1[255] = "G:\VERSIONCONTROL\GIT\DDD01\" // change this (this is the (GIT) directory where your files are saved)
@@ -282,6 +355,10 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  // e.g.  //
  // e.g.  STRING s7[255] = "1" // If this is a "1" then B1 = true and upload to remote repository / if this is "0" then B1 = false and upload only to local repository
  // e.g.  //
+ // e.g.  // STRING s8[255] = "0" // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
+ // e.g.  STRING s8[255] = FNStringGetFileUpdateVersionControlGitSaveCreateCurrentBrowserS() // change this is true then run the browser with the remote repository. If false then do not run the browser with the remote repository.
+ // e.g.  //
+ // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: yourLocalDirectoryS = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: set: upload: github: version: control: githubRemoteDirectoryUrlS = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
@@ -290,7 +367,7 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  // e.g.  //
  // e.g.  IF ( NOT ( Ask( "file: save: version: control: git: B1 = ", s7, _EDIT_HISTORY_ ) ) AND ( Length( s7 ) > 0 ) ) RETURN() ENDIF
  // e.g.  //
- // e.g.  Message( FNFileSetUploadGithubFileVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ) ) ) // gives e.g. TRUE if successful
+ // e.g.  Message( FNFileSetUploadGithubFileVersionControlB( s1, s2, s3, s4, s5, s6, Val( s7 ), Val( s8 ) ) ) // gives e.g. TRUE if successful
  // e.g. END
  // e.g.
  // e.g. <F12> Main()
@@ -377,7 +454,17 @@ INTEGER PROC FNFileSetUploadGithubFileVersionControlB( STRING yourLocalDirectory
  //
  // StartPgm( githubRemoteDirectoryUrlS )
  IF ( B1 )
-  PROCProgramRunInternetBrowserUrl( githubRemoteDirectoryUrlS )
+  IF ( B2 )
+   PROCProgramRunInternetBrowserUrl( githubRemoteDirectoryUrlS )
+  ENDIF
+ ENDIF
+ //
+ // clean up the .bat file
+ //
+ IF EditFile( fileNameS )
+  //
+  AbandonFile()
+  //
  ENDIF
  //
  B = TRUE
@@ -2009,7 +2096,7 @@ INTEGER PROC FNStringGetLengthI( STRING s )
 END
 
 // library: string: get: mid: string <description></description> <version control>string: get: word: token: middle: return a given integer amount of characters from a given startposition</version control> <version>1.0.0.0.9</version> (=MID$ in BASIC) <version>1.0.0.0.9</version> (filenamemacro=getstmid.s) [<Program>] [<Research>] [kn, ri, tu, 13-10-1998 20:29:00]
-STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI  )
+STRING PROC FNStringGetMidStringS( STRING s, INTEGER beginI, INTEGER totalI )
  // e.g. PROC Main()
  // e.g.  STRING s[255] = FNStringGetInitializeNewStringS()
  // e.g.  STRING positionBeginS[255] = FNStringGetInitializeNewStringS()
