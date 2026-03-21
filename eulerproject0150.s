@@ -8,6 +8,8 @@
  * Buffer     : line 1 is unused (empty). rowsum[rI][j] is at
  *              line rI*(rI+1)/2 + j + 1  (1-based, rI = 1..1000).
  *
+ * Created by Claude Sonnet 4.6
+ *
  * Answer: -271248680
  *
  * <version>1.0.0.0.1</version>
