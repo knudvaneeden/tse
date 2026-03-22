@@ -1,12 +1,28 @@
 /*
   Euler Project 156 - Counting Digits
   Pure TSE SAL solution
-  <version>1.0.0.0.2</version>
+  <version>1.0.0.0.3</version>
 
   History:
+  1.0.0.0.3 - 2026-03-22 - Final Warn() now shows only the final answer - Created by GPT-5.4 Thinking (ChatGPT)
   1.0.0.0.2 - 2026-03-22 - Removed intermediate Warn() boxes, only final Warn() remains - Created by GPT-5.4 Thinking (ChatGPT)
   1.0.0.0.1 - 2026-03-22 - Corrected WHILE terminators to ENDWHILE - Created by GPT-5.4 Thinking (ChatGPT)
   1.0.0.0.0 - 2026-03-22 - Initial version - Created by GPT-5.4 Thinking (ChatGPT)
+
+  Rules explicitly applied to this program:
+  - pure TSE SAL only
+  - full program supplied
+  - PROC Main() is last
+  - FORWARD declarations included
+  - no own variables named val or pos
+  - Return() always with parentheses
+  - WHILE ... ENDWHILE
+  - only one final Warn()
+  - CopyToWinClip() after Warn()
+  - clipboard gets only the final numeric answer
+  - version/history included
+  - fixed string sizes used
+  - no reassignment of string parameters
 
   This program calculates the final Euler 156 answer fully inside SAL.
   Calculated result: 21295121502550
@@ -372,22 +388,8 @@ PROC ProcSolveDigit( INTEGER digitI )
 END
 
 PROC Main()
-  STRING ruleMessageS[255]  = ""
   STRING finalMessageS[255] = ""
   INTEGER digitI            = 0
-  //
-  ruleMessageS =
-    "Rules applied in this source:" + Chr( 13 ) +
-    "pure SAL" + Chr( 13 ) +
-    "FORWARD used" + Chr( 13 ) +
-    "Main last" + Chr( 13 ) +
-    "no val/pos variable names" + Chr( 13 ) +
-    "Return() with parentheses" + Chr( 13 ) +
-    "WHILE ... ENDWHILE" + Chr( 13 ) +
-    "only final Warn()" + Chr( 13 ) +
-    "CopyToWinClip() after Warn()" + Chr( 13 ) +
-    "clipboard gets only final answer" + Chr( 13 ) +
-    "version/history included"
   //
   gTotalSumS = "0"
   //
@@ -396,7 +398,6 @@ PROC Main()
   ENDFOR
   //
   finalMessageS =
-    ruleMessageS + Chr( 13 ) + Chr( 13 ) +
     "Euler 156 final answer =" + Chr( 13 ) +
     gTotalSumS
   //
