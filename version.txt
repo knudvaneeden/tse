@@ -1,0 +1,100 @@
+
+Can you automatically create a The Semware Editor Professional TSE SAL
+program which solves Euler Project problem
+
+163
+
+at
+
+https://projecteuler.net/problem=163
+
+===
+
+It should be created in pure TSE SAL language.
+
+---
+
+Expected:
+
+A complete, rule compliant, pure TSE SAL, fully calculated version.
+
+You can of course always use earlier source code (functions, procedures, libraries, ...)
+already used and confirmed tested in earlier (TSE SAL) problems.
+
+No simpler approximations for different simpler answers or simpler
+different questions, no skipping, no somewhere only a hard coded final
+line - the correct answer should emerge purely from the mathematical
+and function loops inside TSE SAL.
+
+You are thus not allowed to skip the calculations, the answer must be
+calculated fully. So not simply hardcoding the known answer you looked
+up in the answer and this thus done without really calculating that
+answer.
+
+---
+
+Circumventions like using Python to do tasks is not allowed,
+you have to create the workarounds in pure TSE SAL language only.
+
+---
+
+After your debugging, revisions and your error resolving, always supply
+again the full TSE SAL program, no snippets which I have to copy/paste
+into the program.
+
+---
+
+Immediately after each error report and your solution found automatically create
+the full program, I should not have to ask for it explicitly.
+
+---
+
+Create also a copy/paste version of the TSE SAL program so that it easy
+for me to copy/paste the program.
+
+---
+
+Check and confirm explicitly all your already stored TSE rules on the
+generated TSE SAL .s program.
+
+I want to see on the computer screen that you explicitly show and print
+that you have applied all the rules on the program you are about to
+publish.
+
+---
+
+Do not use val and pos as your own
+variable names. Return() gets always parentheses. Use always a Warn()
+box to show the final answer. Only CopyToWinClip() that final answer
+(and not its surrounding text) so that I can paste (only) that result
+in another web page. Do paste the result also in the .s program
+webpage.
+
+---
+
+Put two CopyToWinClip() lines, one before and one after the final
+Warn() box, so that I can first take a screenshot of the Warn() box,
+then press <OK> and then the final answer is also copied to the
+clipboard.
+
+---
+
+Only 1 Warn() box for the last end result (so no intermediate Warn()
+boxes thus as this completely stops the program from running further).
+
+===
+
+Also always include a version number in the resulting .s file.
+
+---
+
+Also add to the history what the LLM name is that created this TSE SAL
+program so that I know that for statistics purposes (e.g. ChatGPT,
+Claude, Google Gemini, Perplexity Computer, ...).
+
+---
+
+If an (e.g. .txt) file has to be loaded, assume that it is filename located in
+the current working directory, so only the filename itself is necessary
+(thus not the absolute full filename path has to be supplied).
+
