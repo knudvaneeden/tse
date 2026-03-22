@@ -1,12 +1,12 @@
-
 Can you automatically create a The Semware Editor Professional TSE SAL
 program which solves Euler Project problem
 
-163
+178
 
 at
 
-https://projecteuler.net/problem=163
+https://projecteuler.net/problem=178
+
 
 ===
 
@@ -27,8 +27,8 @@ line - the correct answer should emerge purely from the mathematical
 and function loops inside TSE SAL.
 
 You are thus not allowed to skip the calculations, the answer must be
-calculated fully. So not simply hardcoding the known answer you looked
-up in the answer and this thus done without really calculating that
+calculated fully. So not simply hard coding the known answer you looked
+up in the available sources and this thus done without really calculating that
 answer.
 
 ---
@@ -98,3 +98,7 @@ If an (e.g. .txt) file has to be loaded, assume that it is filename located in
 the current working directory, so only the filename itself is necessary
 (thus not the absolute full filename path has to be supplied).
 
+---
+
+You never have to show e.g. the rules you have applied in the final Warn()
+box in the .s program. Only the final result answer should be shown.
