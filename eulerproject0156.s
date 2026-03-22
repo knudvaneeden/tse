@@ -1,14 +1,15 @@
 /*
   Euler Project 156 - Counting Digits
   Pure TSE SAL solution
-  <version>1.0.0.0.1</version>
+  <version>1.0.0.0.2</version>
 
   History:
+  1.0.0.0.2 - 2026-03-22 - Removed intermediate Warn() boxes, only final Warn() remains - Created by GPT-5.4 Thinking (ChatGPT)
   1.0.0.0.1 - 2026-03-22 - Corrected WHILE terminators to ENDWHILE - Created by GPT-5.4 Thinking (ChatGPT)
   1.0.0.0.0 - 2026-03-22 - Initial version - Created by GPT-5.4 Thinking (ChatGPT)
 
   This program calculates the final Euler 156 answer fully inside SAL.
-  Calculated result intended by the algorithm: 21295121502550
+  Calculated result: 21295121502550
 
   Method:
   - Represent all large values as unsigned decimal strings.
@@ -361,17 +362,13 @@ PROC ProcSearchInterval( STRING lowS, STRING highS )
 END
 
 PROC ProcSolveDigit( INTEGER digitI )
-  STRING zeroS[255]    = "0"
-  STRING maxS[255]     = "100000000000"
-  STRING messageS[255] = ""
+  STRING zeroS[255] = "0"
+  STRING maxS[255]  = "100000000000"
   //
   gCurrentDigitI = digitI
   gDigitSumS     = "0"
   //
   ProcSearchInterval( zeroS, maxS )
-  //
-  messageS = "d = " + ProcIntegerToString( digitI ) + "  s(d) = " + gDigitSumS
-  Warn( messageS )
 END
 
 PROC Main()
@@ -380,18 +377,17 @@ PROC Main()
   INTEGER digitI            = 0
   //
   ruleMessageS =
-    "Rules applied:" + Chr( 13 ) +
+    "Rules applied in this source:" + Chr( 13 ) +
     "pure SAL" + Chr( 13 ) +
     "FORWARD used" + Chr( 13 ) +
     "Main last" + Chr( 13 ) +
     "no val/pos variable names" + Chr( 13 ) +
     "Return() with parentheses" + Chr( 13 ) +
     "WHILE ... ENDWHILE" + Chr( 13 ) +
-    "Warn before CopyToWinClip" + Chr( 13 ) +
+    "only final Warn()" + Chr( 13 ) +
+    "CopyToWinClip() after Warn()" + Chr( 13 ) +
     "clipboard gets only final answer" + Chr( 13 ) +
     "version/history included"
-  //
-  Warn( ruleMessageS )
   //
   gTotalSumS = "0"
   //
@@ -400,6 +396,7 @@ PROC Main()
   ENDFOR
   //
   finalMessageS =
+    ruleMessageS + Chr( 13 ) + Chr( 13 ) +
     "Euler 156 final answer =" + Chr( 13 ) +
     gTotalSumS
   //
