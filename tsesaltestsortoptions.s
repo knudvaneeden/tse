@@ -292,9 +292,9 @@ PROC Main()
  // 1
  // 0006
  //
- ExecMacro( "sort -k _DECIMAL_" ) // sort unique (=remove any sorted duplicates) and numerical and ascending and case-sensitive
+ // ExecMacro( "sort -k _DECIMAL_" ) // sort unique (=remove any sorted duplicates) and numerical and ascending and case-sensitive
  //
-// Note: The _DECIMAL_ parameter is thus clearly ignored and not taken into account, because the sort result is the same as 'sort -k', the default.
+ // Note: The _DECIMAL_ parameter is thus clearly ignored and not taken into account, because the sort result is the same as 'sort -k', the default.
  //
  // 0006
  // 1
@@ -313,7 +313,7 @@ PROC Main()
  // c
  // z
  //
- ExecMacro( "sort -k -d _DECIMAL_" ) // sort unique (=remove any sorted duplicates) and numerical and descending and case-sensitive
+ // ExecMacro( "sort -k -d _DECIMAL_" ) // sort unique (=remove any sorted duplicates) and numerical and descending and case-sensitive
  //
  // Note: this _DECIMAL_ parameter is not for the external sort.s TSE macro file, but for the TSE internal sort, so is ignored in this context.
  //
@@ -334,7 +334,7 @@ PROC Main()
  // 1
  // 0006
  //
- ExecMacro( "sort -k -d -i _DECIMAL_" ) // sort unique (=remove any sorted duplicates) and numerical and descending and case-insensitive
+ // ExecMacro( "sort -k -d -i _DECIMAL_" ) // sort unique (=remove any sorted duplicates) and numerical and descending and case-insensitive
  //
  // Note: this _DECIMAL_ parameter is not for the external sort.s TSE macro file, but for the TSE internal sort, so is ignored in this context.
  //
