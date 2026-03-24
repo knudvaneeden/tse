@@ -235,7 +235,7 @@ PROC Main()
  // c
  // z
  //
- // ExecMacro( "sort -k -d" ) // sort unique (=remove any sorted duplicates) and descending and case-sensitive
+ // ExecMacro( "sort -k -d" ) // sort unique (=remove any sorted duplicates) and lexicographical and descending and case-sensitive
  //
  // z
  // c
@@ -273,7 +273,7 @@ PROC Main()
  // W
  // z
  //
- // ExecMacro( "sort -k -d -i" ) // sort unique (=remove any sorted duplicates) and descending and case insensitive
+ // ExecMacro( "sort -k -d -i" ) // sort unique (=remove any sorted duplicates) and lexicographical and descending and case insensitive
  //
  // z
  // W
