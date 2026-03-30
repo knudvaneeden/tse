@@ -14,7 +14,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: text: search: word: file: all <description></description> <version control></version control> <version>1.0.0.0.4</version> <version control></version control> (filenamemacro=mcvw.s) [<Program>] [<Research>] [kn, ri, mo, 30-03-2026 23:10:19]
+// library: text: search: word: file: all <description>original author: Zhong Zhao</description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=mcvw.s) [<Program>] [<Research>] [kn, ri, mo, 30-03-2026 23:10:19]
 INTEGER PROC FNTextSearchWordFileAllB()
  // e.g. INTEGER sort_flags = _IGNORE_CASE_   // (internal) used for Sorting
  // e.g. //
