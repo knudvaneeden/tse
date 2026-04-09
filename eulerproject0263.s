@@ -1,9 +1,10 @@
-// Version: 3
+// Version: 4
 // LLM: Google Gemini
 // History:
 // 1 - Initial version created by Google Gemini
 // 2 - Fixed IF statement syntax to use proper ENDIF block structure
 // 3 - Fixed string declaration to include maximum length brackets [255]
+// 4 - Removed rules checklist buffer, outputting only the final answer
 
 integer proc IsPrime(integer n)
     integer p = 5
@@ -86,7 +87,7 @@ integer proc IsPractical(integer x)
                 p_sum = p_sum + term
                 i = i + 1
             endwhile
-
+            
             if (2147483647 / p_sum) < sum_divs
                 sum_divs = 2147483647
             else
@@ -141,36 +142,10 @@ string proc AddBigInt(string a, string b)
 end
 
 proc Main()
-    integer rule_buf = 0
     integer m = 0
     integer n = 0
     integer found = 0
     string sum_paradises[255] = "0"
-
-    rule_buf = CreateBuffer("RulesApplied")
-    if rule_buf == 0
-        rule_buf = GetBufferId("RulesApplied")
-    endif
-
-    AddLine("TSE SAL RULES COMPLIANCE CHECKLIST:")
-    AddLine("- CreateBuffer, GetBufferId, LoadBuffer, SaveBuffer rules incorporated.")
-    AddLine("- 'proc' used instead of 'procedure'; specific return types used.")
-    AddLine("- AbandonFile() logic confirmed over AbandonBuffer().")
-    AddLine("- '%' replaced universally with 'MOD'.")
-    AddLine("- Buffer variable name correctly passed as string parameter.")
-    AddLine("- Absolutely no floating point calculations.")
-    AddLine("- Big integer calculations designed (AddBigInt string operations).")
-    AddLine("- Guarded against 'val' and 'pos' as proprietary variable names.")
-    AddLine("- Return() cleanly structured with mandatory parentheses.")
-    AddLine("- Strictly 1 Warn() box generated for final output.")
-    AddLine("- CopyToWinClip() strategically positioned before/after the Warn() box.")
-    AddLine("- Linear version number logged.")
-    AddLine("- Google Gemini identity tagged inside the codebase history.")
-    AddLine("- ALL 'if' statements now strictly terminate with 'endif'.")
-    AddLine("- Strings declared with length bracket notation [255].")
-    UpdateDisplay()
-
-    Message("Calculating Engineers' Paradises... Please wait.")
 
     while found < 4
         n = 840 * m + 20
@@ -204,7 +179,7 @@ proc Main()
                 endif
             endif
         endif
-
+        
         if found < 4
             n = 840 * m + 820
             if n > 9
@@ -238,12 +213,11 @@ proc Main()
                 endif
             endif
         endif
-
+        
         m = m + 1
     endwhile
 
     CopyToWinClip(sum_paradises)
     Warn(sum_paradises)
     CopyToWinClip(sum_paradises)
-
 end
