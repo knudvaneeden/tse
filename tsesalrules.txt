@@ -1,0 +1,1319 @@
+
+Add to your TSE SAL rules all the below rules which you do not aleady
+have stored in your memory:
+
+The Semware Editor Professional TSE SAL language rules:
+
+TSE SAL is a computer language used by The Semware Editor Professional (=TSE) text editor.
+
+The acronym 'TSE SAL' stands for 'SemWare Application Language'.
+
+TSE SAL has about 650 keywords.
+
+TSE SAL is a computer language on its own.
+
+TSE SAL is not exactly the same as Pascal.
+
+TSE SAL is not exactly the same as C or C++.
+
+TSE SAL is not exactly the same as Java.
+
+--- cut here: begin --------------------------------------------------
+
+'endproc' does not exist in  TSE SAL, it is instead 'end'.
+
+--- cut here: end ----------------------------------------------------
+
+** INTEGERS and FLOATING POINT **
+
+TSE SAL is strict 32 bits.
+So the maximum positive integer value is 2^31 - 1 = 2147483647.
+So the maximum negative integer value is -2^31 - 1 = -2147483647.
+If larger integer values are necessary then implement your own big integer operations.
+
+TSE SAL does not know LONG integers.
+
+TSE SAL does not supply floating point out of the box.
+
+---
+
+In TSE SAL we use 'NOT (x IN y)' instead of 'x not IN y'
+
+In TSE SAL you write: 'NOT ( SubStr(resultS, 2, 1) in "." )' and you do not write 'SubStr(resultS, 2, 1) not in "."'
+
+In TSE SAL the Val() function handles string input values always as an INTEGER and
+   Val() only returns INTEGER values. So Val() can not natively be used
+   to handle floating point values.
+
+TSE SAL does not use ';' to terminate a line.
+
+TSE SAL does not use ':' to terminate a line.
+
+TSE SAL does not use begin ... end blocks like in Pascal.
+
+In TSE SAL AtEndOfFile() does not exist, use e.g. NumLines() instead
+
+In TSE SAL CmpStr() does not exist, use e.g. CmpIStr() instead
+
+In TSE SAL 'THEN' is never used in 'IF ... ENDIF' just omit it
+
+TSE SAL does not use '{' ... '}' but uses IF ... ENDIF instead if applicable
+
+TSE SAL does not use '{' ... '}' but uses WHILE ... ENDWHILE instead if applicable
+
+TSE SAL does not use '{' ... '}' but uses REPEAT ... UNTIL instead if applicable
+
+TSE SAL does not use '{' ... '}' but uses DO ... TIMES ... ENDDO instead if applicable
+
+--- cut here: begin --------------------------------------------------
+
+
+TSE SAL rule to add permanently to your memory:
+
+TSE SAL uses
+
+ 'IF' ... 'ENDIF'
+
+or otherwise
+
+ 'IF' ... 'ELSEIF' ... 'ELSE' ... 'ENDIF'
+
+where 'ELSE' is optional.
+
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+
+TSE SAL rule to add permanently to your memory:
+
+TSE SAL uses 'FOR' ... 'ENDFOR'
+
+No 'FOR' ... 'NEXT'
+No 'FOR' ... 'END'
+but instead
+   'FOR' ... 'ENDFOR' thus.
+
+--- cut here: end ----------------------------------------------------
+
+TSE SAL uses 'WHILE' ... 'ENDWHILE'
+
+TSE SAL uses 'REPEAT' ... 'UNTIL'
+
+TSE SAL uses 'DO' ... 'TIMES'
+
+TSE SAL uses 'LOOP' ... 'ENDLOOP'
+
+In TSE SAL no FOREACH loop, you could simulate this with a DO ... TIMES ... ENDDO loop.
+
+---
+
+TSE SAL rule to add permanently to your memory:
+
+1. STEP is not a keyword in TSE SAL
+
+2. -If counting downwards use 'DOWNTO'
+
+    TSE SAL does not use
+
+     FOR x = 10 TO 1 STEP -1
+     ENDFOR
+
+    but uses instead if counting downwards
+
+     FOR x = 10 DOWNTO 1
+     ENDFOR
+
+3. -If counting upwards use 'BY'
+
+     FOR x = 3 to 775146 BY 2
+     ENDFOR
+
+4. -Thus do not use `STEP`.
+
+---
+
+A TSE SAL program uses always a 'PROC Main() ... END' as the start of the program
+
+In TSE SAL 'PROC Main() ... END' is always the last function in the program
+
+TSE SAL uses 'proc' instead of 'procedure'
+
+TSE SAL uses 'integer proc' when an integer result of a function is expected
+
+TSE SAL uses 'string proc' when a string result of a function is expected
+
+In TSE SAL 'mod' is used instead of '%'
+
+--- cut here: begin --------------------------------------------------
+
+array: see error 2333
+
+--- cut here: end ----------------------------------------------------
+
+---
+
+In TSE SAL add an indented '//' in every empty line. So that the TSE SAL program afterwards contains no empty lines. This is just a convenience for me personally.
+
+Example:
+
+PROC Main()
+ //
+ FOR iI = 1 TO 10
+  //
+  Message( iI )
+  //
+ ENDFOR
+ //
+ FOR iI = 1 TO 10
+  //
+  Message( iI * iI )
+  //
+ ENDFOR
+ //
+END
+
+In TSE SAL add a space after an open parenthesis '( '. This is just a convenience for me personally.
+
+In TSE SAL add a space before a close parenthesis ' )'. This is just a convenience for me personally.
+
+In TSE SAL TRUE is used for a true Boolean value. Example 'B = TRUE'.
+
+In TSE SAL FALSE is used for a false Boolean value. Example 'B = FALSE'.
+
+In TSE SAL add a capital 'B' at the end of a boolean name. This is just a convenience for me personally. Example: B = FALSE Example: foundB = TRUE Example: stopB = TRUE.
+
+In TSE SAL add a capital 'I' at the end of an integer variable name. This is just a convenience for me personally.
+
+In TSE SAL add a capital 'S' at the end of an string variable name. This is just a convenience for me personally.
+
+Better use 'Warn()' instead of 'Message()' when wanting to show the resulting output.
+
+In Warn() using a ',' does not print a space after the value.
+
+In Warn() using a ';' prints a space after the value.
+
+In TSE SAL one can not use Warn( x; ) it has to be Warn( x )
+
+===
+
+--- cut here: begin --------------------------------------------------
+
+Rule: In TSE SAL if a function does not have a return type defined
+(e.g. integer or string in front of the PROC function name) then the corresponding return()
+      must not contain any value.
+
+E.g.
+
+ PROC Main()
+  // ...
+  RETURN()
+  // ...
+ END
+
+--- cut here: end ----------------------------------------------------
+
+--- cut here: begin --------------------------------------------------
+
+In TSE SAL 'return' values of a function must be put between '()' parenthesis. E.g. return( I )
+
+`return` always requires parentheses: `return( value ) or 'return()` if no value is returned.
+
+--- cut here: end ----------------------------------------------------
+
+---
+
+** ORDER OF FUNCTIONS **
+
+In TSE SAL functions must already be known when they are called, by putting
+those functions first (=on top) in the program.
+
+In TSE SAL when parsing top to bottom, you cannot call a function or
+procedure before it has been encountered, unless you declare it with
+`FORWARD`.
+
+In TSE SAL therefore, place called functions above callers, or use the `FORWARD` keyword.
+
+In TSE SAL functions can get the word FORWARD in front to make those
+functions known to other functions coming after it.
+
+In TSE SAL 'FORWARD' declarations have to be put in the beginning of the program
+and they start with the keyword 'FORWARD'
+
+E.g.
+
+ FORWARD STRING PROC FNEvaluateSimpleExpressionS(STRING exprS, INTEGER decimalI)
+
+TSE SAL automatically executes the Main() procedure when the macro loads
+
+---
+
+In TSE SAL the default file extension of TSE SAL program is '.s'
+
+--- cut here: begin --------------------------------------------------
+
+TSE SAL rule to add permanently to your memory:
+
+Initialize strings and integers in a function immediately after the
+function header, thus not somewhere in the middle of that function.
+
+In TSE SAL all variable initializations for a string and integer must
+be placed immediately after the function header or procedure header.
+
+Never initialize STRING or INTEGER variables in the middle of a
+function. It must be initialized immediately after header of the
+function.
+
+In TSE SAL one can not declare string or integer in
+the middle of the function, these initializations
+should be placed immediately after the function
+definition header.
+
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+
+** STRING **
+
+TSE SAL rule to add permanently to your memory:
+
+In TSE SAL a string always needs initialization e.g.
+
+ STRING s[255] = ""
+
+In TSE SAL when initializing a string one has to indicate the total
+maximum amount of characters in that string.
+
+ E.g.
+
+  string s[255] = ""
+
+ so you can not use
+
+  string s = ""
+
+The maximum string size is 255 characters.
+
+Also all string related keywords (like GetText(), InsertText(), ... have a limit of maximum 255 characters.
+More than that gives an error message or the resulting string will be truncated.
+
+--- cut here: end ----------------------------------------------------
+
+In TSE SAL one can never pass the string size (e.g. 255) in the function header
+
+E.g.
+
+Correct:
+
+FORWARD STRING PROC AddBigIntegers( STRING a, STRING b )
+
+Not correct:
+
+FORWARD STRING PROC AddBigIntegers( STRING a[255], STRING b[255] )
+
+---
+
+'Message()' is a reserved keyword in TSE SAL.
+
+'Pos()' is a reserved keyword in TSE SAL.
+
+In TSE SAL string constants cannot be declared with #define in TSE SAL.
+Only numeric constants belong there.
+
+Not correct:
+
+#define SCALE_S        "1000000000000"
+
+Correct:
+
+#define SCALE_S        1000000000000
+
+---
+
+TSE SAL was created using the Borland C++ command line compiler version 5.5 and the Watsom C compiler.
+
+The Borland C++ compiler automatically adds an underscore '_' prefix to exported function names.
+
+TSE SAL example using a DLL:
+
+    dll "<user32.dll>"
+      integer proc MessageBox(
+        integer hwndOwner,          //handle of owner window
+        string lpszText : cstrval,  //address of text in message box
+        string lpszTitle: cstrval,  //address of title of message box
+        integer fuStyle             //style of message box
+      ) : "MessageBoxA"
+    end
+
+    #define NULL                        0
+
+    // some sample styles
+    #define MB_OK                       0x00000000
+    #define MB_OKCANCEL                 0x00000001
+    #define MB_ABORTRETRYIGNORE         0x00000002
+    #define MB_YESNOCANCEL              0x00000003
+    #define MB_YESNO                    0x00000004
+    #define MB_RETRYCANCEL              0x00000005
+    #define MB_ICONHAND                 0x00000010
+    #define MB_ICONQUESTION             0x00000020
+    #define MB_ICONEXCLAMATION          0x00000030
+    #define MB_ICONASTERISK             0x00000040
+
+    proc PopMsg(string title, string text)
+     MessageBox(GetWinHandle(), text, title, MB_OK)
+    end
+
+ PROC Main()
+  PopMsg( "Title goes here", "This is the text" + chr(10) + "of the message" )
+ END
+
+In TSE SAL the keyword 'Query()' is not used when requesting for user input. Instead 'Ask()' is used.
+The correct syntax for 'Ask()' is that the input result has to be assigned to an already declared string.
+For example:
+
+ proc Main()
+  string s1[255]=""
+  if Ask( "Enter your choice = ", s1 )
+   Warn( s1 )
+  endif
+ end
+
+In TSE SAL if you want to add history to you add ', _EDIT_HISTORY' for example: Ask("Enter first number: ", num1S, _EDIT_HISTORY_ )
+
+#define is used for constants or macros.
+
+TSE SAL uses chr() to get character codes, e.g., chr(10) for newline.
+
+In TSE SAL string concatenation is done using 'Format()' or otherwise '+'.
+
+In TSE SAL regarding strings: strings must specify their size, e.g., string myString[255] = ""
+
+In TSE SAL there is no 'Pow()' function.
+
+In TSE SAL there is no 'LPad()' function.
+
+In TSE SAL there is no built-in support for floating-point numbers except through DLL calls or external .exe files calling with Dos() and passing parameters or custom implementations.
+
+In TSE SAL the function 'Len()' does not exist, the correct name is 'Length()'
+
+In TSE SAL there exists no keyword 'XOR', instead use '^'
+
+In TSE SAL the maximum string length is 255 characters. For example: string s[255] = ""
+
+In TSE SAL a 'constant' can only be an integer, a constant can not be a string.
+
+TSE SAL does not know 'double'
+
+TSE SAL does not know 'real'
+
+In TSE SAL if the dll_file is enclosed within <>, the editor allows the operating system to search the default DLL search path.
+       Thus, a dll_file of "<kernel32.dll>" would be found in the Windows system directory.
+
+In TSE SAL outside of a DLL declaration you can not use cstrval.
+So this is the correct definition instead: integer proc RegOpenKeyEx(integer hKey, string subKey, integer options, integer access, var integer result )
+
+In TSE SAL use the VAR keyword for pass-by-reference parameters
+
+In TSE SAL without the VAR keyword it is the default pass-by-value
+
+TSE SAL uses VAR in the procedure signature for output parameters:
+
+E.g.
+
+PROC ReduceFrac( VAR STRING s, INTEGER mn, INTEGER md, VAR INTEGER rn, VAR INTEGER rd )
+
+In TSE SAL 'keyname' is a reserved name.
+
+TSE SAL does not know 'void'.
+
+In TSE SAL
+
+ CASE caseS
+  WHEN "a"
+  WHEN "b"
+  WHEN "c"
+  OTHERWISE
+ ENDCASE
+
+or
+
+ CASE I
+  WHEN 1
+  WHEN 2
+  WHEN 5
+  OTHERWISE
+ ENDCASE
+
+In TSE SAL one can not reassign a constant string parameter: in TSE SAL string names parameters in the function header are constants and cannot be modified later.
+
+In TSE SAL regarding this 'Can not reassign constant string' error,
+you should rename the variable name in the function name,
+then declare a new variable after the function definition
+and assign the renamed variable to it. For example:
+
+PROCTest( STRING inS )
+ STRING s[255] = inS
+END
+
+I want you for debugging purposes to add a line similar to the below after each 'Warn()' in the program:
+Example:
+Warn( "Final resultS: ", resultS )
+add this line, but replace the name:
+AddLine(Format( "Final resultS: ", resultS), bufferGI )
+
+then once in the program declare the global variable
+INTEGER bufferGI = 0
+
+in the Main() function you declare the buffer once:
+
+ PushPosition() // 1
+ bufferGI = CreateTempBuffer()
+ PopPosition() // 1
+
+and at the end of the Main() function you add the line
+
+ GotoBufferId( bufferGI )
+
+This is no TSE SAL syntax: Format( "%4d", iI )
+
+TSE SAL does not know callback functions in Microsoft Windows API.
+
+TSE SAL does not know ampersands in the DLL
+
+Error   2342  (10,17)    Reserved keyword '&'
+
+Based on our technical deep dives and previous adjustments to TSE SAL
+(The Semware Editor Macro Language) scripts, here are the essential
+syntax rules and constraints to keep in mind for development:
+
+### Core Functionality & Logic
+
+* **Buffer Management:** Use `AbandonFile()` instead of
+                         `AbandonBuffer()`, as the latter is not a
+                         valid function in the TSE SAL environment.
+
+* **Variable Handling:** When a function expects a buffer variable as
+                         the first parameter, pass the **name of the
+                         variable as a string** rather than the
+                         variable's value.
+
+* **Arithmetic Operators:** The `%` symbol is not defined for modulo
+                            operations. Always use the `MOD` keyword
+                            instead.
+
+### Data Types & Limits
+
+* **Integer Constraints:** TSE SAL operates on 31-bit signed integers.
+                           For any calculations requiring values
+                           greater than $2^{31} - 1$, you must
+                           implement custom big integer logic.
+
+* **Floating Point:** The language does not natively support
+                      floating-point calculations or decimal types. All
+                      logic must be handled via integer math or string
+                      manipulation.
+
+### Best Practices for Macro Development
+
+* **State Persistence:** Always verify if a buffer is "hidden" or
+                         "system" before performing mass edits to avoid
+                         interfering with the editor's internal state.
+
+* **String Precision:** Since math is integer-only, use string
+                        functions like `SubStr()` and `Val()` for any
+                        "pseudo-decimal" displays (e.g., treating the
+                        last two digits of an integer as cents).
+
+---
+
+**Data Types & Constants**
+- TSE SAL has no floating point - only `INTEGER` and `STRING`.
+- `constant` only works for numeric values. String constants must be declared as global string variables, e.g. `string NAMES_FILE[255] = "c:\\temp\\p022_names.txt"`.
+- Maximum string length in TSE SAL is 255 characters (`string s[255]`).
+
+---
+
+**Reserved Words - Never use as variable or proc names**
+`Val`, `Left`, `Right`, `Up`, `Down`, `Word`, `Line`, `Mark`, `Block`, `Find`, `Replace`, `File`, `Buffer`, `Window`, `Menu`, `Key`, `Help`, `Exit`, `Quit`, `Next`, `Prev`, `First`, `Last`, `Top`, `Bottom`, `Insert`, `Delete`, `Copy`, `Move`, `Goto`, `Jump`, `Set`, `Get`, `Put`, `Read`, `Write`, `Open`, `Close`, `Create`, `Destroy`, `Show`, `Hide`, `Enable`, `Disable`, `Check`, `List`, `Sort`, `Search`, `Select`, `Run`, `Exec`, `Load`, `Save`, `Print`, `Pos`, `Version`.
+
+**CRITICAL**: `Val` and `Pos` are the most commonly misused - always substitute (e.g. `nVal`, `idx`).
+
+---
+
+**Syntax**
+
+- Bit shifts: `shl`/`shr` (not `<<`/`>>`).
+- Bitwise operators: `^` for XOR, `&` for AND, `|` for OR, `~` for NOT.
+- `NOT` is **bitwise**, not logical: `NOT 0 = -1`, `NOT 1 = -2`. Never use `NOT x` as a logical test. Use `x == 0` or `x == FALSE`. Never write `while NOT done` - use `while done == FALSE`.
+- `Format` zero-padding: `Format(value:width:"0")` - e.g. `Format(n:5:"0")`. Not C-style.
+- TSE SAL can only display ASCII 0-255.
+
+---
+
+**Integers & Arithmetic**
+- `Val()` correctly handles negative integer strings: `Val("-1")` returns `-1`. Negative sentinel values stored as strings in buffers are safe.
+- Integer negation works correctly in bitwise expressions. The lowest-set-bit idiom `remaining & (-remaining)` works correctly in TSE SAL.
+
+---
+
+**Output conventions**
+
+- Always use `Warn()` for output (not `Message()`), and always add `CopyToWinClip()` of the result string.
+
+- `Warn()` line breaks: use `Chr(13)` embedded in the string. `Chr(10)` displays as a glyph.
+
+---
+
+**Buffers - the universal collection/lookup structure**
+
+- All collection/lookup data stored in TSE temp buffers, one value per
+  line, accessed via `GotoLine()` / `GetText()` / `KillToEol()` /
+  `InsertText()`.
+
+- Line replacement idiom: `BegLine()` + `KillToEol()` + `InsertText()`
+  - **not** `DelLine`/`InsertText`/`AddLine` or `lReplace`.
+
+- Sieve of Eratosthenes stored as buffer lines ("1"/"0"), with line
+  `n+1` for number `n` (off-by-one is a recurring bug to watch).
+
+- TSE easily handles 150,000+ lines in a buffer. "Out of memory" in a TSE SAL macro is **not** caused by buffer size - look for runaway loops or logic errors.
+
+---
+
+--- cut here: begin --------------------------------------------------
+
+TSE SAL rule to add permanently to your memory:
+
+**Recursion**
+
+- TSE SAL supports recursion.
+
+- Without `PushLocation()`/`PopLocation()`, the default recursion depth
+  is shallow (around 10-20 levels).
+
+- `PushLocation()`/`PopLocation()` must be called at the start/end of
+  each recursive proc to achieve a depth of up to 100 levels. Prefer
+  these over `PushPosition()`/`PopPosition()` for deep recursion.
+
+-Error: 'Stack overflow in macrointerpreter'.
+
+ Possible solution: Use PushLocation() and PopLocation() instead of PushPosition() and PopPosition().
+
+--- cut here: end ----------------------------------------------------
+
+---
+
+--- cut here: begin --------------------------------------------------
+
+TSE: Rule: TSE SAL can handle files of about 3 gigabytes easily.
+
+--- cut here: end ----------------------------------------------------
+
+**File I/O**
+- `fOpen()` correct constant is `_OPEN_READONLY_` (not `_READ_`).
+
+---
+
+**Display**
+- `UpdateDisplay(_ALL_WINDOWS_REFRESH_)` needed after maximize.
+- Knud uses the 'Terminal' font in TSE on Windows 11 Professional.
+
+---
+
+--- cut here: begin --------------------------------------------------
+
+TSE SAL rule to add permanently to your memory:
+
+**Naming conventions (Knud's personal style)**
+
+A. -Use all capital characters for #DEFINE constants
+
+     E.g.
+
+      #DEFINE LIMIT_K      1000
+      #DEFINE MAX_FACTORS  16
+      #DEFINE BIG_BASE     10000
+      #DEFINE BIG_LAST     5
+
+B. -Use camelCase for local and global variable names.
+
+C. -If local variables:
+
+     1. -If using a single character local integer variable name use uppercase I for an integer
+
+          E.g.
+
+           INTEGER I = 0
+
+     2. -If using a single character local string variable name use lowercase s for a string
+
+          E.g.
+
+           STRING s[255] = ""
+
+     4. -Start the variable name with a lower case letter if length more than 1 character.
+
+          E.g.
+
+           INTEGER firstValueI = 0
+
+     5. -Add an uppercase 'I' at the end of the variable name if the local variable is an INTEGER
+
+         E.g.
+
+          INTEGER firstValueI = 0
+
+          INTEGER secondValueI = 0
+
+     6. -Add an uppercase 'S' at the end if the local variable is a STRING
+
+         E.g.
+
+          STRING firstNameS = "John"
+
+          STRING lastNameS = "Doe"
+
+D. Global variable name:
+
+    1. -Add always (on the end of the name only) 'G' before the 'S' for string or 'I' for integer
+
+         E.g.
+
+          STRING thisIsAGlobalStringGS[255] = ""
+
+          STRING thisIsAnotherGlobalStringGS[255] = ""
+
+         E.g.
+
+          INTEGER thisIsAGlobalIntegerGI = 10
+
+          INTEGER thisIsAnotherGlobalIntegerGI = 100
+
+E. Function names:
+
+    1. -Do NOT apply this r\ules to 'Main()'
+
+         E.g.
+
+         PROC Main()
+         END
+
+        because 'Main()' is a reserved construct in TSE SAL
+
+    2. -Procedure: TSE SAL uses `proc` for procedure definitions
+
+        In that case add explicitly a 'PROC' to the front of the name.
+
+         E.g.
+
+          PROC PROCMyProcedure1()
+           RETURN()
+          END
+
+          PROC PROCMyProcedure2()
+           RETURN()
+          END
+
+    3. -Function: TSE SAL uses
+
+         `INTEGER PROC`
+
+        or
+
+         `STRING PROC`
+
+        for specific return types.
+
+        In that case add explicitly an 'FN' to the front of the name.
+
+         E.g.
+
+          INTEGER PROC FNMyFunction1I()
+           RETURN( 1 )
+          END
+
+          INTEGER PROC FNMyFunction2I()
+           RETURN( 2 )
+          END
+
+          STRING PROC FNMyFunction1S()
+           RETURN( "1" )
+          END
+
+          STRING PROC FNMyFunction2S()
+           RETURN( "2" )
+          END
+
+--- cut here: end ----------------------------------------------------
+
+- Noun-verb proc naming.
+
+- ALL_CAPS constants.
+
+- Version tags `<version>1.0.0.0.1</version>`.
+
+- Variables declared immediately after proc header.
+
+---
+
+**Environment**
+- TSE at `F:\WORDPROC\tse32_v45024\`, personal work at `F:\BBC\TAAL\`.
+- Python at `G:\LANGUAGE\COMPUTER\PYTHON\PYTHON\python.exe`.
+- Compiler: `sc32.exe`.
+- OS detection: use `_WINDOWS_NT_` (not just `_WINDOWS_`) for Windows 10/11.
+
+---
+
+**Key function reference by category**
+
+| Category | Functions |
+|---|---|
+| BUFFERS | `CreateTempBuffer`, `CreateBuffer`, `AbandonFile`, `GotoBufferId`, `GetBufferId`, `InsertFile`, `NumLines`, `CurrLineLen`, `EmptyBuffer`, `FileChanged` |
+| STRINGS | `Asc`, `Chr`, `SubStr`, `Length`, `Pos`, `Str`, `Val`, `Format`, `GetText`, `InsStr`, `DelStr`, `LTrim`, `RTrim`, `LeftStr`, `RightStr`, `StrReplace`, `StrFind`, `GetToken` |
+| MOVEMENT | `BegFile`, `EndFile`, `BegLine`, `EndLine`, `Up`, `Down`, `GotoLine`, `GotoColumn`, `PushPosition`, `PopPosition`, `CurrLine`, `CurrCol` |
+| BLOCKS | `MarkLine`, `MarkChar`, `MarkColumn`, `MarkStream`, `UnMarkBlock`, `CopyToWinClip`, `Sort` |
+| EDITING | `Upper`, `Lower`, `Undo`, `Redo`, `InsertText`, `AddLine`, `SplitLine`, `JoinLine`, `DelLine` |
+| OS_ACCESS | `FileExists`, `Shell`, `Dos`, `GetEnvStr`, `SplitPath`, `MakeTempName` |
+| FIND_REPLACE | `Find`, `lFind`, `lReplace`, `GetFoundText` |
+| KEYBOARD | `Ask`, `Warn`, `Message`, `YesNo` |
+| HOOKS | `Hook`, `UnHook`, `ExecHook` |
+| VIDEO | `PopWinOpen`, `PopWinClose`, `PutStrXY`, `GetStrAttrXY`, `Color`, `DrawBox` |
+| DISK_IO | `fOpen`, `fClose`, `fRead`, `fWrite`, `fSeek`
+
+1. TSE SAL does **not** use `;` to terminate lines.
+
+2. TSE SAL uses `IF ... ENDIF` instead of `{ ... }`.
+
+3. TSE SAL uses `WHILE ... ENDWHILE` instead of `{ ... }`.
+
+4. TSE SAL uses `REPEAT ... UNTIL` instead of `{ ... }`.
+
+5. TSE SAL programs always start with `PROC Main() ... END`.
+
+6. TSE SAL uses `proc` for procedure definitions and `integer proc` or `string proc` for specific return types.
+
+7. TSE SAL uses `mod` for modulus instead of `%`.
+
+9. TSE SAL does **not** support `+=`.
+
+10. TSE SAL does **not** support `foreach`.
+
+11. TSE SAL uses `==` for comparing two values.
+
+12. `Warn()` is preferred over `Message()` for displaying output.
+
+13. In `Warn()`, using `;` instead of `,` prints a space after the value.
+
+14. The correct keyword to position at the end of the file is `EndFile()`, not `Bottom()`.
+
+15. In TSE SAL regex, the `+` quantifier is valid but must follow an atom.
+
+16. With `LFind` option `"x"` (extended mode), `#` starts a comment, so `#` must be escaped as `\#`, or the `"x"` option must be omitted, otherwise you can get "Incomplete closure" errors.
+
+17. Procedure string parameters are constant/read-only and cannot be reassigned inside the procedure body.
+
+18. So code like:
+
+proc foobar( STRING numberS )
+ numberS = "1234"
+end
+
+is not allowed.
+
+19. Instead, copy the string parameter into a local working variable first and modify that local variable.
+
+22. `Return()` should always be written with parentheses.
+
+23. Do **not** use `val` as your own variable name.
+
+24. Do **not** use `pos` as your own variable name.
+
+25. Use a `Warn()` box to show the final answer.
+
+26. If copying the final answer to the Windows clipboard, use `CopyToWinClip()` with **only** the final answer text, not surrounding explanatory text.
+
+27. Do not also paste that final answer into the program source text.
+
+28. Include a version number in the resulting `.s` file.
+
+29. If a file must be loaded, assume it is in the current working directory, so only the filename should be used, not an absolute path.
+
+30. TSE is 32-bit.
+
+32. The maximum string length in TSE is 255 characters.
+
+33. For large datasets, prefer memory buffers with consecutive lines instead of trying to store everything in one long string.
+
+36. `PushLocation()` and `PopLocation()` allow much deeper recursive nesting than `PushPosition()` and `PopPosition()`.
+
+37. `PushPosition()` and `PopPosition()` can much more easily lead to stack overflow in deep recursion.
+
+38. For deep recursive TSE SAL solutions, prefer `PushLocation()` / `PopLocation()`.
+
+39. When debugging screen/buffer state, it can help to use `Warn()` to pause execution and `UpdateDisplay()` to show the current screen before continuing.
+
+### **2. Program Structure and Metadata**
+
+- **Version Number**: Always include a version number in the resulting `.s` file.
+
+- **Return Statement**: Always use parentheses with `Return()`, e.g., `Return(value)`.
+
+### **3. Output and User Interaction**
+
+- **Final Answer Display**: Display the final answer in a `Warn()` box.
+
+- **Clipboard Handling**: Use `CopyToWinClip()` for only the final answer (without surrounding text). Avoid pasting the result in the `.s` program webpage.
+
+### **4. Variable Naming Conventions**
+- **Avoid**: Do not use `val` and `pos` as variable names.
+
+### ?? Overview
+TSE SAL (SemWare Application Language) is the **Pascal-based**
+scripting and macro language used in The Semware Editor (TSE) text
+editor . It is a procedural language that allows users to extend and
+customize the editor's functionality .
+
+### ?? Language Specifications and "Rules"
+
+**Paradigm and Structure**
+*   **Procedural**: The language supports procedural programming with functions and procedures .
+*   **Pascal-like Notation**: Its syntax is described as being similar to Pascal .
+
+**Core Data Types**
+TSE SAL supports two primary data types :
+*   **Integer**: A 32-bit base-2 signed integral numeric.
+*   **String**: A fixed-size array of characters. A string has a maximum definable length of **255 characters**.
+
+**Language Features**
+
+--- cut here: begin --------------------------------------------------
+
+TSE SAL rule to add permanently to your memory:
+
+The keyword 'local' does not exist in TSE SAL.
+
+Variables: TSE SAL supports both local and global variables.
+
+but the keyword 'local' is not defined in TSE SAL.
+
+E.g. wrong syntax
+
+    local integer len_a
+    local integer len_b
+
+E.g. correct syntax
+
+    integer len_a
+    integer len_b
+
+--- cut here: end ----------------------------------------------------
+
+*   **Constants**: Allows the definition of constants .
+*   **Control Structures**: Includes iterative (`FOR` loops) and recursive control structures .
+*   **Preprocessor**: Supports common preprocessor commands like `#include` and `#ifdef` .
+
+**Editor-Specific Capabilities**
+*   **Text Manipulation**: Includes many text-editing-specific functions .
+*   **Buffer Access**: APIs support the creation and manipulation of arbitrary buffers (including non-visible ones), which act as large text containers .
+*   **External Integration**: In TSE Pro, TSE SAL can access Win32 DLL entry points .
+
+### ?? Example Syntax
+Here is a simple example of a `Main` procedure that displays a warning message three times :
+
+```
+proc Main()
+    integer I
+    for I = 1 TO 3
+        Warn( "hello world ", I )
+    endfor
+end
+```
+
+### ?? Important Notes
+
+*   The language is compiled into intermediate code, which is then
+    interpreted by the editor's core. It also includes an interactive
+    debugger .
+
+*   The information above is consistent with the language's description up to TSE Pro v4.4 (2005). The editor continues to be maintained, but the core language specifications have remained stable .
+
+## TSE SAL Language Rules and Documentation
+
+### Overview
+
+**TSE SAL (SemWare Application Language)** is the macro programming
+language for The SemWare Editor Professional (TSE). It is a procedural,
+Pascal-like language specifically designed for text editing operations
+.
+
+---
+
+### Data Types
+
+TSE SAL supports **only two data types** :
+
+| Type | Description |
+|------|-------------|
+| **INTEGER** | 32-bit, base-2, signed integral number |
+| **STRING** | Fixed-size array of characters, maximum definable length of 255 characters |
+
+---
+
+### Variable Declaration
+
+**Integer Variables:**
+```sal
+integer var1, var2, var3
+```
+
+**String Variables:**
+```sal
+string s[80], name[50], path[MAXPATH]
+```
+- String size must be specified in brackets
+- Maximum string length is 255 characters
+
+**Constants:**
+```sal
+constant MAXPATH = 260
+```
+
+---
+
+### Procedure Structure
+
+```sal
+proc Main()
+    // Variable declarations
+    integer i
+    string msg[50]
+
+    // Statements
+    for i = 1 to 3
+        Warn("Hello world ", i)
+    endfor
+end
+```
+
+---
+
+### Control Structures
+
+**Conditional Statements:**
+
+if condition
+    // statements
+elseif condition
+    // statements
+else
+    // statements
+endif
+
+**Loops:**
+
+// FOR loop
+for i = 1 to 10
+    // statements
+endfor
+
+// WHILE loop
+while condition
+    // statements
+endwhile
+
+// LOOP with break/continue
+loop
+    // statements
+    if condition
+        break
+    endif
+endloop
+
+**Case Statement:**
+
+case expression
+    when value1: statements
+    when value2: statements
+    otherwise: statements
+endcase
+
+---
+
+### Comments
+
+In TSE SAL comments start with // for single line or /* */ for multi-line
+
+TSE SAL supports two comment styles :
+
+| Style | Syntax | Usage |
+|-------|--------|-------|
+| **Single-line** | `// comment` | End-of-line comments |
+| **Multi-line** | `/* comment */` | Block comments (cannot be nested) |
+
+**Recommended convention:**
+- Use `//` inside procedures
+- Use `/* */` outside procedures (makes it easy to comment out entire procedures)
+
+---
+
+### Operators
+
+**Arithmetic Operators:**
+- `+` (addition)
+- `-` (subtraction)
+- `*` (multiplication)
+- `/` (division)
+- `%` (modulo)
+- `&` (bitwise AND)
+- `|` (bitwise OR)
+- `~` (bitwise NOT)
+- `<<` (shift left)
+- `>>` (shift right)
+
+**Comparison Operators:**
+- `==` (equal)
+- `<>` (not equal)
+- `<` (less than)
+- `>` (greater than)
+- `<=` (less than or equal)
+- `>=` (greater than or equal)
+
+**Logical Operators:**
+- `and`
+- `or`
+- `not`
+- `xor`
+
+**String Operators:**
+- `+` (concatenation)
+
+---
+
+### Preprocessor Directives
+
+```sal
+#define NAME value
+#ifdef NAME
+#ifndef NAME
+#if expression
+#else
+#endif
+#ifexist filename
+```
+
+---
+
+### Key Built-in Functions
+
+**Editor Control:**
+- `Warn(message)` - Display message box
+- `AddLine([text, buffer_id])` - Add line after current line
+- `InsertLine([text, buffer_id])` - Insert line before current line
+- `DelLine()` - Delete current line
+- `KillLine()` - Delete line without storing in clipboard
+
+**Cursor Movement:**
+- `Up()`, `Down()`, `Left()`, `Right()`
+- `GotoLine(line_num)`, `GotoCol(col_num)`
+- `GotoBufferPosition(pos)`
+
+**Text Retrieval:**
+- `CurrChar()` - Get ASCII value of character at cursor
+- `CurrLine()` - Get current line number
+- `CurrCol()` - Get current column
+- `GetText(line_num, col_num, length)`
+
+**Buffer Operations:**
+- `CreateBuffer(name)`
+- `GetBufferId(name)`
+- `LoadBuffer(filename)`
+- `SaveBuffer([filename, buffer_id])`
+
+**Block Operations:**
+- `MarkBlock()`, `UnMarkBlock()`
+- `CopyBlock()`, `MoveBlock()`, `DelBlock()`
+- `Copy()`, `Cut()`, `Paste()`
+
+**Search & Replace:**
+- `Find(search_string, options)`
+- `lFind()` - Load and find
+- `Replace(search, replace, options)`
+- `lReplace()` - Load and replace
+
+**String Functions:**
+- `Length(string)` - Get string length
+- `SubStr(string, start, length)` - Extract substring
+- `StrFind(string, substring)` - Find substring position
+- `StrReplace(string, old, new)` - Replace substring
+- `Upper(string)`, `Lower(string)` - Case conversion
+- `Asc(char)` - Get ASCII value
+- `Chr(ascii_value)` - Get character from ASCII
+
+**File Operations:**
+- `AskFilename()` - Prompt for filename
+- `FileExists(filename)`
+- `CopyFile(source, dest)`
+- `ChDir(directory)`
+
+---
+
+### Event Macros
+
+TSE SAL supports special event-driven macros :
+
+| Macro Name | Trigger |
+|------------|---------|
+| `Main` | Default entry point |
+| `TSEStart` | Editor startup |
+| `_ON_CHANGING_FILES_` | File change events |
+| `_ON_LOADING_FILE_` | File load events |
+| `_ON_KEY_` | Key press events |
+
+---
+
+### DLL Support
+
+TSE SAL can call external DLL functions :
+```sal
+dll "library.dll"
+    function_name(param_type) return_type
+enddll
+```
+
+---
+
+### File Extensions
+
+| Extension | Purpose |
+|-----------|---------|
+| `.s` | TSE SAL source files (standard macros) |
+| `.ui` | User Interface macro files |
+| `.mac` | Compiled macro files |
+
+---
+
+### Important Limitations
+
+As noted in the documentation :
+- **No Unicode support** (native)
+- **Path/file length limit**: 255 characters
+- **String maximum**: 255 characters
+- **Integer**: 32-bit signed only
+- **No floating-point** data type
+- Last commercial release was **TSE Pro v4.4 in 2005**
+
+---
+
+### Example: Complete TSE SAL Macro
+
+```sal
+/*
+ * Example TSE SAL macro demonstrating key features
+ * Save as: example.s
+ */
+
+proc Main()
+    integer i, count
+    string filename[80], line[255]
+
+    // Get filename from user
+    filename = AskFilename("Open file:", "*.txt")
+
+    if filename == ""
+        Warn("No file selected")
+        return
+    endif
+
+    // Load the file
+    if not LoadBuffer(filename)
+        Warn("Failed to load: ", filename)
+        return
+    endif
+
+    // Count non-empty lines
+    count = 0
+    GotoLine(1)
+
+    for i = 1 to NumLines()
+        if CurrLineLen() > 0
+            count = count + 1
+        endif
+        Down()
+    endfor
+
+    Warn("File has ", count, " non-empty lines")
+end
+```
+
+---
+
+### Compilation
+
+- **Source files** (`.s`, `.ui`) must be compiled to `.mac` files
+- Use `<Ctrl+F9>` to compile current file
+- Use `<Shift+F9>` for compile menu
+- TSE SAL code is compiled to intermediate code interpreted by the editor's core
+- Includes an **interactive debugger**
+
+===
+
+--- cut here: begin --------------------------------------------------
+
+** COMPARISON and ASSIGNMENT **
+
+TSE SAL rule to add permanently to your memory:
+
+TSE SAL uses '=' to assign
+
+TSE SAL uses '==' when comparing 2 values.
+
+TSE SAL does not know '+='
+
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+
+TSE SAL rule to add permanently to your memory:
+
+Add to TSE SAL rules: When doing a 'sort' you must make sure that there
+is a block marked. E.g. use MarkAll():
+
+// Summing logic
+ GotoBufferId( pivotBufferI )
+ MarkAll()
+ Sort()
+
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+
+TSE SAL rule to add permanently to your memory:
+
+TSE SAL does not know the 'Sqrt()' function
+
+TSE SAL does not have a SquareRoot() function.
+
+You will have to create your own custom version of a square root
+function.
+
+--- cut here: end ----------------------------------------------------
+
+===
+
+--- cut here: begin --------------------------------------------------
+
+TSE SAL rule to add permanently to your memory:
+
+You do not have to create 2 almost idential program versions, e.g.
+skip thus that last extra program version
+
+ 'Copy/Paste Version'
+
+--- cut here: end ----------------------------------------------------
