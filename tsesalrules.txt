@@ -741,7 +741,7 @@ E. Global variable name:
 
 F. Function names:
 
-    1. -Do NOT apply this r\ules to 'Main()'
+    1. -Do NOT apply these rules to 'Main()'
 
          E.g.
 
@@ -778,6 +778,8 @@ F. Function names:
 
          E.g.
 
+          Returns an integer:
+
           INTEGER PROC FNMyFunction1I()
            RETURN( 1 )
           END
@@ -785,6 +787,18 @@ F. Function names:
           INTEGER PROC FNMyFunction2I()
            RETURN( 2 )
           END
+
+          Returns a boolean integer:\
+
+          INTEGER PROC FNMyFunction1B()
+           RETURN( FALSE )
+          END
+
+          INTEGER PROC FNMyFunction2B()
+           RETURN( TRUE )
+          END
+
+          Returns a string:
 
           STRING PROC FNMyFunction1S()
            RETURN( "1" )
