@@ -629,7 +629,26 @@ TSE SAL rule to add permanently to your memory:
 
 **Naming conventions (Knud's personal style)**
 
-A. -Use all capital characters for #DEFINE constants
+A. Overview:
+
+Constants: ALL_CAPS for #DEFINE.
+
+Variable Case: camelCase for all local and global variables (if length > 1).
+
+Local Single-Character: I (Integer), B (Boolean Integer), s (String).
+
+Local Multi-Character Suffixes: I (Integer), B (Boolean Integer), S (String).
+
+Global Variable Suffixes: GI (Integer), GB (Boolean Integer), GS (String).
+
+Procedures: Prefix with PROC (e.g., PROCMyProcedure()).
+
+Functions: Prefix with FN. Suffix with I for INTEGER PROC (e.g., FNMyFunctionI()) and S for STRING PROC (e.g., FNMyFunctionS()).
+
+Main: PROC Main() remains completely unmodified.
+
+
+B. -Use all capital characters for #DEFINE constants
 
      E.g.
 
@@ -638,15 +657,26 @@ A. -Use all capital characters for #DEFINE constants
       #DEFINE BIG_BASE     10000
       #DEFINE BIG_LAST     5
 
-B. -Use camelCase for local and global variable names.
+C. -Use camelCase for local and global variable names.
 
-C. -If local variables:
+D. -If local variables:
 
-     1. -If using a single character local integer variable name use uppercase I for an integer
+     1. -INTEGER: If using a single character local integer variable name use uppercase I for an integer
 
           E.g.
 
            INTEGER I = 0
+
+        -INTEGER but Boolean: If using a single character local boolean
+                              integer variable name use a B
+
+          E.g.
+
+           INTEGER B = FALSE
+
+           or
+
+           INTEGER B = TRUE
 
      2. -If using a single character local string variable name use lowercase s for a string
 
@@ -654,19 +684,29 @@ C. -If local variables:
 
            STRING s[255] = ""
 
-     4. -Start the variable name with a lower case letter if length more than 1 character.
+     3. -Start the variable name with a lower case letter if length more than 1 character.
 
           E.g.
 
            INTEGER firstValueI = 0
 
-     5. -Add an uppercase 'I' at the end of the variable name if the local variable is an INTEGER
+           INTEGER flagB = 0
+
+     4. -Add an uppercase 'I' at the end of the variable name if the local variable is an INTEGER
 
          E.g.
 
           INTEGER firstValueI = 0
 
           INTEGER secondValueI = 0
+
+     5. -Add an uppercase 'B' at the end of the variable name if the local variable is an INTEGER
+
+         E.g.
+
+          INTEGER firstValueB = FALSE
+
+          INTEGER secondValueB = FALSE
 
      6. -Add an uppercase 'S' at the end if the local variable is a STRING
 
@@ -676,9 +716,10 @@ C. -If local variables:
 
           STRING lastNameS = "Doe"
 
-D. Global variable name:
+E. Global variable name:
 
     1. -Add always (on the end of the name only) 'G' before the 'S' for string or 'I' for integer
+        or 'B' for a boolean integer
 
          E.g.
 
@@ -692,7 +733,13 @@ D. Global variable name:
 
           INTEGER thisIsAnotherGlobalIntegerGI = 100
 
-E. Function names:
+         E.g.
+
+          INTEGER thisIsAGlobalBooleanGB = FALSE
+
+          INTEGER thisIsAnotherGlobalBooleanGB = FALSE
+
+F. Function names:
 
     1. -Do NOT apply this r\ules to 'Main()'
 
