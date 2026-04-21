@@ -1,0 +1,255 @@
+
+// -----------------------------------------------------------------------------
+// Title: Project Euler problem 309
+// Description: Pure TSE SAL calculation of Project Euler 309 (Integer Ladders)
+// Version: 2
+// LLM Name: Google Gemini Pro
+// -----------------------------------------------------------------------------
+
+// Global Variables
+INTEGER bucketsGI[10]
+INTEGER aValsGI[4000]
+
+// Custom mathematical GCD function
+INTEGER PROC FNGcdI(INTEGER aI, INTEGER bI)
+    INTEGER tempI = 0
+    WHILE bI <> 0
+        tempI = bI
+        bI = aI MOD bI
+        aI = tempI
+    ENDWHILE
+    RETURN(aI)
+END
+
+// Russian Peasant multiplication to prevent 32-bit Integer overflow
+// Calculates: (xI * yI) MOD nI
+INTEGER PROC FNMulModI(INTEGER xI, INTEGER yI, INTEGER nI)
+    INTEGER resI = 0
+    INTEGER aI = 0
+    INTEGER bI = 0
+
+    aI = xI MOD nI
+    bI = yI
+
+    WHILE bI > 0
+        IF (bI MOD 2) == 1
+            resI = (resI + aI) MOD nI
+        ENDIF
+        aI = (aI * 2) MOD nI
+        bI = bI / 2
+    ENDWHILE
+    RETURN(resI)
+END
+
+// Generates valid w and leg pairs from Pythagorean Triples limits
+INTEGER PROC FNGenerateTriplesI()
+    INTEGER mI = 0
+    INTEGER nI = 0
+    INTEGER aBaseI = 0
+    INTEGER bBaseI = 0
+    INTEGER cBaseI = 0
+    INTEGER aI = 0
+    INTEGER bI = 0
+    INTEGER cI = 0
+    INTEGER kI = 0
+    INTEGER limitI = 1000000
+    INTEGER sqrtLimitI = 1000
+    INTEGER listBufferI = 0
+    STRING s1S[255] = ""
+    STRING s2S[255] = ""
+
+    listBufferI = CreateBuffer("Triples")
+
+    FOR mI = 2 TO sqrtLimitI
+        FOR nI = 1 TO mI - 1
+            IF ((mI - nI) MOD 2 == 1)
+                IF (FNGcdI(mI, nI) == 1)
+                    aBaseI = mI * mI - nI * nI
+                    bBaseI = 2 * mI * nI
+                    cBaseI = mI * mI + nI * nI
+
+                    kI = 1
+                    WHILE kI * cBaseI < limitI
+                        aI = kI * aBaseI
+                        bI = kI * bBaseI
+
+                        s1S = Format(bI:6:"0", " ", aI:6:"0")
+                        s2S = Format(aI:6:"0", " ", bI:6:"0")
+
+                        GotoBufferId(listBufferI)
+                        IF NumLines() == 1 AND Length(GetText(1, 255)) == 0
+                            AddLine(s1S)
+                            AddLine(s2S)
+                            BegFile()
+                            KillLine()
+                            EndFile()
+                        ELSE
+                            AddLine(s1S)
+                            AddLine(s2S)
+                        ENDIF
+
+                        kI = kI + 1
+                    ENDWHILE
+                ENDIF
+            ENDIF
+        ENDFOR
+    ENDFOR
+
+    RETURN(listBufferI)
+END
+
+// Perform a Sequential Radix Sort to group pairs by 'w' efficiently inside TSE SAL
+INTEGER PROC FNRadixSortI(INTEGER listBufferI)
+    INTEGER iI = 0
+    INTEGER passI = 0
+    INTEGER bufI = 0
+    INTEGER numLinesI = 0
+    INTEGER lineI = 0
+    INTEGER digitI = 0
+    STRING sS[255] = ""
+    STRING charS[1] = ""
+
+    FOR iI = 1 TO 10
+        bucketsGI[iI] = CreateBuffer("Bucket" + Str(iI))
+    ENDFOR
+
+    FOR passI = 1 TO 6
+        GotoBufferId(listBufferI)
+        numLinesI = NumLines()
+        BegFile()
+        
+        FOR lineI = 1 TO numLinesI
+            sS = GetText(1, 255)
+            IF Length(sS) > 0
+                charS = SubStr(sS, 7 - passI, 1)
+                digitI = Asc(charS) - 48
+                bufI = bucketsGI[digitI + 1]
+                
+                GotoBufferId(bufI)
+                IF NumLines() == 1 AND Length(GetText(1, 255)) == 0
+                    AddLine(sS)
+                    BegFile()
+                    KillLine()
+                    EndFile()
+                ELSE
+                    AddLine(sS)
+                ENDIF
+                GotoBufferId(listBufferI)
+            ENDIF
+            Down()
+        ENDFOR
+
+        AbandonFile(listBufferI)
+        listBufferI = CreateBuffer("Triples")
+
+        FOR iI = 1 TO 10
+            bufI = bucketsGI[iI]
+            GotoBufferId(bufI)
+            numLinesI = NumLines()
+            IF numLinesI > 0
+                BegFile()
+                FOR lineI = 1 TO numLinesI
+                    sS = GetText(1, 255)
+                    IF Length(sS) > 0
+                        GotoBufferId(listBufferI)
+                        IF NumLines() == 1 AND Length(GetText(1, 255)) == 0
+                            AddLine(sS)
+                            BegFile()
+                            KillLine()
+                            EndFile()
+                        ELSE
+                            AddLine(sS)
+                        ENDIF
+                        GotoBufferId(bufI)
+                    ENDIF
+                    Down()
+                ENDFOR
+            ENDIF
+            AbandonFile(bufI)
+            bucketsGI[iI] = CreateBuffer("Bucket" + Str(iI))
+        ENDFOR
+    ENDFOR
+    
+    FOR iI = 1 TO 10
+        AbandonFile(bucketsGI[iI])
+    ENDFOR
+
+    RETURN(listBufferI)
+END
+
+// Traverses sorted sequences to calculate combinations where heights form integers
+INTEGER PROC FNProcessTriplesI(INTEGER listBufferI)
+    INTEGER countI = 0
+    INTEGER numLinesI = 0
+    INTEGER lineI = 0
+    STRING sS[255] = ""
+    STRING currentWS[6] = ""
+    STRING wS[6] = ""
+    INTEGER aI = 0
+    INTEGER iI = 0
+    INTEGER jI = 0
+    INTEGER groupSizeI = 0
+
+    GotoBufferId(listBufferI)
+    numLinesI = NumLines()
+    BegFile()
+    
+    FOR lineI = 1 TO numLinesI
+        sS = GetText(1, 255)
+        IF Length(sS) >= 13
+            wS = SubStr(sS, 1, 6)
+            aI = Val(SubStr(sS, 8, 6))
+            
+            IF wS <> currentWS
+                IF groupSizeI > 1
+                    FOR iI = 1 TO groupSizeI - 1
+                        FOR jI = iI + 1 TO groupSizeI
+                            IF FNMulModI(aValsGI[iI], aValsGI[jI], aValsGI[iI] + aValsGI[jI]) == 0
+                                countI = countI + 1
+                            ENDIF
+                        ENDFOR
+                    ENDFOR
+                ENDIF
+                
+                currentWS = wS
+                groupSizeI = 1
+                aValsGI[groupSizeI] = aI
+            ELSE
+                groupSizeI = groupSizeI + 1
+                aValsGI[groupSizeI] = aI
+            ENDIF
+        ENDIF
+        Down()
+    ENDFOR
+    
+    // Process final trailing group
+    IF groupSizeI > 1
+        FOR iI = 1 TO groupSizeI - 1
+            FOR jI = iI + 1 TO groupSizeI
+                IF FNMulModI(aValsGI[iI], aValsGI[jI], aValsGI[iI] + aValsGI[jI]) == 0
+                    countI = countI + 1
+                ENDIF
+            ENDFOR
+        ENDFOR
+    ENDIF
+
+    RETURN(countI)
+END
+
+PROC Main()
+    INTEGER listBufferI = 0
+    INTEGER answerI = 0
+    STRING answerS[255] = ""
+
+    listBufferI = FNGenerateTriplesI()
+    listBufferI = FNRadixSortI(listBufferI)
+    answerI = FNProcessTriplesI(listBufferI)
+    
+    AbandonFile(listBufferI)
+    
+    answerS = Str(answerI)
+    
+    CopyToWinClip(answerS)
+    Warn(answerS)
+    CopyToWinClip(answerS)
+END
