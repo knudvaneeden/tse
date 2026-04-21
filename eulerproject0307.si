@@ -1,0 +1,147 @@
+// Version: 1
+// LLM: Google Gemini Pro
+// Title: Project Euler problem 307
+
+#DEFINE MAX_DIGITS 160
+#DEFINE DEC_POINT 10
+
+INTEGER sumArrayGI[160]
+INTEGER tArrayGI[160]
+INTEGER ansArrayGI[160]
+
+PROC PROCInitSum()
+    INTEGER I = 0
+    FOR I = 0 TO MAX_DIGITS - 1
+        sumArrayGI[I] = 0
+    ENDFOR
+END
+
+PROC PROCInitT()
+    INTEGER I = 0
+    FOR I = 0 TO MAX_DIGITS - 1
+        tArrayGI[I] = 0
+    ENDFOR
+    tArrayGI[DEC_POINT] = 1
+END
+
+PROC PROCMultiplyT(INTEGER mI)
+    INTEGER I = 0
+    INTEGER carryI = 0
+    INTEGER tempI = 0
+    FOR I = MAX_DIGITS - 1 DOWNTO 0
+        tempI = tArrayGI[I] * mI + carryI
+        tArrayGI[I] = tempI MOD 10
+        carryI = tempI / 10
+    ENDFOR
+END
+
+PROC PROCDivideT(INTEGER dI)
+    INTEGER I = 0
+    INTEGER remI = 0
+    INTEGER tempI = 0
+    FOR I = 0 TO MAX_DIGITS - 1
+        tempI = remI * 10 + tArrayGI[I]
+        tArrayGI[I] = tempI / dI
+        remI = tempI MOD dI
+    ENDFOR
+END
+
+PROC PROCAddTToSum()
+    INTEGER I = 0
+    INTEGER carryI = 0
+    INTEGER tempI = 0
+    FOR I = MAX_DIGITS - 1 DOWNTO 0
+        tempI = sumArrayGI[I] + tArrayGI[I] + carryI
+        sumArrayGI[I] = tempI MOD 10
+        carryI = tempI / 10
+    ENDFOR
+END
+
+PROC PROCSubtractSumFromOne()
+    INTEGER I = 0
+    INTEGER borrowI = 0
+    INTEGER tempI = 0
+    
+    FOR I = 0 TO MAX_DIGITS - 1
+        ansArrayGI[I] = 0
+    ENDFOR
+    ansArrayGI[DEC_POINT] = 1
+
+    FOR I = MAX_DIGITS - 1 DOWNTO 0
+        tempI = ansArrayGI[I] - sumArrayGI[I] - borrowI
+        IF tempI < 0
+            tempI = tempI + 10
+            borrowI = 1
+        ELSE
+            borrowI = 0
+        ENDIF
+        ansArrayGI[I] = tempI
+    ENDFOR
+END
+
+PROC PROCRoundAns()
+    INTEGER I = 0
+    INTEGER carryI = 0
+    INTEGER tempI = 0
+    
+    IF ansArrayGI[DEC_POINT + 11] >= 5
+        carryI = 1
+    ELSE
+        carryI = 0
+    ENDIF
+
+    FOR I = DEC_POINT + 10 DOWNTO 0
+        tempI = ansArrayGI[I] + carryI
+        ansArrayGI[I] = tempI MOD 10
+        carryI = tempI / 10
+    ENDFOR
+END
+
+STRING PROC FNGetResultStringS()
+    STRING s[255] = ""
+    INTEGER I = 0
+    s = Str(ansArrayGI[DEC_POINT]) + "."
+    FOR I = 1 TO 10
+        s = s + Str(ansArrayGI[DEC_POINT + I])
+    ENDFOR
+    RETURN(s)
+END
+
+PROC PROCDoCalculate()
+    INTEGER kI = 20000
+    INTEGER nI = 1000000
+    INTEGER iI = 0
+    INTEGER xI = 0
+
+    PROCInitSum()
+    PROCInitT()
+
+    FOR iI = 0 TO kI - 1
+        PROCMultiplyT(nI - iI)
+        PROCDivideT(nI)
+    ENDFOR
+
+    PROCAddTToSum()
+
+    FOR xI = 1 TO kI / 2
+        PROCMultiplyT(kI - 2 * xI + 2)
+        PROCMultiplyT(kI - 2 * xI + 1)
+        PROCDivideT(2 * xI)
+        PROCDivideT(nI - kI + xI)
+        PROCAddTToSum()
+    ENDFOR
+
+    PROCSubtractSumFromOne()
+    PROCRoundAns()
+END
+
+proc Main()
+    STRING resultS[255] = ""
+
+    PROCDoCalculate()
+    resultS = FNGetResultStringS()
+
+    CopyToWinClip(resultS)
+    Warn(resultS)
+    CopyToWinClip(resultS)
+end
