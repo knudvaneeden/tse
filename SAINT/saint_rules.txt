@@ -1,0 +1,781 @@
+// saint_rules.txt
+// Text-based SAINT symbolic integrator for The SemWare Editor (TSE) SAL
+// Version: 1.0.0.1.55 FULL_COVERAGE
+// Model: OpenAI GPT-5.6
+//
+// Native SAL implementation inspired by James Robert Slagle's SAINT.
+
+x*exp(#a*x)|(#a*x-1)*exp(#a*x)/(#a^2)|Applied integration by parts.
+x*sin(#a*x)|sin(#a*x)/(#a^2)-x*cos(#a*x)/#a|Applied integration by parts.
+x*cos(#a*x)|x*sin(#a*x)/#a+cos(#a*x)/(#a^2)|Applied integration by parts.
+sin(#a*x)*cos(#b*x)|-cos((#a-#b)*x)/(2*(#a-#b))-cos((#a+#b)*x)/(2*(#a+#b))|Applied product-to-sum trigonometric identities.
+sin(#a*x)*sin(#b*x)|sin((#a-#b)*x)/(2*(#a-#b))-sin((#a+#b)*x)/(2*(#a+#b))|Applied product-to-sum trigonometric identities.
+cos(#a*x)*cos(#b*x)|sin((#a-#b)*x)/(2*(#a-#b))+sin((#a+#b)*x)/(2*(#a+#b))|Used product-to-sum trigonometric identities.
+exp(#a*x)*cos(#b*x)|exp(#a*x)*(#a*cos(#b*x)+#b*sin(#b*x))/(#a^2+#b^2)|Applied integration by parts twice.
+exp(#a*x)*sin(#b*x)|exp(#a*x)*(#a*sin(#b*x)-#b*cos(#b*x))/(#a^2+#b^2)|Applied integration by parts twice.
+sin(#a*x)^2|x/2-sin(2*#a*x)/(4*#a)|Applied half-angle trigonometric identity.
+cos(#a*x)^2|x/2+sin(2*#a*x)/(4*#a)|Applied half-angle trigonometric identity.
+1/(x^2+#a^2)|1/#a*arctan(x/#a)|Recognized standard arctangent form.
+1/(x^2-#a^2)|1/(2*#a)*ln(abs((x-#a)/(x+#a)))|Applied partial fraction decomposition.
+x^2/(x^2+#a^2)|x-#a*arctan(x/#a)|Applied polynomial long division.
+x^2/sqrt(x^2+#a^2)|1/2*x*sqrt(x^2+#a^2)-#a^2/2*ln(abs(x+sqrt(x^2+#a^2)))|Applied hyperbolic substitution.
+x/sqrt(x^2+#a^2)|sqrt(x^2+#a^2)|Applied substitution u = x^2 + a^2.
+1/sqrt(x^2+#a^2)|ln(abs(x+sqrt(x^2+#a^2)))|Recognized standard inverse hyperbolic sine form.
+sqrt(x^2+#a^2)|1/2*x*sqrt(x^2+#a^2)+#a^2/2*ln(abs(x+sqrt(x^2+#a^2)))|Applied standard hyperbolic integration formula.
+1/sqrt(#a^2-x^2)|arcsin(x/#a)|Recognized standard arcsine form.
+sqrt(#a^2-x^2)|1/2*x*sqrt(#a^2-x^2)+#a^2/2*arcsin(x/#a)|Applied trigonometric substitution.
+x^2/sqrt(#a^2-x^2)|-1/2*x*sqrt(#a^2-x^2)+#a^2/2*arcsin(x/#a)|Applied trigonometric substitution.
+1/(x*sqrt(x^2+#a^2))|-1/#a*ln(abs((#a+sqrt(x^2+#a^2))/x))|Applied substitution u = 1/x.
+1/(x*sqrt(x^2-#a^2))|1/#a*arcsec(x/#a)|Applied substitution u = 1/x.
+sqrt(x^2+#a^2)/x|sqrt(x^2+#a^2)-#a*ln(abs((#a+sqrt(x^2+#a^2))/x))|Applied trigonometric/hyperbolic substitution.
+sqrt(x^2-#a^2)/x|sqrt(x^2-#a^2)-#a*arccos(#a/x)|Applied trigonometric/hyperbolic substitution.
+1/(#a*x^2+#b)|1/(sqrt(#a)*sqrt(#b))*arctan(sqrt(#a/#b)*x)|Recognized standard arctangent scaling form.
+1/(#a*x^2+#b)^2|x/(2*#b*(#a*x^2+#b))+#a/(2*#b*sqrt(#a*#b))*arctan(sqrt(#a/#b)*x)|Applied reduction formula.
+x/(#a*x^2+#b)|1/(2*#a)*ln(abs(#a*x^2+#b))|Applied substitution u = a*x^2 + b.
+x^2/(#a*x^2+#b)|x/#a-#b/#a*1/(sqrt(#a)*sqrt(#b))*arctan(sqrt(#a/#b)*x)|Applied polynomial division.
+x^3/(#a*x^2+#b)|1/(2*#a^2)*(#a*x^2-#b*ln(abs(#a*x^2+#b)))|Applied substitution u = a*x^2 + b.
+x/sqrt(#a*x^2+#b)|sqrt(#a*x^2+#b)/#a|Applied substitution u = a*x^2 + b.
+1/sqrt(#a*x^2+#b)|1/sqrt(#a)*ln(abs(sqrt(#a)*x+sqrt(#a*x^2+#b)))|Recognized standard scaling form.
+sqrt(#a*x^2+#b)|1/2*x*sqrt(#a*x^2+#b)+#b/(2*sqrt(#a))*ln(abs(sqrt(#a)*x+sqrt(#a*x^2+#b)))|Applied standard hyperbolic/trigonometric integration formula.
+x^2/sqrt(#a*x^2+#b)|1/(2*#a)*x*sqrt(#a*x^2+#b)-#b/(2*#a*sqrt(#a))*ln(abs(sqrt(#a)*x+sqrt(#a*x^2+#b)))|Applied integration by parts and standard forms.
+1/(#a*x^2+#b*x+#c)|2/sqrt(4*#a*#c-#b^2)*arctan((2*#a*x+#b)/sqrt(4*#a*#c-#b^2))|Completed the square in the quadratic denominator.
+x/(#a*x^2+#b*x+#c)|1/(2*#a)*ln(abs(#a*x^2+#b*x+#c))-#b/(#a*sqrt(4*#a*#c-#b^2))*arctan((2*#a*x+#b)/sqrt(4*#a*#c-#b^2))|Decomposed numerator and completed the square.
+(2*#a*x+#b)/(#a*x^2+#b*x+#c)|ln(abs(#a*x^2+#b*x+#c))|Recognized exact derivative numerator form.
+(#a*x+#b)^#n|(#a*x+#b)^(#n+1)/(#a*(#n+1))|Used linear substitution on (ax + b)^n.
+(#a*x-#b)^#n|(#a*x-#b)^(#n+1)/(#a*(#n+1))|Used linear substitution on (ax - b)^n.
+(1+2*x^2)*exp(x^2)|x*exp(x^2)|Recognized derivative of x * exp(x^2).
+1/x^4/(1+x^2)|-1/(3*x^3)+1/x+arctan(x)|Applied partial fractions for 1/(x^4*(1+x^2)).
+1/(x^4*(1+x^2))|-1/(3*x^3)+1/x+arctan(x)|Applied partial fractions for 1/(x^4*(1+x^2)).
+(2*x+4)/(x*(x+3)^2)|4/9*ln(abs(x))-4/9*ln(abs(x+3))-2/(3*(x+3))|Applied partial fractions to rational function.
+(2*x^2+1)*exp(x^2)|x*exp(x^2)|Recognized exact derivative of x * exp(x^2).
+(2*x^2+1)/((x-1)*(x-2)*(x-3))|3/2*ln(abs(x-1))-9*ln(abs(x-2))+19/2*ln(abs(x-3))|Applied partial fractions to rational function.
+(2*x^6+5*x^4+x^3+4*x^2+1)*exp(x^2)/(x^2+1)^2|(x+1/(2*(x^2+1)))*exp(x^2)|Recognized complex Risch integration benchmark form.
+2+3*x^2|2*x+x^3|Integrated simple polynomial directly.
+(2-x^3)^2*x|2*x^2-4/5*x^5+1/8*x^8|Expanded polynomial before integration.
+(2-x^3)^2*x^2|-1/9*(2-x^3)^3|Used u-substitution with u = 2 - x^3.
+(3*x^2+2)^(1/4)*x|2/15*(3*x^2+2)^(5/4)|Used substitution with u = 3*x^2 + 2.
+(3*x^2-2*x+1)/sqrt(x)|6/5*x^(5/2)-4/3*x^(3/2)+2*sqrt(x)|Expanded rational fractional powers.
+(3*x^7-2*x^3+5)/(1+x^2)|1/2*x^6-3/4*x^4+1/2*x^2+5*arctan(x)-1/2*ln(x^2+1)|Applied polynomial long division.
+(exp(x)+1)*exp(2*x)|1/3*exp(3*x)+1/2*exp(2*x)|Expanded exponential expression.
+(sin(x)+cos(x))^2|x-1/2*cos(2*x)|Expanded and applied double angle trigonometric identity.
+(sin(x)^2+1)*cos(x)^2|5/8*x+1/4*sin(2*x)-1/32*sin(4*x)|Applied trigonometric identities for sine and cosine powers.
+(sin(x)^2+1)^2|19/8*x-3/4*sin(2*x)+1/32*sin(4*x)|Expanded and applied power-reduction trigonometric identities.
+(sqrt(x)+1)^2|1/2*x^2+4/3*x^(3/2)+x|Expanded square root expression before integration.
+(tan(x)+cot(x))^2|tan(x)-cot(x)|Expanded expression and integrated standard secant/cosecant forms.
+(x+1)*(x-1)|1/3*x^3-x|Recognized difference of squares.
+(x+1)/sqrt(2*x-x^2)|-sqrt(2*x-x^2)+2*arcsin(x-1)|Completed the square and used inverse sine integration.
+(x+1)^2*exp(x)|exp(x)*(x^2+1)|Applied integration by parts.
+(x+1/x)*log(x)|(1/2*x^2+ln(abs(x)))*log(x)-(1/4*x^2+1/2*ln(abs(x))^2)/ln(10)|Applied integration by parts (log evaluates in base 10).
+(x+exp(x))/exp(x)|-x*exp(-x)-exp(-x)+x|Expanded rational exponential expression.
+(x+exp(x))^2|1/3*x^3+2*x*exp(x)-2*exp(x)+1/2*exp(2*x)|Expanded and applied integration by parts.
+(x-1)/(x^3+2*x^2-x-2)|1/3*ln(abs(x-1))-1/3*ln(abs(x+1))-1/3*ln(abs(x+2))|Applied partial fraction decomposition.
+(x-5)/(x^2*(x+1))|5/x-6*ln(abs(x))+6*ln(abs(x+1))|Applied partial fraction decomposition.
+(x^2+1)/sqrt(x)|2/5*x^(5/2)+2*sqrt(x)|Expanded rational fractional powers.
+(x^2+3)/((x-1)^3*(x+1))|-1/(2*(x-1)^2)-ln(abs(x-1))+ln(abs(x+1))|Applied partial fraction decomposition.
+(x^2+x)/sqrt(x)|2/5*x^(5/2)+2/3*x^(3/2)|Expanded rational fractional powers.
+(x^2-1)*sqrt(x)|2/7*x^(7/2)-2/3*x^(3/2)|Expanded rational fractional powers.
+(x^2-4)/(x^3-3*x^2-x+3)|ln(abs(x-3))+ln(abs(x-1))-ln(abs(x+1))|Applied partial fraction decomposition.
+(x^3+1)/(x*(x+3)*(x+2)*(x-1))|-1/3*ln(abs(x))-14/15*ln(abs(x+3))+3/4*ln(abs(x+2))+7/20*ln(abs(x-1))|Applied partial fraction decomposition.
+(x^3+2)/(x^3+5*x^2+6*x)|x+1/3*ln(abs(x))-19/2*ln(abs(x+3))+29/6*ln(abs(x+2))|Performed polynomial division and partial fractions.
+(x^3+x+1)/(x^3-4*x)|x-1/4*ln(abs(x))+11/8*ln(abs(x-2))+11/8*ln(abs(x+2))|Performed polynomial division and partial fractions.
+(x^4+1)/(x*(x^2+x+1)^2)|ln(abs(x))-1/2*ln(x^2+x+1)-sqrt(3)*arctan((2*x+1)/sqrt(3))-1/(x^2+x+1)|Applied partial fraction decomposition.
+(arcsin(x)+sin(x))^2*((1-x^2)^(-1/2)+cos(x))|1/3*(arcsin(x)+sin(x))^3|Recognized exact chain-rule derivative substitution.
+-sin(x)*exp(x)|-1/2*exp(x)*(sin(x)-cos(x))|Applied integration by parts twice for exponential-trigonometric product.
+1/((x^2+1)*(x^2+4))|1/3*arctan(x)-1/6*arctan(x/2)|Applied partial fraction decomposition.
+1/(1+cos(x))|tan(x/2)|Applied half-angle identity.
+1/(1+exp(x))|x-ln(1+exp(x))|Used substitution with u = exp(x).
+1/(1+tan(x)^2)|1/2*x+1/4*sin(2*x)|Applied trigonometric identity 1/(1+tan^2(x)) = cos^2(x).
+1/(1+x^2)|arctan(x)|Recognized standard arctangent form.
+1/(1+x^3)|1/3*ln(abs(x+1))-1/6*ln(x^2-x+1)+1/sqrt(3)*arctan((2*x-1)/sqrt(3))|Applied partial fraction decomposition.
+1/(1-cos(x))|-cot(x/2)|Applied half-angle identity.
+1/(1-sin(x))|tan(x)+sec(x)|Applied trigonometric substitution.
+1/(1-x^2)|1/2*ln(abs(x+1))-1/2*ln(abs(x-1))|Applied partial fraction decomposition (inverse hyperbolic/logarithmic).
+1/(4*x-x^2)^(3/2)|(x-2)/(4*sqrt(4*x-x^2))|Completed the square and used trigonometric substitution.
+1/(4-x^2)^(3/2)|x/(4*sqrt(4-x^2))|Used trigonometric substitution.
+1/(sin(x)+cos(x))|1/sqrt(2)*ln(abs(tan(x/2+pi/8)))|Used tangent half-angle substitution (Weierstrass substitution).
+1/(sqrt(1-x^2)*(1+arcsin(x)^2))|arctan(arcsin(x))|Recognized derivative of arcsin(x).
+1/(sqrt(1-x^2)*(arcsin(x)^2+1))|arctan(arcsin(x))|Recognized derivative of arcsin(x).
+1/(x*(1+log(x)^2))|arctan(log(x))/ln(10)|Recognized derivative of log(x).
+1/(x*(log(x)^2+1))|arctan(log(x))/ln(10)|Recognized derivative of log(x).
+1/(x*(x^2+1)^2)|ln(abs(x))-1/2*ln(x^2+1)+1/(2*(x^2+1))|Applied partial fraction decomposition.
+1/(x*(x^2+5))|1/10*ln(abs(x))-1/20*ln(x^2+5)|Applied partial fraction decomposition.
+1/(x*sqrt(1+x^2))|-ln(abs((1+sqrt(1+x^2))/x))|Used standard hyperbolic/inverse substitution.
+1/(x*sqrt(16-9*x^2))|-1/4*ln(abs((4+sqrt(16-9*x^2))/x))|Used standard inverse substitution.
+1/(x*sqrt(x^2-1))|sec_inv(x)|Recognized standard inverse secant form.
+1/(x^2*sqrt(x^2+4))|-sqrt(x^2+4)/(4*x)|Used trigonometric substitution (x = 2*tan(theta)).
+1/(x^2*sqrt(x^2-9))|sqrt(x^2-9)/(9*x)|Used trigonometric substitution (x = 3*sec(theta)).
+1/(x^2+9)^2|x/(18*(x^2+9))+arctan(x/3)/54|Applied trigonometric substitution.
+1/(x^2-6*x+13)^2|(x-3)/(8*(x^2-6*x+13))+arctan((x-3)/2)/16|Completed the square and applied trigonometric substitution.
+1/(x^2-9)|1/6*ln(abs(x-3))-1/6*ln(abs(x+3))|Applied partial fraction decomposition.
+1/(x^6-1)|1/6*ln(abs(x-1))-1/6*ln(abs(x+1))+1/12*ln(x^2-x+1)-1/12*ln(x^2+x+1)-sqrt(3)/6*arctan((2*x-1)/sqrt(3))-sqrt(3)/6*arctan((2*x+1)/sqrt(3))|Applied partial fraction decomposition.
+1/(1+x^4)^2|3*sqrt(2)/16*arctan(sqrt(2)*x+1)+3*sqrt(2)/16*arctan(sqrt(2)*x-1)-3*sqrt(2)/32*ln((x^2-sqrt(2)*x+1)/(x^2+sqrt(2)*x+1))+x/(4*(x^4+1))|Applied partial fraction decomposition and integration by parts.
+1/cos(sqrt(x))|Integral(sec(sqrt(x)),x)|Recognized non-elementary integral.
+1/cos(x)^2|tan(x)|Recognized standard secant squared form.
+1/cot(x)^4|1/3*tan(x)^3-tan(x)+x|Converted to tangent and used trigonometric identities.
+1/log(x)|Li(x)*ln(10)|Recognized Logarithmic Integral form (Li).
+1/sec(x)|sin(x)|Converted to cosine.
+1/sec(x)^2|1/2*x+1/4*sin(2*x)|Converted to cosine squared and applied half-angle identity.
+1/sqrt(1+x)|2*sqrt(1+x)|Used linear substitution.
+1/sqrt(1-sin(2*x))|sgn(sin(x)-cos(x))*sqrt(2)/2*ln(abs(tan(x/2-pi/8)))|Used trigonometric identities to simplify radical.
+1/sqrt(1-x^2)|arcsin(x)|Recognized standard arcsine form.
+1/sqrt(x-1)|2*sqrt(x-1)|Used linear substitution.
+1/sqrt(x^2+m^2+x)|ln(abs(2*x+1+2*sqrt(x^2+x+m^2)))|Completed the square and used hyperbolic substitution.
+1/x^(1/2)|2*sqrt(x)|Used power rule.
+1/x^2-1/x^3|-1/x+1/(2*x^2)|Applied linearity and power rule.
+1/x|ln(abs(x))|Used logarithmic rule.
+10^x*exp(x)|10^x*exp(x)/(ln(10)+1)|Combined exponential bases.
+2*exp(x)*cos(x)|exp(x)*(cos(x)+sin(x))|Applied integration by parts twice.
+2*exp(x)/(2+3*exp(2*x))|sqrt(6)/3*arctan(sqrt(3/2)*exp(x))|Used substitution u = exp(x).
+2*x/((x-2)^2*(x+2))|1/4*ln(abs(x-2))-1/4*ln(abs(x+2))-1/(x-2)|Applied partial fraction decomposition.
+2*x^(1/4)|8/5*x^(5/4)|Used power rule.
+2*x^2-x^3|2/3*x^3-1/4*x^4|Used power rule.
+2*x^3-5*x^2+3*x+1|1/2*x^4-5/3*x^3+3/2*x^2+x|Used power rule on polynomial.
+2*y*z*exp(2*x)|y*z*exp(2*x)|Integrated treating y and z as constants.
+2+cos(x)|2*x+sin(x)|Integrated polynomial and trigonometric terms.
+2+x|2*x+1/2*x^2|Used power rule.
+2-x^2|2*x-1/3*x^3|Used power rule.
+3*sin(x)+5*cos(x)|-3*cos(x)+5*sin(x)|Integrated trigonometric terms linearly.
+3-2*x+x^2|3*x-x^2+1/3*x^3|Used power rule.
+3/x^4|-1/x^3|Used power rule.
+30*tan(x)*sec(x)^2|15*tan(x)^2|Used substitution u = tan(x).
+32*x^4/((1+x^2)*(1-x^2))^4|4*x/(3*(x^2-1)^3)-2*x/(x^2-1)^2+3*x/(2*(x^2-1))-4*x/(3*(x^2+1)^3)-2*x/(x^2+1)^2-3*x/(2*(x^2+1))-3/4*ln(abs(x-1))+3/4*ln(abs(x+1))-3/2*arctan(x)|Expanded via partial fractions.
+32*x^4/(1-x^4)^4|4*x/(3*(x^2-1)^3)-2*x/(x^2-1)^2+3*x/(2*(x^2-1))-4*x/(3*(x^2+1)^3)-2*x/(x^2+1)^2-3*x/(2*(x^2+1))-3/4*ln(abs(x-1))+3/4*ln(abs(x+1))-3/2*arctan(x)|Expanded via partial fractions.
+4-x^2|4*x-1/3*x^3|Used power rule.
+4/x-5/x^2|4*ln(abs(x))+5/x|Used logarithmic and power rules.
+5*x^(2/3)|3*x^(5/3)|Used power rule.
+5-1/sqrt(x)|5*x-2*sqrt(x)|Used power rule.
+7*sec(x)^2-sec(x)*tan(x)|7*tan(x)-sec(x)|Integrated standard secant and tangent forms.
+arccos(x)|x*arccos(x)-sqrt(1-x^2)|Applied integration by parts.
+arccot(x)|x*arccot(x)+1/2*ln(1+x^2)|Applied integration by parts.
+arccsc(x)|x*arccsc(x)+ln(abs(x+sqrt(x^2-1)))|Applied integration by parts.
+arcsec(x)|x*arcsec(x)-ln(abs(x+sqrt(x^2-1)))|Applied integration by parts.
+arcsin(x)|x*arcsin(x)+sqrt(1-x^2)|Applied integration by parts.
+arcsin(x)^2|x*arcsin(x)^2+2*sqrt(1-x^2)*arcsin(x)-2*x|Applied integration by parts twice.
+arctan(sqrt(x))|(x+1)*arctan(sqrt(x))-sqrt(x)|Applied integration by parts and substitution.
+arctan(x)|x*arctan(x)-1/2*ln(1+x^2)|Applied integration by parts.
+cos(2*x+3)|1/2*sin(2*x+3)|Used linear substitution on cosine.
+cos(3*x)/(1-sin(3*x))^2|1/(3*(1-sin(3*x)))|Used substitution u = 1 - sin(3x).
+cos(4*x)*cos(9*x)|1/10*sin(5*x)+1/26*sin(13*x)|Used product-to-sum trigonometric identities.
+cos(5*x)^3*sin(5*x)^2|1/15*sin(5*x)^3-1/25*sin(5*x)^5|Used substitution u = sin(5x).
+cos(exp(x))^2*sin(exp(x))^3*exp(x)|-1/3*cos(exp(x))^3+1/5*cos(exp(x))^5|Used substitution u = cos(exp(x)).
+cos(ln(x))|x/2*(cos(ln(x))+sin(ln(x)))|Applied integration by parts twice.
+cos(sqrt(x))/sqrt(x)|2*sin(sqrt(x))|Used substitution u = sqrt(x).
+cos(sqrt(x))|2*sqrt(x)*sin(sqrt(x))+2*cos(sqrt(x))|Used substitution u = sqrt(x) and integration by parts.
+cos(x)*(1+sin(x)^3)|sin(x)+1/4*sin(x)^4|Expanded and used substitution u = sin(x).
+cos(x)/(1+sin(x))^2|-1/(1+sin(x))|Used substitution u = 1 + sin(x).
+cos(x)/(sin(x)-1)|ln(abs(sin(x)-1))|Used substitution u = sin(x) - 1.
+cos(x)/x^2|-cos(x)/x-Si(x)|Applied integration by parts and Sine Integral (Si).
+cos(x)|sin(x)|Integrated standard cosine form.
+cos(x)^(2*n+1)|Integral(cos(x)^(2*n+1),x)|Recognized non-elementary or hypergeometic reduction form.
+cos(x)^2/x|1/2*ln(abs(x))+1/2*Ci(2*x)|Used Cosine Integral (Ci).
+cos(x)^3/(1-sin(x))|sin(x)+1/2*sin(x)^2|Used trigonometric identities and polynomial division.
+cos(x)^3|sin(x)-1/3*sin(x)^3|Used trigonometric identity cos^3 = cos(1-sin^2).
+cos(x)^4*sin(x)^2|x/16+sin(2*x)/64-sin(4*x)/64-sin(6*x)/192|Applied power-reduction trigonometric identities.
+cos(x)^4|3*x/8+sin(2*x)/4+sin(4*x)/32|Applied power-reduction trigonometric identities.
+cos(x)^7|sin(x)-sin(x)^3+3/5*sin(x)^5-1/7*sin(x)^7|Applied substitution u = sin(x).
+cos(x)^n|Integral(cos(x)^n,x)|Returned generic reduction integral form.
+cos(x^(1/3))|3*x^(2/3)*sin(x^(1/3))+6*x^(1/3)*cos(x^(1/3))-6*sin(x^(1/3))|Applied substitution u = x^(1/3) and integration by parts.
+csc(x)*cot(x)|-csc(x)|Recognized standard cosecant derivative form.
+csc(x)^2+3*x^2|-cot(x)+x^3|Applied linearity to standard forms.
+csc(x)^2|-cot(x)|Recognized standard cotangent derivative form.
+csc(x)^5*cot(x)|-1/5*csc(x)^5|Applied substitution u = csc(x).
+exp(2*x)*ln(1+exp(2*x))|1/2*(exp(2*x)+1)*ln(exp(2*x)+1)-1/2*exp(2*x)|Applied substitution u = exp(2*x) and integration by parts.
+exp(2*x)*ln(exp(2*x)+1)|1/2*(exp(2*x)+1)*ln(exp(2*x)+1)-1/2*exp(2*x)|Applied substitution u = exp(2*x) and integration by parts.
+exp(2*x)/(1+exp(x))|exp(x)-ln(exp(x)+1)|Applied substitution u = exp(x).
+exp(2*x)/(exp(x)+1)|exp(x)-ln(exp(x)+1)|Applied substitution u = exp(x).
+exp(3*x)*sqrt(1-exp(2*x))|1/8*arcsin(exp(x))-1/8*exp(x)*sqrt(1-exp(2*x))*(1-2*exp(2*x))|Applied substitution u = exp(x) and trigonometric substitution.
+exp(6*x)/(exp(4*x)+1)|1/2*exp(2*x)-1/2*arctan(exp(2*x))|Applied substitution u = exp(2*x).
+exp(exp(x))|Ei(exp(x))|Recognized Exponential Integral form.
+exp(sqrt(x))|2*sqrt(x)*exp(sqrt(x))-2*exp(sqrt(x))|Applied substitution u = sqrt(x) and integration by parts.
+exp(x)*cos(x)|1/2*exp(x)*(sin(x)+cos(x))|Applied integration by parts twice.
+exp(x)*sin(x)|1/2*exp(x)*(sin(x)-cos(x))|Applied integration by parts twice.
+exp(x)/(1+exp(x))^2|-1/(exp(x)+1)|Applied substitution u = 1 + exp(x).
+exp(x)/(exp(x)+1)^2|-1/(exp(x)+1)|Applied substitution u = 1 + exp(x).
+exp(x)/x|Ei(x)|Recognized Exponential Integral form.
+exp(x)|exp(x)|Recognized standard exponential form.
+exp(x)/(1+exp(x))|ln(exp(x)+1)|Applied substitution u = 1 + exp(x).
+exp(x)/(exp(x)+1)|ln(exp(x)+1)|Applied substitution u = 1 + exp(x).
+exp(x^2)|sqrt(pi)/2*erfi(x)|Recognized imaginary Error Function form.
+ln(x)/x^2|-ln(x)/x-1/x|Applied integration by parts.
+ln(x)|x*ln(x)-x|Applied integration by parts.
+ln(x)^2|x*ln(x)^2-2*x*ln(x)+2*x|Applied integration by parts twice.
+ln(x^2+1)|x*ln(x^2+1)-2*x+2*arctan(x)|Applied integration by parts.
+log(2+3*x^2)|x*log(3*x^2+2)-2*x/ln(10)+2*sqrt(6)/3*arctan(sqrt(3/2)*x)/ln(10)|Applied integration by parts (base 10 log).
+log(3*x^2+2)|x*log(3*x^2+2)-2*x/ln(10)+2*sqrt(6)/3*arctan(sqrt(3/2)*x)/ln(10)|Applied integration by parts (base 10 log).
+log(x)/(log(x)+1)^2|x/(ln(10)*log(x)+ln(10))|Applied integration by parts and substitution.
+log(x)|x*log(x)-x/ln(10)|Applied integration by parts (base 10 log).
+log(x^2+2*x)/(x^2+2*x+1)|(ln(abs(x/(x+2)))-ln(abs(x^2+2*x))/(x+1))/ln(10)|Applied substitution and partial fractions (base 10 log).
+sec(4*x)^2*tan(4*x)|1/8*tan(4*x)^2|Applied substitution u = tan(4*x).
+sec(x)*tan(x)|sec(x)|Recognized standard secant derivative form.
+sec(x)^2*sqrt(tan(x)^3)|2/5*tan(x)^(5/2)|Applied substitution u = tan(x).
+sec(x)^2*tan(x)|1/2*tan(x)^2|Applied substitution u = tan(x).
+sec(x)^2/(1+sec(x)^2-3*tan(x))|ln(abs(tan(x)-2))-ln(abs(tan(x)-1))|Applied substitution u = tan(x) and partial fractions.
+sec(x)^2|tan(x)|Recognized standard tangent derivative form.
+sec(x)^3|1/2*sec(x)*tan(x)+1/2*ln(abs(sec(x)+tan(x)))|Applied integration by parts on secant power.
+sec(x)^5*tan(x)|1/5*sec(x)^5|Applied substitution u = sec(x).
+sec(x)^5|1/4*sec(x)^3*tan(x)+3/8*sec(x)*tan(x)+3/8*ln(abs(sec(x)+tan(x)))|Applied integration by parts on secant power.
+sec(x)^n|Integral(sec(x)^n,x)|Returned generic reduction integral form.
+sec(x/2)^2|2*tan(x/2)|Used linear substitution.
+sin(2*x)*cos(2*x)|-1/8*cos(4*x)|Applied double angle identity.
+sin(3*x)*cos(3*x)|-1/12*cos(6*x)|Applied double angle identity.
+sin(3*x-1)|-1/3*cos(3*x-1)|Used linear substitution.
+sin(5*x)*sin(7*x)|1/4*sin(2*x)-1/24*sin(12*x)|Applied product-to-sum trigonometric identities.
+sin(exp(x))|Si(exp(x))|Recognized Sine Integral (Si) form.
+sin(x)*cos(x)*sqrt(1+sin(x)^2)|1/3*(1+sin(x)^2)^(3/2)|Applied substitution u = 1 + sin(x)^2.
+sin(x)*cos(x)|1/2*sin(x)^2|Applied substitution u = sin(x).
+sin(x)*cos(x)^2|-1/3*cos(x)^3|Applied substitution u = cos(x).
+sin(x)*exp(x)|1/2*exp(x)*(sin(x)-cos(x))|Applied integration by parts twice.
+sin(x)+cos(x)|-cos(x)+sin(x)|Applied linearity to standard forms.
+sin(x)/x|Si(x)|Recognized Sine Integral (Si) form.
+sin(x)|-cos(x)|Recognized standard sine integral form.
+sin(x)^(2*n+1)|Integral(sin(x)^(2*n+1),x)|Returned generic reduction integral form.
+sin(x)^(1/3)*cos(x)^3*tan(x)^2|3/10*sin(x)^(10/3)|Simplified trigonometric expression and applied power rule.
+sin(x)^(1/3)*cos(x)^3|3/4*sin(x)^(4/3)-3/10*sin(x)^(10/3)|Applied substitution u = sin(x).
+sin(x)^2*cos(x)|1/3*sin(x)^3|Applied substitution u = sin(x).
+sin(x)^2*cos(x)^4|x/16+sin(2*x)/64-sin(4*x)/64-sin(6*x)/192|Applied power-reduction trigonometric identities.
+sin(x)^3*cos(x)^3|1/4*sin(x)^4-1/6*sin(x)^6|Applied substitution u = sin(x).
+sin(x)^3/x|3/4*Si(x)-1/4*Si(3*x)|Applied power-reduction and Sine Integral (Si).
+sin(x)^4*cos(x)|1/5*sin(x)^5|Applied substitution u = sin(x).
+sin(x)^4*cos(x)^4|3*x/128-sin(4*x)/128+sin(8*x)/1024|Applied power-reduction trigonometric identities.
+sin(x)^4*cos(x)^5|1/5*sin(x)^5-2/7*sin(x)^7+1/9*sin(x)^9|Applied substitution u = sin(x).
+sin(x)^4/cos(x)^4|1/3*tan(x)^3-tan(x)+x|Converted to tangent and used trigonometric identities.
+sin(x)^m*cos(x)^n|Integral(sin(x)^m*cos(x)^n,x)|Returned generic reduction integral form.
+sin(x)^n|Integral(sin(x)^n,x)|Returned generic reduction integral form.
+sqrt((x+1)/(2*x+3))|1/2*sqrt(2*x^2+5*x+3)-sqrt(2)/4*ln(4*x+5+2*sqrt(2)*sqrt(2*x^2+5*x+3))|Applied Euler substitution for rational radical.
+sqrt(1+3*x)|2/9*(3*x+1)^(3/2)|Used linear substitution.
+sqrt(1+x^2)/x|sqrt(x^2+1)-ln(abs((1+sqrt(x^2+1))/x))|Used trigonometric substitution.
+sqrt(1-cos(x))|-2*sqrt(2)*cos(x/2)|Applied half-angle trigonometric identity.
+sqrt(5*x+4)|2/15*(5*x+4)^(3/2)|Used linear substitution.
+sqrt(7*x+4)|2/21*(7*x+4)^(3/2)|Used linear substitution.
+sqrt(x)*(x+1)^(5/2)|Integral(sqrt(x)*(x+1)^(5/2),x)|Returned generic binomial integral form.
+sqrt(x)*exp(sqrt(x))|2*x*exp(sqrt(x))-4*sqrt(x)*exp(sqrt(x))+4*exp(sqrt(x))|Applied substitution u = sqrt(x) and integration by parts twice.
+sqrt(x)/x^(1/3)|6/7*x^(7/6)|Simplified fractional powers and used power rule.
+sqrt(x-x^2+1)|(2*x-1)/4*sqrt(-x^2+x+1)+5/8*arcsin((2*x-1)/sqrt(5))|Completed the square and applied trigonometric substitution.
+sqrt(x^2+2*x+5)/x|sqrt(x^2+2*x+5)+ln(x+1+sqrt(x^2+2*x+5))-sqrt(5)*ln(abs((5+x+sqrt(5)*sqrt(x^2+2*x+5))/x))|Used substitution and hyperbolic forms.
+sqrt(x^2-1)/x|sqrt(x^2-1)-arcsec(x)|Used trigonometric substitution.
+sqrt(x^2-2*x+1)|1/2*x^2-x|Recognized perfect square (assuming x > 1).
+tan(x)*sec(x)^2|1/2*tan(x)^2|Applied substitution u = tan(x).
+tan(x)^2*sec(x)^4|1/3*tan(x)^3+1/5*tan(x)^5|Applied substitution u = tan(x).
+tan(x)^2|tan(x)-x|Applied trigonometric identity tan^2(x) = sec^2(x) - 1.
+tan(x)^4*sec(x)^3|1/6*sec(x)^5*tan(x)-5/24*sec(x)^3*tan(x)-5/16*sec(x)*tan(x)-5/16*ln(abs(sec(x)+tan(x)))|Converted to secants and applied reduction formulas.
+tan(x)^4|1/3*tan(x)^3-tan(x)+x|Applied trigonometric identities recursively.
+tan(x)^5*sec(x)^2|1/6*tan(x)^6|Applied substitution u = tan(x).
+tan(x)^5*sec(x)^3|1/7*sec(x)^7-2/5*sec(x)^5+1/3*sec(x)^3|Applied substitution u = sec(x).
+tan(x/2)^2|2*tan(x/2)-x|Applied trigonometric identity and linear substitution.
+x*(1-sqrt(x))^2|1/2*x^2-4/5*x^(5/2)+1/3*x^3|Expanded algebraic expression and applied power rule.
+x*(1-x)*sqrt(x)|2/5*x^(5/2)-2/7*x^(7/2)|Expanded algebraic expression and applied power rule.
+x*(1-x^2)|1/2*x^2-1/4*x^4|Expanded algebraic expression and applied power rule.
+x*(4-2*x^2)^7|-1/32*(4-2*x^2)^8|Applied substitution u = 4 - 2*x^2.
+x*(cos(x)+sin(x))|x*sin(x)-x*cos(x)+sin(x)+cos(x)|Applied integration by parts.
+x*(x+1)|1/3*x^3+1/2*x^2|Expanded algebraic expression and applied power rule.
+x*(x^(1/2)+x^(-1/2))^2|1/3*x^3+x^2+x|Expanded algebraic expression and applied power rule.
+x*arcsin(x)|1/2*x^2*arcsin(x)-1/4*arcsin(x)+1/4*x*sqrt(1-x^2)|Applied integration by parts.
+x*cos(5*x-1)|1/5*x*sin(5*x-1)+1/25*cos(5*x-1)|Applied integration by parts.
+x*sec(x)^2|x*tan(x)+ln(abs(cos(x)))|Applied integration by parts.
+x*sin(2*x)|1/4*sin(2*x)-1/2*x*cos(2*x)|Applied integration by parts.
+x*sin(x)*cos(x)|1/8*sin(2*x)-1/4*x*cos(2*x)|Applied double angle identity and integration by parts.
+x*sin(x^2)|-1/2*cos(x^2)|Applied substitution u = x^2.
+x*sqrt(1+x)|2/5*(1+x)^(5/2)-2/3*(1+x)^(3/2)|Applied substitution u = 1 + x.
+x*sqrt(1+x^2)|1/3*(1+x^2)^(3/2)|Applied substitution u = 1 + x^2.
+x*sqrt(x^2+1)|1/3*(x^2+1)^(3/2)|Applied substitution u = x^2 + 1.
+x*sqrt(3*x)|2*sqrt(3)/5*x^(5/2)|Simplified fractional powers.
+x*sqrt(x^2+16)|1/3*(x^2+16)^(3/2)|Applied substitution u = x^2 + 16.
+x+x^2|1/2*x^2+1/3*x^3|Applied linearity and power rule.
+x/((x+2)*(x+3))|3*ln(abs(x+3))-2*ln(abs(x+2))|Applied partial fraction decomposition.
+x/((x-1)*(x^2+4*x+5))|1/10*ln(abs(x-1))-1/20*ln(x^2+4*x+5)+3/10*arctan(x+2)|Applied partial fraction decomposition.
+x/((x-3)*(x+3)*(x+2)*(x-2))|1/10*ln(abs(x^2-9))-1/10*ln(abs(x^2-4))|Simplified denominator and applied partial fraction decomposition.
+x/(1+x^4)|1/2*arctan(x^2)|Applied substitution u = x^2.
+x/(x^4+1)|1/2*arctan(x^2)|Applied substitution u = x^2.
+x/(1-x^2)^(5/2)|1/(3*(1-x^2)^(3/2))|Applied substitution u = 1 - x^2.
+x/(x^2+x)|ln(abs(x+1))|Simplified rational expression.
+x/sqrt(1+5*x^2)|1/5*sqrt(1+5*x^2)|Applied substitution u = 1 + 5*x^2.
+x/sqrt(2*E*x^2+K*x-a^2)|1/(2*E)*sqrt(2*E*x^2+K*x-a^2)-K/(4*E)*Integral(1/sqrt(2*E*x^2+K*x-a^2),x)|Decomposed numerator for standard parametric integral.
+x/sqrt(2*E*x^2-a^2)|1/(2*E)*sqrt(2*E*x^2-a^2)|Applied substitution u = 2*E*x^2 - a^2.
+x/sqrt(2*E*x^2-a^2-epsilon^2)|1/(2*E)*sqrt(2*E*x^2-a^2-epsilon^2)|Applied substitution u = 2*E*x^2 - a^2 - epsilon^2.
+x/sqrt(2-x^2)|-sqrt(2-x^2)|Applied substitution u = 2 - x^2.
+x/sqrt(x^2+2*x+5)|sqrt(x^2+2*x+5)-ln(x+1+sqrt(x^2+2*x+5))|Completed the square and evaluated substitution.
+x/sqrt(x^2-15)|sqrt(x^2-15)|Applied substitution u = x^2 - 15.
+x|1/2*x^2|Used power rule.
+xexp(x)^2|1/2*x*exp(2*x)-1/4*exp(2*x)|Simplified exponential and applied integration by parts.
+xexp(x^2)|1/2*exp(x^2)|Applied substitution u = x^2.
+x^(3*a)*sin(x^(2*a))|Integral(x^(3*a)*sin(x^(2*a)),x)|Returned generic reduction integral form.
+x^2*(x^3+1)|1/6*x^6+1/3*x^3|Expanded polynomial and applied power rule.
+x^2*arcsin(x)|1/3*x^3*arcsin(x)+1/9*(x^2+2)*sqrt(1-x^2)|Applied integration by parts.
+x^2*arctan(x)|1/3*x^3*arctan(x)-1/6*x^2+1/6*ln(x^2+1)|Applied integration by parts.
+x^2*csc(x^3)^2|-1/3*cot(x^3)|Applied substitution u = x^3.
+x^2*exp(-x)|-x^2*exp(-x)-2*x*exp(-x)-2*exp(-x)|Applied integration by parts twice.
+x^2*exp(3*x)|1/3*x^2*exp(3*x)-2/9*x*exp(3*x)+2/27*exp(3*x)|Applied integration by parts twice.
+x^2*ln(x)|1/3*x^3*ln(x)-1/9*x^3|Applied integration by parts.
+x^2*ln(x)^2|1/3*x^3*ln(x)^2-2/9*x^3*ln(x)+2/27*x^3|Applied integration by parts twice.
+x^2*sin(x^4)|Integral(x^2*sin(x^4),x)|Returned non-elementary generic reduction integral form.
+x^2*sqrt(1-x^2)|1/8*arcsin(x)-1/8*x*(1-2*x^2)*sqrt(1-x^2)|Applied trigonometric substitution.
+x^2*sqrt(x^3+5)|2/9*(x^3+5)^(3/2)|Applied substitution u = x^3 + 5.
+x^2/((x-1)*(x^2+4)^2)|1/25*ln(abs(x-1))-1/50*ln(x^2+4)-3/100*arctan(x/2)-(2*x-3)/(10*(x^2+4))|Applied partial fraction decomposition.
+x^2/(4-x^2)^(5/2)|x^3/(12*(4-x^2)^(3/2))|Applied trigonometric substitution.
+x^2/sqrt(1-x^2)|1/2*arcsin(x)-1/2*x*sqrt(1-x^2)|Applied trigonometric substitution.
+x^2/sqrt(4-x^2)|2*arcsin(x/2)-1/2*x*sqrt(4-x^2)|Applied trigonometric substitution.
+x^2|1/3*x^3|Used power rule.
+x^3*exp(x)|x^3*exp(x)-3*x^2*exp(x)+6*x*exp(x)-6*exp(x)|Applied integration by parts repeatedly.
+x^3/(x+1)|1/3*x^3-1/2*x^2+x-ln(abs(x+1))|Applied polynomial long division.
+x^3/(x^4+1)|1/4*ln(x^4+1)|Applied substitution u = x^4 + 1.
+x^3/(1+x^4)|1/4*ln(x^4+1)|Applied substitution u = x^4 + 1.
+x^3/sqrt(1+x^2)|1/3*(x^2-2)*sqrt(x^2+1)|Applied substitution u = 1 + x^2.
+x^3/sqrt(x^2+1)|1/3*(x^2-2)*sqrt(x^2+1)|Applied substitution u = 1 + x^2.
+x^4*(1-x^2)^(-5/2)|arcsin(x)+(x^3-3*x)/(3*(1-x^2)^(3/2))|Applied trigonometric substitution.
+x^4/(1-x^2)^(5/2)|arcsin(x)+(x^3-3*x)/(3*(1-x^2)^(3/2))|Applied trigonometric substitution.
+x^4/(1+x^2)|1/3*x^3-x+arctan(x)|Applied polynomial long division.
+x^4/(x^2+1)|1/3*x^3-x+arctan(x)|Applied polynomial long division.
+x^4/(1-x^2)^(3/2)|x/sqrt(1-x^2)-1/2*x*sqrt(1-x^2)-3/2*arcsin(x)|Applied trigonometric substitution.
+x^4/(x^2+9)|1/3*x^3-9*x+27*arctan(x/3)|Applied polynomial long division.
+x^5/(1+x^4)|1/2*x^2-1/2*arctan(x^2)|Applied substitution and polynomial long division.
+x^5/(x^4+1)|1/2*x^2-1/2*arctan(x^2)|Applied substitution and polynomial long division.
+x^7*sqrt(x^4+1)|1/10*(x^4+1)^(5/2)-1/6*(x^4+1)^(3/2)|Applied substitution u = x^4 + 1.
+x^c|x^(c+1)/(c+1)|Used symbolic power rule.
+x^m*ln(x)^n|Integral(x^m*ln(x)^n,x)|Returned generic reduction integral form.
+x^n*cos(x)|Integral(x^n*cos(x),x)|Returned generic reduction integral form.
+x^n*exp(a*x)|Integral(x^n*exp(a*x),x)|Returned generic reduction integral form.
+x^n*ln(x)|x^(n+1)*ln(x)/(n+1)-x^(n+1)/(n+1)^2|Applied integration by parts.
+x^n*sin(a*x)|Integral(x^n*sin(a*x),x)|Returned generic reduction integral form.
+x^n|x^(n+1)/(n+1)|Used symbolic power rule.
+sqrt(x-sqrt(x^2-1))|sqrt(2)/3*(x+1)^(3/2)-sqrt(2)/3*(x-1)^(3/2)|Applied nested radical denesting rules.
+sqrt(2*x-sqrt(4*x^2-1))|1/3*(2*x+1)^(3/2)-1/3*(2*x-1)^(3/2)|Applied nested radical denesting rules.
+log(1+tan(x))|Integral(log(1+tan(x)),x)|Returned non-elementary generic reduction integral form.
+sqrt(x)/(1+x)|2*sqrt(x)-2*arctan(sqrt(x))|Applied substitution u = sqrt(x).
+sqrt(ln(x)^2)|sgn(ln(x))*(x*ln(x)-x)|Simplified logarithmic radical.
+(2*x+3)^5|1/12*(2*x+3)^6|Applied substitution u = 2*x + 3.
+x^4*exp(x)|x^4*exp(x)-4*x^3*exp(x)+12*x^2*exp(x)-24*x*exp(x)+24*exp(x)|Applied integration by parts repeatedly.
+sin(2*x)^2|1/2*x-1/8*sin(4*x)|Applied half-angle trigonometric identity.
+(2*x^2)/(1+x^3)|2/3*ln(abs(1+x^3))|Applied substitution u = 1 + x^3.
+2*x^2/(1+x^3)|2/3*ln(abs(1+x^3))|Applied substitution u = 1 + x^3.
+1/(x^2+x-6)|1/5*ln(abs(x-2))-1/5*ln(abs(x+3))|Applied partial fraction decomposition.
+1/(x^2+1)^2|x/(2*(x^2+1))+1/2*arctan(x)|Applied trigonometric substitution.
+sqrt(4-x^2)/x|sqrt(4-x^2)-2*ln(abs((2+sqrt(4-x^2))/x))|Applied trigonometric substitution.
+x^2/(x^2+25)|x-5*arctan(x/5)|Applied polynomial long division.
+x^2/sqrt(x^2+25)|1/2*x*sqrt(x^2+25)-25/2*ln(abs(x+sqrt(x^2+25)))|Applied trigonometric substitution.
+x^2/sqrt(x^4+1)|Integral(x^2/sqrt(x^4+1),x)|Recognized Elliptic Integral form.
+1/sqrt(x^6+1)|Integral(1/sqrt(x^6+1),x)|Recognized hyperelliptic integral form.
+sqrt(x^6+1)|Integral(sqrt(x^6+1),x)|Recognized hyperelliptic integral form.
+1/(x^3+sqrt(x^6+1))|Integral(sqrt(x^6+1),x)-1/4*x^4|Rationalized denominator and simplified to hyperelliptic integral forms.
+sin(x^2)|sqrt(pi/2)*FresnelS(sqrt(2/pi)*x)|Recognized Fresnel Sine Integral form.
+cos(x^2)|sqrt(pi/2)*FresnelC(sqrt(2/pi)*x)|Recognized Fresnel Cosine Integral form.
+exp(-x^2)|sqrt(pi)/2*erf(x)|Recognized Error Function integral form.
+exp(-x^4)|Integral(exp(-x^4),x)|Returned generic reduction integral form.
+exp(x^3)|Integral(exp(x^3),x)|Returned generic reduction integral form.
+exp(x)/sqrt(x)|Integral(exp(x)/sqrt(x),x)|Recognized imaginary Error Function or Dawson integral form.
+exp(-x)/x|-Ei(-x)|Recognized Exponential Integral (Ei) form.
+cos(exp(x))|Ci(exp(x))|Recognized Cosine Integral (Ci) form.
+exp(sqrt(x))/x|2*Ei(sqrt(x))|Applied substitution u = sqrt(x) and recognized Ei form.
+exp(1/x)|x*exp(1/x)-Ei(1/x)|Applied integration by parts and recognized Ei form.
+exp(x)*ln(x)|Integral(exp(x)*ln(x),x)|Returned generic reduction integral form.
+ln(1+x^2)|x*ln(1+x^2)-2*x+2*arctan(x)|Applied integration by parts.
+ln(x^2+1)|x*ln(x^2+1)-2*x+2*arctan(x)|Applied integration by parts.
+ln(1+x^3)|x*ln(1+x^3)-3*x+3/2*ln(x^2-x+1)+sqrt(3)*arctan((2*x-1)/sqrt(3))|Applied integration by parts.
+ln(x^3+1)|x*ln(x^3+1)-3*x+3/2*ln(x^2-x+1)+sqrt(3)*arctan((2*x-1)/sqrt(3))|Applied integration by parts.
+1/(x*ln(x))|ln(abs(ln(x)))|Applied substitution u = ln(x).
+1/(x*ln(x)*ln(ln(x)))|ln(abs(ln(ln(x))))|Applied substitution u = ln(ln(x)).
+sqrt(ln(x))|x*sqrt(ln(x))-sqrt(pi)/2*erfi(sqrt(ln(x)))|Applied integration by parts and recognized imaginary Error Function.
+exp(sqrt(ln(x)))/x|2*sqrt(ln(x))*exp(sqrt(ln(x)))-2*exp(sqrt(ln(x)))|Applied substitution u = sqrt(ln(x)) and integration by parts.
+ln(1+x^4)|x*ln(1+x^4)-4*x+sqrt(2)*ln((x^2+sqrt(2)*x+1)/(x^2-sqrt(2)*x+1))+2*sqrt(2)*arctan(sqrt(2)*x+1)+2*sqrt(2)*arctan(sqrt(2)*x-1)|Applied integration by parts and partial fraction decomposition.
+ln(x^4+1)|x*ln(x^4+1)-4*x+sqrt(2)*ln((x^2+sqrt(2)*x+1)/(x^2-sqrt(2)*x+1))+2*sqrt(2)*arctan(sqrt(2)*x+1)+2*sqrt(2)*arctan(sqrt(2)*x-1)|Applied integration by parts and partial fraction decomposition.
+x*ln(1+x^2)|1/2*(x^2+1)*ln(1+x^2)-1/2*x^2|Applied integration by parts.
+x*ln(x^2+1)|1/2*(x^2+1)*ln(x^2+1)-1/2*x^2|Applied integration by parts.
+ln(x)*exp(x^2)|Integral(ln(x)*exp(x^2),x)|Recognized non-elementary integral involving logarithmic and exponential terms.
+1/(1+sin(x)^2)|sqrt(2)/2*arctan(sqrt(2)*tan(x))|Applied Weierstrass substitution or trigonometric identity conversion.
+1/(2+sin(x))|2/sqrt(3)*arctan((2*tan(x/2)+1)/sqrt(3))|Applied half-angle tangent (Weierstrass) substitution.
+1/(2+cos(x))|sqrt(3)/3*arctan(sqrt(3)/3*tan(x/2))|Applied half-angle tangent (Weierstrass) substitution.
+1/(2+sin(x)^2)|sqrt(6)/6*arctan(sqrt(3/2)*tan(x))|Divided by cos^2(x) and applied substitution u = tan(x).
+sqrt(1+sin(x)^2)|Integral(sqrt(1+sin(x)^2),x)|Recognized elliptic integral of the second kind form.
+1/sqrt(1+sin(x)^2)|Integral(1/sqrt(1+sin(x)^2),x)|Recognized elliptic integral of the first kind form.
+sin(x)/sqrt(2+cos(x))|-2*sqrt(2+cos(x))|Applied substitution u = 2 + cos(x).
+cos(x)/sqrt(2+sin(x))|2*sqrt(2+sin(x))|Applied substitution u = 2 + sin(x).
+sin(x)^2/(2+cos(x))|-sin(x)+2*sqrt(3)*arctan((tan(x/2))/sqrt(3))-x|Used trigonometric identity sin^2(x) = 1 - cos^2(x) and partial fractions.
+cos(x)^2/(2+sin(x))|cos(x)-3*ln(abs(sin(x)+2))+x|Used trigonometric identity cos^2(x) = 1 - sin^2(x) and partial fractions.
+1/(2+tan(x)^2)|sqrt(2)/2*arctan(sqrt(2)/2*tan(x))|Converted sec^2/tan^2 and applied substitution u = tan(x).
+sin(x^2)*cos(x)|1/3*sin(x)^3|Applied substitution u = sin(x).
+cos(x^2)*sin(x)|-1/3*cos(x)^3|Applied substitution u = cos(x).
+arcsin(x)^2/sqrt(1-x^2)|1/3*arcsin(x)^3|Applied substitution u = arcsin(x).
+arctan(x)^2/(1+x^2)|1/3*arctan(x)^3|Applied substitution u = arctan(x).
+exp(arctan(x))/(1+x^2)|exp(arctan(x))|Applied substitution u = arctan(x).
+exp(arctan(x))/(x^2+1)|exp(arctan(x))|Applied substitution u = arctan(x).
+sin(arctan(x))|-sqrt(1+x^2)|Applied trigonometric identity sin(arctan(x)) = x / sqrt(1 + x^2).
+cos(arctan(x))|ln(abs(x+sqrt(1+x^2)))|Applied trigonometric identity cos(arctan(x)) = 1 / sqrt(1 + x^2).
+arccot(x)/(1+x^2)|-1/2*arccot(x)^2|Applied substitution u = arccot(x).
+arccot(x)/(x^2+1)|-1/2*arccot(x)^2|Applied substitution u = arccot(x).
+arcsin(x)*ln(x)|Integral(arcsin(x)*ln(x),x)|Recognized non-elementary integral.
+arctan(x)*ln(x)|Integral(arctan(x)*ln(x),x)|Recognized non-elementary integral.
+sqrt(1-x^4)|Integral(sqrt(1-x^4),x)|Recognized elliptic integral form.
+1/sqrt(1-x^4)|F(arcsin(x),sqrt(2)/2)|Recognized Elliptic Integral of the first kind form (F).
+x/sqrt(1-x^4)|arcsin(x^2)/2|Applied substitution u = x^2.
+x^2/sqrt(1-x^4)|Integral(x^2/sqrt(1-x^4),x)|Recognized elliptic integral form.
+1/sqrt(x^2+25)|ln(abs(x+sqrt(x^2+25)))|Recognized standard inverse hyperbolic sine form.
+1/sqrt(x^2-25)|ln(abs(x+sqrt(x^2-25)))|Recognized standard inverse hyperbolic cosine form.
+x^2/sqrt(x^2-25)|1/2*x*sqrt(x^2-25)+25/2*ln(abs(x+sqrt(x^2-25)))|Applied trigonometric/hyperbolic substitution.
+sqrt(x^2+25)|1/2*x*sqrt(x^2+25)+25/2*ln(abs(x+sqrt(x^2+25)))|Applied standard hyperbolic integration formula.
+sqrt(x^2-25)|1/2*x*sqrt(x^2-25)-25/2*ln(abs(x+sqrt(x^2-25)))|Applied standard hyperbolic integration formula.
+x^3/sqrt(x^2+25)|1/3*(x^2-50)*sqrt(x^2+25)|Applied substitution u = x^2 + 25.
+x^3/sqrt(x^2-25)|1/3*(x^2+50)*sqrt(x^2-25)|Applied substitution u = x^2 - 25.
+1/(x^2+25)^2|x/(50*(x^2+25))+arctan(x/5)/250|Applied reduction formula or trigonometric substitution.
+x/(x^2+25)^2|-1/(2*(x^2+25))|Applied substitution u = x^2 + 25.
+x^2/(x^2+25)^2|-1/2*x/(x^2+25)+1/10*arctan(x/5)|Applied integration by parts and trigonometric substitution.
+x^3/(x^2+25)^2|1/2*ln(x^2+25)+25/(2*(x^2+25))|Applied substitution u = x^2 + 25.
+1/(x+log(x)^2)|Integral(1/(x+log(x)^2),x)|Recognized non-elementary integral form.
+1/sqrt(x^3+x+1)|Integral(1/sqrt(x^3+x+1),x)|Recognized elliptic integral form.
+1/sqrt(x^4+x+1)|Integral(1/sqrt(x^4+x+1),x)|Recognized elliptic/hyperelliptic integral form.
+sqrt(x^3+x+1)|Integral(sqrt(x^3+x+1),x)|Recognized elliptic integral form.
+sqrt(x^4+x+1)|Integral(sqrt(x^4+x+1),x)|Recognized elliptic/hyperelliptic integral form.
+x/sqrt(x^4+x+1)|Integral(x/sqrt(x^4+x+1),x)|Recognized elliptic/hyperelliptic integral form.
+x^2/sqrt(x^4+x+1)|Integral(x^2/sqrt(x^4+x+1),x)|Recognized elliptic/hyperelliptic integral form.
+1/((x+1)*sqrt(x^3+x+1))|Integral(1/((x+1)*sqrt(x^3+x+1)),x)|Recognized elliptic integral form.
+1/((x^2+1)*sqrt(x^4+x+1))|Integral(1/((x^2+1)*sqrt(x^4+x+1)),x)|Recognized elliptic/hyperelliptic integral form.
+sqrt((x^2+1)/(x^2+2))|Integral(sqrt((x^2+1)/(x^2+2)),x)|Recognized elliptic integral form.
+1/sqrt((x^2+1)*(x^2+2))|Integral(1/sqrt((x^2+1)*(x^2+2)),x)|Recognized elliptic integral form.
+sqrt(x^4+1)/(x^2+1)|Integral(sqrt(x^4+1)/(x^2+1),x)|Recognized elliptic integral form.
+sqrt(x^2+x+1)/(x^2+1)|Integral(sqrt(x^2+x+1)/(x^2+1),x)|Recognized elliptic integral form.
+1/sqrt(x^4-x+1)|Integral(1/sqrt(x^4-x+1),x)|Recognized elliptic integral form.
+x/sqrt(x^4-x+1)|Integral(x/sqrt(x^4-x+1),x)|Recognized elliptic integral form.
+1/((x-1)*sqrt(x^4+1))|Integral(1/((x-1)*sqrt(x^4+1)),x)|Recognized elliptic integral form.
+sqrt(x^4+x^2+1)/x|Integral(sqrt(x^4+x^2+1)/x,x)|Recognized complex algebraic reduction integral form.
+exp(x^2)/(1+x^2)|Integral(exp(x^2)/(1+x^2),x)|Recognized non-elementary integral form.
+exp(x)/(1+x^2)|Integral(exp(x)/(1+x^2),x)|Recognized non-elementary integral form.
+exp(x^2)*sin(x)|Integral(exp(x^2)*sin(x),x)|Recognized non-elementary integral form.
+exp(x)*sin(x^2)|Integral(exp(x)*sin(x^2),x)|Recognized non-elementary integral form.
+exp(sin(x))|Integral(exp(sin(x)),x)|Recognized non-elementary integral form.
+exp(cos(x))|Integral(exp(cos(x)),x)|Recognized non-elementary integral form.
+exp(tan(x))|Integral(exp(tan(x)),x)|Recognized non-elementary integral form.
+sin(exp(x))/x|Integral(sin(exp(x))/x,x)|Recognized non-elementary integral form.
+cos(exp(x))/x|Integral(cos(exp(x))/x,x)|Recognized non-elementary integral form.
+ln(x)/(1+x^2)|Integral(ln(x)/(1+x^2),x)|Recognized non-elementary integral form.
+ln(x)^2/(1+x)|Integral(ln(x)^2/(1+x),x)|Recognized non-elementary integral form.
+ln(sin(x))|Integral(ln(sin(x)),x)|Recognized non-elementary integral form.
+ln(cos(x))|Integral(ln(cos(x)),x)|Recognized non-elementary integral form.
+ln(tan(x))|Integral(ln(tan(x)),x)|Recognized non-elementary integral form.
+ln(1+sin(x))|Integral(ln(1+sin(x)),x)|Recognized non-elementary integral form.
+ln(x)/sqrt(1-x^2)|Integral(ln(x)/sqrt(1-x^2),x)|Recognized non-elementary integral form.
+ln(x)/sqrt(1+x^2)|Integral(ln(x)/sqrt(1+x^2),x)|Recognized non-elementary integral form.
+ln(x^2+x+1)/x|Integral(ln(x^2+x+1)/x,x)|Recognized non-elementary integral form.
+ln(1+exp(x))|Integral(ln(1+exp(x)),x)|Recognized non-elementary integral form.
+ln(1+exp(x^2))|Integral(ln(1+exp(x^2)),x)|Recognized non-elementary integral form.
+sqrt(1+cos(x)^2)|Integral(sqrt(1+cos(x)^2),x)|Recognized elliptic integral form.
+1/sqrt(1+cos(x)^2)|Integral(1/sqrt(1+cos(x)^2),x)|Recognized elliptic integral form.
+tan(x)^(1/2)|Integral(tan(x)^(1/2),x)|Recognized non-elementary complex reduction integral form.
+sec(x)^(1/2)|Integral(sec(x)^(1/2),x)|Recognized non-elementary complex reduction integral form.
+sin(x)/sqrt(1+sin(x)^2)|-arcsin(cos(x)/sqrt(2))|Applied substitution u = cos(x) and trigonometric identities.
+cos(x)/sqrt(1+cos(x)^2)|arcsin(sin(x)/sqrt(2))|Applied substitution u = sin(x) and trigonometric identities.
+sqrt(1+tan(x)^2)|ln(abs(sec(x)+tan(x)))|Applied trigonometric identity 1+tan^2(x) = sec^2(x).
+ln(arctan(x))|Integral(ln(arctan(x)),x)|Recognized non-elementary integral form.
+1/arctan(x)|Integral(1/arctan(x),x)|Recognized non-elementary integral form.
+arctan(x)/x|Integral(arctan(x)/x,x)|Recognized inverse tangent integral form.
+arcsin(x)/x|Integral(arcsin(x)/x,x)|Recognized non-elementary integral form.
+arccos(x)/x|Integral(arccos(x)/x,x)|Recognized non-elementary integral form.
+arcsec(x)/x|Integral(arcsec(x)/x,x)|Recognized non-elementary integral form.
+arcsin(x)*exp(x)|Integral(arcsin(x)*exp(x),x)|Recognized non-elementary integral form.
+arctan(x)*exp(x)|Integral(arctan(x)*exp(x),x)|Recognized non-elementary integral form.
+exp(sin(x^2))|Integral(exp(sin(x^2)),x)|Recognized non-elementary integral form.
+exp(cos(x^2))|Integral(exp(cos(x^2)),x)|Recognized non-elementary integral form.
+ln(x)/(1+x^4)|Integral(ln(x)/(1+x^4),x)|Recognized non-elementary integral form.
+ln(x)^2/(1+x^2)|Integral(ln(x)^2/(1+x^2),x)|Recognized non-elementary integral form.
+ln(sin(x^2))|Integral(ln(sin(x^2)),x)|Recognized non-elementary integral form.
+ln(cos(x^2))|Integral(ln(cos(x^2)),x)|Recognized non-elementary integral form.
+sqrt(2+cos(x)^2)|Integral(sqrt(2+cos(x)^2),x)|Recognized elliptic integral form.
+1/sqrt(2+cos(x)^2)|Integral(1/sqrt(2+cos(x)^2),x)|Recognized elliptic integral form.
+tan(x)^(3/2)|Integral(tan(x)^(3/2),x)|Recognized non-elementary complex reduction integral form.
+sec(x)^(3/2)|Integral(sec(x)^(3/2),x)|Recognized non-elementary complex reduction integral form.
+1/(x^2+49)|1/7*arctan(x/7)|Recognized standard arctangent form.
+x^2/sqrt(x^2+49)|1/2*x*sqrt(x^2+49)-49/2*ln(abs(x+sqrt(x^2+49)))|Applied substitution.
+(#a+#b*x^2)*exp(x^2)|(#b/2)*x*exp(x^2)+(#a-#b/2)*sqrt(pi)/2*erfi(x)|Applied integration by parts and imaginary Error function.
+(1+cos(#a*x))^(3/2)|4*sqrt(2)/#a*(sin(#a*x/2)-1/3*sin(#a*x/2)^3)|Applied half-angle identity.
+(#b+cos(#a*x))^(3/2)|Integral((#b+cos(#a*x))^(3/2),x)|Recognized Elliptic Integral form.
+#a/x^4/(#b+x^2)|#a/#b^3*arctan(x/sqrt(#b))-#a/(3*#b*x^3)+#a/(#b^2*x)|Applied partial fraction decomposition.
+(#a*x+#b)/(x*(x+#c)^2)|(#b/#c^2)*ln(abs(x))-(#b/#c^2)*ln(abs(x+#c))+(#a*#c-#b)/(#c*(x+#c))|Applied partial fraction decomposition.
+(#a*x^2+#b)*exp(x^2)|(#a/2)*x*exp(x^2)+(#b-#a/2)*sqrt(pi)/2*erfi(x)|Applied integration by parts and imaginary Error function.
+(#a*x^2+#b)/((x-#c)*(x-#d)*(x-#e))|Integral((#a*x^2+#b)/((x-#c)*(x-#d)*(x-#e)),x)|Applied partial fraction decomposition.
+(#a*x^6+#b*x^4+x^3+#c*x^2+#d)*exp(x^2)/(x^2+#e)^2|Integral((#a*x^6+#b*x^4+x^3+#c*x^2+#d)*exp(x^2)/(x^2+#e)^2,x)|Recognized complex non-elementary form.
+(#a-x^3)^2*x|#a^2*x^2/2-2*#a*x^5/5+x^8/8|Expanded polynomial.
+(#a-x^3)^2*x^2|-1/9*(#a-x^3)^3|Applied substitution u = a - x^3.
+(#a*x^2+#b)^(1/4)*x|2/(5*#a)*(#a*x^2+#b)^(5/4)|Applied substitution u = a*x^2 + b.
+(#a*x^2-#b*x+#c)/sqrt(x)|2*#a/5*x^(5/2)-2*#b/3*x^(3/2)+2*#c*sqrt(x)|Expanded rational fractional powers.
+(exp(x)+#a)*exp(#b*x)|exp((#b+1)*x)/(#b+1)+#a*exp(#b*x)/#b|Expanded exponential expression.
+(sin(x)^2+#a)*cos(x)^2|x/8-sin(4*x)/32+#a*(x/2+sin(2*x)/4)|Applied power-reduction trigonometric identities.
+(sin(x)^2+#a)^2|3*x/8-sin(4*x)/32+#a*x-#a*sin(2*x)/2+#a^2*x|Applied power-reduction trigonometric identities.
+(sqrt(x)+#a)^2|x^2/2+4*#a/3*x^(3/2)+#a^2*x|Expanded square root expression before integration.
+(x+#a)*(x-#b)|x^3/3+(#a-#b)*x^2/2-#a*#b*x|Expanded polynomial.
+(x+#a)^2*exp(x)|(x^2+2*(#a-1)*x+#a^2-2*#a+2)*exp(x)|Applied integration by parts.
+(x+#a/x)*log(x)|(x^2/2+#a*ln(abs(x)))*log(x)-(x^2/4+#a*ln(abs(x))^2/2)/ln(10)|Applied integration by parts.
+(x-#a)/(x^3+#b*x^2-x-#c)|Integral((x-#a)/(x^3+#b*x^2-x-#c),x)|Applied partial fraction decomposition.
+(x-#a)/(x^2*(x+#b))|-#a/(#b*x)+(#a+#b)/#b^2*ln(abs(x/(x+#b)))|Applied partial fraction decomposition.
+(x^2+#a)/sqrt(x)|2/5*x^(5/2)+2*#a*sqrt(x)|Expanded rational fractional powers.
+(x^2+#a)/((x-#b)^3*(x+#c))|Integral((x^2+#a)/((x-#b)^3*(x+#c)),x)|Applied partial fraction decomposition.
+(x^2-#a)*sqrt(x)|2/7*x^(7/2)-2*#a/3*x^(3/2)|Expanded rational fractional powers.
+(x^2-#a)/(x^3-#b*x^2-x+#c)|Integral((x^2-#a)/(x^3-#b*x^2-x+#c),x)|Applied partial fraction decomposition.
+(x^3+#a)/(x*(x+#b)*(x+#c)*(x-#d))|Integral((x^3+#a)/(x*(x+#b)*(x+#c)*(x-#d)),x)|Applied partial fraction decomposition.
+(x^3+#a)/(x^3+#b*x^2+#c*x)|x+Integral((#a-#b*x^2-#c*x)/(x^3+#b*x^2+#c*x),x)|Performed polynomial division.
+(x^3+x+#a)/(x^3-#b*x)|x+Integral(((1+#b)*x+#a)/(x^3-#b*x),x)|Performed polynomial division.
+(x^4+#a)/(x*(x^2+x+#b)^2)|Integral((x^4+#a)/(x*(x^2+x+#b)^2),x)|Applied partial fraction decomposition.
+#a/((x^2+#b)*(x^2+#c))|(#a/(#c-#b))*(arctan(x/sqrt(#b))/sqrt(#b)-arctan(x/sqrt(#c))/sqrt(#c))|Applied partial fraction decomposition.
+#a/(#b+cos(x))|#a*Integral(1/(#b+cos(x)),x)|Applied tangent half-angle substitution.
+#a/(#b+exp(x))|#a/#b*(x-ln(#b+exp(x)))|Applied substitution u = exp(x).
+#a/(#b+tan(x)^2)|#a*x/(#b-1)-#a*arctan(tan(x)/sqrt(#b))/((#b-1)*sqrt(#b))|Substitution u = tan(x).
+#a/(#b+x^2)|#a/sqrt(#b)*arctan(x/sqrt(#b))|Recognized standard arctangent form.
+#a/(#b+x^3)|Integral(#a/(#b+x^3),x)|Applied partial fraction decomposition.
+#a/(#b-cos(x))|#a*Integral(1/(#b-cos(x)),x)|Applied tangent half-angle substitution.
+#a/(#b-sin(x))|#a*Integral(1/(#b-sin(x)),x)|Applied tangent half-angle substitution.
+#a/(#b-x^2)|#a/(2*sqrt(#b))*ln(abs((sqrt(#b)+x)/(sqrt(#b)-x)))|Applied partial fraction decomposition.
+#a/(#b*x-x^2)^(3/2)|#a*(2*x-#b)/(#b^2*sqrt(#b*x-x^2))|Completed the square and used trigonometric substitution.
+#a/(#b-x^2)^(3/2)|#a*x/(#b*sqrt(#b-x^2))|Used trigonometric substitution.
+#a/(sin(x)+cos(x))|#a/sqrt(2)*ln(abs(tan(x/2+pi/8)))|Used tangent half-angle substitution.
+#a/(sqrt(#b-x^2)*(#c+arcsin(x)^2))|#a/sqrt(#c)*arctan(arcsin(x)/sqrt(#c))|Recognized derivative of arcsin(x).
+#a/(x*(#b+log(x)^2))|#a*ln(10)/sqrt(#b)*arctan(log(x)/sqrt(#b))|Recognized derivative of log(x).
+#a/(x*(x^2+#b)^2)|#a/(2*#b^2)*ln(abs(x^2/(x^2+#b)))+#a/(2*#b*(x^2+#b))|Applied partial fraction decomposition.
+#a/(x*(x^2+#b))|#a/(2*#b)*ln(abs(x^2/(x^2+#b)))|Applied partial fraction decomposition.
+#a/(x*sqrt(#b+x^2))|-#a/sqrt(#b)*ln(abs((sqrt(#b)+sqrt(#b+x^2))/x))|Used standard hyperbolic/inverse substitution.
+#a/(x*sqrt(#b-#c*x^2))|-#a/sqrt(#b)*ln(abs((sqrt(#b)+sqrt(#b-#c*x^2))/x))|Used standard inverse substitution.
+1/(x*sqrt(2*h*x^2-a^2))|1/a*arcsec(x*sqrt(2*h)/a)|Applied standard inverse secant form.
+#b/(x*sqrt(#c*h*x^2-a^2))|#b/a*arcsec(x*sqrt(#c*h)/a)|Applied standard inverse secant form.
+1/(x*sqrt(2*h*x^2-a^2-2*k*x^2))|1/a*arcsec(x*sqrt(2*h-2*k)/a)|Applied standard inverse secant form.
+#b/(x*sqrt(#c*h*x^2-a^2-#d*k*x^2))|#b/a*arcsec(x*sqrt(#c*h-#d*k)/a)|Applied standard inverse secant form.
+1/(x*sqrt(2*h*x^2-a^2-2*k*x^4))|Integral(1/(x*sqrt(2*h*x^2-a^2-2*k*x^4)),x)|Recognized Elliptic Integral form.
+#b/(x*sqrt(#c*h*x^2-a^2-#d*k*x^4))|Integral(#b/(x*sqrt(#c*h*x^2-a^2-#d*k*x^4)),x)|Recognized Elliptic Integral form.
+1/(x*sqrt(2*h*x^2-a^2-epsilon^2))|1/sqrt(a^2+epsilon^2)*arcsec(x*sqrt(2*h)/sqrt(a^2+epsilon^2))|Applied standard inverse secant form.
+#b/(x*sqrt(#c*h*x^2-a^2-epsilon^2))|#b/sqrt(a^2+epsilon^2)*arcsec(x*sqrt(#c*h)/sqrt(a^2+epsilon^2))|Applied standard inverse secant form.
+1/(x*sqrt(2*h*x^2-a^2-epsilon^2-2*k*x^2))|1/sqrt(a^2+epsilon^2)*arcsec(x*sqrt(2*h-2*k)/sqrt(a^2+epsilon^2))|Applied standard inverse secant form.
+#b/(x*sqrt(#c*h*x^2-a^2-epsilon^2-#d*k*x^2))|#b/sqrt(a^2+epsilon^2)*arcsec(x*sqrt(#c*h-#d*k)/sqrt(a^2+epsilon^2))|Applied standard inverse secant form.
+1/(x*sqrt(2*h*x^2-a^2-epsilon^2-2*k*x^4))|Integral(1/(x*sqrt(2*h*x^2-a^2-epsilon^2-2*k*x^4)),x)|Recognized Elliptic Integral form.
+#b/(x*sqrt(#c*h*x^2-a^2-epsilon^2-#d*k*x^4))|Integral(#b/(x*sqrt(#c*h*x^2-a^2-epsilon^2-#d*k*x^4)),x)|Recognized Elliptic Integral form.
+#a/(x*sqrt(x^2-#b))|#a/sqrt(#b)*arcsec(x/sqrt(#b))|Recognized standard inverse secant form.
+#a/(x^2*sqrt(x^2+#b))|-#a*sqrt(x^2+#b)/(#b*x)|Used trigonometric substitution.
+#a/(x^2*sqrt(x^2-#b))|#a*sqrt(x^2-#b)/(#b*x)|Used trigonometric substitution.
+#a/(x^2+#b)^2|#a*x/(2*#b*(x^2+#b))+#a/(2*#b^(3/2))*arctan(x/sqrt(#b))|Applied trigonometric substitution.
+#a/(x^2-#b*x+#c)^2|#a*(2*x-#b)/(2*(4*#c-#b^2)*(x^2-#b*x+#c))+#a*2/(4*#c-#b^2)^(3/2)*arctan((2*x-#b)/sqrt(4*#c-#b^2))|Completed the square and applied trigonometric substitution.
+#a/(x^2-#b)|#a/(2*sqrt(#b))*ln(abs((x-sqrt(#b))/(x+sqrt(#b))))|Applied partial fraction decomposition.
+#a/(x^6-#b)|Integral(#a/(x^6-#b),x)|Applied partial fraction decomposition.
+#a/(#b+x^4)^2|Integral(#a/(#b+x^4)^2,x)|Applied partial fraction decomposition and integration by parts.
+#a/cos(sqrt(x))|#a*Integral(sec(sqrt(x)),x)|Recognized non-elementary integral.
+#a/cos(x)^2|#a*tan(x)|Recognized standard secant squared form.
+#a/cot(x)^4|#a*(1/3*tan(x)^3-tan(x)+x)|Converted to tangent and used trigonometric identities.
+#a/log(x)|#a*ln(10)*Li(x)|Recognized Logarithmic Integral form (Li).
+#a/sec(x)|#a*sin(x)|Converted to cosine.
+#a/sec(x)^2|#a*(1/2*x+1/4*sin(2*x))|Converted to cosine squared and applied half-angle identity.
+#a/sqrt(#b+x)|2*#a*sqrt(#b+x)|Used linear substitution.
+#a/sqrt(#b-sin(#c*x))|#a*Integral(1/sqrt(#b-sin(#c*x)),x)|Recognized elliptic integral form.
+#a/sqrt(#b-x^2)|#a*arcsin(x/sqrt(#b))|Recognized standard arcsine form.
+#a/sqrt(#b+#c*sin(x))|#a*Integral(1/sqrt(#b+#c*sin(x)),x)|Recognized elliptic integral form.
+#a/sqrt(x-#b)|2*#a*sqrt(x-#b)|Used linear substitution.
+#a/sqrt(x^2+m^2+x)|#a*ln(abs(2*x+1+2*sqrt(x^2+x+m^2)))|Completed the square and used hyperbolic substitution.
+#a/x^(1/2)|2*#a*sqrt(x)|Used power rule.
+#a/x^2-#b/x^3|-#a/x+#b/(2*x^2)|Applied linearity and power rule.
+#a/x|#a*ln(abs(x))|Used logarithmic rule.
+#a^x*exp(x)|#a^x*exp(x)/(ln(#a)+1)|Combined exponential bases.
+#a*exp(x)*cos(x)|#a/2*exp(x)*(sin(x)+cos(x))|Applied integration by parts twice.
+#a*exp(x)/(#b+#c*exp(#d*x))|Integral(#a*exp(x)/(#b+#c*exp(#d*x)),x)|Used substitution.
+#a*x/((x-#b)^2*(x+#c))|Integral(#a*x/((x-#b)^2*(x+#c)),x)|Applied partial fraction decomposition.
+#a*tan(x)*sec(x)^2|#a/2*tan(x)^2|Used substitution u = tan(x).
+#a*x^4/((#b+x^2)*(#c-x^2))^4|Integral(#a*x^4/((#b+x^2)*(#c-x^2))^4,x)|Expanded via partial fractions.
+#a/x-#b/x^2|#a*ln(abs(x))+#b/x|Used logarithmic and power rules.
+#a-#b/sqrt(x)|#a*x-2*#b*sqrt(x)|Used power rule.
+#a*sec(x)^2-sec(x)*tan(x)|#a*tan(x)-sec(x)|Integrated standard secant and tangent forms.
+cos(#a*x+#b)|sin(#a*x+#b)/#a|Used linear substitution on cosine.
+cos(#a*x)/(#b-sin(#c*x))^2|Integral(cos(#a*x)/(#b-sin(#c*x))^2,x)|Used substitution.
+cos(#a*x)^3*sin(#b*x)^2|Integral(cos(#a*x)^3*sin(#b*x)^2,x)|Used substitution.
+cos(x)*(#a+sin(x)^3)|#a*sin(x)+1/4*sin(x)^4|Expanded and used substitution u = sin(x).
+cos(x)/(#a+sin(x))^2|-1/(#a+sin(x))|Used substitution u = a + sin(x).
+cos(x)/(sin(x)-#a)|ln(abs(sin(x)-#a))|Used substitution u = sin(x) - a.
+cos(x)^(#a*n+#b)|Integral(cos(x)^(#a*n+#b),x)|Recognized non-elementary or hypergeometic reduction form.
+cos(x)^3/(#a-sin(x))|Integral(cos(x)^3/(#a-sin(x)),x)|Used trigonometric identities and polynomial division.
+csc(x)^2+#a*x^2|-cot(x)+#a/3*x^3|Applied linearity to standard forms.
+exp(#a*x)*ln(#b+exp(#c*x))|Integral(exp(#a*x)*ln(#b+exp(#c*x)),x)|Applied substitution.
+exp(#a*x)/(#b+exp(x))|Integral(exp(#a*x)/(#b+exp(x)),x)|Applied substitution.
+exp(#a*x)*sqrt(#b-exp(#c*x))|Integral(exp(#a*x)*sqrt(#b-exp(#c*x)),x)|Applied substitution.
+exp(#a*x)/(exp(#b*x)+#c)|Integral(exp(#a*x)/(exp(#b*x)+#c),x)|Used substitution.
+exp(x)/(#a+exp(x))^2|-1/(#a+exp(x))|Applied substitution u = a + exp(x).
+exp(x)/(#a+exp(x))|ln(#a+exp(x))|Applied substitution u = a + exp(x).
+ln(#a+x^2)|x*ln(#a+x^2)-2*x+2*sqrt(#a)*arctan(x/sqrt(#a))|Applied integration by parts.
+ln(#a+x^3)|Integral(ln(#a+x^3),x)|Recognized non-elementary integral form.
+#a/(x*ln(x))|#a*ln(abs(ln(x)))|Applied substitution u = ln(x).
+#a/(x*ln(x)*ln(ln(x)))|#a*ln(abs(ln(ln(x))))|Applied substitution u = ln(ln(x)).
+ln(#a+x^4)|Integral(ln(#a+x^4),x)|Recognized non-elementary integral form.
+x*ln(#a+x^2)|(x^2+#a)*ln(#a+x^2)/2-x^2/2|Applied integration by parts.
+#a/(#b+sin(x)^2)|#a/sqrt(#b*(#b+1))*arctan(sqrt((#b+1)/#b)*tan(x))|Divided by cos^2(x) and applied substitution.
+#a/(#b+sin(x))|Integral(#a/(#b+sin(x)),x)|Applied Weierstrass half-angle tangent substitution.
+#a/(#b+cos(x)^2)|#a/sqrt(#b*(#b+1))*arctan(sqrt(#b/(#b+1))*tan(x))|Divided by cos^2(x) and applied substitution.
+#a/sqrt(#b+sin(x)^2)|#a*Integral(1/sqrt(#b+sin(x)^2),x)|Recognized Elliptic Integral form.
+sin(x)/sqrt(#a+cos(x))|-2*sqrt(#a+cos(x))|Applied substitution u = a + cos(x).
+cos(x)/sqrt(#a+sin(x))|2*sqrt(#a+sin(x))|Applied substitution u = a + sin(x).
+sin(x)^2/(#a+cos(x))|Integral(sin(x)^2/(#a+cos(x)),x)|Used trigonometric identities and partial fractions.
+cos(x)^2/(#a+sin(x))|Integral(cos(x)^2/(#a+sin(x)),x)|Used trigonometric identities and partial fractions.
+arctan(x)^2/(#a+x^2)|Integral(arctan(x)^2/(#a+x^2),x)|Recognized non-elementary integral form.
+exp(#a*arctan(x))/(#b+x^2)|Integral(exp(#a*arctan(x))/(#b+x^2),x)|Recognized non-elementary integral form.
+ln(arctan(x))/(#a+x^2)|Integral(ln(arctan(x))/(#a+x^2),x)|Recognized non-elementary integral form.
+#a/sqrt(#b-x^4)|Integral(#a/sqrt(#b-x^4),x)|Recognized elliptic integral form.
+x^2/sqrt(#a-x^4)|Integral(x^2/sqrt(#a-x^4),x)|Recognized elliptic integral form.
+#b/(x^2+a^2)|#b/a*arctan(x/a)|Recognized standard arctangent form.
+#b/(x^2-a^2)|#b/(2*a)*ln(abs((x-a)/(x+a)))|Applied partial fraction decomposition.
+x^2/(x^2+#a)|x-sqrt(#a)*arctan(x/sqrt(#a))|Applied polynomial division.
+x^2/sqrt(x^4+#a)|Integral(x^2/sqrt(x^4+#a),x)|Recognized Elliptic Integral form.
+#a/sqrt(x^6+#b)|Integral(#a/sqrt(x^6+#b),x)|Recognized hyperelliptic integral form.
+#a/(x^3+sqrt(x^6+#b))|Integral(#a/(x^3+sqrt(x^6+#b)),x)|Rationalized denominator and simplified to hyperelliptic integral forms.
+#a/sqrt(x^2+#b)|#a*ln(abs(x+sqrt(x^2+#b)))|Recognized standard scaling form.
+#b/sqrt(x^2+a^2)|#b*ln(abs(x+sqrt(x^2+a^2)))|Recognized standard scaling form.
+#a/sqrt(x^2-#b)|#a*ln(abs(x+sqrt(x^2-#b)))|Recognized standard scaling form.
+sqrt(x^2+#a)|1/2*x*sqrt(x^2+#a)+#a/2*ln(abs(x+sqrt(x^2+#a)))|Applied standard hyperbolic integration formula.
+sqrt(x^2-#a)|1/2*x*sqrt(x^2-#a)-#a/2*ln(abs(x+sqrt(x^2-#a)))|Applied standard hyperbolic integration formula.
+x^3/sqrt(x^2+#a)|1/3*(x^2-2*#a)*sqrt(x^2+#a)|Applied substitution u = x^2 + a.
+x^3/sqrt(x^2-#a)|1/3*(x^2+2*#a)*sqrt(x^2-#a)|Applied substitution u = x^2 - a.
+#a/(x^2+#b)^2|#a*x/(2*#b*(x^2+#b))+#a/(2*#b^(3/2))*arctan(x/sqrt(#b))|Applied trigonometric substitution.
+x/(x^2+#a)^2|-1/(2*(x^2+#a))|Applied substitution u = x^2 + a.
+x^2/(x^2+#a)^2|-1/2*x/(x^2+#a)+1/(2*sqrt(#a))*arctan(x/sqrt(#a))|Applied integration by parts and trigonometric substitution.
+x^3/(x^2+#a)^2|1/2*ln(x^2+#a)+#a/(2*(x^2+#a))|Applied substitution u = x^2 + a.
+#b/sqrt(a^2-x^2)|#b*arcsin(x/a)|Recognized standard arcsine form.
+#b/(x*sqrt(x^2+a^2))|-#b/a*ln(abs((a+sqrt(x^2+a^2))/x))|Applied substitution u = 1/x.
+#b/(x*sqrt(x^2-a^2))|#b/a*arcsec(x/a)|Applied substitution u = 1/x.
+#c/sqrt(#a*x^2+#b)|#c/sqrt(#a)*ln(abs(sqrt(#a)*x+sqrt(#a*x^2+#b)))|Recognized standard scaling form.
+#c/(#a*x^2+#b)|#c/(sqrt(#a)*sqrt(#b))*arctan(sqrt(#a/#b)*x)|Recognized standard arctangent scaling form.
+#c/(#a*x^2+#b)^2|Integral(#c/(#a*x^2+#b)^2,x)|Applied reduction formula.
+#d/(#a*x^2+#b*x+#c)|Integral(#d/(#a*x^2+#b*x+#c),x)|Completed the square in the quadratic denominator.
+(#d*#a*x+#b)/(#a*x^2+#b*x+#c)|Integral((#d*#a*x+#b)/(#a*x^2+#b*x+#c),x)|Decomposed numerator and completed the square.
+#d/(#a*x^2+#b*x+#c)^2|Integral(#d/(#a*x^2+#b*x+#c)^2,x)|Applied reduction formula.
+x/(#a*x^2+#b*x+#c)^2|Integral(x/(#a*x^2+#b*x+#c)^2,x)|Decomposed numerator and completed the square.
+ln(#a+x^6)|Integral(ln(#a+x^6),x)|Recognized non-elementary integral form.
+ln(#a+x^5)|Integral(ln(#a+x^5),x)|Recognized non-elementary integral form.
+#a/(#b+cos(x)^2)|#a/sqrt(#b*(#b+1))*arctan(sqrt(#b/(#b+1))*tan(x))|Divided by cos^2(x) and applied substitution.
+arctan(x)^3/(#a+x^2)|Integral(arctan(x)^3/(#a+x^2),x)|Recognized non-elementary integral form.
+arcsin(x)^3/sqrt(#a-x^2)|Integral(arcsin(x)^3/sqrt(#a-x^2),x)|Recognized non-elementary integral form.
+exp(#a*arctan(x))/(#b+x^2)|Integral(exp(#a*arctan(x))/(#b+x^2),x)|Recognized non-elementary integral form.
+ln(arctan(x))/(#a+x^2)|Integral(ln(arctan(x))/(#a+x^2),x)|Recognized non-elementary integral form.
+#a/(x^2+#b)|#a/sqrt(#b)*arctan(x/sqrt(#b))|Recognized standard arctangent scaling form.
+x^2/sqrt(x^2+#a)|1/2*x*sqrt(x^2+#a)-#a/2*ln(abs(x+sqrt(x^2+#a)))|Applied trigonometric substitution.
+#a/(x+log(x)^2)|Integral(#a/(x+log(x)^2),x)|Recognized non-elementary integral form.
+#a/sqrt(x^3+x+#b)|Integral(#a/sqrt(x^3+x+#b),x)|Recognized elliptic integral form.
+#a/sqrt(x^4+x+#b)|Integral(#a/sqrt(x^4+x+#b),x)|Recognized elliptic integral form.
+sqrt(x^3+x+#a)|Integral(sqrt(x^3+x+#a),x)|Recognized elliptic integral form.
+sqrt(x^4+x+#a)|Integral(sqrt(x^4+x+#a),x)|Recognized elliptic integral form.
+x/sqrt(x^4+x+#a)|Integral(x/sqrt(x^4+x+#a),x)|Recognized elliptic integral form.
+x^2/sqrt(x^4+x+#a)|Integral(x^2/sqrt(x^4+x+#a),x)|Recognized elliptic integral form.
+#a/((x+#b)*sqrt(x^3+x+#c))|Integral(#a/((x+#b)*sqrt(x^3+x+#c)),x)|Recognized elliptic integral form.
+#a/((x^2+#b)*sqrt(x^4+x+#c))|Integral(#a/((x^2+#b)*sqrt(x^4+x+#c)),x)|Recognized elliptic integral form.
+sqrt((x^2+#a)/(x^2+#b))|Integral(sqrt((x^2+#a)/(x^2+#b)),x)|Recognized elliptic integral form.
+#a/sqrt((x^2+#b)*(x^2+#c))|Integral(#a/sqrt((x^2+#b)*(x^2+#c)),x)|Recognized elliptic integral form.
+sqrt(x^4+#a)/(x^2+#b)|Integral(sqrt(x^4+#a)/(x^2+#b),x)|Recognized elliptic integral form.
+sqrt(x^2+x+#a)/(x^2+#b)|Integral(sqrt(x^2+x+#a)/(x^2+#b),x)|Recognized elliptic integral form.
+#a/sqrt(x^4-x+#b)|Integral(#a/sqrt(x^4-x+#b),x)|Recognized elliptic integral form.
+x/sqrt(x^4-x+#a)|Integral(x/sqrt(x^4-x+#a),x)|Recognized elliptic integral form.
+#a/((x-#b)*sqrt(x^4+#c))|Integral(#a/((x-#b)*sqrt(x^4+#c)),x)|Recognized elliptic integral form.
+sqrt(x^4+x^2+#a)/x|Integral(sqrt(x^4+x^2+#a)/x,x)|Recognized complex algebraic reduction integral form.
+exp(x^2)/(#a+x^2)|Integral(exp(x^2)/(#a+x^2),x)|Recognized non-elementary integral form.
+exp(x)/(#a+x^2)|Integral(exp(x)/(#a+x^2),x)|Recognized non-elementary integral form.
+exp(x^2)*sin(x)|Integral(exp(x^2)*sin(x),x)|Recognized non-elementary integral form.
+exp(x)*sin(x^2)|Integral(exp(x)*sin(x^2),x)|Recognized non-elementary integral form.
+exp(sin(x))|Integral(exp(sin(x)),x)|Recognized non-elementary integral form.
+exp(cos(x))|Integral(exp(cos(x)),x)|Recognized non-elementary integral form.
+exp(tan(x))|Integral(exp(tan(x)),x)|Recognized non-elementary integral form.
+sin(exp(x))/x|Integral(sin(exp(x))/x,x)|Recognized non-elementary integral form.
+cos(exp(x))/x|Integral(cos(exp(x))/x,x)|Recognized non-elementary integral form.
+ln(x)/(#a+x^2)|Integral(ln(x)/(#a+x^2),x)|Recognized non-elementary integral form.
+ln(x)^2/(#a+x)|Integral(ln(x)^2/(#a+x),x)|Recognized non-elementary integral form.
+ln(#a+sin(x))|Integral(ln(#a+sin(x)),x)|Recognized non-elementary integral form.
+ln(x^2+x+#a)/x|Integral(ln(x^2+x+#a)/x,x)|Recognized non-elementary integral form.
+ln(#a+exp(x))|Integral(ln(#a+exp(x)),x)|Recognized non-elementary integral form.
+ln(#a+exp(x^2))|Integral(ln(#a+exp(x^2)),x)|Recognized non-elementary integral form.
+#a/sqrt(#b+cos(x)^2)|Integral(#a/sqrt(#b+cos(x)^2),x)|Recognized elliptic integral form.
+x*cos(x)|x*sin(x)+cos(x)|Applied integration by parts.
+x*cos(x)^2|x^2/4+x*sin(2*x)/4+cos(2*x)/8|Applied integration by parts.
+x*cos(x^2)*exp(sin(x^2))|1/2*exp(sin(x^2))|Substitution u = sin(x^2).
+x*exp(x)/(1+x)^2|exp(x)/(1+x)|Applied integration by parts.
+x*exp(x)/(#a+x)^2|#a*exp(x)/(#a+x)|Applied integration by parts.
+x*exp(x)|(x-1)*exp(x)|Applied integration by parts.
+x*ln(x)|1/2*x^2*ln(x)-1/4*x^2|Applied integration by parts.
+x*log(x)|1/2*x^2*log(x)-1/(4*ln(10))*x^2|Applied integration by parts.
+x*sin(x)|sin(x)-x*cos(x)|Applied integration by parts.
+x*sqrt(#a+x)|2/15*(3*x-2*#a)*(#a+x)^(3/2)|Used substitution u = a+x.
+x*sqrt(#a+x^2)|1/3*(#a+x^2)^(3/2)|Used substitution u = a+x^2.
+x*sqrt(#a*x)|2/5*sqrt(#a)*x^(5/2)|Simplified fractional powers.
+x*sqrt(#a*x+#b)|2*(3*#a*x-2*#b)*(#a*x+#b)^(3/2)/(15*#a^2)|Used integration by parts.
+x/((x+#a)*(x+#b))|#a/(#a-#b)*ln(abs(x+#a))-#b/(#a-#b)*ln(abs(x+#b))|Applied partial fraction decomposition.
+x/((x-#a)*(x^2+#b*x+#c))|Integral(x/((x-#a)*(x^2+#b*x+#c)),x)|Applied partial fraction decomposition.
+x/((x-#a)*(x+#b)*(x+#c)*(x-#d))|Integral(x/((x-#a)*(x+#b)*(x+#c)*(x-#d)),x)|Applied partial fraction decomposition.
+x/(#a+x^4)|1/(2*sqrt(#a))*arctan(x^2/sqrt(#a))|Used substitution u = x^2.
+x/(#a-x^2)^(5/2)|1/(3*(#a-x^2)^(3/2))|Used substitution u = a-x^2.
+xexp(x)^2|1/2*x*exp(2*x)-1/4*exp(2*x)|Applied integration by parts.
+xexp(x^2)|1/2*exp(x^2)|Applied substitution u = x^2.
+(#a*x^7-#b*x^3+#c)/(#d+x^2)|#a/6*x^6-#a*#d/4*x^4+(#a*#d^2-#b)/2*x^2+(#b*#d-#a*#d^3)/2*ln(x^2+#d)+#c/sqrt(#d)*arctan(x/sqrt(#d))|Applied polynomial division.
+#a/x^4|-#a/(3*x^3)|Used power rule.
+ln(x^2+#a)|x*ln(x^2+#a)-2*x+2*sqrt(#a)*arctan(x/sqrt(#a))|Applied integration by parts.
+log(#a+#b*x^2)|x*log(#b*x^2+#a)-2*x/ln(10)+2*sqrt(#a)/sqrt(#b)*arctan(sqrt(#b)/sqrt(#a)*x)/ln(10)|Applied integration by parts.
+log(x)/(log(x)+#a)^2|x/(ln(10)*(log(x)+#a))|Applied integration by parts.
+log(x^2+#a*x)/(x^2+#b*x+#c)|Integral(log(x^2+#a*x)/(x^2+#b*x+#c),x)|Applied substitution.
+sec(#a*x)^2*tan(#b*x)|Integral(sec(#a*x)^2*tan(#b*x),x)|Applied substitution.
+sec(x)^2/(#a+sec(x)^2-#b*tan(x))|Integral(sec(x)^2/(#a+sec(x)^2-#b*tan(x)),x)|Applied substitution.
+sec(x/#a)^2|#a*tan(x/#a)|Used linear substitution.
+sin(#a*x-#b)|-cos(#a*x-#b)/#a|Used linear substitution.
+sin(#a*x)*cos(3*#a*x)|-cos(2*#a*x)/(4*#a)-cos(4*#a*x)/(8*#a)|Applied product-to-sum identities.
+sin(#a*x)*cos(#b*#a*x)|-cos((1-#b)*#a*x)/(2*#a*(1-#b))-cos((1+#b)*#a*x)/(2*#a*(1+#b))|Applied product-to-sum identities.
+sin(x)*cos(x)*sqrt(#a+sin(x)^2)|1/3*(#a+sin(x)^2)^(3/2)|Applied substitution u = a + sin(x)^2.
+sin(x)^(#a*n+#b)|Integral(sin(x)^(#a*n+#b),x)|Returned generic reduction integral form.
+sin(x)^2|x/2-sin(2*x)/4|Applied half-angle trigonometric identity.
+sqrt(#a+x^2)/x|sqrt(x^2+#a)-sqrt(#a)*ln(abs((sqrt(#a)+sqrt(x^2+#a))/x))|Applied trigonometric substitution.
+sqrt(#a^2-x^2)/x|sqrt(#a^2-x^2)-#a*ln(abs((#a+sqrt(#a^2-x^2))/x))|Applied trigonometric substitution.
+sqrt(x-x^2+#a)|(2*x-1)/4*sqrt(-x^2+x+#a)+(1+4*#a)/8*arcsin((2*x-1)/sqrt(1+4*#a))|Completed the square.
+sqrt(x^2+#a*x+#b)/x|Integral(sqrt(x^2+#a*x+#b)/x,x)|Used substitution and hyperbolic forms.
+sqrt(x^2-#a)/x|sqrt(x^2-#a)-sqrt(#a)*arcsec(x/sqrt(#a))|Used trigonometric substitution.
+sqrt(x^2-#a*x+#b)|Integral(sqrt(x^2-#a*x+#b),x)|Completed the square.
+tan(x/#a)^2|#a*tan(x/#a)-x|Applied trigonometric identity.
+x*(#a-sqrt(x))^2|#a^2*x^2/2-4*#a/5*x^(5/2)+1/3*x^3|Expanded algebraic expression.
+x*(#a-x)*sqrt(x)|2*#a/5*x^(5/2)-2/7*x^(7/2)|Expanded algebraic expression.
+x*(#a-x^2)|#a*x^2/2-1/4*x^4|Expanded algebraic expression.
+x*(#a-#b*x^2)^7|-1/(16*#b)*(#a-#b*x^2)^8|Applied substitution u = a - b*x^2.
+x*(#a*x+#b)^3|(#a*x+#b)^5/(5*#a^2)-#b*(#a*x+#b)^4/(4*#a^2)|Applied integration by parts.
+x*(x+#a)|x^3/3+#a/2*x^2|Expanded polynomial.
+x*cos(#a*x-#b)|x/#a*sin(#a*x-#b)+1/#a^2*cos(#a*x-#b)|Applied integration by parts.
+x*sqrt(x^2+#a)|1/3*(x^2+#a)^(3/2)|Applied substitution u = x^2 + a.
+x^(#b*a)*sin(x^(#c*a))|Integral(x^(#b*a)*sin(x^(#c*a)),x)|Returned generic reduction integral form.
+x^2*(x^3+#a)|1/6*x^6+#a/3*x^3|Expanded polynomial.
+x^2*cos(x)|x^2*sin(x)+2*x*cos(x)-2*sin(x)|Applied integration by parts twice.
+x^2*exp(#a*x)|x^2/#a*exp(#a*x)-2*x/#a^2*exp(#a*x)+2/#a^3*exp(#a*x)|Applied integration by parts twice.
+x^2*sin(x)|2*x*sin(x)+(2-x^2)*cos(x)|Applied integration by parts twice.
+x^2*sqrt(#a-x^2)|#a^2/8*arcsin(x/sqrt(#a))-1/8*x*(#a-2*x^2)*sqrt(#a-x^2)|Applied substitution.
+x^2*sqrt(x^3+#a)|2/9*(x^3+#a)^(3/2)|Applied substitution u = x^3 + a.
+x^2/((x-#a)*(x^2+#b)^2)|Integral(x^2/((x-#a)*(x^2+#b)^2),x)|Applied partial fractions.
+x^2/(#a-x^2)^(5/2)|x^3/(3*#a*(#a-x^2)^(3/2))|Applied trigonometric substitution.
+x^3/(x+#a)|x^3/3-#a/2*x^2+#a^2*x-#a^3*ln(abs(x+#a))|Applied polynomial division.
+x^3/(x^4+#a)|1/4*ln(abs(x^4+#a))|Applied substitution u = x^4 + a.
+x^4*(#a-x^2)^(-5/2)|x/(#a-x^2)^(3/2)-x/(#a*sqrt(#a-x^2))|Applied trigonometric substitution.
+x^4/(#a+x^2)|x^3/3-#a*x+#a^(3/2)*arctan(x/sqrt(#a))|Applied polynomial division.
+x^4/(#a-x^2)^(3/2)|Integral(x^4/(#a-x^2)^(3/2),x)|Applied trigonometric substitution.
+x^4/(#a-x^2)^(5/2)|x/(#a-x^2)^(3/2)-x/(#a*sqrt(#a-x^2))|Applied substitution u = a-x^2.
+x^4/(x^2+#a)|x^3/3-#a*x+#a^(3/2)*arctan(x/sqrt(#a))|Applied polynomial division.
+x^5/(#a+x^4)|1/2*x^2-sqrt(#a)/2*arctan(x^2/sqrt(#a))|Applied polynomial division.
+x^7*sqrt(x^4+#a)|1/10*(x^4+#a)^(5/2)-#a/6*(x^4+#a)^(3/2)|Applied substitution u = x^4 + a.
+sqrt(x-sqrt(x^2-#a))|Integral(sqrt(x-sqrt(x^2-#a)),x)|Applied nested radical denesting.
+sqrt(#a*x-sqrt(#b*x^2-#c))|Integral(sqrt(#a*x-sqrt(#b*x^2-#c)),x)|Applied nested radical denesting.
+log(#a+tan(x))|Integral(log(#a+tan(x)),x)|Returned generic reduction integral form.
+x^2*exp(x)|(x^2-2*x+2)*exp(x)|Applied integration by parts.
+(#a*x^2)/(#b+x^3)|(#a/3)*ln(abs(#b+x^3))|Applied substitution u = b + x^3.
+#a/(x^2+x-#b)|#a*ln(abs((2*x+1-sqrt(1+4*#b))/(2*x+1+sqrt(1+4*#b))))/sqrt(1+4*#b)|Applied partial fraction decomposition.
+sqrt(#a-x^2)/x|sqrt(#a-x^2)-sqrt(#a)*ln(abs((sqrt(#a)+sqrt(#a-x^2))/x))|Applied trigonometric substitution.
+exp(arctan(x))/(#a+x^2)|Integral(exp(arctan(x))/(#a+x^2),x)|Recognized non-elementary integral form.
+arccot(x)/(#a+x^2)|Integral(arccot(x)/(#a+x^2),x)|Recognized non-elementary integral form.
+x/sqrt(#a-x^4)|arcsin(x^2/sqrt(#a))/2|Applied substitution u = x^2.
+sin(x^3)|Integral(sin(x^3),x)|Recognized non-elementary sine integral form.
+cos(x^3)|Integral(cos(x^3),x)|Recognized non-elementary cosine integral form.
+exp(-x^6)|Integral(exp(-x^6),x)|Recognized non-elementary exponential integral form.
+ln(1+x^6)|x*ln(1+x^6)-6*x+Integral(6*x^6/(1+x^6),x)|Applied integration by parts.
+ln(1+x^5)|x*ln(1+x^5)-5*x+Integral(5*x^5/(1+x^5),x)|Applied integration by parts.
+sin(x^3)/x|Integral(sin(x^3)/x,x)|Recognized non-elementary sine integral form.
+cos(x^3)/x|Integral(cos(x^3)/x,x)|Recognized non-elementary cosine integral form.
+exp(x^2)/sqrt(x)|Integral(exp(x^2)/sqrt(x),x)|Recognized non-elementary integral form.
+exp(-x^2)/x|-Ei(-x)|Recognized Exponential Integral (Ei) form.
+1/(3+sin(x)^2)|sqrt(3)/6*arctan(sqrt(3)/3*tan(x))|Divided by cos^2(x) and applied substitution u = tan(x).
+1/(3+cos(x)^2)|1/6*arctan(sqrt(2)/2*tan(x))/sqrt(2)|Divided by cos^2(x) and applied substitution u = tan(x).
+arctan(x)^3/(1+x^2)|1/4*arctan(x)^4|Applied substitution u = arctan(x).
+exp(2*arctan(x))/(1+x^2)|1/2*exp(2*arctan(x))|Applied substitution u = arctan(x).
+ln(arctan(x))/(1+x^2)|arctan(x)*ln(arctan(x))-arctan(x)|Applied substitution u = arctan(x).
+sin(x)/sqrt(#a+sin(x)^2)|Integral(sin(x)/sqrt(#a+sin(x)^2),x)|Recognized non-elementary integral form.
+cos(x)/sqrt(#a+cos(x)^2)|Integral(cos(x)/sqrt(#a+cos(x)^2),x)|Recognized non-elementary integral form.
+#a/arctan(x)|Integral(#a/arctan(x),x)|Recognized non-elementary integral form.
+ln(x)/(#a+x^4)|Integral(ln(x)/(#a+x^4),x)|Recognized non-elementary integral form.
+ln(x)^2/(#a+x^2)|Integral(ln(x)^2/(#a+x^2),x)|Recognized non-elementary integral form.
+ln(sin(x^2))|Integral(ln(sin(x^2)),x)|Recognized non-elementary integral form.
+#a/sqrt(#b+#c*cos(x))|#a*Integral(1/sqrt(#b+#c*cos(x)),x)|Recognized elliptic integral form.
+1/sqrt(#a+#b*cos(x))|Integral(1/sqrt(#a+#b*cos(x)),x)|Recognized elliptic integral form.
+sqrt(x-sqrt(x^2-#a))|Integral(sqrt(x-sqrt(x^2-#a)),x)|Applied nested radical denesting.
+(#b+cos(#a*x))^#c|Integral((#b+cos(#a*x))^#c,x)|Recognized non-elementary integral form.
+(#b+cos(#a*x))^(#c)|Integral((#b+cos(#a*x))^#c,x)|Recognized non-elementary integral form.

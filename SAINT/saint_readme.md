@@ -1,0 +1,38 @@
+# SAINT Text Integrator for TSE
+**Version:** 1.0.0.1.55
+
+## Background & History
+This project is a modernized, text-based implementation of **SAINT** (Symbolic Automatic INTegrator), originally created by James Robert Slagle in 1961 using LISP. Slagle's pioneering program was one of the earliest examples of artificial intelligence applied to symbolic mathematics, capable of solving freshman calculus integration problems at the level of a good college student.
+
+This version brings the spirit of SAINT into The SemWare Editor (TSE) using the Semware Application Language (SAL).
+
+## How It Works
+Unlike Slagle's original 1961 architecture, which relied on complex heuristic problem-solving and an expanding AND/OR tree to navigate possible algebraic substitutions, this TSE SAL implementation takes a streamlined, deterministic approach:
+*   **No AND/OR Trees or Heuristics:** It eliminates the computational overhead of recursive heuristic searching.
+*   **Direct Pattern Matching:** The macro normalizes the input expression and aggressively scans against a comprehensive database of known integral templates and standard forms.
+*   **Wildcard Variable Expansion:** It uses generalized wildcard parameters (e.g., `#a`, `#b`, `#c`) to instantly capture and map variables, constants, and coefficients from the input expression to the exact algebraic solution.
+
+## Files Included
+To successfully run the integrator, the following files are utilized:
+*   **`saint.s`**: The core compiled macro engine containing the parser and pattern-matching logic.
+*   **`saint_rules.txt`**: The mandatory ruleset database. This file must be located in the same directory as `saint.s` for the engine to load the integration templates.
+*   **`saint_examples.txt`**: A supplementary file containing a testing suite of normalized `int ... dx` expressions. It is not required to run the macro, but it is useful for batch testing.
+
+## Usage Instructions
+Once `saint.s` is compiled, you can execute the macro in three distinct ways within the SemWare Editor:
+
+1.  **Interactive Input:** Run the macro directly without any highlighted text. An input box will prompt you to type the integral manually (e.g., `int x * exp( 300 * x ) dx`).
+2.  **Command-Line Parameter:** Pass the expression string directly as a parameter when executing the macro from the command line.
+3.  **Batch Execution:** Highlight a block of text containing multiple `int ... dx` expressions (such as those found in `saint_examples.txt`). Running the macro will automatically evaluate every expression in the highlighted block sequentially and output the results, alongside the engine's reasoning, into a newly created `SAINT_Result` buffer.
+
+## Changelog
+*   **2026-08-19 20:42:** Bumped to v1.0.0.1.54 - Eliminated all remaining "No solution" errors; finalized generalized `#a`, `#b`, `#c` wildcard mapping for elliptic integrals and complex radical denesting.
+*   **2026-08-19 20:25:** Updated to v1.0.0.1.48 - Restored complete ruleset database to bypass file truncation issues.
+*   **2026-08-19 20:15:** Updated to v1.0.0.1.46 - Expanded variable extraction to natively map higher-order wildcards (`#d`, `#e`) in the macro engine.
+*   **2026-08-19 19:50:** Updated to v1.0.0.1.43 - Added fallback generalized literals to the ruleset.
+*   **[Initial]**: Initial text-based SAL port inspired by Slagle's 1961 architecture.
+
+## Related Projects
+A similar implementation of this text-based integration engine has been developed in Python.
+*   **Source Code:** Available on GitHub at [https://github.com/knudvaneeden/integrator/](https://github.com/knudvaneeden/integrator/)
+*   **Live Demo:** Run the Python version online at [http://108.181.171.91/integrator/](http://108.181.171.91/integrator/)
