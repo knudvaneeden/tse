@@ -1,6 +1,6 @@
 // saint.s
 // Text-based SAINT symbolic integrator for The SemWare Editor (TSE) SAL
-// Version: 1.0.0.1.60 FULL_COVERAGE
+// Version: 1.0.0.1.61 FULL_COVERAGE
 // Model: OpenAI GPT-5.6
 //
 // Native SAL implementation inspired by James Robert Slagle's SAINT.
@@ -1106,15 +1106,22 @@ PROC Main()
     debugStepGI = 0
     PROCDebug("Main entered; compilation and macro loading succeeded")
     programNameGS = "SAINT text integrator"
-    programVersionGS = "1.0.0.1.60 FULL_COVERAGE"
+    programVersionGS = "1.0.0.1.61 FULL_COVERAGE"
 
     origBufferI = GetBufferId()
+
+    PushPosition()
+    IF EditFile( "SAINT_Rules" )
+     AbandonFile()
+    ENDIF
+    PopPosition()
 
     PushPosition()
     IF GetBufferId( "SAINT_Rules" ) == 0
      rulesBufferGI = CreateBuffer("SAINT_Rules")
     ENDIF
     PopPosition()
+
     IF rulesBufferGI == 0
         Warn("Could not create buffer for rules.")
         RETURN()
@@ -1122,16 +1129,31 @@ PROC Main()
     GotoBufferId(rulesBufferGI)
     EmptyBuffer()
 
-    IF NOT ( LoadBuffer( "saint_rules.txt" ) > 0 )
-     IF NOT LoadBuffer( AddTrailingSlash( CurrDir() ) + "saint\saint_rules.txt" )
-      IF NOT LoadBuffer( "f:\bbc\taal\saint_rules.txt" )
-       IF NOT LoadBuffer( "c:\bbc\taal\saint_rules.txt" )
-        Warn( "could not load the file saint_rules.txt. Please check." )
-        RETURN()
+    #IFDEF WIN32
+     IF NOT ( LoadBuffer( "saint_rules.txt" ) > 0 )
+       IF NOT LoadBuffer( AddTrailingSlash( CurrDir() ) + "saint\saint_rules.txt" )
+       IF NOT LoadBuffer( "f:\bbc\taal\saint_rules.txt" )
+        IF NOT LoadBuffer( "c:\bbc\taal\saint_rules.txt" )
+         Warn( "could not load the file saint_rules.txt. Please check." )
+         RETURN()
+        ENDIF
        ENDIF
       ENDIF
      ENDIF
-    ENDIF
+    #ENDIF
+
+    #IFDEF LINUX
+     IF NOT ( LoadBuffer( "./saint_rules.txt" ) > 0 )
+      IF NOT LoadBuffer( AddTrailingSlash( CurrDir() ) + "saint/saint_rules.txt" )
+       IF NOT LoadBuffer( "/mnt/c/temp/tse_linux/knud/saint_rules.txt" )
+        IF NOT LoadBuffer( "/mnt/c/temp/tse_linux/knud/saint/saint_rules.txt" )
+         Warn( "could not load the file saint_rules.txt. Please check." )
+         RETURN()
+        ENDIF
+       ENDIF
+      ENDIF
+     ENDIF
+    #ENDIF
 
     GotoBufferId(origBufferI)
 
