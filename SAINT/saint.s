@@ -1,6 +1,6 @@
 // saint.s
 // Text-based SAINT symbolic integrator for The SemWare Editor (TSE) SAL
-// Version: 1.0.0.1.63 FULL_COVERAGE
+// Version: 1.0.0.1.63 COMMUTATIVE
 // Model: OpenAI GPT-5.6
 //
 // Native SAL implementation inspired by James Robert Slagle's SAINT.
@@ -781,6 +781,8 @@ END
 
 STRING PROC FNIntegrateAdvancedFormsS(STRING expressionS)
     STRING wS[255] = ""
+    STRING swappedMulS[255] = ""
+    STRING swappedAddS[255] = ""
     STRING ansS[255] = ""
     STRING reasonS[255] = ""
     STRING lineS[255] = ""
@@ -798,8 +800,20 @@ STRING PROC FNIntegrateAdvancedFormsS(STRING expressionS)
     INTEGER pos1I = 0
     INTEGER pos2I = 0
     INTEGER I = 0
+    INTEGER opI = 0
 
     wS = FNStripOuterParenthesesS(expressionS)
+
+    // Generate commutative permutations for depth=0 operators
+    opI = FNTopOperatorI(wS, "*")
+    IF opI > 0
+        swappedMulS = SubStr(wS, opI + 1, 255) + "*" + SubStr(wS, 1, opI - 1)
+    ENDIF
+
+    opI = FNTopOperatorI(wS, "+")
+    IF opI > 0
+        swappedAddS = SubStr(wS, opI + 1, 255) + "+" + SubStr(wS, 1, opI - 1)
+    ENDIF
 
     origBufferI = GetBufferId()
     GotoBufferId(rulesBufferGI)
@@ -815,12 +829,33 @@ STRING PROC FNIntegrateAdvancedFormsS(STRING expressionS)
             IF pos2I > 0
                 rawAnsS = SubStr(restS, 1, pos2I - 1)
                 reasonS = SubStr(restS, pos2I + 1, 255)
-
+                
+                // 1. Try original expression match
                 IF FNMatchTemplateB(patternS, wS, aS, bS, cS, dS, eS, mS, nS)
                     ansS = FNReplaceTemplateS(rawAnsS, aS, bS, cS, dS, eS, mS, nS)
                     PROCReason(reasonS)
                     GotoBufferId(origBufferI)
                     RETURN(ansS)
+                ENDIF
+
+                // 2. Try swapped multiplication match
+                IF swappedMulS <> ""
+                    IF FNMatchTemplateB(patternS, swappedMulS, aS, bS, cS, dS, eS, mS, nS)
+                        ansS = FNReplaceTemplateS(rawAnsS, aS, bS, cS, dS, eS, mS, nS)
+                        PROCReason(reasonS)
+                        GotoBufferId(origBufferI)
+                        RETURN(ansS)
+                    ENDIF
+                ENDIF
+
+                // 3. Try swapped addition match
+                IF swappedAddS <> ""
+                    IF FNMatchTemplateB(patternS, swappedAddS, aS, bS, cS, dS, eS, mS, nS)
+                        ansS = FNReplaceTemplateS(rawAnsS, aS, bS, cS, dS, eS, mS, nS)
+                        PROCReason(reasonS)
+                        GotoBufferId(origBufferI)
+                        RETURN(ansS)
+                    ENDIF
                 ENDIF
             ENDIF
         ENDIF
@@ -1106,7 +1141,7 @@ PROC Main()
     debugStepGI = 0
     PROCDebug("Main entered; compilation and macro loading succeeded")
     programNameGS = "SAINT text integrator"
-    programVersionGS = "1.0.0.1.63 FULL_COVERAGE"
+    programVersionGS = "1.0.0.1.63 COMMUTATIVE"
 
     origBufferI = GetBufferId()
 

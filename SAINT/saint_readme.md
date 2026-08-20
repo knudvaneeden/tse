@@ -1,5 +1,5 @@
 # SAINT Text Integrator for TSE
-**Version:** 1.0.0.1.63
+**Version:** 1.0.0.1.63 COMMUTATIVE
 
 ## Background & History
 This project is a modernized, text-based implementation of **SAINT** (Symbolic Automatic INTegrator), originally created by James Robert Slagle in 1961 using LISP. Slagle's pioneering program was one of the earliest examples of artificial intelligence applied to symbolic mathematics, capable of solving freshman calculus integration problems at the level of a good college student.
@@ -11,6 +11,7 @@ Unlike Slagle's original 1961 architecture, which relied on complex heuristic pr
 *   **No AND/OR Trees or Heuristics:** It eliminates the computational overhead of recursive heuristic searching.
 *   **Direct Pattern Matching:** The macro normalizes the input expression and aggressively scans against a comprehensive database of known integral templates and standard forms.
 *   **Wildcard Variable Expansion:** It uses generalized wildcard parameters (e.g., `#a`, `#b`, `#c`) to instantly capture and map variables, constants, and coefficients from the input expression to the exact algebraic solution.
+*   **Commutative Permutations:** To handle order-independent operations (like `sin(x) * cos(x)` versus `cos(x) * sin(x)`) without the memory overhead of generating a full Abstract Syntax Tree (AST), the engine dynamically generates swapped permutations for root-level multiplication and addition operators, testing all logical variations against the rule database.
 
 ## Supported Platforms
 This macro features conditional compilation paths and is fully compatible with:
@@ -23,6 +24,7 @@ To successfully run the integrator, the following files are utilized:
 *   **`saint.s`**: The core compiled macro engine containing the parser and pattern-matching logic.
 *   **`saint_rules.txt`**: The mandatory ruleset database. This file must be located in the same directory as `saint.s` (or configured via the OS-specific load paths) for the engine to load the integration templates.
 *   **`saint_examples.txt`**: A supplementary file containing a testing suite of normalized `int ... dx` expressions. It is not required to run the macro, but it is useful for batch testing.
+*   **`saint_readme.md`**: This documentation file.
 
 ## Usage Instructions
 Once `saint.s` is compiled, you can execute the macro in several distinct ways:
@@ -34,11 +36,12 @@ Once `saint.s` is compiled, you can execute the macro in several distinct ways:
     `http://108.181.171.91/ddd.php?tseMacroS=c:/bbc/taal/saint.mac^%20-p^%20int^%20x^%20dx`
 
 ## Changelog
-*   **[Current]**: Bumped to v1.0.0.1.62 - Added support for executing the macro on TSE for Linux and introduced a web browser interface for remote server environments, including the direct live URL for testing.
-*   **2026-08-19 20:42:** Bumped to v1.0.0.1.54 - Eliminated all remaining "No solution" errors; finalized generalized `#a`, `#b`, `#c` wildcard mapping for elliptic integrals and complex radical denesting.
-*   **2026-08-19 20:25:** Updated to v1.0.0.1.48 - Restored complete ruleset database to bypass file truncation issues.
-*   **2026-08-19 20:15:** Updated to v1.0.0.1.46 - Expanded variable extraction to natively map higher-order wildcards (`#d`, `#e`) in the macro engine.
-*   **2026-08-19 19:50:** Updated to v1.0.0.1.43 - Added fallback generalized literals to the ruleset.
+*   **2026-08-20:** Bumped to v1.0.0.1.63 - Implemented dynamic commutative permutations in the advanced forms parser to correctly match order-independent operations without needing to duplicate rules.
+*   **2026-08-19:** Bumped to v1.0.0.1.62 - Added support for executing the macro on TSE for Linux and introduced a web browser interface for remote server environments, including the direct live URL for testing.
+*   **2026-08-19:** Bumped to v1.0.0.1.54 - Eliminated all remaining "No solution" errors; finalized generalized `#a`, `#b`, `#c` wildcard mapping for elliptic integrals and complex radical denesting.
+*   **2026-08-19:** Updated to v1.0.0.1.48 - Restored complete ruleset database to bypass file truncation issues.
+*   **2026-08-19:** Updated to v1.0.0.1.46 - Expanded variable extraction to natively map higher-order wildcards (`#d`, `#e`) in the macro engine.
+*   **2026-08-19:** Updated to v1.0.0.1.43 - Added fallback generalized literals to the ruleset.
 *   **[Initial]**: Initial text-based SAL port inspired by Slagle's 1961 architecture.
 
 ## Related Projects
