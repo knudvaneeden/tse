@@ -1,6 +1,6 @@
 // saint.s
 // Text-based SAINT symbolic integrator for The SemWare Editor (TSE) SAL
-// Version: 1.0.0.1.61 FULL_COVERAGE
+// Version: 1.0.0.1.63 FULL_COVERAGE
 // Model: OpenAI GPT-5.6
 //
 // Native SAL implementation inspired by James Robert Slagle's SAINT.
@@ -1106,7 +1106,7 @@ PROC Main()
     debugStepGI = 0
     PROCDebug("Main entered; compilation and macro loading succeeded")
     programNameGS = "SAINT text integrator"
-    programVersionGS = "1.0.0.1.61 FULL_COVERAGE"
+    programVersionGS = "1.0.0.1.63 FULL_COVERAGE"
 
     origBufferI = GetBufferId()
 

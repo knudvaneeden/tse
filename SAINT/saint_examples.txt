@@ -1,6 +1,6 @@
 // saint_examples.txt
 // Text-based SAINT symbolic integrator for The SemWare Editor (TSE) SAL
-// Version: 1.0.0.1.60 FULL_COVERAGE
+// Version: 1.0.0.1.63 FULL_COVERAGE
 // Model: OpenAI GPT-5.6
 //
 // Native SAL implementation inspired by James Robert Slagle's SAINT.
@@ -325,6 +325,7 @@ int sin( m * x ) * sin( n * x ) dx
 int sin( x ) * cos( x ) * sqrt( 1 + sin( x )^2 ) dx
 int sin( x ) * cos( x ) * sqrt( a + sin( x )^2 ) dx
 int sin( x ) * cos( x ) dx
+int cos( x ) * sin( x ) dx
 int sin( x ) * cos( x )^2 dx
 int sin( x ) * exp( x ) dx
 int sin( x ) + cos( x ) dx

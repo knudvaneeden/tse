@@ -1,6 +1,6 @@
 // saint_rules.txt
 // Text-based SAINT symbolic integrator for The SemWare Editor (TSE) SAL
-// Version: 1.0.0.1.60 FULL_COVERAGE
+// Version: 1.0.0.1.63 FULL_COVERAGE
 // Model: OpenAI GPT-5.6
 //
 // Native SAL implementation inspired by James Robert Slagle's SAINT.
@@ -779,3 +779,7 @@ ln(sin(x^2))|Integral(ln(sin(x^2)),x)|Recognized non-elementary integral form.
 sqrt(x-sqrt(x^2-#a))|Integral(sqrt(x-sqrt(x^2-#a)),x)|Applied nested radical denesting.
 (#b+cos(#a*x))^#c|Integral((#b+cos(#a*x))^#c,x)|Recognized non-elementary integral form.
 (#b+cos(#a*x))^(#c)|Integral((#b+cos(#a*x))^#c,x)|Recognized non-elementary integral form.
+sin(#a*x+#b)*cos(#a*x+#b)|1/(2*#a)*sin(#a*x+#b)^2|Applied substitution u = sin(ax+b).
+sin(#a*x-#b)*cos(#a*x-#b)|1/(2*#a)*sin(#a*x-#b)^2|Applied substitution u = sin(ax-b).
+sin(#a*x+#b)*cos(#c*x+#d)|-cos((#a-#c)*x+(#b-#d))/(2*(#a-#c))-cos((#a+#c)*x+(#b+#d))/(2*(#a+#c))|Applied product-to-sum trigonometric identities.
+cos(#a*x+#b)*sin(#c*x+#d)|cos((#a-#c)*x+(#b-#d))/(2*(#a-#c))-cos((#a+#c)*x+(#b+#d))/(2*(#a+#c))|Applied product-to-sum trigonometric identities.

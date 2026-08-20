@@ -1,5 +1,5 @@
 # SAINT Text Integrator for TSE
-**Version:** 1.0.0.1.55
+**Version:** 1.0.0.1.63
 
 ## Background & History
 This project is a modernized, text-based implementation of **SAINT** (Symbolic Automatic INTegrator), originally created by James Robert Slagle in 1961 using LISP. Slagle's pioneering program was one of the earliest examples of artificial intelligence applied to symbolic mathematics, capable of solving freshman calculus integration problems at the level of a good college student.
@@ -12,20 +12,29 @@ Unlike Slagle's original 1961 architecture, which relied on complex heuristic pr
 *   **Direct Pattern Matching:** The macro normalizes the input expression and aggressively scans against a comprehensive database of known integral templates and standard forms.
 *   **Wildcard Variable Expansion:** It uses generalized wildcard parameters (e.g., `#a`, `#b`, `#c`) to instantly capture and map variables, constants, and coefficients from the input expression to the exact algebraic solution.
 
+## Supported Platforms
+This macro features conditional compilation paths and is fully compatible with:
+*   **TSE Pro for Windows** (Local execution)
+*   **TSE for Linux** (Local execution via compatibility paths)
+*   **Web / Remote Server** (Acts as a backend, parsing standard output via HTTP queries)
+
 ## Files Included
 To successfully run the integrator, the following files are utilized:
 *   **`saint.s`**: The core compiled macro engine containing the parser and pattern-matching logic.
-*   **`saint_rules.txt`**: The mandatory ruleset database. This file must be located in the same directory as `saint.s` for the engine to load the integration templates.
+*   **`saint_rules.txt`**: The mandatory ruleset database. This file must be located in the same directory as `saint.s` (or configured via the OS-specific load paths) for the engine to load the integration templates.
 *   **`saint_examples.txt`**: A supplementary file containing a testing suite of normalized `int ... dx` expressions. It is not required to run the macro, but it is useful for batch testing.
 
 ## Usage Instructions
-Once `saint.s` is compiled, you can execute the macro in three distinct ways within the SemWare Editor:
+Once `saint.s` is compiled, you can execute the macro in several distinct ways:
 
 1.  **Interactive Input:** Run the macro directly without any highlighted text. An input box will prompt you to type the integral manually (e.g., `int x * exp( 300 * x ) dx`).
 2.  **Command-Line Parameter:** Pass the expression string directly as a parameter when executing the macro from the command line.
 3.  **Batch Execution:** Highlight a block of text containing multiple `int ... dx` expressions (such as those found in `saint_examples.txt`). Running the macro will automatically evaluate every expression in the highlighted block sequentially and output the results, alongside the engine's reasoning, into a newly created `SAINT_Result` buffer.
+4.  **Web Browser Interface:** When compiled with `#DEFINE TSEREMOTESERVER 1`, the macro intercepts integral strings from URL queries and returns the resulting solution directly to standard output (`_STDOUT_`). To run SAINT TSE online, use the following URL format:
+    `http://108.181.171.91/ddd.php?tseMacroS=c:/bbc/taal/saint.mac^%20-p^%20int^%20x^%20dx`
 
 ## Changelog
+*   **[Current]**: Bumped to v1.0.0.1.62 - Added support for executing the macro on TSE for Linux and introduced a web browser interface for remote server environments, including the direct live URL for testing.
 *   **2026-08-19 20:42:** Bumped to v1.0.0.1.54 - Eliminated all remaining "No solution" errors; finalized generalized `#a`, `#b`, `#c` wildcard mapping for elliptic integrals and complex radical denesting.
 *   **2026-08-19 20:25:** Updated to v1.0.0.1.48 - Restored complete ruleset database to bypass file truncation issues.
 *   **2026-08-19 20:15:** Updated to v1.0.0.1.46 - Expanded variable extraction to natively map higher-order wildcards (`#d`, `#e`) in the macro engine.
