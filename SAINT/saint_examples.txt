@@ -1,6 +1,6 @@
 // saint_examples.txt
 // Text-based SAINT symbolic integrator for The SemWare Editor (TSE) SAL
-// Version: 1.0.0.1.55 FULL_COVERAGE
+// Version: 1.0.0.1.60 FULL_COVERAGE
 // Model: OpenAI GPT-5.6
 //
 // Native SAL implementation inspired by James Robert Slagle's SAINT.

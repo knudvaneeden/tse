@@ -1,9 +1,18 @@
 // saint.s
 // Text-based SAINT symbolic integrator for The SemWare Editor (TSE) SAL
-// Version: 1.0.0.1.55 FULL_COVERAGE
+// Version: 1.0.0.1.60 FULL_COVERAGE
 // Model: OpenAI GPT-5.6
 //
 // Native SAL implementation inspired by James Robert Slagle's SAINT.
+
+// http://108.181.171.91/ddd.php?tseMacroS=c:/bbc/taal/saint.mac^%20-p^%20int^%20x^%20dx
+
+// #DEFINE DEBUG 1
+#DEFINE DEBUG 0
+//
+// #DEFINE TSEREMOTESERVER 1
+#DEFINE TSEREMOTESERVER 0
+//
 
 INTEGER resultBufferGI = 0
 INTEGER rulesBufferGI = 0
@@ -36,6 +45,7 @@ FORWARD STRING PROC FNIntegrateTermS(STRING expressionS, STRING variableS)
 FORWARD STRING PROC FNIntegrateSpecialS(STRING expressionS, STRING variableS)
 FORWARD STRING PROC FNIntegrateAdvancedFormsS(STRING expressionS)
 FORWARD STRING PROC FNIntegrateS(STRING expressionS, STRING variableS)
+FORWARD STRING PROC FNStringGetQueryCommandLineS( STRING fileNameMacroS )
 
 PROC PROCDebug(STRING messageS)
     debugStepGI = debugStepGI + 1
@@ -49,8 +59,14 @@ PROC PROCReason(STRING reasonS)
     ruleCountGI = ruleCountGI + 1
     GotoBufferId(resultBufferGI)
     EndFile()
+
+ #IF TSEREMOTESERVER
+   FWrite( _STDOUT_, " " + Str(ruleCountGI) + ". " + reasonS + " Result: " + " " )
+ #ELSE
     AddLine("  " + Str(ruleCountGI) + ". " + reasonS)
     GotoBufferId(origBufferI)
+ #ENDIF
+
 END
 
 STRING PROC FNRemoveSpacesS(STRING sourceS)
@@ -227,7 +243,7 @@ INTEGER PROC FNParseQuadraticB(STRING exprS, STRING varS, VAR STRING aS, VAR STR
     INTEGER atEndB = 0
     INTEGER depthI = 0
     INTEGER posI = 0
-    
+
     aS = "0"
     bS = "0"
     cS = "0"
@@ -266,7 +282,7 @@ INTEGER PROC FNParseQuadraticB(STRING exprS, STRING varS, VAR STRING aS, VAR STR
             IF signS == "-"
                 termS = "-" + termS
             ENDIF
-            
+
             posI = Pos(varS + "^2", termS)
             IF posI > 0
                 IF posI == 1
@@ -363,7 +379,7 @@ INTEGER PROC FNMatchTemplateB(STRING patternS, STRING exprS, VAR STRING aS, VAR 
     STRING varNameS[1] = ""
     STRING varValS[255] = ""
     STRING nextPCharS[1] = ""
-    
+
     aS = ""
     bS = ""
     cS = ""
@@ -374,18 +390,18 @@ INTEGER PROC FNMatchTemplateB(STRING patternS, STRING exprS, VAR STRING aS, VAR 
 
     WHILE (patI <= Length(patternS)) AND (expI <= Length(exprS))
         pCharS = SubStr(patternS, patI, 1)
-        
+
         IF pCharS == "#"
             patI = patI + 1
             varNameS = SubStr(patternS, patI, 1)
             patI = patI + 1
-            
+
             IF patI > Length(patternS)
                 nextPCharS = ""
             ELSE
                 nextPCharS = SubStr(patternS, patI, 1)
             ENDIF
-            
+
             varValS = ""
             WHILE (expI <= Length(exprS))
                 eCharS = SubStr(exprS, expI, 1)
@@ -395,7 +411,7 @@ INTEGER PROC FNMatchTemplateB(STRING patternS, STRING exprS, VAR STRING aS, VAR 
                 varValS = varValS + eCharS
                 expI = expI + 1
             ENDWHILE
-            
+
             IF varNameS == "a"
                 IF (aS <> "") AND (aS <> varValS) RETURN(FALSE) ENDIF
                 aS = varValS
@@ -427,11 +443,11 @@ INTEGER PROC FNMatchTemplateB(STRING patternS, STRING exprS, VAR STRING aS, VAR 
             expI = expI + 1
         ENDIF
     ENDWHILE
-    
+
     IF (patI > Length(patternS)) AND (expI > Length(exprS))
         RETURN(TRUE)
     ENDIF
-    
+
     RETURN(FALSE)
 END
 
@@ -439,7 +455,7 @@ STRING PROC FNReplaceTemplateS(STRING ansS, STRING aS, STRING bS, STRING cS, STR
     STRING resultS[255] = ""
     INTEGER I = 1
     STRING s[1] = ""
-    
+
     WHILE I <= Length(ansS)
         IF SubStr(ansS, I, 1) == "#"
             s = SubStr(ansS, I+1, 1)
@@ -479,7 +495,7 @@ END
 STRING PROC FNIntegrateSpecialS(STRING expressionS, STRING variableS)
     STRING wS[255] = ""
     wS = FNStripOuterParenthesesS(expressionS)
-    
+
     IF wS == ("exp(-" + variableS + "^2)")
         PROCReason("Liouville's theorem: Requires Error Function (erf).")
         RETURN("sqrt(pi)/2 * erf(" + variableS + ")")
@@ -654,7 +670,7 @@ STRING PROC FNIntegrateCoreS(STRING expressionS, STRING variableS)
     IF operatorI > 0
         numS = SubStr(workS, 1, operatorI - 1)
         denS = SubStr(workS, operatorI + 1, 255)
-        
+
         IF SubStr(denS, 1, 5) == "sqrt("
             IF SubStr(denS, Length(denS), 1) == ")"
                 argumentS = SubStr(denS, 6, Length(denS) - 6)
@@ -799,7 +815,7 @@ STRING PROC FNIntegrateAdvancedFormsS(STRING expressionS)
             IF pos2I > 0
                 rawAnsS = SubStr(restS, 1, pos2I - 1)
                 reasonS = SubStr(restS, pos2I + 1, 255)
-                
+
                 IF FNMatchTemplateB(patternS, wS, aS, bS, cS, dS, eS, mS, nS)
                     ansS = FNReplaceTemplateS(rawAnsS, aS, bS, cS, dS, eS, mS, nS)
                     PROCReason(reasonS)
@@ -834,7 +850,7 @@ STRING PROC FNIntegrateS(STRING expressionS, STRING variableS)
     IF answerS <> ""
         RETURN(answerS)
     ENDIF
-    
+
     answerS = FNIntegrateAdvancedFormsS(expressionS)
     IF answerS <> ""
         RETURN(answerS)
@@ -930,17 +946,17 @@ PROC PROCBatchProcess(INTEGER origFileI, INTEGER resBufferI)
         expressionS = FNExtractInputS(lineS, variableS)
         IF expressionS <> ""
             ruleCountGI = 0
-            
+
             GotoBufferId(resBufferI)
             EndFile()
             AddLine("")
             AddLine("Input:      " + lineS)
             AddLine("Normalized: int " + expressionS + " dx")
             AddLine("Reasoning:")
-            
+
             GotoBufferId(origFileI)
             answerS = FNIntegrateS(expressionS, variableS)
-            
+
             GotoBufferId(resBufferI)
             EndFile()
             IF answerS == ""
@@ -950,7 +966,7 @@ PROC PROCBatchProcess(INTEGER origFileI, INTEGER resBufferI)
                 AddLine("Result: " + answerS + " + C")
             ENDIF
             AddLine("----------------------------------------------------------------------")
-            
+
             GotoBufferId(origFileI)
         ENDIF
         IF NOT Down()
@@ -964,6 +980,116 @@ PROC PROCBatchProcess(INTEGER origFileI, INTEGER resBufferI)
     BegFile()
 END
 
+// library: string: get: query: command: line <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=getstcmt.s) [<Program>] [<Research>] [kn, ri, sa, 21-06-2025 20:33:07]
+STRING PROC FNStringGetQueryCommandLineS( STRING fileNameMacroS )
+ // e.g. PROC Main()
+ // e.g.  // STRING s1[255] = GetHistoryStr( _EDIT_HISTORY_, 1 ) // change this
+ // e.g.  STRING s1[255] = "c:/bbc/taal/getstgmd.mac" // change this
+ // e.g.  Warn( FNStringGetQueryCommandLineS( s1 ) ) // gives e.g. ...""
+ // e.g. END
+ // e.g.
+ // e.g. <Ctrl F12> Main()
+ //
+ // ===
+ //
+ // Use case =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Method =
+ //
+ // ===
+ //
+ // ===
+ //
+ // Example:
+ //
+ // Input:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // Output:
+ //
+ /*
+--- cut here: begin --------------------------------------------------
+--- cut here: end ----------------------------------------------------
+ */
+ //
+ // ===
+ //
+ // e.g. // QuickHelp( HELPDEFFNStringGetQueryCommandLineS )
+ // e.g. HELPDEF HELPDEFFNStringGetQueryCommandLineS
+ // e.g.  title = "FNStringGetQueryCommandLineS( s1 ) help" // The help's caption
+ // e.g.  x = 100 // Location
+ // e.g.  y = 3 // Location
+ // e.g.  //
+ // e.g.  // The actual help text
+ // e.g.  //
+ // e.g.  "Usage:"
+ // e.g.  "//"
+ // e.g.  "1. Run this TSE macro"
+ // e.g.  "2. Then press <CtrlAlt F1> to show this help."
+ // e.g.  "3. Press <Shift Escape> to quit."
+ // e.g.  "//"
+ // e.g.  ""
+ // e.g.  "Key: Definitions:"
+ // e.g.  ""
+ // e.g.  "<> = do something"
+ // e.g. END
+ //
+ STRING s1[255] = ""
+ STRING s2[255] = ""
+ //
+ // Warn( GetGlobalStr('CmdLineParameter:c:/bbc/taal/getstgmd.mac:1'); GetGlobalStr('CmdLineParameter:c:/bbc/taal/getstgmd.mac:2'); GetGlobalStr('CmdLineParameter:c:/bbc/taal/getstgmd.mac:3') )
+ //
+ // usual Query( DosCmdLine )
+ //
+ s1 = Query( DosCmdLine )
+ s2 = GetToken( s1, " ", 1 ) // get the TSE macro name
+ s1 = RightStr( s1, Length( s1 ) - Length( s2 ) ) // remove the TSE macro name in front in order to get the command line parameters after it
+ //
+ // s1 = StrReplace( "]", s1, "/", "" ) // use ] instead of \ in the expressions you pass as a parameter to the URL
+ //
+ // via autoload Query( DosCmdLine ) / thus CmdLineParameter.mac must be present in the 'AutoLoad' in that TSE (e.g. on the server
+ //
+ // Needs -p after the URL, then the parameters
+ //
+ // '+' must always be replaced manually in the URL (because '+' is seen as a space in the browser)
+ //
+ s1 = ""
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":1" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":2" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":3" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":4" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":5" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":6" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":7" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":8" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":9" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":10" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":11" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":12" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":13" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":14" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":15" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":16" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":17" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":18" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":19" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":20" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":21" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":22" ) )
+ s1 = s1 + " " + GetGlobalStr( Format( "CmdLineParameter:", fileNameMacroS, ":23" ) )
+ //
+ RETURN( s1 )
+ //
+END
+
 PROC Main()
     STRING inputS[255] = ""
     STRING expressionS[255] = ""
@@ -972,22 +1098,47 @@ PROC Main()
     STRING cmdLineS[255] = ""
     INTEGER origBufferI = 0
 
+ STRING s[255] = ""
+ // STRING s1[255] = GetHistoryStr( _EDIT_HISTORY_, 1 ) // change this
+ STRING s1[255] = " " // change this
+ //
+
     debugStepGI = 0
     PROCDebug("Main entered; compilation and macro loading succeeded")
     programNameGS = "SAINT text integrator"
-    programVersionGS = "1.0.0.1.50 FULL_COVERAGE"
+    programVersionGS = "1.0.0.1.60 FULL_COVERAGE"
 
     origBufferI = GetBufferId()
 
-    rulesBufferGI = CreateBuffer("SAINT_Rules")
+    PushPosition()
+    IF GetBufferId( "SAINT_Rules" ) == 0
+     rulesBufferGI = CreateBuffer("SAINT_Rules")
+    ENDIF
+    PopPosition()
     IF rulesBufferGI == 0
         Warn("Could not create buffer for rules.")
         RETURN()
     ENDIF
     GotoBufferId(rulesBufferGI)
     EmptyBuffer()
-    LoadBuffer("saint_rules.txt")
+
+    IF NOT ( LoadBuffer( "saint_rules.txt" ) > 0 )
+     IF NOT LoadBuffer( AddTrailingSlash( CurrDir() ) + "saint\saint_rules.txt" )
+      IF NOT LoadBuffer( "f:\bbc\taal\saint_rules.txt" )
+       IF NOT LoadBuffer( "c:\bbc\taal\saint_rules.txt" )
+        Warn( "could not load the file saint_rules.txt. Please check." )
+        RETURN()
+       ENDIF
+      ENDIF
+     ENDIF
+    ENDIF
+
     GotoBufferId(origBufferI)
+
+ #IF TSEREMOTESERVER
+  s1 = FNStringGetQueryCommandLineS( "c:/bbc/taal/saint.mac" )
+  inputS = s1
+ #ELSE
 
     IF isBlockInCurrFile()
         resultBufferGI = GetBufferId("SAINT_Result")
@@ -999,9 +1150,9 @@ PROC Main()
             AbandonFile(rulesBufferGI)
             RETURN()
         ENDIF
-        
+
         PROCBatchProcess(origBufferI, resultBufferGI)
-        
+
         AbandonFile(rulesBufferGI)
         PROCDebug("Main completed (batch mode)")
         RETURN()
@@ -1018,12 +1169,13 @@ PROC Main()
             RETURN()
         ENDIF
     ENDIF
-    
+   #ENDIF
+
     PROCDebug("input accepted: " + inputS)
     PROCDebug("about to parse the input")
     expressionS = FNExtractInputS(inputS, variableS)
     PROCDebug("input parsing returned: " + expressionS)
-    
+
     IF expressionS == ""
         Warn("Invalid input. Use the form: int ... dx")
         AbandonFile(rulesBufferGI)
@@ -1055,14 +1207,40 @@ PROC Main()
     GotoBufferId(resultBufferGI)
     EndFile()
     AddLine("")
+
+ #IF TSEREMOTESERVER
+   IF answerS == ""
+    answerS = "No solution method was found."
+   ENDIF
+   FWrite( _STDOUT_, answerS + " + C" )
+   AbandonFile( resultBufferGI )
+   AbandonEditor()
+   Exit()
+ #ELSE
+  #IFDEF WIN32
     IF answerS == ""
         AddLine("Result: No solution method was found.")
         AddLine("Unevaluated: int " + expressionS + " dx")
     ELSE
-        AddLine("Result: " + answerS + " + C")
-    ENDIF
+    AddLine("Result: " + answerS + " + C")
     BegFile()
-
     AbandonFile(rulesBufferGI)
     PROCDebug("Main completed")
+   ENDIF
+  #ENDIF
+  //
+  #IFDEF LINUX
+    IF answerS == ""
+        AddLine("Result: No solution method was found.")
+        AddLine("Unevaluated: int " + expressionS + " dx")
+    ELSE
+     AddLine("Result: " + answerS + " + C")
+    BegFile()
+    AbandonFile(rulesBufferGI)
+    PROCDebug("Main completed")
+   ENDIF
+  #ENDIF
+   //
+ #ENDIF
+ //
 END
