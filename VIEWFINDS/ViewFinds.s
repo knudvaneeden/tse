@@ -5,7 +5,7 @@
   Compatibility TSE v4.50    (26 Oct 2024) upwards for comment and search-term hiliting
                 TSE v4.50.26 ( 1 Jul 2026) upwards for full syntax-hiliting
                 All TSE variants, including TSE for Linux.
-  Version       v1.1.10  21 Aug 2026
+  Version       v1.1.13  21 Aug 2026
 
   If you do a search with the "v" option or use the "grep" macro from TSE's
   Potpourri menu, then the lines of the search-results will have colored
@@ -17,7 +17,8 @@
   From TSE v4.50.26 upwards ViewFinds adds full syntax hiliting.
 
   For earlier versions (TSE v4.50 to v4.50.24, including release candidates like v4.50.rc24),
-  ViewFinds now adds both comment and search-term coloring.
+  ViewFinds now adds both comment and search-term coloring, fully supporting
+  Regular Expression highlighting.
   This works well for single-line comments, as well as for multi-line comments
   in already loaded files, but does not work for multi-line comments in files
   that are loaded by the search.
@@ -80,6 +81,19 @@
 
   HISTORY
   
+  v1.1.13           21 Aug 2026
+  - Replaced the hidden buffer lFind() logic with the native StrFind() string parser 
+    to completely eliminate display corruption caused by buffer-switching during screen hooks.
+  - Sanitized the history string to ensure dangerous structural grep flags (like 'v' and 'g') 
+    are never passed to the background parser.
+  
+  v1.1.12           21 Aug 2026
+  - Fixed a blue-screen display crash caused by passing dangerous structural search 
+    options (like "g" and "v") into the background regex parsing loop.
+
+  v1.1.11           21 Aug 2026
+  - Added full Regular Expression search highlighting support for older TSE versions.
+  
   v1.1.10           21 Aug 2026
   - Fixed SAL compiler syntax error by properly elevating all variable declarations 
     to the top of the display procedure.
@@ -128,15 +142,9 @@
 
 */
 
-// Start of compatibility restrictions and mitigations ...
-
 #ifndef INTERNAL_VERSION
   #define INTERNAL_VERSION 0
 #endif
-
-// End of compatibility restrictions and mitigations.
-
-// Constants and semi-constants
 
 integer ATTRIBUTES_LIST_ID                  = 0
 integer ATTRS_ADDRESS                       = 0
@@ -145,8 +153,6 @@ integer MEMORY_BLOCKS_ID                    = 0
 integer TMP_REF_ID                          = 0
 #define TEXT_FRONT_LENGTH                     12
 string  TRAILING_TEXT_SPACES [MAXSTRINGLEN] = ''
-
-//  Global variables
 
 integer cfg_trailing_spaces_color              = FALSE
 integer cfg_cursor_bg_attr                     = -1
@@ -165,7 +171,9 @@ integer g_synhi_num_mlds                       = 0
 #endif
 
 string  searchStrGS             [MAXSTRINGLEN] = ''
+string  searchOptionsGS         [MAXSTRINGLEN] = ''
 integer searchLenGI                            = 0
+integer isRegexSearchGI                        = FALSE
 
 string  g_trailing_spaces_attrs [MAXSTRINGLEN] = ''
 integer g_cursor_bg_attr                       = 0
@@ -356,26 +364,27 @@ proc hd_draw_list_line(integer is_cursorline)
 
   #if INTERNAL_VERSION < 12445
     integer matchPosI                      = 0
-    integer currentOffsetI                 = 1
+    integer matchLenI                      = 0
     integer attrColonI                     = 0
     integer colonPosI                      = 0
-    string  remainingTextS  [MAXSTRINGLEN] = ''
+    integer visibleStartI                  = 0
+    integer visibleLenI                    = 0
+    integer startPosI                      = 1
+    string  fullLineTextS   [MAXSTRINGLEN] = ''
   #endif
 
   line_text = GetText(list_x_offset, Query(WindowCols))
   line_text = StrReplace(Chr(9), line_text, ' ')
 
   #if INTERNAL_VERSION < 12445
-    // Lazy Evaluation: Instantly generate format strings without buffer switching
-    colonPosI      = Pos(':', GetText(1, 12))
-    remainingTextS = Lower(line_text)
+    colonPosI = Pos(':', GetText(1, 12))
+    fullLineTextS = GetText(1, MAXSTRINGLEN) 
 
     line_attrs = Format('': Length(line_text): Chr(g_text_attr))
 
     if GetText(1, 6) == 'File: '
         line_attrs = Format('': Length(line_text): Chr(Query(MenuTextLtrAttr)))
     else
-        // Apply menu color to line numbers
         if colonPosI > 0
             attrColonI = colonPosI - list_x_offset + 1
             if attrColonI > Length(line_text)
@@ -386,23 +395,47 @@ proc hd_draw_list_line(integer is_cursorline)
             endif
         endif
 
-        // Apply search-term highlight directly to the matching substring
         if searchLenGI > 0
-            matchPosI = Pos(searchStrGS, remainingTextS)
+            startPosI = 1
+            matchPosI = StrFind(searchStrGS, fullLineTextS, searchOptionsGS, startPosI)
             while matchPosI > 0
-                line_attrs = SubStr(line_attrs, 1, currentOffsetI + matchPosI - 2) +
-                             Format('': searchLenGI: Chr(Query(HiLiteAttr))) +
-                             SubStr(line_attrs, currentOffsetI + matchPosI + searchLenGI - 1, MAXSTRINGLEN)
+                if isRegexSearchGI
+                    matchLenI = Length(GetFoundText())
+                    if matchLenI == 0
+                        matchLenI = 1
+                    endif
+                else
+                    matchLenI = searchLenGI
+                endif
                 
-                currentOffsetI = currentOffsetI + matchPosI + searchLenGI - 1
-                remainingTextS = SubStr(remainingTextS, matchPosI + searchLenGI, MAXSTRINGLEN)
-                matchPosI = Pos(searchStrGS, remainingTextS)
+                visibleStartI = matchPosI - list_x_offset + 1
+                visibleLenI   = matchLenI
+                
+                if visibleStartI < 1
+                    visibleLenI = visibleLenI + visibleStartI - 1
+                    visibleStartI = 1
+                endif
+                
+                if visibleStartI + visibleLenI - 1 > Length(line_attrs)
+                    visibleLenI = Length(line_attrs) - visibleStartI + 1
+                endif
+                
+                if visibleLenI > 0 and visibleStartI <= Length(line_attrs)
+                    line_attrs = SubStr(line_attrs, 1, visibleStartI - 1) +
+                                 Format('': visibleLenI: Chr(Query(HiLiteAttr))) +
+                                 SubStr(line_attrs, visibleStartI + visibleLenI, MAXSTRINGLEN)
+                endif
+                
+                startPosI = matchPosI + matchLenI
+                if startPosI > Length(fullLineTextS)
+                    break
+                endif
+                matchPosI = StrFind(searchStrGS, fullLineTextS, searchOptionsGS, startPosI)
             endwhile
         endif
     endif
 
   #else
-    // Upfront Memory Block extraction for newer versions
     PushLocation()
     GotoBufferId(ATTRIBUTES_LIST_ID)
     GotoLine(line_number)
@@ -444,7 +477,6 @@ end
 
 proc create_attributes_list()
   #if INTERNAL_VERSION < 12445
-    // Completely bypass parsing loop for older versions to ensure instant loading.
     g_macro_ok = TRUE
     EmptyBuffer(ATTRIBUTES_LIST_ID)
   #else
@@ -656,6 +688,7 @@ end
 proc list_startup()
   string title_text  [MAXSTRINGLEN] = ''
   string title_attrs [MAXSTRINGLEN] = ''
+  string rawOptionsS [MAXSTRINGLEN] = ''
 
   GetStrAttrXY(1, 0, title_text, title_attrs, MAXSTRINGLEN)
 
@@ -667,8 +700,19 @@ proc list_startup()
                  'ViewFinds is getting syntax hiliting colors ...',
                  '', Asc(title_attrs[1]))
                  
-    searchStrGS = Lower(GetHistoryStr(_FIND_HISTORY_, 1))
+    searchStrGS = GetHistoryStr(_FIND_HISTORY_, 1)
     searchLenGI = Length(searchStrGS)
+    
+    rawOptionsS = Lower(GetHistoryStr(_FIND_OPTIONS_HISTORY_, 1))
+    searchOptionsGS = ''
+    if Pos('i', rawOptionsS) > 0
+        searchOptionsGS = searchOptionsGS + 'i'
+    endif
+    if Pos('x', rawOptionsS) > 0
+        searchOptionsGS = searchOptionsGS + 'x'
+    endif
+    
+    isRegexSearchGI = (Pos('x', searchOptionsGS) > 0)
                  
     create_attributes_list()
     if g_macro_ok
