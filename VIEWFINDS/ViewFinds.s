@@ -5,7 +5,7 @@
   Compatibility TSE v4.50    (26 Oct 2024) upwards for comment and search-term hiliting
                 TSE v4.50.26 ( 1 Jul 2026) upwards for full syntax-hiliting
                 All TSE variants, including TSE for Linux.
-  Version       v1.1.13  21 Aug 2026
+  Version       v1.1.14  21 Aug 2026
 
   If you do a search with the "v" option or use the "grep" macro from TSE's
   Potpourri menu, then the lines of the search-results will have colored
@@ -81,6 +81,10 @@
 
   HISTORY
   
+  v1.1.14           21 Aug 2026
+  - Unified the search-term and regex highlighting to apply to modern TSE versions 
+    (v4.50.25+) as well, overlaying search matches perfectly on top of native syntax highlighting.
+
   v1.1.13           21 Aug 2026
   - Replaced the hidden buffer lFind() logic with the native StrFind() string parser 
     to completely eliminate display corruption caused by buffer-switching during screen hooks.
@@ -197,7 +201,6 @@ proc profile_error(string section_name,
   MsgBox(MACRO_NAME,
          Format('ERROR:'                                      , Chr(13),
                 '  Could not write item  "', item_name   , '"', Chr(13),
-                '  with value            "', item_value  , '"', Chr(13),
                 '  to section            "', section_name, '"', Chr(13),
                 '  of configuration file "tse.ini".'))
 end
@@ -362,23 +365,22 @@ proc hd_draw_list_line(integer is_cursorline)
   integer p                              = 0
   integer trail_size                     = 0
 
-  #if INTERNAL_VERSION < 12445
-    integer matchPosI                      = 0
-    integer matchLenI                      = 0
-    integer attrColonI                     = 0
-    integer colonPosI                      = 0
-    integer visibleStartI                  = 0
-    integer visibleLenI                    = 0
-    integer startPosI                      = 1
-    string  fullLineTextS   [MAXSTRINGLEN] = ''
-  #endif
+  integer matchPosI                      = 0
+  integer matchLenI                      = 0
+  integer attrColonI                     = 0
+  integer colonPosI                      = 0
+  integer visibleStartI                  = 0
+  integer visibleLenI                    = 0
+  integer startPosI                      = 1
+  string  fullLineTextS   [MAXSTRINGLEN] = ''
 
   line_text = GetText(list_x_offset, Query(WindowCols))
   line_text = StrReplace(Chr(9), line_text, ' ')
+  
+  fullLineTextS = GetText(1, MAXSTRINGLEN)
 
   #if INTERNAL_VERSION < 12445
     colonPosI = Pos(':', GetText(1, 12))
-    fullLineTextS = GetText(1, MAXSTRINGLEN) 
 
     line_attrs = Format('': Length(line_text): Chr(g_text_attr))
 
@@ -394,45 +396,6 @@ proc hd_draw_list_line(integer is_cursorline)
                 line_attrs = Format('': attrColonI: Chr(g_menu_text_attr)) + SubStr(line_attrs, attrColonI + 1, MAXSTRINGLEN)
             endif
         endif
-
-        if searchLenGI > 0
-            startPosI = 1
-            matchPosI = StrFind(searchStrGS, fullLineTextS, searchOptionsGS, startPosI)
-            while matchPosI > 0
-                if isRegexSearchGI
-                    matchLenI = Length(GetFoundText())
-                    if matchLenI == 0
-                        matchLenI = 1
-                    endif
-                else
-                    matchLenI = searchLenGI
-                endif
-                
-                visibleStartI = matchPosI - list_x_offset + 1
-                visibleLenI   = matchLenI
-                
-                if visibleStartI < 1
-                    visibleLenI = visibleLenI + visibleStartI - 1
-                    visibleStartI = 1
-                endif
-                
-                if visibleStartI + visibleLenI - 1 > Length(line_attrs)
-                    visibleLenI = Length(line_attrs) - visibleStartI + 1
-                endif
-                
-                if visibleLenI > 0 and visibleStartI <= Length(line_attrs)
-                    line_attrs = SubStr(line_attrs, 1, visibleStartI - 1) +
-                                 Format('': visibleLenI: Chr(Query(HiLiteAttr))) +
-                                 SubStr(line_attrs, visibleStartI + visibleLenI, MAXSTRINGLEN)
-                endif
-                
-                startPosI = matchPosI + matchLenI
-                if startPosI > Length(fullLineTextS)
-                    break
-                endif
-                matchPosI = StrFind(searchStrGS, fullLineTextS, searchOptionsGS, startPosI)
-            endwhile
-        endif
     endif
 
   #else
@@ -442,6 +405,45 @@ proc hd_draw_list_line(integer is_cursorline)
     line_attrs = GetText(list_x_offset, Query(WindowCols))
     PopLocation()
   #endif
+
+  if GetText(1, 6) <> 'File: ' and searchLenGI > 0
+      startPosI = 1
+      matchPosI = StrFind(searchStrGS, fullLineTextS, searchOptionsGS, startPosI)
+      while matchPosI > 0
+          if isRegexSearchGI
+              matchLenI = Length(GetFoundText())
+              if matchLenI == 0
+                  matchLenI = 1
+              endif
+          else
+              matchLenI = searchLenGI
+          endif
+          
+          visibleStartI = matchPosI - list_x_offset + 1
+          visibleLenI   = matchLenI
+          
+          if visibleStartI < 1
+              visibleLenI = visibleLenI + visibleStartI - 1
+              visibleStartI = 1
+          endif
+          
+          if visibleStartI + visibleLenI - 1 > Length(line_attrs)
+              visibleLenI = Length(line_attrs) - visibleStartI + 1
+          endif
+          
+          if visibleLenI > 0 and visibleStartI <= Length(line_attrs)
+              line_attrs = SubStr(line_attrs, 1, visibleStartI - 1) +
+                           Format('': visibleLenI: Chr(Query(HiLiteAttr))) +
+                           SubStr(line_attrs, visibleStartI + visibleLenI, MAXSTRINGLEN)
+          endif
+          
+          startPosI = matchPosI + matchLenI
+          if startPosI > Length(fullLineTextS)
+              break
+          endif
+          matchPosI = StrFind(searchStrGS, fullLineTextS, searchOptionsGS, startPosI)
+      endwhile
+  endif
 
   trail_size = Max(Query(WindowCols) - Length(line_text), 0)
 
@@ -498,7 +500,6 @@ proc create_attributes_list()
     STRING  chunkS           [MAXSTRINGLEN] = ''
 
     integer ref_line_address              = 0
-    integer attr_address                  = 0
 
     EmptyBuffer(ATTRIBUTES_LIST_ID)
 
@@ -711,8 +712,15 @@ proc list_startup()
     if Pos('x', rawOptionsS) > 0
         searchOptionsGS = searchOptionsGS + 'x'
     endif
+    if Pos('w', rawOptionsS) > 0
+        searchOptionsGS = searchOptionsGS + 'w'
+    endif
     
     isRegexSearchGI = (Pos('x', searchOptionsGS) > 0)
+    
+    if not isRegexSearchGI
+        searchStrGS = Lower(searchStrGS)
+    endif
                  
     create_attributes_list()
     if g_macro_ok

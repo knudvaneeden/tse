@@ -1,10 +1,10 @@
-# ViewFinds Extension for TSE (v1.1.13)
+# ViewFinds Extension for TSE (v1.1.14)
 
 ## Overview
 **ViewFinds** is a macro extension for The Semware Editor (TSE) that significantly enhances the native "View Finds" window (typically accessed via the `v` search option or the `grep` macro)[cite: 3]. It applies intelligent syntax highlighting and comment coloring to search results, allowing you to easily distinguish between active code and commented-out text at a glance[cite: 3].
 
 ## Compatibility
-*   **TSE v4.50.26 upwards:** Full syntax highlighting[cite: 3].
+*   **TSE v4.50.26 upwards:** Full syntax highlighting combined with instantaneous lazy-evaluated Regex and search-term overlays.
 *   **TSE v4.50 to v4.50.24 (including rc versions):** Search-term and Regular Expression highlighting fallback using instantaneous lazy evaluation[cite: 3].
 *   **OS Support:** Works across all TSE variants, including TSE for Linux[cite: 3].
 
@@ -43,6 +43,6 @@ The macro uses advanced memory handling and lazy evaluation to ensure instantane
 *   **`temporarily_load_ref_file()`**: Silently loads un-opened files in the background so the macro can accurately retrieve their multi-line delimiter settings. It includes a strict 10 MB size safety cap to prevent the editor from hanging on massive document files[cite: 3].
 *   **`get_syn_hi_attrs()`**: A wrapper for TSE's native syntax parser for versions v4.50.25 upwards[cite: 3].
 *   **`CurrLine_MLD_Type()`**: A customized replacement for TSE's internal multi-line delimiter function to properly handle files loaded on the fly[cite: 3].
-*   **`hd_draw_list_line()`**: Intercepts the screen drawing routine. In older versions, this utilizes **Lazy Evaluation**, dynamically generating string-formatting and stamping search-term highlights onto the string directly as you scroll, completely eliminating buffer-switch bottlenecks. For Regex queries, it securely utilizes the native memory parser `StrFind()` to accurately map variable-length matching patterns directly over the strings without triggering recursive interface errors or touching the active buffers[cite: 3].
+*   **`hd_draw_list_line()`**: Intercepts the screen drawing routine. This logic utilizes **Lazy Evaluation**, dynamically generating string-formatting and stamping search-term highlights onto the string directly as you scroll, completely eliminating buffer-switch bottlenecks. For Regex queries across all versions, it securely utilizes the native memory parser `StrFind()` to accurately map variable-length matching patterns directly over the strings without triggering recursive interface errors or touching the active buffers. For modern versions, it perfectly overlays these yellow highlights on top of the native `GetSynHiAttrs()` colors.
 *   **`del_line()`**: A custom keyboard handler that overrides the `<Del>` and `<GreyDel>` keys for removing lines or safely unloading referenced files directly from the list[cite: 3].
 *   **`do_main_menu()`**: Renders the interactive configuration UI for adjusting background colors and trailing space preferences[cite: 3].
