@@ -1,4 +1,5 @@
 # SVN Browser Macro for TSE (svn.s)
+**Version 1.6**
 
 ## Overview
 `svn.s` is a high-speed Subversion (SVN) repository browser for The SemWare Editor (TSE). It is specifically designed to handle massive directories where standard GUI tools (like TortoiseSVN) take too long to load.
@@ -30,13 +31,17 @@ Once the macro is running, the top of the screen displays the currently selected
 *   **`<F9>` (Props):** Displays the Subversion properties of the object.
 *   **`<F10>` (Diff):** Marks a file/revision for comparison.
 
-### How to use the Diff Tool (<F10>)
-You can compare any two files or revisions using the `<F10>` key:
-1. Navigate to a file in the main browser, or press `<F5>` to view its revision history.
-2. Select your first file or specific revision and press **`<F10>`**. The macro extracts it to your `%TEMP%` folder silently and marks it.
-3. You are seamlessly returned to the list. Navigate to (or stay on) the history list to select the second revision.
-4. Press **`<F10>`** again on the second revision.
-5. The macro extracts the second file and instantly launches your configured diff tool (e.g., Beyond Compare) to compare the two versions, while leaving TSE ready for your next action.
+---
+
+## Step-by-Step: How to Perform a Diff
+To compare two different versions of a file (or two different files), follow this exact workflow:
+
+1. **View Files:** Start by opening the macro to show the list of all files currently under version control.
+2. **Select File:** Navigate to the file you want to compare (e.g., `svn.s`).
+3. **View Revisions:** Press **`<F5>`** to show the history list containing all the historic revisions of that specific file.
+4. **Mark First Revision:** Highlight the first revision you want to compare and press **`<F10>`**. The macro will extract it silently to your Temp folder and briefly show a warning that the first file is marked.
+5. **Return to List:** You will automatically be returned to the main list of files. Select the same file (`svn.s`) or a different file, and press **`<F5>`** again to view its revisions.
+6. **Execute Diff:** Highlight the second revision you want to compare against and press **`<F10>`**. The macro will extract this second file and instantly launch your configured diff tool (e.g., Beyond Compare) to compare the two versions side-by-side.
 
 ---
 
