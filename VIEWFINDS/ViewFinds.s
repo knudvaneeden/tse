@@ -5,7 +5,7 @@
   Compatibility TSE v4.50    (26 Oct 2024) upwards for comment and search-term hiliting
                 TSE v4.50.26 ( 1 Jul 2026) upwards for full syntax-hiliting
                 All TSE variants, including TSE for Linux.
-  Version       v1.1.14  21 Aug 2026
+  Version       v1.1.18  21 Aug 2026
 
   If you do a search with the "v" option or use the "grep" macro from TSE's
   Potpourri menu, then the lines of the search-results will have colored
@@ -81,6 +81,25 @@
 
   HISTORY
   
+  v1.1.18           21 Aug 2026
+  - Fixed a SAL compiler syntax error in modern TSE versions (v4.50.25+) caused by 
+    variable declarations appearing after executable statements in the attribute list procedure.
+
+  v1.1.17           21 Aug 2026
+  - Added a Dynamic Engine Switch: If a grep list exceeds 2,000 lines (e.g. massive 
+    document files), modern TSE versions now automatically fall back to instantaneous 
+    Lazy Evaluation to prevent the macro interpreter from freezing during upfront parsing.
+
+  v1.1.16           21 Aug 2026
+  - Reverted the screen-hook highlighting logic from lFind() back to StrFind() 
+    because lFind() incorrectly searches the buffer's static cursor line rather 
+    than the line actively being drawn by the display hook. This restores the 
+    lost regex highlighting across all versions.
+
+  v1.1.15           21 Aug 2026
+  - Fixed severe hanging in modern TSE (v4.50.26+) by capping the multi-line delimiter 
+    traversal to 2,000 lines and restricting attribute generation to 1,020 characters.
+
   v1.1.14           21 Aug 2026
   - Unified the search-term and regex highlighting to apply to modern TSE versions 
     (v4.50.25+) as well, overlaying search matches perfectly on top of native syntax highlighting.
@@ -167,6 +186,7 @@ string  g_synhi_mld_closers     [MAXSTRINGLEN] = ''
 string  g_synhi_mld_openers     [MAXSTRINGLEN] = ''
 
 integer g_synhi_num_mlds                       = 0
+integer g_use_lazy_eval                        = FALSE
 
 #if INTERNAL_VERSION >= 12445
   integer g_synhi_currline_mld_line            = 0
@@ -223,6 +243,7 @@ end
     integer text_address                 = 0
     integer text_length                  = 0
     integer to_line                      = CurrLine()
+    integer distance                     = 0
 
     if  NumLines()
     and to_line >= g_synhi_currline_mld_line
@@ -230,8 +251,18 @@ end
       if g_synhi_currline_mld_line == 0
         g_synhi_currline_mld_line = 1
       endif
+      
+      distance = to_line - g_synhi_currline_mld_line + 1
+      
+      // Anti-hang protection for massive files: abort MLD traversal if gap is > 2000
+      if distance > 2000
+        g_synhi_currline_mld_line = to_line
+        PopLocation()
+        return (0)
+      endif
+      
       GotoLine(g_synhi_currline_mld_line)
-      do to_line - g_synhi_currline_mld_line + 1 times
+      do distance times
         text_address = CurrLinePtr()
         text_length  = CurrLineLen()
 
@@ -376,10 +407,10 @@ proc hd_draw_list_line(integer is_cursorline)
 
   line_text = GetText(list_x_offset, Query(WindowCols))
   line_text = StrReplace(Chr(9), line_text, ' ')
-  
+
   fullLineTextS = GetText(1, MAXSTRINGLEN)
 
-  #if INTERNAL_VERSION < 12445
+  if g_use_lazy_eval
     colonPosI = Pos(':', GetText(1, 12))
 
     line_attrs = Format('': Length(line_text): Chr(g_text_attr))
@@ -398,14 +429,15 @@ proc hd_draw_list_line(integer is_cursorline)
         endif
     endif
 
-  #else
+  else
     PushLocation()
     GotoBufferId(ATTRIBUTES_LIST_ID)
     GotoLine(line_number)
     line_attrs = GetText(list_x_offset, Query(WindowCols))
     PopLocation()
-  #endif
+  endif
 
+  // Native Search Highlight Overlay via StrFind (Active for all versions)
   if GetText(1, 6) <> 'File: ' and searchLenGI > 0
       startPosI = 1
       matchPosI = StrFind(searchStrGS, fullLineTextS, searchOptionsGS, startPosI)
@@ -478,11 +510,7 @@ proc hd_hilite_found_text()
 end
 
 proc create_attributes_list()
-  #if INTERNAL_VERSION < 12445
-    g_macro_ok = TRUE
-    EmptyBuffer(ATTRIBUTES_LIST_ID)
-  #else
-
+  #if INTERNAL_VERSION >= 12445
     string  multi_line_attribute        [1] = ''
     integer n                               = 0
     integer ref_buffer_id                   = GetBufferId()
@@ -500,7 +528,15 @@ proc create_attributes_list()
     STRING  chunkS           [MAXSTRINGLEN] = ''
 
     integer ref_line_address              = 0
+  #endif
 
+  if g_use_lazy_eval
+    g_macro_ok = TRUE
+    EmptyBuffer(ATTRIBUTES_LIST_ID)
+    return()
+  endif
+
+  #if INTERNAL_VERSION >= 12445
     EmptyBuffer(ATTRIBUTES_LIST_ID)
 
     if NumLines()
@@ -533,7 +569,8 @@ proc create_attributes_list()
             ref_line_offset = 0
           endif
 
-          ref_line_length = Min(CurrLineLen() - ref_line_offset, MAXLINELEN)
+          // Cap the attribute string generation to ~1000 characters to prevent buffer-copy hangs
+          ref_line_length = Min(CurrLineLen() - ref_line_offset, MAXSTRINGLEN * 4)
           ref_line_address = AdjPtr(CurrLinePtr(), ref_line_offset)
 
           PushLocation()
@@ -720,6 +757,13 @@ proc list_startup()
     
     if not isRegexSearchGI
         searchStrGS = Lower(searchStrGS)
+    endif
+    
+    // Engine Switch: If older version OR massive grep list, use Lazy Evaluation to prevent hanging
+    if INTERNAL_VERSION < 12445 or NumLines() > 2000
+        g_use_lazy_eval = TRUE
+    else
+        g_use_lazy_eval = FALSE
     endif
                  
     create_attributes_list()
