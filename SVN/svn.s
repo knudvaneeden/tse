@@ -5,7 +5,7 @@
 // Macro     Svn.s
 // Author    Carlo.Hogeveen@xs4all.nl
 // Date      25 May 2012
-// Version   See the history and the help_text.
+// Version   1.6 (Extracts to temp disk for BeyondCompare, updated BComp path)
 //
 // ===
 //
@@ -105,24 +105,32 @@ INTEGER log_id = 0
 STRING list_footer[ MAXSTRINGLEN ] = ''
 STRING macro_name[ MAXSTRINGLEN ] = ''
 STRING next_list[ MAXSTRINGLEN ] = 'browse'
+STRING prev_list[ MAXSTRINGLEN ] = 'browse'
 INTEGER org_id = 0
 STRING selected_file[ MAXSTRINGLEN ] = ''
 STRING selected_property[ MAXSTRINGLEN ] = ''
 //
-// STRING versionControlExecutableS[ MAXSTRINGLEN ] = "c:\program files\tortoisesvn\bin\svn.exe" // change this // [kn, ri, fr, 19-08-2022 12:22:17]
-STRING versionControlExecutableS[ MAXSTRINGLEN ] = "g:\cygwin\bin\svn.exe" // change this // [kn, ri, fr, 19-08-2022 12:22:17]
+STRING fileNameCurrentGS[ MAXSTRINGLEN ] = '' 
+//
+STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\svn.exe" 
+STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' 
+//
+// Globals for Diff logic
+STRING compareExecutableGS[ MAXSTRINGLEN ] = "G:\UTILS\COMPARE\BEYONDCOMPARE\Beyond Compare 5\BComp.exe"
+STRING firstDiffFileGS[ MAXSTRINGLEN ] = ""
 //
 KEYDEF extra_list_keys
  <f1> next_list = 'help' PushKey(<Enter>)
  <f5> next_list = 'log'  PushKey(<Enter>)
  <f8> next_list = 'info' PushKey(<Enter>)
  <f9> next_list = 'proplist' PushKey(<Enter>)
+ <f10> next_list = 'diff' PushKey(<Enter>) 
 END
 //
-INTEGER PROC get_dos( STRING cmd )
- INTEGER result = FALSE
+INTEGER PROC FNget_dosI( STRING cmdS )
+ INTEGER resultI = FALSE
  EraseDiskFile( log_file )
- IF Dos( cmd + ' > ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
+ IF Dos( cmdS + ' > ' + QuotePath( log_file ) + ' 2>&1', _START_HIDDEN_ )
   GotoBufferId( log_id )
   EmptyBuffer()
   IF FileExists( log_file )
@@ -135,68 +143,67 @@ INTEGER PROC get_dos( STRING cmd )
    ENDWHILE
    BegFile()
    EraseDiskFile( log_file )
-   result = TRUE
+   resultI = TRUE
   ENDIF
  ENDIF
- RETURN( result )
-END get_dos
+ RETURN( resultI )
+END FNget_dosI
 //
-PROC show_dos_error( STRING text )
- STRING warning[ MAXSTRINGLEN ] = text
+PROC PROCshow_dos_error( STRING textS )
+ STRING warningS[ MAXSTRINGLEN ] = textS
  BegFile()
  REPEAT
-  warning = warning + Chr( 13 ) + RTrim( GetText( 1, MAXSTRINGLEN ) )
+  warningS = warningS + Chr( 13 ) + RTrim( GetText( 1, MAXSTRINGLEN ) )
  UNTIL NOT Down()
- Warn( warning )
-END show_dos_error
+ Warn( warningS )
+END PROCshow_dos_error
 //
 INTEGER PROC set_log_file()
- INTEGER org_id = GetBufferId()
- INTEGER result = STATE_ERROR
- STRING tmp_dir[ MAXSTRINGLEN ] = ''
+ INTEGER orgIdI = GetBufferId()
+ INTEGER resultI = STATE_ERROR
+ STRING tmpDirS[ MAXSTRINGLEN ] = ''
  IF GetEnvStr( 'tmp' ) <> ''
-  tmp_dir = GetEnvStr( 'tmp' )
+  tmpDirS = GetEnvStr( 'tmp' )
   ELSEIF GetEnvStr( 'temp' ) <> ''
-  tmp_dir = GetEnvStr( 'temp' )
+  tmpDirS = GetEnvStr( 'temp' )
   ELSE
-  tmp_dir = 'c:'
+  tmpDirS = 'c:'
  ENDIF
- IF tmp_dir[Length( tmp_dir )] <> '\'
-  tmp_dir = tmp_dir + '\'
+ IF tmpDirS[Length( tmpDirS )] <> '\'
+  tmpDirS = tmpDirS + '\'
  ENDIF
- IF ( FileExists( tmp_dir ) & _DIRECTORY_ )
-  log_file = tmp_dir + 'TseSvn.log'
+ IF ( FileExists( tmpDirS ) & _DIRECTORY_ )
+  log_file = tmpDirS + 'TseSvn.log'
   log_id   = EditFile( log_file, _DONT_PROMPT_ )
   IF log_id
    EmptyBuffer()
    InsertText( 'Hello world!' )
    IF SaveAs( CurrFilename(), _DONT_PROMPT_|_OVERWRITE_ )
-    result = STATE_OK
+    resultI = STATE_OK
     ELSE
     AbandonFile( log_id )
    ENDIF
-   GotoBufferId( org_id )
+   GotoBufferId( orgIdI )
   ENDIF
  ENDIF
- IF result <> STATE_OK
+ IF resultI <> STATE_OK
   Warn( 'Error: cannot create a temporary file: ', log_file )
  ENDIF
- RETURN( result )
+ RETURN( resultI )
 END set_log_file
 //
 INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING selected )
- INTEGER state = STATE_OK
- STRING request[ MAXSTRINGLEN ] = '/cygdrive/c/TEMP/W1' // added [kn, ri, sa, 13-08-2022 16:00:23]
- // IF  Ask( 'Subversion repository, directory OR selected:',
- IF Ask( 'Subversion working directory OR selected:', request, GetFreeHistory( macro_name + ':request' ) )
-  request = Trim( request )
-  WHILE SubStr( request, Length( request ), 1 ) == '/'
-   request = SubStr( request, 1, Length( request ) - 1 )
+ INTEGER stateI = STATE_OK
+ STRING requestS[ MAXSTRINGLEN ] = workingDirectoryGS
+ IF ( TRUE ) 
+  requestS = Trim( requestS )
+  WHILE SubStr( requestS, Length( requestS ), 1 ) == '/'
+   requestS = SubStr( requestS, 1, Length( requestS ) - 1 )
   ENDWHILE
-  IF request == ''
-   state = STATE_STOPPED
+  IF requestS == ''
+   stateI = STATE_STOPPED
    ELSE
-   IF get_dos( QuotePath( versionControlExecutableS ) + ' ' + 'info ' + QuotePath( request ) )
+   IF FNget_dosI( QuotePath( versionControlExecutableGS ) + ' ' + 'info ' + QuotePath( requestS ) )
     IF LFind( '^Repository Root: ', 'gx' )
      repository = Trim( GetText( 18, MAXSTRINGLEN ) )
      IF LFind( '^URL: ', 'gx' )
@@ -209,59 +216,67 @@ INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING s
         selected = ''
        ENDIF
        ELSE
-       state = STATE_ERROR
-       show_dos_error( 'Error: no line starting with "Node Kind: file|directory".' )
+       stateI = STATE_ERROR
+       PROCshow_dos_error( 'Error: no line starting with "Node Kind: file|directory".' )
       ENDIF
      ENDIF
      ELSE
-     state = STATE_ERROR
-     show_dos_error( 'Error: no line starting with "Repository Root: ".' )
+     stateI = STATE_ERROR
+     PROCshow_dos_error( 'Error: no line starting with "Repository Root: ".' )
     ENDIF
     ELSE
-    state = STATE_ERROR
+    stateI = STATE_ERROR
    ENDIF
   ENDIF
   ELSE
-  state = STATE_STOPPED
+  stateI = STATE_STOPPED
  ENDIF
- RETURN( state )
+ RETURN( stateI )
 END ask_repository
 //
-PROC list_startup()
- UnHook( list_startup )
+PROC PROClist_startup()
+ UnHook( PROClist_startup )
  CASE next_list
-  WHEN 'browse'
+  WHEN 'browse', 'log'
   Enable( extra_list_keys )
  ENDCASE
  ListFooter( list_footer )
-END list_startup
+END PROClist_startup
 //
-PROC list_cleanup()
+PROC PROClist_cleanup()
  Disable( extra_list_keys )
-END list_cleanup
+END PROClist_cleanup
 //
 INTEGER PROC browse_repository( string repository, VAR STRING dir )
- INTEGER old_msglevel = 0
- INTEGER state = STATE_OK
+ INTEGER oldMsglevelI = 0
+ INTEGER stateI = STATE_OK
+ INTEGER skipListI = FALSE
+ 
+ INTEGER localBufferI = 0
+ STRING tempNameS[ MAXSTRINGLEN ] = ''
+
+ // Track our previous view so we can safely return to it after a diff extracts
+ IF next_list <> 'diff'
+  prev_list = next_list
+ ENDIF
+
  list_header = repository + IIF( dir == '', '', '/' + dir ) + IIF( selected_file == '', '', '/' + selected_file ) + IIF( file_revision == '', '', '@' + file_revision )
  list_footer = '{Enter}-Back {Escape}-Back'
  curr_list   = next_list
  CASE next_list
   WHEN 'browse'
   list_header = repository + IIF( dir == '', '', '/' + dir )
-  list_footer = '{F1}-Help {F5}-Hist {F8}-Info {F9}-Props {Enter}-Read {Esc}-Quit'
-  get_dos( QuotePath( versionControlExecutableS ) + ' ' + 'list ' + QuotePath( repository + '/' + dir ) )
+  list_footer = '{F5}-Hist {F8}-Info {F9}-Props {F10}-Diff {Enter}-Read {Esc}-Quit {F1}-Help'
+  FNget_dosI( QuotePath( versionControlExecutableGS ) + ' ' + 'list' + ' ' + QuotePath( repository + '/' + dir ) )
   IF LFind( '^svn: ', 'gx' )
-   state = STATE_ERROR
-   show_dos_error( 'Error:' )
+   stateI = STATE_ERROR
+   PROCshow_dos_error( 'Error:' )
    ELSE
    MarkLine( 1, NumLines() )
-   old_msglevel = Set( MsgLevel, _WARNINGS_ONLY_ )
+   oldMsglevelI = Set( MsgLevel, _WARNINGS_ONLY_ )
    ExecMacro( 'sort -i' )
-   Set( MsgLevel, old_msglevel )
+   Set( MsgLevel, oldMsglevelI )
    UnMarkBlock()
-   // Temporarily add a line, because searching 'somthing$' with 'bgx'
-   // fails ( erroneously! ) WHEN the file contains a single line.
    EndFile()
    AddLine( '' )
    WHILE LFind( '/$', 'bgx' )
@@ -286,16 +301,16 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   LFind( selected_file, 'g' )
   WHEN 'cat'
   list_footer = '{Enter}-Edit {Escape}-Back'
-  get_dos( QuotePath( versionControlExecutableS ) + ' ' + 'cat ' + IIF( file_revision == '', '', '-r' + file_revision + ' ' ) + QuotePath( repository + '/' + dir + '/' + selected_file ) )
+  FNget_dosI( QuotePath( versionControlExecutableGS ) + ' ' + 'cat ' + IIF( file_revision == '', '', '-r' + file_revision + ' ' ) + QuotePath( repository + '/' + dir + '/' + selected_file ) )
   IF LFind( '^svn: ', 'gx' )
-   state = STATE_ERROR
-   show_dos_error( 'Error:' )
+   stateI = STATE_ERROR
+   PROCshow_dos_error( 'Error:' )
   ENDIF
   WHEN 'edit'
-  get_dos( QuotePath( versionControlExecutableS ) + ' ' + 'cat ' + IIF( file_revision == '', '', '-r' + file_revision + ' ' ) + QuotePath( repository + '/' + dir + '/' + selected_file ) )
+  FNget_dosI( QuotePath( versionControlExecutableGS ) + ' ' + 'cat ' + IIF( file_revision == '', '', '-r' + file_revision + ' ' ) + QuotePath( repository + '/' + dir + '/' + selected_file ) )
   IF LFind( '^svn: ', 'gx' )
-   state = STATE_ERROR
-   show_dos_error( 'Error:' )
+   stateI = STATE_ERROR
+   PROCshow_dos_error( 'Error:' )
    ELSE
    MarkLine( 1, NumLines() )
    Copy()
@@ -303,46 +318,74 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    Paste()
    UnMarkBlock()
    ChangeCurrFilename( list_header, _DONT_EXPAND_ )
-   state = STATE_STOPPED
+   stateI = STATE_STOPPED
+  ENDIF
+  WHEN 'diff'
+  skipListI = TRUE
+  FNget_dosI( QuotePath( versionControlExecutableGS ) + ' ' + 'cat ' + IIF( file_revision == '', '', '-r' + file_revision + ' ' ) + QuotePath( repository + '/' + dir + '/' + selected_file ) )
+  IF LFind( '^svn: ', 'gx' )
+   stateI = STATE_ERROR
+   PROCshow_dos_error( 'Error:' )
+  ELSE
+   tempNameS = GetEnvStr( 'temp' ) + '\' + IIF( file_revision == '', 'head', file_revision ) + '_' + selected_file
+   MarkLine( 1, NumLines() )
+   Copy()
+   localBufferI = NewFile()
+   Paste()
+   UnMarkBlock()
+   SaveAs( tempNameS, _DONT_PROMPT_ | _OVERWRITE_ )
+   AbandonFile( localBufferI )
+   GotoBufferId( log_id )
+   IF firstDiffFileGS == ''
+    firstDiffFileGS = tempNameS
+    Warn( 'First diff file marked: ' + tempNameS )
+   ELSE
+    Dos( QuotePath( compareExecutableGS ) + ' ' + QuotePath( firstDiffFileGS ) + ' ' + QuotePath( tempNameS ), _DONT_WAIT_ )
+    firstDiffFileGS = ''
+   ENDIF
+   next_list = prev_list // Silently return to the active list (browse or log)
   ENDIF
   WHEN 'help'
-  EmptyBuffer()
-  InsertData( help_text )
-  BegFile()
+   EmptyBuffer()
+   InsertData( help_text )
+   BegFile()
   WHEN 'info'
-  get_dos( QuotePath( versionControlExecutableS ) + ' ' + 'info ' + QuotePath( repository + '/' + dir + '/' + selected_file ) )
+  FNget_dosI( QuotePath( versionControlExecutableGS ) + ' ' + 'info ' + QuotePath( repository + '/' + dir + '/' + selected_file ) )
   IF LFind( '^svn: ', 'gx' )
-   state = STATE_ERROR
-   show_dos_error( 'Error:' )
+   stateI = STATE_ERROR
+   PROCshow_dos_error( 'Error:' )
   ENDIF
   WHEN 'log'
-  list_footer = '{Enter}-Read {Esc}-Back'
-  get_dos( QuotePath( versionControlExecutableS ) + ' ' + 'log ' + QuotePath( repository + '/' + dir + '/' + selected_file ) )
+  list_footer = '{Enter}-Read {F10}-Diff {Esc}-Back'
+  FNget_dosI( QuotePath( versionControlExecutableGS ) + ' ' + 'log' + ' ' + QuotePath( repository + '/' + dir + '/' + selected_file ) )
   IF LFind( '^svn: ', 'gx' )
-   state = STATE_ERROR
-   show_dos_error( 'Error:' )
+   stateI = STATE_ERROR
+   PROCshow_dos_error( 'Error:' )
    ELSE
    WHILE LFind( '^$', 'gx' )
     KillLine()
    ENDWHILE
   ENDIF
   WHEN 'proplist'
-  get_dos( QuotePath( versionControlExecutableS ) + ' ' + 'proplist -v ' + QuotePath( repository + '/' + dir + '/' + selected_file ) )
+  FNget_dosI( QuotePath( versionControlExecutableGS ) + ' ' + 'proplist -v ' + QuotePath( repository + '/' + dir + '/' + selected_file ) )
   IF LFind( '^svn: ', 'gx' )
-   state = STATE_ERROR
-   show_dos_error( 'Error:' )
+   stateI = STATE_ERROR
+   PROCshow_dos_error( 'Error:' )
    ELSE
    LFind( selected_property, 'g' )
   ENDIF
   OTHERWISE
   Warn( 'Error: unknown action ( 1 ).' )
-  state = STATE_ERROR
+  stateI = STATE_ERROR
  ENDCASE
- IF state == STATE_OK
-  Hook( _LIST_STARTUP_, list_startup )
-  Hook( _LIST_CLEANUP_, list_cleanup )
+ 
+ // The UI List is safely skipped if a background job like 'diff' occurs
+ IF stateI == STATE_OK AND NOT skipListI
+  Hook( _LIST_STARTUP_, PROClist_startup )
+  Hook( _LIST_CLEANUP_, PROClist_cleanup )
+  PushKeyStr( fileNameCurrentGS ) 
   IF List( list_header, Max( Max( Length( list_header ), Length( list_footer ) ), LongestLineInBuffer() ) )
-   UnHook( list_cleanup )
+   UnHook( PROClist_cleanup )
    CASE curr_list
     WHEN 'browse'
     selected_file = GetText( 1, CurrLineLen() )
@@ -365,6 +408,8 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
       next_list     = 'cat'
       file_revision = ''
      ENDIF
+     ELSEIF next_list == 'diff'
+     file_revision = ''
      ELSE
      IF selected_file == '/..'
       next_list = 'browse'
@@ -389,7 +434,11 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
      IF LFind( '^r[0-9]# \| ', 'cgx' )
       LFind( '[0-9]#', 'cgx' )
       file_revision = GetFoundText()
-      next_list     = 'cat'
+      IF next_list == 'diff'
+       // Keep action as 'diff' 
+      ELSE
+       next_list = 'cat'
+      ENDIF
       ELSE
       next_list     = 'log'
      ENDIF
@@ -398,12 +447,12 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     next_list = 'browse'
     OTHERWISE
     Warn( 'Error: unknown action ( 2 ).' )
-    state = STATE_ERROR
+    stateI = STATE_ERROR
    ENDCASE
    ELSE
    CASE curr_list
     WHEN 'browse'
-    state = STATE_STOPPED
+    stateI = STATE_STOPPED
     WHEN 'cat'
     next_list = 'browse'
     WHEN 'help'
@@ -416,21 +465,23 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
     next_list = 'browse'
     OTHERWISE
     Warn( 'Error: unknown action ( 3 ).' )
-    state = STATE_ERROR
+    stateI = STATE_ERROR
    ENDCASE
   ENDIF
  ENDIF
- RETURN( state )
+ RETURN( stateI )
 END browse_repository
 //
 PROC WhenLoaded()
  macro_name = SplitPath( CurrMacroFilename(), _NAME_ )
+ fileNameCurrentGS = SplitPath( CurrFilename(), _NAME_ | _EXT_ )
 END WhenLoaded
 //
 PROC Main()
  STRING  dir[ MAXSTRINGLEN ] = ''
  STRING  repository[ MAXSTRINGLEN ] = ''
  INTEGER state = STATE_OK
+ SetGlobalInt( "diffGI", GetGlobalInt( "diffGI" ) + 1 )
  org_id = GetBufferId()
  state = set_log_file()
  WHILE state == STATE_OK
@@ -444,5 +495,6 @@ PROC Main()
  PurgeMacro( macro_name )
  IF ( ( Lower( Trim( Query( DosCmdLine ) ) ) IN '-esvn', '-e svn' ) AND ( NumFiles() == 1 ) AND ( Pos( 'unnamed', Lower( CurrFilename() ) ) > 0 ) )
   AbandonEditor()
+ SetGlobalInt( "diffGI", 0 )
  ENDIF
 END Main
