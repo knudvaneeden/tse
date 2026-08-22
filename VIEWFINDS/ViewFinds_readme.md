@@ -1,7 +1,7 @@
 # ViewFinds Extension for TSE (v1.1.18)
 
 ## Overview
-**ViewFinds** is a macro extension for The Semware Editor (TSE) that significantly enhances the native "View Finds" window (typically accessed via the `v` search option or the `grep` macro). It applies intelligent syntax highlighting and comment coloring to search results, allowing you to easily distinguish between active code and commented-out text at a glance. 
+**ViewFinds** is a macro extension for The Semware Editor (TSE) that significantly enhances the native "View Finds" window (typically accessed via the `v` search option or the `grep` macro). It applies intelligent syntax highlighting and comment coloring to search results, allowing you to easily distinguish between active code and commented-out text at a glance.
 
 ## Compatibility
 *   **TSE v4.50.26 upwards:** Full syntax highlighting combined with instantaneous lazy-evaluated Regex and search-term overlays. Includes Dynamic Engine Switching to prevent lockups on massive logs or documents.
@@ -46,3 +46,8 @@ The macro uses advanced memory handling and lazy evaluation to ensure instantane
 *   **`hd_draw_list_line()`**: Intercepts the screen drawing routine. This logic dynamically generates string formatting and stamps search-term highlights onto the string directly as you scroll, completely eliminating buffer-switch bottlenecks. For Regex queries across all versions, it securely utilizes the native memory parser `StrFind()` to accurately map variable-length matching patterns directly over the strings without triggering recursive interface errors or relying on static buffer cursors.
 *   **`del_line()`**: A custom keyboard handler that overrides the `<Del>` and `<GreyDel>` keys for removing lines or safely unloading referenced files directly from the list.
 *   **`do_main_menu()`**: Renders the interactive configuration UI for adjusting background colors and trailing space preferences.
+
+---
+
+## Links
+* [Download from GitHUb](https://github.com/knudvaneeden/tse/blob/TRUNK/VIEWFINDS)
