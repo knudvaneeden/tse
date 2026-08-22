@@ -110,10 +110,10 @@ INTEGER org_id = 0
 STRING selected_file[ MAXSTRINGLEN ] = ''
 STRING selected_property[ MAXSTRINGLEN ] = ''
 //
-STRING fileNameCurrentGS[ MAXSTRINGLEN ] = '' 
+STRING fileNameCurrentGS[ MAXSTRINGLEN ] = ''
 //
-STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\svn.exe" 
-STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' 
+STRING versionControlExecutableGS[ MAXSTRINGLEN ] = "g:\cygwin\bin\svn.exe"
+STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1'
 //
 // Globals for Diff logic
 STRING compareExecutableGS[ MAXSTRINGLEN ] = "G:\UTILS\COMPARE\BEYONDCOMPARE\Beyond Compare 5\BComp.exe"
@@ -124,7 +124,7 @@ KEYDEF extra_list_keys
  <f5> next_list = 'log'  PushKey(<Enter>)
  <f8> next_list = 'info' PushKey(<Enter>)
  <f9> next_list = 'proplist' PushKey(<Enter>)
- <f10> next_list = 'diff' PushKey(<Enter>) 
+ <f10> next_list = 'diff' PushKey(<Enter>)
 END
 //
 INTEGER PROC FNget_dosI( STRING cmdS )
@@ -195,7 +195,7 @@ END set_log_file
 INTEGER PROC ask_repository( VAR STRING repository, VAR STRING dir, VAR STRING selected )
  INTEGER stateI = STATE_OK
  STRING requestS[ MAXSTRINGLEN ] = workingDirectoryGS
- IF ( TRUE ) 
+ IF ( TRUE )
   requestS = Trim( requestS )
   WHILE SubStr( requestS, Length( requestS ), 1 ) == '/'
    requestS = SubStr( requestS, 1, Length( requestS ) - 1 )
@@ -251,7 +251,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
  INTEGER oldMsglevelI = 0
  INTEGER stateI = STATE_OK
  INTEGER skipListI = FALSE
- 
+
  INTEGER localBufferI = 0
  STRING tempNameS[ MAXSTRINGLEN ] = ''
 
@@ -378,12 +378,12 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   Warn( 'Error: unknown action ( 1 ).' )
   stateI = STATE_ERROR
  ENDCASE
- 
+
  // The UI List is safely skipped if a background job like 'diff' occurs
  IF stateI == STATE_OK AND NOT skipListI
   Hook( _LIST_STARTUP_, PROClist_startup )
   Hook( _LIST_CLEANUP_, PROClist_cleanup )
-  PushKeyStr( fileNameCurrentGS ) 
+  PushKeyStr( fileNameCurrentGS )
   IF List( list_header, Max( Max( Length( list_header ), Length( list_footer ) ), LongestLineInBuffer() ) )
    UnHook( PROClist_cleanup )
    CASE curr_list
@@ -435,7 +435,7 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
       LFind( '[0-9]#', 'cgx' )
       file_revision = GetFoundText()
       IF next_list == 'diff'
-       // Keep action as 'diff' 
+       // Keep action as 'diff'
       ELSE
        next_list = 'cat'
       ENDIF
