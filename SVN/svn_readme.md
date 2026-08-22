@@ -67,3 +67,8 @@ To compare two different versions of a file (or two different files), follow thi
     *   If started from the command-line with `-eSvn` and no file was opened for editing, then TSE is closed with the macro. *(Carlo Hogeveen)*
 *   **0.9** (25 May 2012)
     *   Initial version. *(Carlo Hogeveen)*
+
+---
+
+* [Download from GitHUb](https://github.com/knudvaneeden/tse/blob/TRUNK/SVN)
+
