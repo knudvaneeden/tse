@@ -59,7 +59,12 @@
 // 1.0.0.0 12 February 2026
 // 1.1.0.0 22 August 2026
 // 1.1.0.1 22 August 2026 - Fixed case-sensitivity bug when viewing or diffing historical commits.
-// 1.1.0.2 22 August 2026 - Advanced fix for exact case-sensitivity tracking using git ls-files to resolve 'exists on disk, but not in commit' errors.
+// 1.1.0.2 22 August 2026 - Advanced fix for exact case-sensitivity tracking using git ls-files.
+// 1.1.0.3 22 August 2026 - Fixed empty file loading bug caused by carriage returns.
+// 1.1.0.4 22 August 2026 - Fixed CMD parsing bug causing empty files during cat/diff.
+// 1.1.0.5 22 August 2026 - Replaced fragile Bash substitution with Git's native :(icase).
+// 1.1.0.6 22 August 2026 - Ultimate fix: Uses TSE native buffers to extract exact historical path case.
+// 1.1.0.7 22 August 2026 - Fixed compilation error: moved GetExactCommitPath below BashCmd to resolve 'Undefined symbol'.
 //
 #DEFINE LANGUAGE _DEFAULT_
 //
@@ -163,17 +168,6 @@ STRING PROC BashQuote( STRING s )
  RETURN( out )
 END
 
-STRING PROC FNGetShowCmdS( STRING revS, STRING relPathS )
- STRING bashScriptS[ MAXSTRINGLEN ] = ''
- bashScriptS = 'P=$(' + gitExecutableGS + ' ls-files ' + BashQuote( relPathS ) + ' | head -n 1); '
- bashScriptS = bashScriptS + 'if [ -n "$P" ]; then '
- bashScriptS = bashScriptS + gitExecutableGS + ' show ' + BashQuote( revS + ':' ) + '"$P"; '
- bashScriptS = bashScriptS + 'else '
- bashScriptS = bashScriptS + gitExecutableGS + ' show ' + BashQuote( revS + ':' + relPathS ) + '; '
- bashScriptS = bashScriptS + 'fi'
- RETURN( bashScriptS )
-END
-
 STRING PROC GitCmd( STRING repo, STRING cmd )
  STRING fullRepo[ MAXSTRINGLEN ] = repo
  STRING bashCommand[ MAXSTRINGLEN ] = ''
@@ -196,6 +190,43 @@ STRING PROC BashCmd( STRING dir, STRING cmd )
  RETURN( QuotePath( versionControlExecutableGS ) + ' --login -c ' + QuotePath( bashCommand ) )
 END
 //
+// Uses a TSE Buffer to safely find the exact case of a file in a historical commit
+STRING PROC GetExactCommitPath( STRING repo, STRING rev, STRING relPath )
+ STRING exactPath[ MAXSTRINGLEN ] = relPath
+ STRING tmp_file[ MAXSTRINGLEN ] = ''
+ INTEGER org_id_local = GetBufferId()
+ INTEGER tmp_id = 0
+ STRING lineStr[ MAXSTRINGLEN ] = ""
+
+ tmp_file = GetEnvStr( 'temp' )
+ IF tmp_file == ''
+  tmp_file = 'c:\temp'
+ ENDIF
+ tmp_file = tmp_file + '\TseGitTree.log'
+
+ EraseDiskFile( tmp_file )
+ // Dump the full file tree of the revision to a temporary file
+ Dos( BashCmd( repo, gitExecutableGS + ' ls-tree -r --name-only ' + BashQuote( rev ) ) + ' > ' + QuotePath( tmp_file ) + ' 2>&1', _START_HIDDEN_ )
+
+ IF FileExists( tmp_file )
+  tmp_id = EditFile( tmp_file, _DONT_PROMPT_ )
+  IF tmp_id
+   BegFile()
+   REPEAT
+    lineStr = GetText( 1, CurrLineLen() )
+    // Do a safe, pure case-insensitive comparison using native SAL
+    IF Lower( lineStr ) == Lower( relPath )
+     exactPath = lineStr
+     BREAK
+    ENDIF
+   UNTIL NOT Down()
+   AbandonFile( tmp_id )
+  ENDIF
+ ENDIF
+ GotoBufferId( org_id_local )
+ EraseDiskFile( tmp_file )
+ RETURN( exactPath )
+END GetExactCommitPath
 //
 //
 PROC show_dos_error( STRING text )
@@ -208,7 +239,7 @@ PROC show_dos_error( STRING text )
 END show_dos_error
 //
 INTEGER PROC set_log_file()
- INTEGER org_id = GetBufferId()
+ INTEGER org_id_local = GetBufferId()
  INTEGER result = STATE_ERROR
  STRING tmp_dir[ MAXSTRINGLEN ] = ''
  IF GetEnvStr( 'tmp' ) <> ''
@@ -232,7 +263,7 @@ INTEGER PROC set_log_file()
     ELSE
     AbandonFile( log_id )
    ENDIF
-   GotoBufferId( org_id )
+   GotoBufferId( org_id_local )
   ENDIF
  ENDIF
  IF result <> STATE_OK
@@ -355,13 +386,23 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   LFind( selected_file, 'g' )
   WHEN 'cat'
   list_footer = '{Enter}-Edit {Escape}-Back'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), BashCmd( repository, FNGetShowCmdS( file_revision, IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
+  relPathLocal = IIF( dir == '', selected_file, dir + '/' + selected_file )
+  IF file_revision == ''
+   get_dos( BashCmd( repository, 'cat -- ' + BashQuote( relPathLocal ) ) )
+  ELSE
+   get_dos( BashCmd( repository, gitExecutableGS + ' show ' + BashQuote( file_revision + ':' + GetExactCommitPath( repository, file_revision, relPathLocal ) ) ) )
+  ENDIF
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'edit'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), BashCmd( repository, FNGetShowCmdS( file_revision, IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
+  relPathLocal = IIF( dir == '', selected_file, dir + '/' + selected_file )
+  IF file_revision == ''
+   get_dos( BashCmd( repository, 'cat -- ' + BashQuote( relPathLocal ) ) )
+  ELSE
+   get_dos( BashCmd( repository, gitExecutableGS + ' show ' + BashQuote( file_revision + ':' + GetExactCommitPath( repository, file_revision, relPathLocal ) ) ) )
+  ENDIF
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
@@ -376,7 +417,12 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   ENDIF
   WHEN 'diff'
   skipList = TRUE
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), BashCmd( repository, FNGetShowCmdS( file_revision, IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
+  relPathLocal = IIF( dir == '', selected_file, dir + '/' + selected_file )
+  IF file_revision == ''
+   get_dos( BashCmd( repository, 'cat -- ' + BashQuote( relPathLocal ) ) )
+  ELSE
+   get_dos( BashCmd( repository, gitExecutableGS + ' show ' + BashQuote( file_revision + ':' + GetExactCommitPath( repository, file_revision, relPathLocal ) ) ) )
+  ENDIF
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )

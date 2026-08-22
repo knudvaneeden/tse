@@ -2,7 +2,7 @@
 
 **Macro:** `Git.s`
 **Author:** Knud van Eeden (adapted from `svn.s` by Carlo Hogeveen)
-**Version:** 1.1.0.2 (22 August 2026)
+**Version:** 1.1.0.7 (22 August 2026)
 
 ## Purpose
 This macro provides a fast Git browser for The Semware Editor (TSE), intended for browsing large working-tree directories where GUI tools can feel slow. It allows you to browse your Git repository, perform automated and manual DIFFs, and revert to older working versions.
@@ -16,17 +16,17 @@ This macro provides a fast Git browser for The Semware Editor (TSE), intended fo
 ## Installation
 1. **Prerequisites:** You must install Cygwin `git.exe`.
 2. **Configuration:** Change the working directory variable to match your environment. Open `git.s` and modify:
-
-    `STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\'`
-
-    *Optional:* Update the path to your preferred Diff executable (defaults to Beyond Compare):
-
-    `STRING compareExecutableGS[ MAXSTRINGLEN ] = "G:\UTILS\COMPARE\BEYONDCOMPARE\Beyond Compare 5\BComp.exe"`
-
+   ```sal
+   STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\'
+   ```
+   *Optional:* Update the path to your preferred Diff executable (defaults to Beyond Compare):
+   ```sal
+   STRING compareExecutableGS[ MAXSTRINGLEN ] = "G:\UTILS\COMPARE\BEYONDCOMPARE\Beyond Compare 5\BComp.exe"
+   ```
 3. **Compile:** Recompile the macro once in TSE.
 
 ## Usage
-Run the `git.s` macro to display a list of TSE programs under git control. It automatically searches for the current filename. 
+Run the `git.s` macro to display a list of TSE programs under git control. It automatically searches for the current filename.
 The top of the screen shows the currently selected object. An `@` followed by a commit hash indicates you are viewing a historic version of the file; no `@` means you are looking at the current working-tree version.
 
 ### Navigation & Hotkeys
