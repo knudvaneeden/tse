@@ -222,7 +222,7 @@ INTEGER PROC set_log_file()
   tmp_dir = tmp_dir + '\'
  ENDIF
  IF ( FileExists( tmp_dir ) & _DIRECTORY_ )
-  log_file = tmp_dir + 'TseSvn.log'
+  log_file = tmp_dir + 'TseGit.log'
   log_id   = EditFile( log_file, _DONT_PROMPT_ )
   IF log_id
    EmptyBuffer()
@@ -665,7 +665,7 @@ PROC Main()
  GotoBufferId( org_id )
  AbandonFile( log_id )
  PurgeMacro( macro_name )
- IF ( ( Lower( Trim( Query( DosCmdLine ) ) ) IN '-esvn', '-e svn' ) AND ( NumFiles() == 1 ) AND ( Pos( 'unnamed', Lower( CurrFilename() ) ) > 0 ) )
+ IF ( ( Lower( Trim( Query( DosCmdLine ) ) ) IN '-egit', '-e git' ) AND ( NumFiles() == 1 ) AND ( Pos( 'unnamed', Lower( CurrFilename() ) ) > 0 ) )
   AbandonEditor()
  SetGlobalInt( "diffGI", 0 )
  ENDIF
