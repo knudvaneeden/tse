@@ -1,4 +1,3 @@
 PROC Main()
- Warn( "hello world" )
- Warn( "hello world from TSE" )
+ Warn( "hello world from TSE 123" )
 END
