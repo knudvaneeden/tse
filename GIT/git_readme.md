@@ -45,5 +45,4 @@ The top of the screen shows the currently selected object. An `@` followed by a 
 * **External:** Alternatively, save these two files manually and run an external diff tool from the DOS command line.
 
 ## Links
-* [Download from SourceForge](https://sourceforge.net/p/the-semware-editor-tse/code/HEAD/tree/TRUNK/git.s?format=raw)
-* [View on GitHub](https://github.com/knudvaneeden/tse/blob/TRUNK/git.s)
+* [Download from GitHUb](https://github.com/knudvaneeden/tse/blob/TRUNK/GIT)
