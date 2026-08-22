@@ -48,15 +48,18 @@
 //
 // Creating a DIFF between 2 versions
 //
-//  1. What I do is opening 2 different revisions of the file by using <F5>
+//  1. Press <F10> on the first revision to mark it.
 //
-//  2. Then I use e.g. Larry Hayes difference program to watch the DIFFs.
+//  2. Press <F10> on the second revision to trigger a difference program (e.g. BeyondCompare).
 //
-//  3. Otherwise do I save these 2 files and run a DIFF (e.g. using BeyondCompare) from the DOS command line.
+//  3. Manual Alternative: Open 2 different revisions using <F5> and run a difference tool from the DOS command line.
 //
 // History:
 //
 // 1.0.0.0 12 February 2026
+// 1.1.0.0 22 August 2026
+// 1.1.0.1 22 August 2026 - Fixed case-sensitivity bug when viewing or diffing historical commits.
+// 1.1.0.2 22 August 2026 - Advanced fix for exact case-sensitivity tracking using git ls-files to resolve 'exists on disk, but not in commit' errors.
 //
 #DEFINE LANGUAGE _DEFAULT_
 //
@@ -93,6 +96,7 @@ INTEGER log_id = 0
 STRING list_footer[ MAXSTRINGLEN ] = ''
 STRING macro_name[ MAXSTRINGLEN ] = ''
 STRING next_list[ MAXSTRINGLEN ] = 'browse'
+STRING prev_list[ MAXSTRINGLEN ] = 'browse'
 INTEGER org_id = 0
 STRING selected_file[ MAXSTRINGLEN ] = ''
 STRING selected_property[ MAXSTRINGLEN ] = ''
@@ -105,6 +109,10 @@ STRING gitExecutableGS[ MAXSTRINGLEN ] = "git" // git executable inside Cygwin b
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = "/cygdrive/c/TEMP/W1" // old [kn, ri, sa, 13-08-2022 16:00:23] // new [kn, ri, mo, 14-10-2024 00:33:40]
 // STRING workingDirectoryGS[ MAXSTRINGLEN ] = '/cygdrive/G/VERSIONCONTROL/SUBVERSION/W1' // [kn, ri, tu, 30-12-2025 21:32:56]
 STRING workingDirectoryGS[ MAXSTRINGLEN ] = 'G:\VERSIONCONTROL\GIT\DDD01\'
+//
+// Globals for Diff logic
+STRING compareExecutableGS[ MAXSTRINGLEN ] = "G:\UTILS\COMPARE\BEYONDCOMPARE\Beyond Compare 5\BComp.exe"
+STRING firstDiffFileGS[ MAXSTRINGLEN ] = ""
 //
 KEYDEF extra_list_keys
  <f1> next_list = 'help' PushKey(<Enter>)
@@ -155,6 +163,16 @@ STRING PROC BashQuote( STRING s )
  RETURN( out )
 END
 
+STRING PROC FNGetShowCmdS( STRING revS, STRING relPathS )
+ STRING bashScriptS[ MAXSTRINGLEN ] = ''
+ bashScriptS = 'P=$(' + gitExecutableGS + ' ls-files ' + BashQuote( relPathS ) + ' | head -n 1); '
+ bashScriptS = bashScriptS + 'if [ -n "$P" ]; then '
+ bashScriptS = bashScriptS + gitExecutableGS + ' show ' + BashQuote( revS + ':' ) + '"$P"; '
+ bashScriptS = bashScriptS + 'else '
+ bashScriptS = bashScriptS + gitExecutableGS + ' show ' + BashQuote( revS + ':' + relPathS ) + '; '
+ bashScriptS = bashScriptS + 'fi'
+ RETURN( bashScriptS )
+END
 
 STRING PROC GitCmd( STRING repo, STRING cmd )
  STRING fullRepo[ MAXSTRINGLEN ] = repo
@@ -264,7 +282,7 @@ END ask_repository
 PROC list_startup()
  UnHook( list_startup )
  CASE next_list
-  WHEN 'browse'
+  WHEN 'browse', 'log'
   Enable( extra_list_keys )
  ENDCASE
  ListFooter( list_footer )
@@ -277,6 +295,9 @@ END list_cleanup
 INTEGER PROC browse_repository( string repository, VAR STRING dir )
  INTEGER old_msglevel = 0
  INTEGER state = STATE_OK
+ INTEGER skipList = FALSE
+ INTEGER localBuffer = 0
+ STRING tempName[ MAXSTRINGLEN ] = ''
  STRING relPathLocal[255] = ""
  STRING topLocal[255] = ""
  STRING headLocal[255] = ""
@@ -285,37 +306,20 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
  STRING lastRevLocal[255] = ""
  STRING lastDateLocal[255] = ""
  STRING urlLocal[255] = ""
+ 
+ // Track our previous view so we can safely return to it after a diff extracts
+ IF next_list <> 'diff'
+  prev_list = next_list
+ ENDIF
+ 
  list_header = repository + IIF( dir == '', '', '/' + dir ) + IIF( selected_file == '', '', '/' + selected_file ) + IIF( file_revision == '', '', '@' + file_revision )
  list_footer = '{Enter}-Back {Escape}-Back'
  curr_list   = next_list
  CASE next_list
   WHEN 'browse'
   list_header = repository + IIF( dir == '', '', '/' + dir )
-  // list_footer = '{F1}-Help {F5}-Hist {F8}-Info {F9}-Diff {F10}-Props {Enter}-Read {Esc}-Quit'
-  list_footer = '{F5}-Hist {F8}-Info {F9}-Props {Enter}-Read {Esc}-Quit {F1}-Help'
+  list_footer = '{F5}-Hist {F8}-Info {F9}-Props {F10}-Diff {Enter}-Read {Esc}-Quit {F1}-Help'
   get_dos( BashCmd( repository + IIF( dir == '', '', '/' + dir ), 'ls -1p --color=never' ) )
-   //
-   //
-   // c:\temp\w1 Sun 16-11-25 00:26:55>g:\cygwin\bin\svn.exe list /cygdrive/c/TEMP/W1/
-       //
-       // 02 TSE.mbox
-       // 1LINER.S
-       // 2WRDLIST.S
-       // ABREV.S
-       // ANAGRAM.S
-       // ARCHIVE7.S
-       // ASM2BIN.S
-       // ATAGS.S
-       // AbanName.s
-       // Ansi2oem.s
-       // BIB4DOS.BTM
-       // BIB4VS.4VS
-       // BIBABAP.ABAP
-       // BIBABBRE.DOK
-       // BIBABC.ABC
-       // BIBACTIONSCRIPT.AS
-       // BIBADA.ADA
-       // ...
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
@@ -351,56 +355,13 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   LFind( selected_file, 'g' )
   WHEN 'cat'
   list_footer = '{Enter}-Edit {Escape}-Back'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), GitCmd( repository, 'show ' + BashQuote( file_revision + ':' + IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
-  // c:\temp\w1 Sun 16-11-25 00:14:37>g:\cygwin\bin\svn.exe cat /cygdrive/c/TEMP/W1/svn.s
-   //
-   // Revision: 14970
-   //
-   // ===
-   //
-   // Macro     Git.s
-   // Author    Carlo.Hogeveen@xs4all.nl
-   // Date      25 May 2012
-   // Version   See the history and the help_text.
-   //
-   // ===
-   //
-   // Purpose:
-   //   The fastest possible Git browser.
-   //
-   // Why:
-   //   Tortoisesvn is beyond too slow for directories with many files.
-   //
-   // Trade-off:
-   //   A selected file's Git-properties are initially not shown.
-   //
-   // Installation:
-   //   The "git" macro is "just" a shell around the "svn" commandline tool,
-  //
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), BashCmd( repository, FNGetShowCmdS( file_revision, IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
   ENDIF
   WHEN 'edit'
-  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), GitCmd( repository, 'show ' + BashQuote( file_revision + ':' + IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
-   //
-   // c:\temp\w1 Sun 16-11-25 00:27:05>g:\cygwin\bin\svn.exe info /cygdrive/c/TEMP/W1/svn.s
-   // Path: svn.s
-   // Name: svn.s
-   // Working Copy Root Path: /cygdrive/c/TEMP/W1
-   // URL: file:///cygdrive/c/temp/R1/svn.s
-   // Relative URL: ^/svn.s
-   // Repository Root: file:///cygdrive/c/temp/R1
-   // Repository UUID: 6d1fcff0-99ff-11ef-9e48-6ffa6ec1e8ea
-   // Revision: 2212
-   // Node Kind: file
-   // Schedule: normal
-   // Last Changed Author: knud_
-   // Last Changed Rev: 2212
-   // Last Changed Date: 2025-11-16 00:29:22 +0100 (Sun, 16 Nov 2025)
-   // Text Last Updated: 2025-11-16 00:29:16 +0100 (Sun, 16 Nov 2025)
-   // Checksum: c9f853b7a86048a4f28e27a12d3224d956a8c1a5
-   //
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), BashCmd( repository, FNGetShowCmdS( file_revision, IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
@@ -411,14 +372,32 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
    Paste()
    UnMarkBlock()
    ChangeCurrFilename( list_header, _DONT_EXPAND_ )
-   // IF ( ( GetGlobalInt( "diffGI" ) MOD 2 ) == 0 )
-   // IF YesNo( "Run diff?" ) == 1
-   //  ExecMacro( "compblct" ) // operation: compare: block: two: difference: all
-   //  PurgeMacro( "compblct" ) // operation: compare: block: two: difference: all
-   // // ENDIF
-   // // SetGlobalInt( "diffGI", 0 ) // reset
-   // ENDIF
    state = STATE_STOPPED
+  ENDIF
+  WHEN 'diff'
+  skipList = TRUE
+  get_dos( IIF( file_revision == '', BashCmd( repository, 'cat -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ), BashCmd( repository, FNGetShowCmdS( file_revision, IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) ) )
+  IF LFind( '^fatal: ', 'gx' )
+   state = STATE_ERROR
+   show_dos_error( 'Error:' )
+  ELSE
+   tempName = GetEnvStr( 'temp' ) + '\' + IIF( file_revision == '', 'head', file_revision ) + '_' + selected_file
+   MarkLine( 1, NumLines() )
+   Copy()
+   localBuffer = NewFile()
+   Paste()
+   UnMarkBlock()
+   SaveAs( tempName, _DONT_PROMPT_ | _OVERWRITE_ )
+   AbandonFile( localBuffer )
+   GotoBufferId( log_id )
+   IF firstDiffFileGS == ''
+    firstDiffFileGS = tempName
+    Warn( 'First diff file marked: ' + tempName )
+   ELSE
+    Dos( QuotePath( compareExecutableGS ) + ' ' + QuotePath( firstDiffFileGS ) + ' ' + QuotePath( tempName ), _DONT_WAIT_ )
+    firstDiffFileGS = ''
+   ENDIF
+   next_list = prev_list // Silently return to the active list (browse or log)
   ENDIF
   WHEN 'help'
    EmptyBuffer()
@@ -468,28 +447,8 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   AddLine( 'Last Changed Date: ' + lastDateLocal )
   BegFile()
   WHEN 'log'
-  list_footer = '{Enter}-Read {Esc}-Back'
+  list_footer = '{Enter}-Read {F10}-Diff {Esc}-Back'
   get_dos( GitCmd( repository, 'log --follow --date=iso --pretty=format:' + Chr(39) + '%%h# | %%an | %%ad | %%s' + Chr(39) + ' -- ' + BashQuote( IIF( dir == '', selected_file, dir + '/' + selected_file ) ) ) )
-   //
-   // c:\temp\w1 Sun 16-11-25 00:34:06>g:\cygwin\bin\svn.exe log /cygdrive/c/TEMP/W1/svn.s
-   // ------------------------------------------------------------------------
-   // r2213 | knud_ | 2025-11-16 00:31:57 +0100 (Sun, 16 Nov 2025) | 1 line
-   //
-   // [svn.s] recompile
-   // ------------------------------------------------------------------------
-   // r2212 | knud_ | 2025-11-16 00:29:22 +0100 (Sun, 16 Nov 2025) | 1 line
-   //
-   // [svn.s] recompile
-   // ------------------------------------------------------------------------
-   // r2208 | knud_ | 2025-11-15 22:39:15 +0100 (Sat, 15 Nov 2025) | 1 line
-   //
-   // [svn.s] recompile
-   // ------------------------------------------------------------------------
-   // r1 | knud_ | 2024-11-03 18:10:46 +0100 (Sun, 03 Nov 2024) | 1 line
-   //
-   // original
-   // ------------------------------------------------------------------------
-   //
   IF LFind( '^fatal: ', 'gx' )
    state = STATE_ERROR
    show_dos_error( 'Error:' )
@@ -586,7 +545,9 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
   Warn( 'Error: unknown action ( 1 ).' )
   state = STATE_ERROR
  ENDCASE
- IF state == STATE_OK
+ 
+ // The UI List is safely skipped if a background job like 'diff' occurs
+ IF state == STATE_OK AND NOT skipList
   Hook( _LIST_STARTUP_, list_startup )
   Hook( _LIST_CLEANUP_, list_cleanup )
   //
@@ -616,6 +577,8 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
       next_list     = 'cat'
       file_revision = ''
      ENDIF
+     ELSEIF next_list == 'diff'
+     file_revision = ''
      ELSE
      IF selected_file == '/..'
       next_list = 'browse'
@@ -640,7 +603,11 @@ INTEGER PROC browse_repository( string repository, VAR STRING dir )
      IF LFind( '^[0-9a-fA-F]+\#\x20\|\x20', 'cgx' )
       LFind( '[0-9a-fA-F]+\#', 'cgx' )
       file_revision = SubStr( GetFoundText(), 1, Length( GetFoundText() ) - 1 )
-      next_list     = 'cat'
+      IF next_list == 'diff'
+       // Keep action as 'diff'
+      ELSE
+       next_list = 'cat'
+      ENDIF
       ELSE
       next_list     = 'log'
      ENDIF
