@@ -126,6 +126,8 @@ end  ShowQuickKey
 
 proc Main ()
    Message ("<CtrlAltShift Q>  inside a menu shows quick-key list")
+   ShowQuickKey()
+   GotoBufferId (GetBufferId (QuickKeyBuf_S) )
 end Main
 
 <CtrlAltShift Q>  ShowQuickKey ()
