@@ -12,6 +12,20 @@
  Modified 08/22/94 by Jack Hazlehurst
  Modified 10/17/94 by Jack Hazlehurst
 
+===
+
+ [kn, ri, th, 12-02-2026 00:11:54]
+
+  Modified by Knud van Eeden
+
+  -works in TSE for Microsoft Windows version 4.50 RC24
+
+  -works in TSE for Linux version 4.50.14 in Linux WSL (Ubuntu)
+
+  -works in TSE for Linux version 4.50.19 in Linux non-WSL (Ubuntu)
+
+  -version 1.0.0.0
+
 *******************************************************************************
 
 [File: Source: FILE_ID.DIZ]
@@ -41,7 +55,7 @@ and printing.
             within the block are processed;  otherwise the entire current
             file is processed.  _COLUMN_ blocks may NOT be used.
 
-            The length of the resulting line is limited to the 2032-character
+            The length of the resulting line is limited to the 32000-character
             limit imposed by TSE.
 
             Keys:         (none)
@@ -175,6 +189,6 @@ END
 //
 // The required "main"
 //
-PROC main()
+PROC Main()
  PROCOneLiner()
 END
