@@ -3,14 +3,14 @@
 ## Metadata
 * **Macro:** AbanName
 * **Author:** Carlo.Hogeveen@xs4all.nl
-* **Date:** 3 August 2007
-* **Version:** 3.0.2
+* **Date:** 23 August 2026
+* **Version:** 3.0.3
 * **Compatibility:** TSE Pro 2.5e upwards
 
 ## Overview
-From the files already opened in TSE, you can select files based on (part of) their `drive:\path\filenames`, and either **Abandon** or **Keep** the selected files. Keeping the selected files means abandoning all others.
+From the files already opened in TSE, you can select files based on (part of) their `drive:\path\filenames`, and either **Abandon** or **Keep** the selected files. Keeping the selected files means abandoning all others. 
 
-This macro utilizes TSE's ability to open files without loading them, which avoids memory issues when dealing with large directories.
+This macro utilizes TSE's ability to open files without loading them, which avoids memory issues when dealing with large directories. 
 
 ## Matching Methods
 When selecting files to abandon or keep, you can choose to match a part of the filename ("contain") or the whole filename ("fully match"). The string you supply can use one of three formats:
@@ -38,3 +38,4 @@ Exceeding these limits can cause TSE to become unstable without a warning. The m
 * **v3 (13 August 2005):** Fixed counting error. Merged the v2 interface with an improved search algorithm.
 * **v3.0.1 (1 July 2007):** Solved bug and improved open file limit detection.
 * **v3.0.2 (3 August 2007):** Fixed a bug where the current file was loaded as an empty file if it hadn't been loaded yet.
+* **v3.0.3 (23 August 2026):** Fixed bug: If 'Keep' was selected with a non-existing filename, all files were abandoned causing TSE to exit. Added a pre-pass check and a warning message displaying the missing filename.

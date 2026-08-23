@@ -2,8 +2,8 @@
    Macro          AbanName
    Author         Carlo.Hogeveen@xs4all.nl
    Date           16 December 2003
-   Version        3.0.2
-   Date           3 August 2007
+   Version        3.0.3
+   Date           23 August 2026
    Compatibility  TSE Pro 2.5e upwards
 
    From the files already opened in TSE, you can select files based on (part
@@ -88,6 +88,11 @@
       Nasty bug solved: if afterwards the current file became a file that
       hadn't been loaded yet, then it was loaded as (changed to) an empty
       file.
+
+   v3.0.3   23 August 2026
+      Fixed bug: If 'Keep' was selected with a non-existing filename,
+      all files were abandoned causing TSE to exit. Added a pre-pass
+      check and a warning message displaying the missing filename.
 */
 
 
@@ -297,6 +302,7 @@ proc Main()
    integer method_history = 0
    integer i = 0
    integer menu_option = 0
+   integer matchesFoundI = 0
    string action [8] = ""
    string expression [255] = ""
    GotoBufferId(32767)
@@ -375,32 +381,48 @@ proc Main()
                   NextFile(_DONT_LOAD_)
                   start_id = GetBufferId()
                   expression = Lower(expression)
+                  
+                  // --- PRE-PASS LOOP START ---
+                  matchesFoundI = 0
                   repeat
-                     start_id_renewed = FALSE
-                     if match(tmp_id, menu_option, expression) ==
-                                                           (action == "Abandon")
-                        aban_id = GetBufferId()
-                        if aban_id == start_id
-                           NextFile(_DONT_LOAD_)
-                           AbandonFile(aban_id)
-                           start_id = GetBufferId()
-                           start_id_renewed = TRUE
-                           PrevFile(_DONT_LOAD_)
-                        else
-                           PrevFile(_DONT_LOAD_)
-                           AbandonFile(aban_id)
-                        endif
-                        abandoned = abandoned + 1
-                     else
-                        kept = kept + 1
+                     if match(tmp_id, menu_option, expression)
+                        matchesFoundI = matchesFoundI + 1
                      endif
                      NextFile(_DONT_LOAD_)
-                  until NumFiles() == 0
-                     or (start_id_renewed == FALSE and GetBufferId() == start_id)
-                  // Ensure the current file is loaded.
-                  NextFile(_DONT_LOAD_)
-                  PrevFile()
-                  Message(abandoned, " files abandoned, ", kept, " files kept.")
+                  until GetBufferId() == start_id
+
+                  if action == "Keep" and matchesFoundI == 0
+                     Message("Warning: File '", expression, "' does not exist. No action taken.")
+                  else
+                  // --- PRE-PASS LOOP END ---
+                     
+                     repeat
+                        start_id_renewed = FALSE
+                        if match(tmp_id, menu_option, expression) ==
+                                                              (action == "Abandon")
+                           aban_id = GetBufferId()
+                           if aban_id == start_id
+                              NextFile(_DONT_LOAD_)
+                              AbandonFile(aban_id)
+                              start_id = GetBufferId()
+                              start_id_renewed = TRUE
+                              PrevFile(_DONT_LOAD_)
+                           else
+                              PrevFile(_DONT_LOAD_)
+                              AbandonFile(aban_id)
+                           endif
+                           abandoned = abandoned + 1
+                        else
+                           kept = kept + 1
+                        endif
+                        NextFile(_DONT_LOAD_)
+                     until NumFiles() == 0
+                        or (start_id_renewed == FALSE and GetBufferId() == start_id)
+                     // Ensure the current file is loaded.
+                     NextFile(_DONT_LOAD_)
+                     PrevFile()
+                     Message(abandoned, " files abandoned, ", kept, " files kept.")
+                  endif
                else
                   Message("No action. There are no files.")
                endif
@@ -421,4 +443,3 @@ proc Main()
    endif
    PurgeMacro(SplitPath(CurrMacroFilename(), _NAME_))
 end
-
