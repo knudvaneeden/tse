@@ -17,3 +17,18 @@ case
     when
     otherwise
 endcase
+```
+(The cursor will be placed right after `case `).
+
+### Adding New Abbreviations
+Abbreviations are stored in the `datadef abbreviations` section within the source file. To add your own:
+1. Define the abbreviation surrounded by dollar signs (e.g., `"$my_abbrev$"`).
+2. Write the replacement text on the subsequent lines, enclosing each line in double quotes.
+3. Insert a tilde (`~`) exactly where you want the cursor to appear after expansion. **Note: Each entry must have a `~` character.**
+4. Ensure the very last entry in the `datadef` block is a single `"$"` to correctly terminate the list.
+
+## History
+* **v1.0 (Initial Release):** Implemented core abbreviation functionality triggered by `<F12>`.
+  * Added `datadef` structure for mapping `$abbreviation$` to text blocks.
+  * Integrated auto-indentation to match the current line's leading spaces.
+  * Added smart cursor positioning using the `~` placeholder.
