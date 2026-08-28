@@ -2,7 +2,7 @@
     Program: archive7.s
     By John Barbee,  JYB Developments
     Date: 07/11/93 08:49 pm, Windy Hill Software
-    Placee in the Public Domain
+    Place in the Public Domain
     Version:0.7
 
 ****************************************************************************/
