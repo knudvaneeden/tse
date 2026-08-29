@@ -68,7 +68,7 @@ integer proc getEBCDIClrecl()
     return (lrecl)
 end
 
-integer proc isAutoLoaded()
+integer proc _isAutoLoaded()
     integer id, found
     PushPosition()
     id = EditBuffer(LoadDir() + "tseload.dat", _HIDDEN_, -1)
@@ -113,7 +113,7 @@ proc onFileLoad()
 end
 
 proc WhenLoaded()
-    if not isAutoLoaded()
+    if not _isAutoLoaded()
         AddAutoLoadMacro(CurrMacroFilename())
     endif
     EBCDIC_ext = getEBCDICext()
