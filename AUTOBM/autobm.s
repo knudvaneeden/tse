@@ -14,7 +14,7 @@
 
                             version 2, 02-24-94
 
-Version 2 is faster. It does not reset bookmarks if you go from a
+7Version 2 is faster. It does not reset bookmarks if you go from a
 file to the same file, as may happend during the execution of many
 macros that use work buffers, lists, etc.
 
