@@ -17,6 +17,30 @@
   Version 1.1.0.0.3 correctly treats a nonzero Dos() result as success.
 */
 
+/* This input:
+
+--- cut here: begin --------------------------------------------------
+mov  ax,dada
+push ax
+mov  ax,1100
+int  2f
+pop  dx
+retf
+--- cut here: end ----------------------------------------------------
+
+gives this output
+
+--- cut here: begin --------------------------------------------------
+  0xB8  0xDA  0xDA                    // :0100 mov ax,0xdada
+  0x50                                // :0103 push ax
+  0xB8  0x00  0x11                    // :0104 mov ax,0x1100
+  0xCD  0x2F                          // :0107 int 0x2f
+  0x5A                                // :0109 pop dx
+  0xCB                                // :010A retf
+--- cut here: end ----------------------------------------------------
+
+*/
+
 string proc FConvertDebugLineToNasm(string debugLineS)
     string characterS[1] = ""
     string convertedLineS[255] = ""
