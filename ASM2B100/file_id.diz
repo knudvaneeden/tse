@@ -1,0 +1,5 @@
+Asm2Bin simplifies the writing of advanced
+TSE Pro macros by automatically translating
+80x86 mnemonics into a clean, compilable &
+commented form.  Requires TSE Pro 2.5 or
+later.

@@ -1,0 +1,62 @@
+/* ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ ÚÄÙ TSE Inline AssemblerÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ ³                                                                          ³
+ ³ SOFTWARE:    Asm2bin.s                                                   ³
+ ³ VERSION:     1.00                                                        ³
+ ³ DATE:        03/09/95 06:51 pm                                           ³
+ ³ REV. DATE:   09/16/95 01:10 am                                           ³
+ ³ AUTHOR:      Mike Chambers                                               ³
+ ³ TYPE:        External Macro                                              ³
+ ³ BASED ON:                                                                ³
+ ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
+ ³                                                                          ³
+ ³ FUNCTION:    Converts a marked block of 80x86 instruction mnemonics to a ³
+ ³              commented block of hex values for inclusion in a SAL inline ³
+ ³              proc binary procedure.                                      ³
+ ³                                                                          ³
+ ³              This macro simplifies the embedding of simple assembler     ³
+ ³              instructions in your TSE macros by handling the the         ³
+ ³              translation of the instructions into equivalent hexadecimal ³
+ ³              inline strings.                                             ³
+ ³                                                                          ³
+ ³ EXAMPLE:     The macro transforms the following assembler mnemonics:     ³
+ ³                                                                          ³
+ ³                  mov  ax,dada                                            ³
+ ³                  push ax                                                 ³
+ ³                  mov  ax,1100                                            ³
+ ³                  int  2f                                                 ³
+ ³                  pop  dx                                                 ³
+ ³                  retf                                                    ³
+ ³                                                                          ³
+ ³              into the following which is compilable in a macro:          ³
+ ³                                                                          ³
+ ³                                                                          ³
+ ³                  0xB8  0xDA  0xDA            // :0100 mov	ax,dada     ³
+ ³                  0x50                        // :0103 push	ax          ³
+ ³                  0xB8  0x00  0x11            // :0104 mov	ax,1100     ³
+ ³                  0xCD  0x2F                  // :0107 int	2f          ³
+ ³                  0x5A                        // :0109 pop	dx          ³
+ ³                  0xCB                        // :010A retf               ³
+ ³                                                                          ³
+ ³ USAGE:       Mark a character or line block.  (Column blocks are         ³
+ ³              not supported).                                             ³
+ ³                                                                          ³
+ ³              Execute Asm2Bin through your Potpourri menu.  If you need   ³
+ ³              the function frequently, use a key assignment to the        ³
+ ³              InlineBinaryBlock procedure.                                ³
+ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+   Asm2Bin makes a fairly complicated task (translating mnemonics to hex
+   op codes) fairly simple through a highly sophisticated programming
+   technique:  it cheats!  It lets Dos Debug do the dirty work and
+   manipulates the answer to make it TSE compilable.
+
+   With this in mind, there are a couple of limitations to Asm2Bin:  All
+   the rules regarding acceptable input to the Debug Assemble command
+   apply to Asm2Bin.  No embedded blank lines.  Instruction mnemonics
+   only (no assembler directives). Jump locations are numeric constants:
+   no labels.
+
+   Comments are welcomed on the SemWare echoes on FidoNet, Intelec, Ilink,
+   & Relaynet or on Semware's Support BBS (any TSE related conference).
+
