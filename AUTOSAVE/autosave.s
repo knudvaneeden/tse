@@ -42,9 +42,9 @@ integer Save_Interval = 600,       // # of seconds between saves
         lasttime
 
 integer proc TimeInSeconds()
-  integer hour,min,sec,hund
-  GetTime(hour,min,sec,hund)
-  return (hour * 3600 + min * 60 + sec)
+  integer hour,mimimumI,sec,hund
+  GetTime(hour,mimimumI,sec,hund)
+  return (hour * 3600 + mimimumI * 60 + sec)
 end
 
 string proc GetBackupName()
