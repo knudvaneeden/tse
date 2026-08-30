@@ -93,29 +93,6 @@
       understandable "missing quoting character(s)".
 */
 
-/*
-
-File: Source: FILE_ID.DIZ]
-
-(Mar 7, 2006) - bFind 1.02 for TSE Pro 2.5e upwards.
-
-A boolean/logical Find command.
-
-Find all lines containing a logical combination of quoted search-strings.
-
-Search-strings can be logically combined with the boolean operators AND, OR,
-NOT and brackets.
-
-Simple uses: Find lines not containing a string.
-
-Find lines that contain two strings in no particular order.
-
-Complex uses: no limit on nesting AND, OR and NOT with brackets.
-
-Author: Carlo Hogeveen
-
-*/
-
 #define SPACE           32
 #define HORIZONTAL_TAB   9
 
