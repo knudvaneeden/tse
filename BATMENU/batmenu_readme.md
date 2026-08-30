@@ -6,10 +6,13 @@ BatMenu is a TSE SAL macro that maintains and displays a menu of Windows batch-f
 
 Selecting an entry writes its commands temporarily to `C:\TSEBAT.BAT` and runs that batch file. The temporary batch file is removed afterward.
 
-This repaired release is version **1.1.0.0.1**.
+This repaired release is version **1.1.0.0.2**.
 
-## Repairs in version 1.1.0.0.1
+## Changes through version 1.1.0.0.2
 
+- Translated all 40 supplied sample menu titles from Dutch to English.
+- Translated the matching sample `echo` messages from Dutch to English.
+- Corrected the original sample ordering so **Twentieth** precedes **Twenty-first**.
 - Corrected the data-file lookup that could cause an empty menu.
 - `BATMENU.DAT` is now searched for in this order:
   1. Beside the currently compiled `BATMENU.S` source file.
@@ -33,7 +36,7 @@ This repaired release is version **1.1.0.0.1**.
 
 ## Installation
 
-1. Extract `batmenu_1.1.0.0.1.zip` into a working directory.
+1. Extract `batmenu_1.1.0.0.2.zip` into a working directory.
 2. Keep `BATMENU.S` and `BATMENU.DAT` together in that directory.
 3. Open `BATMENU.S` in TSE.
 4. Compile it using TSE's **Macro Compile** command.
@@ -115,7 +118,7 @@ Use BatMenu's own commands whenever possible:
 
 ### Escape should not exit TSE
 
-Version `1.1.0.0.1` returns normally to the open editor. If the complete editor still exits, verify that TSE is running the repaired macro rather than an older compiled copy.
+Version `1.1.0.0.2` returns normally to the open editor. If the complete editor still exits, verify that TSE is running the repaired macro rather than an older compiled copy.
 
 ## Safety note
 
@@ -123,7 +126,7 @@ BatMenu executes ordinary Windows batch commands with the permissions of the cur
 
 ## Version
 
-- BatMenu version: `1.1.0.0.1`
+- BatMenu version: `1.1.0.0.2`
 - Repair date: 30 August 2026
 - Original author: Carlo Hogeveen
 - Repairs and documentation: OpenAI GPT-5 Codex
