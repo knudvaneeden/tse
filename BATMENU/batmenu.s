@@ -2,7 +2,7 @@
    Macro:   BatMenu.
    Author:  carlo.hogeveen@xs4all.nl.
    Date:    1 May 2001.
-   Version: 1.1.0.0.1 (30 August 2026).
+   Version: 1.1.0.0.2 (30 August 2026).
    Updated by OpenAI GPT-5 Codex.
 
    This macro provides and manages a whole list of bat files
@@ -398,7 +398,7 @@ proc main()
    if FileExists(bat_files)
       bat_files_id = EditFile(bat_files, _DONT_PROMPT_)
    else
-      Warn("BatMenu 1.1.0.0.1: Cannot find BatMenu.dat beside the source, beside the macro, or in the Mac directory.")
+      Warn("BatMenu 1.1.0.0.2: Cannot find BatMenu.dat beside the source, beside the macro, or in the Mac directory.")
    endif
    if bat_files_id
       repeat
