@@ -2,6 +2,8 @@
    Macro:   BatMenu.
    Author:  carlo.hogeveen@xs4all.nl.
    Date:    1 May 2001.
+   Version: 1.1.0.0.1 (30 August 2026).
+   Updated by OpenAI GPT-5 Codex.
 
    This macro provides and manages a whole list of bat files
    from a single icon on the DesTop.
@@ -378,10 +380,26 @@ end
 
 proc main()
    integer stop = FALSE
-   integer bat_view_id = CreateTempBuffer()
+   integer bat_view_id = 0
+   // When BATMENU.S is compiled/run from an ordinary working directory, the
+   // current file is the source file and its directory is the best first
+   // location for BATMENU.DAT.
+   bat_files = SplitPath(CurrFilename(), _DRIVE_|_PATH_) + "BatMenu.dat"
+   bat_view_id = CreateTempBuffer()
    old_InsertLineBlocksAbove = Set(InsertLineBlocksAbove, OFF)
-   bat_files = LoadDir() + "Mac\BatMenu.dat"
-   bat_files_id = EditFile(bat_files, _DONT_PROMPT_)
+   // Next look beside the loaded macro.  Keep the original installation-root
+   // layout as the final compatibility fallback.
+   if not FileExists(bat_files)
+      bat_files = LoadDir() + "BatMenu.dat"
+      if not FileExists(bat_files)
+         bat_files = LoadDir() + "Mac\BatMenu.dat"
+      endif
+   endif
+   if FileExists(bat_files)
+      bat_files_id = EditFile(bat_files, _DONT_PROMPT_)
+   else
+      Warn("BatMenu 1.1.0.0.1: Cannot find BatMenu.dat beside the source, beside the macro, or in the Mac directory.")
+   endif
    if bat_files_id
       repeat
          GotoBufferId(bat_view_id)
@@ -416,6 +434,8 @@ proc main()
       until stop
    endif
    Set(InsertLineBlocksAbove, old_InsertLineBlocksAbove)
-   PurgeMacro("BatMenu")
-   AbandonEditor()
+   if bat_files_id
+      AbandonFile(bat_files_id)
+   endif
+   AbandonFile(bat_view_id)
 end
