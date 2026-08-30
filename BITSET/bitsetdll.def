@@ -1,0 +1,7 @@
+LIBRARY BITSETDLL
+DESCRIPTION 'TSE WordSet and VarTabs conversion DLL 1.0.0.0.5'
+EXPORTS
+    WrdChrs2WrdHex
+    WrdHex2WrdChrs
+    TabPosns2TabHex
+    TabHex2TabPosns
