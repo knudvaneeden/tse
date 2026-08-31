@@ -1,0 +1,34 @@
+BTMCOLOR.TSE
+
+4DOS is a replacement MS-DOS command processor from JP Software; NDOS is a 
+private label version of 4DOS sold by Symantec as part of the Norton 
+Utilities.  One of the best features of 4DOS (and NDOS) is vastly more 
+powerful and faster running batch files.  This template enables color editing 
+of 4DOS/NDOS batch files (4DOS 5.5, NDOS 7.0, MS-DOS 6.2).
+
+The ".btm" suffix stands for "batch to memory", a 4DOS option for speeding 
+batch file processing by reading the entire file into memory before executing 
+it.  This template will also colorize .bat files if you add the lines: 
+
+   when ".btm", ".bat"
+       s = ".btm"
+
+to the mResolveGroupExtensions proc in colors.s.
+
+The template assigns colors as follows:
+
+White   - Most internal 4DOS/NDOS commands.
+Yellow  - If...then...else commands; comparison operators; labels.
+Red     - Most symbols; transfer of control commands such as for, do,
+          until, while, goto, gosub, return, call.
+Green   - External MS-DOS commands & utilities; numbers.
+Magenta - 4DOS/NDOS internal variables & variable functions;
+          paired internal commands such as pushd/popd and text/endtext.
+Grey    - Remarks.
+
+
+I hope you like this and find it useful.  Please write to me with any 
+suggestions, corrections, etc. that you may have.
+
+Tom Bowden
+73247.3571@compuserve.com
