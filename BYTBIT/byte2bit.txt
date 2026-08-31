@@ -1,0 +1,93 @@
+/******************************************************************************/
+/* Text File  : BYTE2BIT.TXT                                                  */
+/* Programmer : Todd Fiske                                                    */
+/*                                                                            */
+/* Purpose    : Brief descriptions of the macros in BYTE2BIT.MAC              */
+/*                                                                            */
+/* Revision   : 09/14/1993 - first released                                   */
+/* History                                                                    */
+/*                                                                            */
+/* Language   : SAL 1.0 (Pre-Release)                                         */
+/*                                                                            */
+/******************************************************************************/
+
+BYTE2BIT.MAC consists of a group of macros to allow you to convert characters
+into "bit-strings". For example, assuming "x" means "1" and "." means "0", my
+name would look like this (including the space):
+
+.x.x.x...xx.xxxx.xx..x...xx..x....x......x...xx..xx.x..x.xxx..xx.xx.x.xx.xx..x.x
+
+   ўлўлўлўўўллўлллл     My name as modern art! <g>
+   ўллўўлўўўллўўлўў
+   ўўлўўўўўўлўўўллў
+   ўллўлўўлўлллўўлл
+   ўллўлўллўллўўлўл
+
+/******************************************************************************/
+
+BYTE2BIT.S contains these macros:
+
+   string proc Byte2Bits(integer i)    returns integer I as a bit-string
+   integer proc Bits2Byte(string s)    returns bit-string S as an integer
+
+   proc ShowBit()                      shows results of Byte2Bits in Message()
+   proc ShowByte()                     shows results of Bits2Byte in Message()
+
+   proc Char2Bits()                    replaces current char with a bit-string
+   proc Bits2Char()                    replaces current bit-string with a char
+
+   proc SetOneChar()                   assign a new character to be used as "1"
+   proc SetZeroChar()                  assign a new character to be used as "0"
+
+   proc main()                         show a brief title and help in Message()
+
+
+Procedures SetOneChar() and SetZeroChar() change the respective values of the
+global strings sOneChar and sZeroChar. These are initially set to "x" and "."
+which give the best graphical representation of the bits for my needs.
+
+Functions Byte2Bits() and Bits2Byte() are the real work-horses of this system,
+performing the actual conversions on the passed in values.
+
+Procedures Char2Bits() and Bits2Char() are the primary user-interfaces to the
+above two routines.
+
+Procedures ShowBit() and ShowByte() are "quicky" debugging tools and also good
+for spot-checking the "other" value of the character or string under the
+cursor.
+
+Finally, procedure Main() is just used to display a little sign-on message, the
+initial values for sOneChar and sZeroChar, and some of the basic key
+assignments.
+
+/******************************************************************************/
+
+You can use these macros either by integrating them into your TSE.S file and
+binding it in with the SC -B switch, or by calling them up as a standalone
+macro file via the LoadMacro() menu (<Ctrl F10> by default).
+
+More than likely, you will want to assign your own key assignments. All key
+assignments are grouped together at the end of BYTE2BIT.S for easy access.
+Byte2Bits() and Bits2Byte() themselves should not be bound directly to
+keypresses as they expect input variables. It's better to access these through
+the "shell" routines ShowByte(), ShowBit(), Char2Bits() and Bits2Char().
+
+/******************************************************************************/
+
+BYTE2BIT.MAC offers some of the same capabilities of the Format() and Val()
+commands, but in a more flexible fashion. Certainly Byte2Bits() and Bits2Byte()
+could be implemented using Format() and Val(), but the ability to use different
+"zero" and "one" characters would be a bit harder to add.
+
+BYTE2BIT.MAC is another illustration of the power and immediacy of the TSE
+macro language. I was working on some bitmapped graphic font files, and needed
+a quick way to edit one character bitmap. Rather than get into Pascal and try
+to hammer out a quick bitmap editor, I figured I could do it right in TSE if I
+could just convert the bytes into their respective bit-strings. Well, in less
+than half an hour, BYTE2BIT.MAC had been written, and the new character bitmap
+was edited and in place. Just one more reason why I LOVE THIS EDITOR!!! <g>
+
+/******************************************************************************/
+
+BYTE2BIT.MAC and BYTE2BIT.S are placed in the public domain by me, Todd Fiske.
+Please use these macros for grand and noble purposes! <g>
