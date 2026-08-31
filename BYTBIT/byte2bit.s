@@ -149,7 +149,7 @@ end
 /* Main - just show current "1" and "0" chars, basic keystrokes               */
 /******************************************************************************/
 proc main()
-   message('Byte2Bit "1"='+ sOneChar +' "0"='+ sZeroChar +' ShF9=SetOne ShF10=SetZero AltF8=Char2Bits AltF9=Bits2Char')
+   Warn('Byte2Bit "1"='+ sOneChar +' "0"='+ sZeroChar +' ShF9=SetOne ShF10=SetZero AltF8=Char2Bits AltF9=Bits2Char')
 end
 
 /******************************************************************************/
