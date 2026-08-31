@@ -1,0 +1,104 @@
+                                 BULLET.S v1.1
+
+                   Bulleted list support for wordwrap macros.
+
+
+        û NEW! in v1.1:
+	        ù In/Outdenting of whole bullet points by hitting <Tab> or
+	          <Shift Tab> while on the first line of the bullet point.
+            ù Using the Bullet Menu (<Ctrl B>) while in a bullet point
+              changes the bullet style for that point. This feature is
+              great for changing the bullet style for subpoints, etc.
+            ù Use ExecMacro("bullet -m") to bring up Bullet Menu from a
+              within a macro.
+            ù Outlining!
+
+        I.    OUTLINING!  (NEW! in v1.1)
+              A.    It's easy to use numbered lists (outlines).
+                    1)    Just pop up the Bullet Menu.
+                    2)    Select your outline style.
+              B.    Type away!
+              C.    Use the Options menu to change the outlining
+                    settings.
+                    (i)   They should be self-explanatory.
+                    (ii)  If they're not, well... sorry.
+              D.    To renumber a sequence, select Renumber from the
+                    Bullet Menu.
+                    <a>   When you change the outline style of a
+                          paragraph, the outline points following it are
+                          automatically renumbered.
+                    <b>   When you add or insert new outline points, the
+                          new point is automatically numbered, and the
+                          following points are renumbered.
+
+        þ This macro adds bulleted list support to TSE. It also helps
+          wordwrap macros support bulleted lists so they don't trash
+          bulleted lists.
+
+        þ Just hit <Ctrl B> to access the handy Bullet Menu and select
+          the bullet character you want to use. If you're using
+          WordWrap, the <Enter> key will automatically insert another
+          bullet character, making bulleted lists a breeze! If you use
+          BULLET instead of WrapPara() when doing wordwrap, your
+          bulleted lists will even get automatically indented! And best
+          of all, BULLET prevents wordwrap from destroying your bulleted
+          lists. It figures out the first and last lines of the bullet
+          point you're editing and only wraps those lines.
+
+        þ Also enclosed is a macro called AUTOWRAP. This macro uses
+          BULLET to wordwrap as you type, automatically adding a hanging
+          indent to bulleted lists as you type. You may need to remove
+          another autowrap macro before loading AUTOWRAP, or you might
+          even have to modify your .UI file to remove existing autowrap
+          support.
+
+        þ Also enclosed is a macro called INI. This macro allows other
+          macros to save their settings in a common TSEPRO.INI file in
+          the Main TSE directory.
+
+        þ This macro is designed as a wrapper for your current wordwrap
+          macro. It's as easy as replacing the call to your wordwrap
+          macro (or WrapLine() or WrapPara() command). Anywhere you use
+          WrapPara(), instead use ExecMacro("bullet -p"). Anywhere you
+          use WrapLine(), instead use ExecMacro("bullet -l"). Anywhere
+          you use ExecMacro("foo -x"), instead use ExecMacro("bullet foo
+          -x"). BULLET will work great with most wordwrap macros, and
+          will work beautifully with any wordwrap macro that respects
+          marked blocks.
+
+        þ Keys:
+            ù <Ctrl B> - Bullet menu
+            ù <Enter> - Automatically continue a bulleted list or
+              outline (if WordWrap is ON or _AUTO_)
+            ù NOTE:  To disable either the bullet menu or autobulleting,
+              just set the corresponding #define to 0 in BULLET.S
+
+        þ You can add new bullet characters to the bullet menu. Just
+          make sure you remember to add them to the "bullets" string.
+
+        þ Known goofiness:
+			ù In astronomically rare cases, paragraph reformatting may
+              not reformat a whole paragraph or bullet point. This
+              happens if the first word on a line looks like a bullet
+              character or like an outline number.
+			ù There must be whitespace (spaces or hard tabs) between the
+			  bullet character and the text of the bullet point. If you
+              accidentally remove the whitespace and then reformat the
+              paragraph (bullet point), BULLET will think it is part of
+              the bullet point above it, and the reformat will join the
+              bullet points. (It's easy to undo, though).
+
+        þ Real cool thing:
+            ù BULLET's <Enter>, <Tab>, and <Shift Tab> key handlers
+              should interact well with other macros, since they use
+              ChainCmd() to pass control along. In my personal TSE
+              configuration, I currently have four macros bound to the
+              <Tab> key, and two to <Enter>. They all work great
+              together.
+
+        þ Happy bulleting and outlining!
+            ù You can reach me at Chris Antos, chrisant@microsoft.com,
+              and I'll try to reply in a timely manner. (For my own
+              protection, the only I'll promise a reply. ...Mm, better
+              not even promise that, although I will try).
+
