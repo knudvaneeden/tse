@@ -1,0 +1,91 @@
+1. Synopsis
+-----------
+
+These macros add two buttons to TSE's user interface emulating some of the
+mouse interfaces which work for GUI application but usually do not work for
+console applications. The X-button, when clicked, closes TSE by calling the
+quickxit macro. The S-button allows you to resize TSE in terms of rows and
+columns using a mouse and to quickly minimize, maximize and restore it.
+Note: SBTN only works for TSE-Pro32 v3.0.
+
+
+2. Installation
+---------------
+
+Copy the macros into the MAC folder and compile them, e.g. by typing
+
+    sc32 xbtn
+    sc32 sbtn
+
+at a prompt. Next, run TSE and pull down the Macro menu and choose Autoload
+List. Press <Ins>, type XBTN at the prompt and press <Enter>. Repeat for the
+SBTN macro. Press <Enter> to save the changes. Finally, restart TSE.
+
+To uninstall the buttons, open the Autoload List, select XBTN and press
+<Del>. Repeat for the SBTN macro and press <Enter> to save the changes.
+Finally, delete the files in the MAC folder, e.g. by typing
+
+    del xbtn.*
+    del sbtn.*
+
+at a prompt.
+
+
+3. Using the X-button
+---------------------
+
+XBTN adds a yellow X on a red background to the upper right corner of TSE's
+window. To close TSE click this button. If there are any modified files, a
+menu will pop up asking you what to do. Otherwise TSE will simply be closed.
+
+
+4. Using the S-button
+---------------------
+
+SBTN adds a yellow S on a red background to the lower right corner of TSE's
+window. If you click this button, hold the mouse button and drag the mouse,
+a status box indicating the current position of the mouse in terms of rows
+and columns is displayed. When the mouse button is released TSE's window
+will be resized such that the lower right corner of the window moves to the
+mouse cursor. This works exactly like resizing a GUI application by dragging
+it at the lower right corner. To cancel resizing press the escape key while
+still holding the mouse button.
+
+Right clicking the S button or pressing <Alt -> will pop up a menu which
+allows you to shrink TSE to thumb nail size or maximize the window to screen
+size. Right clicking the button or pressing <Alt -> again while TSE is
+minimized or maximized will restore the window to its previous position and
+size.
+
+Note: resizing the window with the mouse when running Win9X doesn't always
+work as expected. When the console font is set to AUTO (this is the default)
+shrinking the window not only shrinks TSE in terms of rows and columns but
+also reduces the size of the font :-(. Currently, I know only of one way to
+fix this behavior: set the console font to a fixed size. To make this a
+permanent solution either start TSE through a link and fix the font size for
+this link or edit the properties of conagent. Conagent is located in the
+system folder (usually c:\windows\system). Right click CONAGENT.EXE and
+choose properties. Click the Font tab and choose a font size, except AUTO of
+course :-). Finally click OK. This changes the startup font size of all
+console applications on your machine, however, including the DOS prompt.
+
+
+5. Customizing
+--------------
+
+If you don't like the colors of the buttons, load the macros into the editor
+and search the following constants XNormalColor, XClickedColor (XBTN) and
+ButtonColor (SBTN) and change them to your liking. If SBTN's menu key clashes
+with your key assignment, load the macro, search the MENU_KEY constant and
+change the key definition.
+
+
+6.) Disclaimer
+-------------
+
+These programs are thereby donated to the public domain. Use them or even
+alter them as you see fit, but ENTER AT YOUR OWN RISK!
+
+If you should find any bug or just wanted to say hello, feel free to contact
+me. My name e-mail address is DieterKoessl@compuserve.com.
+
