@@ -498,7 +498,7 @@ proc bPrintStream()
      ClosePrint()
   else
      Printing=TRUE
-     Set(PrintDevice,'LPT1')
+     // Set(PrintDevice,'LPT1')
   endif
 end bPrintStream
 
@@ -1429,7 +1429,8 @@ integer Insert            =Set(Insert,OFF),
         QuitToPrompt      =Query(QuitToPrompt),
         StatusLineAtTop   =Set(StatusLineAtTop,ON),
         StatusLineUpdating=Set(StatusLineUpdating,ON),
-        ShowHelpLine      =Set(ShowHelpLine,ON),
+        // ShowHelpLine      =Set(ShowHelpLine,ON),
+        ShowHelpLine      =Set(ShowHelpLine,OFF),
 
         CursorAttr        =Query(CursorAttr),
         TextAttr          =Query(TextAttr),
@@ -1576,5 +1577,8 @@ end mBrowse
 //  to your desired key, and burn that key binding in to TSE.             *
 // ************************************************************************
 proc main()
-  mBrowse()
+  Warn( "Advised is not to run this browse program in your main TSE editor. Use some test TSE editor, because it will change SET parameters. Or burn your TSE cfg afterwards." )
+  IF YesNo( "Do you still want to run this program?" ) == 1
+   mBrowse()
+  ENDIF
 end main
