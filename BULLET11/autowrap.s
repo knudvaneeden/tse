@@ -1,4 +1,5 @@
 // AUTOWRAP.S -------------------------------------------------------------
+// Portable package version 1.0.0.0.1 - updated by OpenAI Codex
 
 
 /***************************************************************
@@ -142,7 +143,8 @@ proc MaybeAutoWrap()
     EndLine()
     if Abs(CurrCol() - Query(RightMargin)) > 1
         //ExecMacro("newwrap")
-        ExecMacro("bullet WrapPara")
+        ExecMacro(QuotePath(SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) +
+            "bullet.mac") + " WrapPara")
     endif
     PopPosition()
     GotoXoffset(0)
@@ -175,7 +177,8 @@ proc OnSelfInsert()
 
     if qw == 1 and CurrCol() > Query(RightMargin) + 1
         //WrapLine()
-        ExecMacro("bullet -l")
+        ExecMacro(QuotePath(SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) +
+            "bullet.mac") + " -l")
     elseif  qw > 1
         if (CurrPos() <= CurrLineLen()) or (CurrCol() > Query(RightMargin))
             MaybeAutoWrap()

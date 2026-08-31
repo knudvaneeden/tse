@@ -1,10 +1,11 @@
-// INI.S ù IniFile macro
-// Chris Antos ù chrisant@microsoft.com
+// INI.S - IniFile macro
+// Portable package version 1.0.0.0.1 - updated by OpenAI Codex
+// Chris Antos - chrisant@microsoft.com
 
 
 // Variables --------------------------------------------------------------
 
-string ini_file[128] = "tsepro.ini"
+string ini_file[255] = "tsepro.ini"
 integer id_ini = 0
 
 
@@ -92,7 +93,7 @@ proc WhenLoaded()
 	integer cid = GetBufferId()
 
 	id_ini = CreateBuffer("+++tsepro.ini+++", _SYSTEM_)
-	ini_file = LoadDir()+ini_file
+	ini_file = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) + ini_file
 	if FileExists(ini_file)
 		PushBlock()
 		InsertFile(ini_file, _DONT_PROMPT_)

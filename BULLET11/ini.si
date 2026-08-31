@@ -1,5 +1,6 @@
-// INI.SI ù IniFile macro include file
-// Chris Antos ù chrisant@microsoft.com
+// INI.SI - IniFile macro include file
+// Portable package version 1.0.0.0.1 - updated by OpenAI Codex
+// Chris Antos - chrisant@microsoft.com
 
 // This include file contains the declarations for the functions necessary
 // to use INI.MAC with your macros. Please see INI.TXT for more information.
@@ -8,8 +9,14 @@
 // (or SetIniInt) you can #define INI_NOINT 1 to turn them off.
 
 
+string proc IniMacroFilename()
+	return(SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) + "ini.mac")
+end
+
+
 proc IniExec(string exec, string section, string keynm, string value)
-	ExecMacro("ini -"+exec+Chr(10)+section+Chr(10)+keynm+Chr(10)+value)
+	ExecMacro(QuotePath(IniMacroFilename()) + " -" + exec + Chr(10) +
+		section + Chr(10) + keynm + Chr(10) + value)
 end
 
 
@@ -35,5 +42,5 @@ end
 #endif
 
 proc SaveIniSettings()
-	ExecMacro("ini -x")
+	ExecMacro(QuotePath(IniMacroFilename()) + " -x")
 end
