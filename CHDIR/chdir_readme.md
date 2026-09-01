@@ -1,160 +1,171 @@
-# CHDIR for TSE
+# CHDIR for TSE — DLL edition
 
-**README version:** 1.0.0.0.0  
-**Created:** 2026-09-02 00:02:10 CEST (2026-09-01 22:02:10 UTC)  
-**Original program date:** 1994-07-25  
-**Original author:** Walter Metcalf
+**Version:** 1.0.0.0.1  
+**Created:** 2026-09-02 00:02:10 CEST  
+**Updated:** 2026-09-02 CEST  
+**Target:** 32-bit TSE and Borland C++ 5.5/5.5.1
 
 ## Description
 
-`chdir.txt` is a macro for The SemWare Editor (TSE) that lets you change the editor's current drive and directory interactively.
-
-When the macro is run, it displays a **New directory:** prompt. After you enter a path, the macro changes to that location and calls `EditFile()` so that TSE displays its file-selection list for the new directory.
-
-The macro accepts:
-
-- A complete path, such as `C:\WORK\SOURCE`
-- A path on the current drive, such as `WORK\SOURCE`
-- A root-relative path, such as `\WORK`
-- A drive specification, such as `D:`
-- A single backslash (`\`) for the root directory
-
-## Files in the archive
-
-| File | Purpose |
-| --- | --- |
-| `chdir.txt` | TSE macro source code |
-| `readme` | Original installation and usage notes |
-
-## Requirements
-
-- The SemWare Editor (TSE) version compatible with this historical macro
-- Access to TSE's `ui\wp.bin` binary interface file
-- TSE's SAL macro compiler
-
-> [!IMPORTANT]
-> This is a historical TSE macro from 1994. It declares an internal `_CD` procedure from `wp.bin`. Compatibility with newer TSE releases is not guaranteed.
-
-## Installation
-
-1. Extract `chdir.zip` to a working directory.
-2. Open `chdir.txt` in TSE.
-3. Find this line near the beginning of the source:
-
-   ```text
-   binary '??:\tse\ui\wp.bin'
-   ```
-
-4. Replace `??` with the drive letter containing your TSE installation. For example, if TSE is installed on drive `G:`, use:
-
-   ```text
-   binary 'G:\tse\ui\wp.bin'
-   ```
-
-5. If your TSE directory is not `\tse`, change the entire path so it points to the actual `ui\wp.bin` file.
-6. Save the edited source.
-7. Compile the macro with your TSE SAL compiler. Depending on the TSE installation, this is commonly done by loading the source in TSE and invoking the macro compiler, or by using the supplied command-line compiler.
-8. Install or load the resulting compiled macro in TSE according to your normal macro setup.
-
-## Important source-order requirement
-
-The following declarations must occur **before every other macro or procedure definition** in any combined SAL source file:
+This edition replaces the obsolete TSE UI binary dependency:
 
 ```text
 binary '??:\tse\ui\wp.bin'
-    integer proc _CD(string dir) : 0
-end
+```
 
-integer proc ChgDir(string dir)
-    return (_CD(dir))
+with a standalone 32-bit Windows DLL named `chdirdll.dll`.
+
+The SAL macro asks for a directory, calls the DLL to change TSE's process current directory, and opens TSE's file-selection dialog in that directory. If Windows rejects the path, the macro displays the numeric Windows error code.
+
+## Package files
+
+| File | Purpose |
+| --- | --- |
+| `chdir.s` | Updated TSE SAL macro |
+| `chdirdll.c` | Borland C source for the DLL |
+| `chdirdll.def` | Exports the stable entry point `CHDIR` |
+| `build.bat` | Builds the 32-bit DLL with Borland C++ 5.5 |
+| `chdir_readme.md` | This documentation |
+
+## Interface
+
+The SAL declaration is:
+
+```text
+dll "chdirdll.dll"
+    integer proc PASCAL ChDirDll(string directoryS : cstrval) : "CHDIR"
 end
 ```
 
-If you copy this code into a startup macro or another source file, place that block near the beginning of the file and before all other procedure and macro definitions.
+- `PASCAL` selects TSE's Pascal DLL calling convention.
+- `CSTRVAL` passes a temporary null-terminated string to C.
+- The DLL function uses Borland's `__pascal` convention to match TSE's declaration.
+- `chdirdll.def` exports the entry point as the undecorated name `CHDIR`, avoiding compiler-specific decorated names.
+- The function returns `0` on success or a Windows error code on failure.
+
+TSE supports only 32-bit DLLs, so do not rebuild this DLL as 64-bit.
+
+## Requirements
+
+- Borland C++ command-line compiler 5.5 or 5.5.1
+- A working `bcc32.cfg` containing the correct Borland include and library paths
+- 32-bit TSE with the SAL compiler (`sc32.exe`)
+
+Example `bcc32.cfg` for a compiler installed under `G:\language\computer\cpp\embarcadero\borland\bcc55`:
+
+```text
+-IG:\language\computer\cpp\embarcadero\borland\bcc55\include
+-LG:\language\computer\cpp\embarcadero\borland\bcc55\lib
+```
+
+Adjust these paths for your installation.
+
+## Build the DLL
+
+1. Extract the ZIP into a directory.
+2. Open a command prompt in that directory.
+3. Make sure the Borland `bin` directory is in `PATH`, or run the batch file from the Borland `bin` directory while supplying the package path as your current directory.
+4. Run:
+
+   ```bat
+   build.bat
+   ```
+
+5. A successful build ends with:
+
+   ```text
+   Build completed: chdirdll.dll
+   ```
+
+The build is deliberately split into compilation and linking steps. The C function is named `CHDIR` and uses Borland's `__pascal` keyword; the linker definition file publishes that stable uppercase entry point.
+
+## Install and compile the SAL macro
+
+1. Copy `chdirdll.dll` to the same directory as `chdir.mac`, or to a directory where TSE searches for macros.
+2. Open `chdir.s` in TSE.
+3. Compile it from TSE, or run:
+
+   ```bat
+   sc32 chdir.s
+   ```
+
+4. Confirm that `chdir.mac` was created.
+5. Load or execute `chdir.mac` using TSE's normal macro command.
+
+No hard-coded TSE installation path is required. Because the DLL name is enclosed in ordinary quotation marks, TSE searches for it using its macro search method.
 
 ## How to run
 
-1. Start TSE.
-2. Execute the compiled `mChDir` macro using TSE's normal macro execution command or your assigned key binding.
-3. At the **New directory:** prompt, enter the desired drive or directory.
-4. Press **Enter**.
-5. TSE changes to that location and opens the file-selection list.
+1. Execute `chdir.mac`; its `Main()` procedure calls the public `mChDir` procedure. You can also assign `mChDir` directly to a key.
+2. Enter a directory such as:
 
-Press **Escape** at the prompt to cancel without changing the directory.
+   ```text
+   G:\language\computer\cpp
+   ```
 
-## Examples
+3. Press **Enter**.
+4. TSE changes its current directory and opens the file-selection dialog.
 
-### Change to a directory on the current drive
+Press **Escape** to cancel the prompt.
 
-```text
-WORK\SOURCE
-```
-
-### Change drive and directory
+## Supported path examples
 
 ```text
-D:\PROJECTS
+C:\WORK\SOURCE
+..\OTHER
+\TEMP
+G:\
 ```
 
-### Change only the current drive
+The updated macro uses a 255-character SAL string instead of the original 40-character path buffer.
 
-```text
-G:
-```
+## Common Windows error codes
 
-### Change to the root directory
-
-```text
-\
-```
-
-## How it works
-
-The macro:
-
-1. Uses `Ask()` to request a destination path.
-2. Detects a drive prefix such as `D:`.
-3. Calls `LogDrive()` when a different drive was supplied.
-4. Handles a leading backslash as a root-relative path.
-5. Calls the `_CD` routine imported from `wp.bin` to change directory.
-6. Calls `EditFile()` to display the files in the new location.
-
-## Limitations
-
-- `path` and `directory` are limited to 40 characters by the original source.
-- The drive identifier is expected to be a single character followed by a colon.
-- The macro does not report an explicit error when a directory change fails.
-- It depends on the internal `wp.bin` interface and therefore may not work unchanged in every TSE release.
-- The `wp.bin` path must be configured before compilation.
+| Code | Meaning |
+| ---: | --- |
+| 2 | File not found |
+| 3 | Path not found |
+| 5 | Access denied |
+| 87 | Invalid parameter |
+| 206 | Filename or path is too long |
 
 ## Troubleshooting
 
-### The macro does not compile
+### TSE cannot load `chdirdll.dll`
 
-- Verify that the `binary` path points to an existing `wp.bin` file.
-- Confirm that the `_CD` and `ChgDir` declarations appear before every other macro or procedure.
-- Check that the source is being compiled with a compatible TSE SAL compiler.
+- Confirm that the DLL is beside `chdir.mac` or in TSE's macro search path.
+- Confirm that the DLL is the 32-bit build produced by BCC32.
+- Do not register the DLL with `regsvr32`; it is a normal native DLL, not a COM server.
 
-### The drive changes but the directory does not
+### TSE cannot find `CHDIR`
 
-- Enter an absolute path such as `D:\PROJECTS`.
-- Confirm that the directory exists.
-- Remember that the original source allows only 40 characters for the path.
+- Rebuild using the supplied `chdirdll.def` file.
+- Inspect the DLL exports with an export viewer and confirm that the name is exactly `CHDIR`.
+- Ensure the linker command completed without export warnings.
 
-### No files appear
+### The SAL compiler rejects the declaration
 
-- Verify that the selected directory exists and contains files.
-- Try changing to a known directory using a complete drive and path.
-- Confirm that `EditFile()` works normally in your TSE installation.
+The expected declaration order is:
+
+```text
+integer proc PASCAL ChDirDll(string directoryS : cstrval) : "CHDIR"
+```
+
+The `dll ... end` block must occur before the macro procedure that calls it.
+
+### Rebuilding does not appear to change behavior
+
+TSE can keep a loaded DLL in memory. Exit all running TSE instances, rebuild or replace `chdirdll.dll`, and restart TSE.
 
 ## Version history
 
-| Version | Date and time | Changes |
+| Version | Date | Changes |
 | --- | --- | --- |
-| 1.0.0.0.0 | 2026-09-02 00:02:10 CEST | Initial expanded Markdown documentation based on `chdir.txt` and the original `readme` file. |
+| 1.0.0.0.0 | 2026-09-02 | Initial Markdown documentation for the original `wp.bin`-based macro. |
+| 1.0.0.0.1 | 2026-09-02 | Replaced `wp.bin` with a standalone BCC55-compatible 32-bit DLL; added Pascal-style SAL interface, error reporting, build script, and 255-character path input. |
 
-Future documentation revisions can increment the final component: `1.0.0.0.1`, `1.0.0.0.2`, and so on.
+Future revisions increment the final component: `1.0.0.0.2`, `1.0.0.0.3`, and so on.
 
 ## Credits
 
-The original macro and accompanying notes identify **Walter Metcalf** as the author.
+The original 1994 `chdir.txt` macro identifies Walter Metcalf as its author. The DLL adaptation and expanded documentation were prepared with OpenAI Codex (GPT-5).
