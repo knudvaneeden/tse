@@ -150,6 +150,7 @@ end
 /******************************************************************************/
 proc main()
    Warn('Byte2Bit "1"='+ sOneChar +' "0"='+ sZeroChar +' ShF9=SetOne ShF10=SetZero AltF8=Char2Bits AltF9=Bits2Char')
+   Char2Bits()
 end
 
 /******************************************************************************/
