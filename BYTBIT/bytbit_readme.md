@@ -1,10 +1,10 @@
 # BYTE2BIT for TSE
 
-**README version:** 1.0.0.0.0  
-**Original program:** Todd Fiske  
-**Original release date:** September 14, 1993  
-**Language:** SemWare Application Language (SAL)  
-**Source file:** `BYTE2BIT.S`  
+**README version:** 1.0.0.0.1
+**Original program:** Todd Fiske
+**Original release date:** September 14, 1993
+**Language:** SemWare Application Language (SAL)
+**Source file:** `BYTE2BIT.S`
 **Compiled macro:** `BYTE2BIT.MAC`
 
 ## Description
@@ -191,6 +191,38 @@ becomes:
 .x.....x
 ```
 
+#### Converting a word or string
+
+The original BYTE2BIT macro converts only one character at a time. It does not
+accept a complete string in a prompt, and it does not automatically process a
+marked block or an entire word. `Char2Bits()` reads only the character under the
+cursor by calling `CurrChar()`.
+
+For example, to convert `Todd`:
+
+1. Type `Todd` in the current TSE buffer.
+2. Place the cursor on `T`.
+3. Press `Alt+F8` to convert that character.
+4. Repeat the operation for `o`, `d`, and `d`.
+
+With the default `x` and `.` notation, the individual results are:
+
+```text
+T = .x.x.x..
+o = .xx.xxxx
+d = .xx..x..
+d = .xx..x..
+```
+
+Combined without separators, `Todd` becomes:
+
+```text
+.x.x.x...xx.xxxx.xx..x...xx..x..
+```
+
+Automatic multiple-character conversion would require an additional loop or a
+new procedure; that functionality is not implemented in the original macro.
+
 ### Replace a bit string with a character
 
 1. Place the cursor at the first character of an eight-character bit string.
@@ -318,6 +350,7 @@ Do not bind `Byte2Bits()` or `Bits2Byte()` directly to keys. They require argume
 ## Notes and limitations
 
 - Every conversion uses exactly eight bits.
+- Conversion is limited to one character at a time; whole-string and marked-block conversion are not implemented.
 - BYTE2BIT operates on byte-sized character values rather than Unicode characters.
 - The original default notation is `x` for `1` and `.` for `0`.
 - The one and zero characters must be different.
@@ -375,6 +408,12 @@ This README uses the following version sequence:
 For each future update, increment the final component unless a larger structural version change is required.
 
 ## Version history
+
+### Version 1.0.0.0.1
+
+- Clarified that BYTE2BIT converts only the character under the cursor.
+- Added step-by-step instructions and expected bitstrings for converting `Todd` one character at a time.
+- Documented that automatic whole-string and marked-block conversion are not implemented.
 
 ### Version 1.0.0.0.0
 
