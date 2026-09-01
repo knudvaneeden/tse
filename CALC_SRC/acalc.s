@@ -11,7 +11,7 @@
 
   String
 	 Input[MaxField]  = '',		// keyboard input accumulator
-	 GetStr[MaxField]  = '',	// Word under cursor
+	 cursorNumberS[MaxField]  = '',	// Word under cursor
 	 BaseLtr[1] = 'd'					// number base indicator
 
 
@@ -388,7 +388,7 @@ End CalcHelp
 Proc ShowInput(String tmp) // ShowInput only used by GetInput()
 
 	String	InputTest[MaxField]  = '', // copy of input string
-					s[1] = UpCase(tmp)	  // force a..f upper case for overflow compare
+					s[1] = Upper(tmp)	  // force a..f upper case for overflow compare
 
 	If New
 		ClrField()		  // if NEW entry clear field
@@ -532,20 +532,20 @@ Loop			 // you're in the loop now, only one way out...
 		When 048h, 068h	  // 'H' or 'h' calls help
 			CalcHelp()
 		When 047h, 067h	  // 'G' or 'g' get number
-			If GetStr == ''
+			If cursorNumberS == ''
 		 		// do nothing
 			Else
-				X = Val(GetStr,base)
+				X = Val(cursorNumberS,base)
 				UpDateField()
 			EndIf
 		When 050h, 070h	  // 'P' or 'p' Paste X into buffer
 			i = 1
-			GetStr = Format(x:MaxField-1:' ':Base)
-			While GetStr[i] == chr(32) and i < MaxField
+			cursorNumberS = Format(x:MaxField-1:' ':Base)
+			While cursorNumberS[i] == chr(32) and i < MaxField
 				i = i + 1
 			EndWhile
-			GetStr = SubStr(GetStr,i,Length(GetStr)) // trim leading spaces
-			InsertText(' '+GetStr+' ') // paste into text bracketed with spaces
+			cursorNumberS = SubStr(cursorNumberS,i,Length(cursorNumberS)) // trim leading spaces
+			InsertText(' '+cursorNumberS+' ') // paste into text bracketed with spaces
 			New = True		// assure that next entry is NEW
 			break
 		When 72h,52h		// set wordsize
@@ -567,12 +567,12 @@ Proc Main()						// Startup code ACalc.s
 	// Mark current word for import
 	If IsBlockMarked() PushBlock() EndIf		// save existing block marks
 	If MarkWord()														// a word was markable
-		GetStr = GetMarkedText()							// grab it
+		cursorNumberS = GetMarkedText()							// grab it
 		UnMarkBlock()													// unmark word
 	Else
-		GetStr = ''                         	// set string to nil on failure
+		cursorNumberS = ''                         	// set string to nil on failure
 	EndIf
-	If GetStr <> '' PopBlock() EndIf       	// restore previous marking
+	If cursorNumberS <> '' PopBlock() EndIf       	// restore previous marking
   // end get import string
 	UpDateDisplay()			// clean up any editor messages left onscreen
 	Set(Cursor,Off)			// turn off cursor since it intrudes if under box

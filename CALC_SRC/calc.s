@@ -43,7 +43,7 @@ Functions to Implement:
       Temp[IEEE],             // temp storage used for reg manipulation
       Xa[IEEE],               // X Real input accumulator
       Input[MaxField+3]  = '',// keyboard input accumulator
-      GetStr[MaxField+3] = '' // Word under cursor
+      cursorNumberS[MaxField+3] = '' // Word under cursor
 
    Integer
       UpLtCol   = 10,     // location for calc window
@@ -236,18 +236,18 @@ Loop                          // you're in the loop now, only one way out...
          If Not EnterFlag X = Xa EndIf // update x with accumulator
          CalcHelp()
       When 047h, 067h         // 'G' or 'g' get number
-         If GetStr == ''
+         If cursorNumberS == ''
             // do nothing
          Else
             // First work around 'fp' bug...
-            If GetStr == '0.25' or GetStr == '0.250' GetStr = '0.2500' EndIf
-            FVal(GetStr)      // see if it's a number
+            If cursorNumberS == '0.25' or cursorNumberS == '0.250' cursorNumberS = '0.2500' EndIf
+            FVal(cursorNumberS)      // see if it's a number
             If FMathError     //  it's not
                FMathError = False   // clear the error
                // do nothing
             Else
                ShiftUp()            // adjust stack
-               X = FVal(GetStr)     // save the value
+               X = FVal(cursorNumberS)     // save the value
                Xa = X               // update the accumulator
                UpDateRegs()         // update the display
                OpFlag = True        // flag a successful operation
@@ -290,10 +290,10 @@ String OldWordSet[32]
    If IsBlockMarked() PushBlock() EndIf
    OldWordSet = Set(Wordset,ChrSet("0-9"+Chr(046)))
    If MarkWord()
-      GetStr = GetMarkedText()
+      cursorNumberS = GetMarkedText()
       UnMarkBlock()
    Else
-      GetStr = ''          // if no 'word' marked make string a nul
+      cursorNumberS = ''          // if no 'word' marked make string a nul
    EndIf
    PopBlock()              // restore prev marked block
    Set(Wordset,OldWordSet)

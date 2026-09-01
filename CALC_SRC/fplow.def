@@ -1,0 +1,25 @@
+LIBRARY FPLOW
+DESCRIPTION 'TSE floating-point support DLL 1.0.0.0.7'
+EXPORTS
+    LSFPA
+    SSFPA
+    LDFPA
+    SDFPA
+    LEFPA
+    SEFPA
+    LSFPO
+    LDFPO
+    LEFPO
+    LTOF
+    FTOL
+    FPADD
+    FPSUB
+    FPCMP
+    FPMUL
+    FPDIV
+    FTOA
+    ETOA
+    SAL_ATOF
+    FPTEXTPARSE
+    FPTEXTOPERATION
+    FPTEXTFORMAT

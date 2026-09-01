@@ -39,7 +39,7 @@ Functions to Implement:
 
    String
       Input[MaxField] = '', // keyboard input accumulator
-      GetStr[MaxField] = '',// Word under cursor
+      cursorNumberS[MaxField] = '',// Word under cursor
       BaseLtr[1] = 'd'
 
    Integer
@@ -390,7 +390,7 @@ End MoveBox
 Proc ShowInput(String tmp) // ShowInput only used by GetInput()
 
    String   InputTest[MaxField]  = '', // copy of input string
-            s[1] = UpCase(tmp)   // force a..f upper case for overflow compare
+            s[1] = Upper(tmp)   // force a..f upper case for overflow compare
 
    If New
       ClrXYZT(Xy)          // if NEW entry clear field
@@ -579,23 +579,23 @@ Loop              // you're in the loop now, only one way out...
       When 048h, 068h         // 'H' or 'h' calls help
          CalcHelp()
       When 047h, 067h         // 'G' or 'g' get number
-         If GetStr == ''
+         If cursorNumberS == ''
             // do nothing
          Else
                ShiftUp()            // adjust the stack
-               X = Val(GetStr,base) // save the value
+               X = Val(cursorNumberS,base) // save the value
                Xa = X               // update the accumulator
                UpDateRegs()         // update the display
                EnterFlag = False    // reset the flag
          EndIf
       When 050h, 070h         // 'P' or 'p' Paste X into buffer
          i = 1
-         GetStr = Format(x:MaxField-1:' ':Base)
-         While GetStr[i] == chr(32) and i < MaxField
+         cursorNumberS = Format(x:MaxField-1:' ':Base)
+         While cursorNumberS[i] == chr(32) and i < MaxField
             i = i + 1
          EndWhile
-         GetStr = SubStr(GetStr,i,Length(GetStr)) // trim leading spaces
-         InsertText(GetStr)   // paste into text
+         cursorNumberS = SubStr(cursorNumberS,i,Length(cursorNumberS)) // trim leading spaces
+         InsertText(cursorNumberS)   // paste into text
          New = True           // assure that next entry is NEW
          EnterFlag = True     // forced entry
          Break                // exit loop and drop back to edit session
@@ -627,10 +627,10 @@ Proc Main()       // Setup
    // Mark current word for import
    If IsBlockMarked() PushBlock() EndIf   // save existing block marks
    If MarkWord()                          // a word was markable
-      GetStr = GetMarkedText()            // grab it
+      cursorNumberS = GetMarkedText()            // grab it
       UnMarkBlock()                       // unmark word
    Else
-      GetStr = ''                         // set string to nil on failure
+      cursorNumberS = ''                         // set string to nil on failure
    EndIf
    PopBlock()                             // restore previous marking
    // end get import string

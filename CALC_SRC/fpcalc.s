@@ -13,7 +13,7 @@
       x[IEEE],                // entry = accumulator
       y[IEEE],                // prev entry
       Input[MaxField+3] = '', // keyboard input accumulator
-      GetStr[MaxField+3] = '' // Word under cursor
+      cursorNumberS[MaxField+3] = '' // Word under cursor
 
    Integer
       UpLtCol  = 10,    // initial location for calc window
@@ -377,28 +377,28 @@ Loop                 // you're in the loop now, only one way out...
       When 048h, 068h         // 'H' or 'h' calls help
          CalcHelp()
       When 047h, 067h         // 'G' or 'g' get number
-         If GetStr == ''
+         If cursorNumberS == ''
             // do nothing
          Else
          // First work around 'fp' bug...
-         If GetStr == '0.25' or GetStr == '0.250' GetStr = '0.2500' EndIf
-         FVal(GetStr)
+         If cursorNumberS == '0.25' or cursorNumberS == '0.250' cursorNumberS = '0.2500' EndIf
+         FVal(cursorNumberS)
             If FMathError           // string is not a number
                FMathError = False   // reset flag
                // do nothing
             Else
-               X = FVal(GetStr)     // it's a number, save it
+               X = FVal(cursorNumberS)     // it's a number, save it
                UpDateField()        // and display it
             EndIf
          EndIf
       When 050h, 070h         // 'P' or 'p' Paste X into buffer
          i = 1
-         GetStr = FStr(X,MaxField,Fixed)
-         While GetStr[i] == chr(32) and i < MaxField // find first nonblank pos
+         cursorNumberS = FStr(X,MaxField,Fixed)
+         While cursorNumberS[i] == chr(32) and i < MaxField // find first nonblank pos
             i = i + 1
          EndWhile
-         GetStr = SubStr(GetStr,i,Length(GetStr)) // trim leading spaces
-         InsertText(' '+GetStr+' ') // paste into text bracketed with spaces
+         cursorNumberS = SubStr(cursorNumberS,i,Length(cursorNumberS)) // trim leading spaces
+         InsertText(' '+cursorNumberS+' ') // paste into text bracketed with spaces
          New = True           // assure that next entry is NEW
          Break
                        /****** ESCAPE KEY *****/
@@ -422,12 +422,12 @@ Proc Main()          // Startup code FPCalc.s
    If IsBlockMarked() PushBlock() EndIf   // save existing block marks
    OldWordSet = Set(Wordset,ChrSet("0-9"+Chr(046))) // just '0..9' and '.'
    If MarkWord()                          // a fp number was markable
-      GetStr = GetMarkedText()            // grab it
+      cursorNumberS = GetMarkedText()            // grab it
       UnMarkBlock()                       // unmark word
    Else
-      GetStr = ''                         // set string to nil on failure
+      cursorNumberS = ''                         // set string to nil on failure
    EndIf
-   If GetStr <> '' PopBlock() EndIf       // restore previous marking
+   If cursorNumberS <> '' PopBlock() EndIf       // restore previous marking
    Set(Wordset,OldWordSet)                // restore wordset
    // end get import string
    UpDateDisplay()         // clean up any editor messages left onscreen

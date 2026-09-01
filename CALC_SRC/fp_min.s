@@ -25,46 +25,40 @@
 */
 
 /*
-    LOW LEVEL INTERFACE is defined here.
+    LOW LEVEL INTERFACE is defined in FPLOW.DLL.
+    FPLOW.DLL replacement version: 1.0.0.0.7
+    TSE SAL uses the Pascal calling convention.
 */
-binary "FPLOW.BIN"
-    /*
-       Floating Point Accumulator (fpa) operations.
-    */
-            proc lsfpa( string Single )                                 : 0
-    integer proc ssfpa( var string Single )                             : 3
-            proc ldfpa( string Double )                                 : 6
-    integer proc sdfpa( var string Double )                             : 9
-            proc lefpa( string Extended )                               : 12
-    integer proc sefpa( var string Extended )                           : 15
-    /*
-       Floating Point Operand (fpo) operations
-    */
-            proc lsfpo( string Single )                                 : 18
-            proc ldfpo( string Double )                                 : 21
-            proc lefpo( string Extended )                               : 24
-    /*
-       Integer operations
+dll "fplow.dll"
+            proc PASCAL lsfpa(string Single) : "LSFPA"
+    integer proc PASCAL ssfpa(var string Single) : "SSFPA"
+            proc PASCAL ldfpa(string Double) : "LDFPA"
+    integer proc PASCAL sdfpa(var string Double) : "SDFPA"
+            proc PASCAL lefpa(string Extended) : "LEFPA"
+    integer proc PASCAL sefpa(var string Extended) : "SEFPA"
 
-       Since SAL's integers are signed longints (32 bits), most of the other
-       operations are not truly useful from SAL, hence not defined.
-    */
-            proc ltof( integer SignedLong )                             : 27
-    integer proc ftol( var integer SignedLong )                         : 30
-    /*
-       Mathematical operations
-    */
-            proc fpadd()                                                : 33
-            proc fpsub()                                                : 36
-    integer proc fpcmp()                                                : 39
-            proc fpmul()                                                : 42
-            proc fpdiv()                                                : 45
-    /*
-       String conversions
-    */
-    integer proc ftoa( var string Target, integer Wide, integer DecP )  : 48
-    integer proc etoa( var string Target, integer Wide )                : 51
-            proc atof( string Source )                                  : 54
+            proc PASCAL lsfpo(string Single) : "LSFPO"
+            proc PASCAL ldfpo(string Double) : "LDFPO"
+            proc PASCAL lefpo(string Extended) : "LEFPO"
+
+            proc PASCAL ltof(integer SignedLong) : "LTOF"
+    integer proc PASCAL ftol(var integer SignedLong) : "FTOL"
+
+            proc PASCAL fpadd() : "FPADD"
+            proc PASCAL fpsub() : "FPSUB"
+    integer proc PASCAL fpcmp() : "FPCMP"
+            proc PASCAL fpmul() : "FPMUL"
+            proc PASCAL fpdiv() : "FPDIV"
+
+    integer proc PASCAL ftoa(var string Target, integer Wide, integer DecP) : "FTOA"
+    integer proc PASCAL etoa(var string Target, integer Wide) : "ETOA"
+            proc PASCAL atof(string Source) : "SAL_ATOF"
+
+    integer proc PASCAL fpTextParse(var string Target, string Source) : "FPTEXTPARSE"
+    integer proc PASCAL fpTextOperation(var string Target, string LeftText,
+                                        string RightText, integer Operation) : "FPTEXTOPERATION"
+    integer proc PASCAL fpTextFormat(var string Target, string ValueText,
+                                     integer Wide, integer Decimals) : "FPTEXTFORMAT"
 end
 
 
@@ -75,7 +69,7 @@ constant
     IEEE_SINGLE   = 4,
     IEEE_DOUBLE   = 8,
     IEEE_EXTENDED = 10,
-    IEEE          = 10      // Convenient for declaring max-length strings
+    IEEE          = 64      // Text representation used by the modern DLL
 
 /*
     COMMONLY USED CONSTANTS
@@ -85,8 +79,8 @@ string
     ZeroSingle[ IEEE_SINGLE ] = CHR(0)+CHR(0)+CHR(0)+CHR(0),
     ZeroDouble[ IEEE_DOUBLE ] = CHR(0)+CHR(0)+CHR(0)+CHR(0)
                                +CHR(0)+CHR(0)+CHR(0)+CHR(0),
-    ZeroExtended[ IEEE_EXTENDED ] = CHR(0)+CHR(0)+CHR(0)+CHR(0)+CHR(0)
-                                   +CHR(0)+CHR(0)+CHR(0)+CHR(0)+CHR(0)
+    // Keep the historical name; the modern DLL uses decimal text internally.
+    ZeroExtended[ IEEE ] = '0'
 
 integer
     FMathError = FALSE      // Set to TRUE if overflow or error occurs
@@ -172,33 +166,12 @@ constant
     OP_DIV = 4
 
 string proc FOperation( integer Operator, string LeftOp, string RightOp )
-    integer AnswerSize = 0
-    integer OperandSize
-
-    // Left operand into the Floating Point Accumulator (FPA)
-    // Default answer to same size
-    AnswerSize = FAccumulator( LeftOp )
-    if  FMathError  return ( ZeroSingle ) endif
-
-    // Right operand into the Floating Point Operand (FPO)
-    OperandSize = FOperand( RightOp )
-    if  FMathError  return ( ZeroSingle ) endif
-
-    // Promote answer to largest size passed
-    if  OperandSize > AnswerSize
-        AnswerSize = OperandSize
+    string Answer[ IEEE ] = ""
+    FMathError = NOT fpTextOperation(Answer, LeftOp, RightOp, Operator)
+    if FMathError
+        return(ZeroExtended)
     endif
-
-    // Perform the appropriate math operation
-    case ( Operator )
-        when OP_ADD  fpadd()
-        when OP_SUB  fpsub()
-        when OP_MUL  fpmul()
-        when OP_DIV  fpdiv()
-        otherwise    FMathError = TRUE  return( ZeroSingle )
-    endcase
-
-    return ( FResult( AnswerSize ) )   // Return answer to the caller
+    return(Answer)
 end FOperation
 
 
@@ -240,12 +213,12 @@ end FDiv
     NOTE:  Does not support bases other than 10.
 */
 string proc FVal( string Ascii )
-    // Convert the string to a number in the FPA
-    atof( Ascii )
-
-    // Retrieve answer from FPA in full precision.
-    // If overflow, return zero.  Else return actual answer.
-    return ( FResult( IEEE_EXTENDED ) )
+    string Answer[IEEE] = ""
+    FMathError = NOT fpTextParse(Answer, Ascii)
+    if FMathError
+        return(ZeroExtended)
+    endif
+    return(Answer)
 end FVal
 
 
@@ -262,33 +235,12 @@ string proc FStr( string RealNumber, integer Width, integer Decimals )
     // NOTE: this string must have room for a NUL terminator at end of string
     string Answer[ MAX_WIDTH + 1 ] = ""
 
-    // Operand into the Floating Point Accumulator (FPA)
-    FAccumulator( RealNumber )
-
-    // Make sure we're not trying to do something stupid
-    if  Width > MAX_WIDTH
-        FMathError = TRUE
+    FMathError = (Width > MAX_WIDTH) OR
+                 (NOT fpTextFormat(Answer, RealNumber, Width, Decimals))
+    if FMathError
+        return("Error!")
     endif
-
-    // Get out of dodge if something is wrong.  Note that FMathError could
-    // have been set by either or both of the operations above.
-    if  FMathError
-        return ( "Error!" )
-    endif
-
-    // Convert accumulator to a string with specified width & decimal places
-    // Use floating point form only if Decimals is positive
-    if  Decimals >= 0
-        ftoa( Answer, Width, Decimals )
-    endif
-
-    // If Decimals is negative, or ftoa() could not fit it in field,
-    // convert it in "exponential" form
-    if  ( Decimals < 0 ) OR ( Answer[ 1 ] == "#" )
-        etoa( Answer, Width )
-    endif
-
-    return ( Answer )
+    return(Answer)
 end FStr
 
 /* eof: fp.s */
