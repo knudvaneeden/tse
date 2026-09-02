@@ -1,0 +1,33 @@
+
+string proc procpar(string pars)
+   // See par.doc.
+   string  delimiter [1] = ""
+   integer char          = 1
+   integer par_begin     = 0
+   while pars[char] == ":"
+      if pars[char + 1] == ":"
+         char = char + 2
+         delimiter = pars[char]
+      else
+         if pars[char + 1] in "'", '"'
+            char = char + 1
+            delimiter = pars[char]
+         else
+            delimiter = ""
+         endif
+      endif
+      par_begin = char + 1
+      repeat
+         char = char + 1
+      until pars[char] == delimiter
+         or pars[char] == ""
+         or (   delimiter  == ""
+            and (pars[char] in " ", ":"))
+      pushpar(SubStr(pars, par_begin, char - par_begin))
+      if pars[char] == delimiter
+         char = char + 1
+      endif
+   endwhile
+   return(SubStr(pars, char, Length(pars) - char + 1))
+end
+

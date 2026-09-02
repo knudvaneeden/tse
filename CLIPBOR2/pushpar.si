@@ -1,0 +1,10 @@
+
+#include ["global.si"]
+
+integer proc pushpar(string par)
+   // See par.doc.
+   integer par_queue_tail = get_global_int("par_queue_tail") + 1
+   return(   set_global_str("par_queue_" + Str(par_queue_tail), par)
+         and set_global_int("par_queue_tail", par_queue_tail))
+end
+

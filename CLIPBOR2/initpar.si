@@ -1,0 +1,14 @@
+
+#include ["poppar.si"]
+
+proc initpar()
+   // See par.doc.
+   if get_global_int("par_queue_tail") <> 0
+      while get_global_int("par_queue_head") <= get_global_int("par_queue_tail")
+         poppar()
+      endwhile
+      del_global_var("par_queue_head")
+      del_global_var("par_queue_tail")
+   endif
+end
+

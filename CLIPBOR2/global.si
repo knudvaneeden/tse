@@ -1,0 +1,188 @@
+/*
+   Macro.   Global.
+   Author.  Carlo Hogeveen (hyphen@xs4all.nl).
+   Date.    27 June 1999.
+   Purpose. Avoids a bug in TSE 2.5 and 2.8,
+            which might only be encountered by advanced macro programmers.
+   Install. Copy it to TSE's "mac" directory, and #include["global.si"]
+            in macroes that need it's procedures.
+
+   Bug.     Here is Sammy Mitchel's description of the bug:
+
+            In List and Ask, in order to be reentrant, several items need to
+            be saved. An internal command, PushString, that uses the session
+            global variables buffer is used.  Things like the speed-search
+            string, listheader/footer strings, the previous reply, and the
+            current prompt are all saved via this mechanism.
+
+            >Could it possibly overwrite other session global variables,
+            >or could other session global variables be erased instead
+            >of the <<<PushString>>> line?
+
+            Yes, that could certainly happen.
+
+            One way it might happen is if you are getting/setting Session
+            Global Variables when a List/lList, or Read/Ask is active.
+            One of these might be active during the processing of the
+            following hookable events:
+
+            _NONEDIT_IDLE_
+            _BEFORE_NONEDIT_COMMAND_
+            _AFTER_NONEDIT_COMMAND_
+            _LIST_STARTUP_
+            _LIST_CLEANUP_
+            _PICKFILE_STARTUP_
+            _PICKFILE_CLEANUP_
+            _PROMPT_STARTUP_
+            _PROMPT_CLEANUP_
+            _ON_NONEDIT_UNASSIGNED_KEY_
+            _AFTER_GETKEY_
+            _BEFORE_GETKEY_
+
+   Cure.    The bug can be avoided by not using TSE's supplied session
+            global variable functions, but by using the procedures in this
+            file instead. The procedures in this file use their own session
+            global variable buffer, and are therefore not hindered by List,
+            Read and Ask commands.
+
+   Use.     This includable file supplies the following procedures,
+            which work exactly like their TSE counterparts should:
+
+               integer proc get_global_int(string name)
+               integer proc set_global_int(string name, integer value)
+               string  proc get_global_str(string name)
+               integer proc set_global_str(string name, string value)
+               integer proc exist_global_var(string name)
+               integer proc del_global_var(string name)
+
+            Adapting your macro should be as simple as doing an
+            #include ["global.si"] at the start of your macro,
+            and globally replacing the TSE functions with their
+            procedure counterparts.
+
+   Note.    Please ignore the procedures and variables starting with "cho_",
+            they are for internal use only.
+            Because this is an includable file, they need to be as unique
+            as possible and are therefore preceeded with my initials.
+*/
+
+#ifdef cho_global_procs_defined
+#else
+   #define cho_global_procs_defined TRUE
+
+   integer cho_global_vars_bufferid = 0
+   integer cho_global_vars_org_id   = 0
+   string  cho_global_vars_old_wordset [32] = ""
+
+   integer proc cho_initialize_global_var_proc()
+      integer result = FALSE
+      cho_global_vars_org_id = GetBufferId()
+      cho_global_vars_old_wordset =
+         Set(WordSet, ChrSet("\d000-\d031\d033-\d255"))
+      if cho_global_vars_bufferid == 0
+         cho_global_vars_bufferid = GetBufferId("cho_global_variables_buffer")
+         if cho_global_vars_bufferid == 0
+            cho_global_vars_bufferid =
+               CreateBuffer("cho_global_variables_buffer", _SYSTEM_)
+         endif
+      endif
+      if GotoBufferId(cho_global_vars_bufferid)
+      or GetBufferId() == cho_global_vars_bufferid
+         result = TRUE
+      endif
+      return(result)
+   end
+
+   proc cho_finalize_global_var_proc()
+      Set(WordSet, cho_global_vars_old_wordset)
+      GotoBufferId(cho_global_vars_org_id)
+   end
+
+   integer proc get_global_int(string name)
+      integer result = 0
+      if cho_initialize_global_var_proc()
+         if lFind(name, "^gi")
+            WordRight()
+            result = Val(GetWord(FALSE))
+         endif
+      endif
+      cho_finalize_global_var_proc()
+      return(result)
+   end
+
+   integer proc set_global_int(string name, integer value)
+      integer result = FALSE
+      if cho_initialize_global_var_proc()
+         if lFind(name, "^gi")
+            KillLine()
+         endif
+         result = AddLine(name + " " + Str(value))
+      endif
+      cho_finalize_global_var_proc()
+      return(result)
+   end
+
+   string proc get_global_str(string name)
+      string result [255] = ""
+      if cho_initialize_global_var_proc()
+         if lFind(name, "^gi")
+            WordRight()
+            result = GetText(CurrPos(), CurrLineLen() - CurrPos() + 1)
+         endif
+      endif
+      cho_finalize_global_var_proc()
+      return(result)
+   end
+
+   integer proc set_global_str(string name, string value)
+      integer result = FALSE
+      if cho_initialize_global_var_proc()
+         if lFind(name, "^gi")
+            KillLine()
+         endif
+         result = AddLine(name + " " + value)
+      endif
+      cho_finalize_global_var_proc()
+      return(result)
+   end
+
+   integer proc exist_global_var(string name)
+      integer result = FALSE
+      if cho_initialize_global_var_proc()
+         if lFind(name, "^gi")
+            result = TRUE
+         endif
+      endif
+      cho_finalize_global_var_proc()
+      return(result)
+   end
+
+   integer proc del_global_var(string name)
+      integer result = FALSE
+      if cho_initialize_global_var_proc()
+         if lFind(name, "^gi")
+            KillLine()
+            result = TRUE
+         endif
+      endif
+      cho_finalize_global_var_proc()
+      return(result)
+   end
+
+   // This proc is never called.
+   // It solely exists to suppress annoying compiler warnings.
+   proc cho_global_vars_dummy_procedure()
+      integer dummy_int
+      string dummy_str[1]
+      dummy_int = get_global_int("")
+      dummy_int = set_global_int("", 0)
+      dummy_str = get_global_str("")
+      dummy_int = set_global_str("", "")
+      dummy_int = exist_global_var("")
+      dummy_int = del_global_var("")
+      dummy_int = dummy_int
+      dummy_str = dummy_str
+      cho_global_vars_dummy_procedure()
+   end
+
+#endif
