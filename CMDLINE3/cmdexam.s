@@ -21,7 +21,7 @@ This a portion of my current setup. It includes
 
 NOTE: This file compiles with the following grumbles; they are not a problem.
 
-Compilingùùùùùùù
+Compiling???????
 Note    003  (40,18)    Possibly infinite loop
 Warning 051  (77,34)    Variable 'linecol_hist' possibly used before initialization
 Warning 051  (77,48)    Variable 'linecol_hist' possibly used before initialization
@@ -29,7 +29,8 @@ Writing output to file 'q:\cmdexam.mac'
 
 *****************************************************************************/
 
-#INCLUDE 'q:\cmdline.s'
+// #INCLUDE 'q:\cmdline.s'
+#INCLUDE [ "cmdline.s" ]
 
 forward proc linecolumn(string arg)
 forward proc PrintFiles()
@@ -123,7 +124,9 @@ end
 proc linecolumn(string arg)
      STRING s[12]='',
             l[5]='', c[10]='', plus_l[1] = '', plus_c[1] = ''
-     INTEGER linecol_hist = iif (linecol_hist, linecol_hist, GetFreeHistory())
+     INTEGER linecol_hist = 0
+
+     linecol_hist = GetFreeHistory( "ddd" )
 
      if NOT Length(arg)
           if NOT Ask('Goto line[,column] :', s, linecol_hist)
