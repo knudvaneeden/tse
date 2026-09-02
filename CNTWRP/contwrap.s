@@ -125,7 +125,7 @@ proc mWordRight()
     integer colcurr = CurrCol()
     if (colcurr <> 1)
         PushPosition()  // Save word-relative position
-    endif 
+    endif
     mWrapCont()         // Invoke "Continuous" WrapPara
     if (colcurr <> 1)
         PopPosition()   // Restore word-relative position
@@ -198,7 +198,8 @@ proc MultiWrap(integer movement)        // Multi-line Wrap Function
             when zBegFile   MarkWrapUp(zBegFile  )
             when zEndFile   MarkWrapDn(zEndFile  )
         endcase
-        mWrapPara()                     //     wrap the paragraphs marked
+        // mWrapPara()                     //     wrap the paragraphs marked
+        WrapPara()                     //     wrap the paragraphs marked // now native TSE command [kn, ri, th, 03-09-2026 00:18:27]
         UnMarkBlock()                   //     remove the mark on the block
         PopBlock()                      //     restore prior block status
         PopAbsPos()                     //     restore our absolute position
