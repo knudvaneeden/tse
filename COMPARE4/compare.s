@@ -98,7 +98,7 @@ INTEGER l = FindDiff()
         Msg()                                   // reminds user
 END
 
-PROC CompareLines(INTEGER Direction)            // Compares lines in files and
+PROC _CompareLines(INTEGER Direction)            // Compares lines in files and
     INTEGER i,
     Done = FALSE                                // paints those that are different
 
@@ -148,8 +148,8 @@ PROC CompareLines(INTEGER Direction)            // Compares lines in files and
 END
 
 KEYDEF CKeys                                // special keys for this app
-    <Ctrl CursorUp>         CompareLines(0) // call PROC. 0 = UP
-    <Ctrl CursorDown>       CompareLines(1) //     "      1 = Down
+    <Ctrl CursorUp>         _CompareLines(0) // call PROC. 0 = UP
+    <Ctrl CursorDown>       _CompareLines(1) //     "      1 = Down
 
     <Alt GreyCursorRight>   RollRight(4) GotoWindow(MWindow) RollRight(4) GotoWindow(SWindow)
     <Alt GreyCursorLeft>    RollLeft(4)  GotoWindow(MWindow) RollLeft(4)  GotoWindow(SWindow)
