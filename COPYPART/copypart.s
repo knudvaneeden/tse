@@ -1,5 +1,9 @@
    /*********************** Start Comment Area *******************************
  TSE Macro                                                        TSE Macro
+ Updated Version: 1.0.0.0.1
+ Updated Date   : 2026-09-03 23:13 (UTC+02:00)
+ Updated By     : OpenAI Codex (GPT-5)
+ Changes        : TSE 4.50 compatibility: BufferType() and FileChanged().
  File: copypart.s                 Saturday -  June 12, 1993
 
                     Copies Block to second Window
@@ -89,7 +93,7 @@ proc ListTargetFiles()
     integer start_file, filelist, id, rc, maxl, total, n
     string fn[65]
 
-    n = NumFiles() + (Query(BufferType) <> _NORMAL_)
+    n = NumFiles() + (BufferType() <> _NORMAL_)
     if n == 0
         return ()
     endif
@@ -109,7 +113,7 @@ proc ListTargetFiles()
             if length(fn) > maxl
                 maxl = length(fn)
             endif
-            rc = isChanged()
+            rc = FileChanged()
             GotoBufferId(filelist)
             AddLine(iif(rc, '*', ' ') + fn)
             GotoBufferId(id)
