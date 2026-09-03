@@ -1,3 +1,4 @@
+FORWARD INTEGER PROC FNStringGetTimeDifferenceGettimestrI( STRING s1, STRING s2 )
 FORWARD PROC Main()
 FORWARD STRING PROC FNStringGetTimeDifferenceGettimestrS( STRING s1, STRING s2 )
 
@@ -15,7 +16,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: string: get: time: difference: gettimestr <description>LLM=OpenAI Codex</description> <version control></version control> <version>1.0.0.0.3</version> <version control></version control> (filenamemacro=getstdgf.s) [<Program>] [<Research>] [kn, ri, we, 02-09-2026 23:11:14]
+// library: string: get: time: difference: gettimestr <description>LLM=OpenAI Codex</description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=getstdgf\getstdgf.s) [<Program>] [<Research>] [kn, ri, we, 02-09-2026 23:11:14]
 STRING PROC FNStringGetTimeDifferenceGettimestrS( STRING getTimeStr1, STRING getTimeStr2 )
  // e.g. PROC Main()
  // e.g.  STRING s1[255] = GetTimeStr()
@@ -23,6 +24,25 @@ STRING PROC FNStringGetTimeDifferenceGettimestrS( STRING getTimeStr1, STRING get
  // e.g.  IF ( NOT ( Ask( "Old GetTimeStr() value = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
  // e.g.  IF ( NOT ( Ask( "New GetTimeStr() value = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
  // e.g.  Warn( FNStringGetTimeDifferenceGettimestrS( s1, s2 ), " ", "seconds difference" ) // gives e.g. "315 seconds difference"
+ // e.g. END
+ // e.g.
+ //
+ INTEGER I = 0
+ //
+ I = FNStringGetTimeDifferenceGettimestrI( getTimeStr1, getTimeStr2 )
+ //
+ RETURN( Str( I ) )
+ //
+END
+
+// library: string: get: time: difference: gettimestr <description>LLM=OpenAI Codex</description> <version control></version control> <version>1.0.0.0.4</version> <version control></version control> (filenamemacro=getstdgf\getstdgg.s) [<Program>] [<Research>] [kn, ri, th, 03-09-2026 15:31:27]
+INTEGER PROC FNStringGetTimeDifferenceGettimestrI( STRING getTimeStr1, STRING getTimeStr2 )
+ // e.g. PROC Main()
+ // e.g.  STRING s1[255] = GetTimeStr()
+ // e.g.  STRING s2[255] = GetTimeStr()
+ // e.g.  IF ( NOT ( Ask( "Old GetTimeStr() value = ", s1, _EDIT_HISTORY_ ) ) AND ( Length( s1 ) > 0 ) ) RETURN() ENDIF
+ // e.g.  IF ( NOT ( Ask( "New GetTimeStr() value = ", s2, _EDIT_HISTORY_ ) ) AND ( Length( s2 ) > 0 ) ) RETURN() ENDIF
+ // e.g.  Warn( FNStringGetTimeDifferenceGettimestrI( s1, s2 ), " ", "seconds difference" ) // gives e.g. "315 seconds difference"
  // e.g. END
  // e.g.
  //
@@ -47,6 +67,6 @@ STRING PROC FNStringGetTimeDifferenceGettimestrS( STRING getTimeStr1, STRING get
   //
  ENDIF
  //
- RETURN( Str( I2 - I1 ) )
+ RETURN( I2 - I1 )
  //
 END
