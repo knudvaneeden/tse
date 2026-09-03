@@ -497,8 +497,8 @@ menu CommenterMenu()
     "",,divide
     "        SET Options",,Skip
     "",,divide
-    "&WordWrap"   [OnOffStr(Query(WordWrap)):3], Toggle(WordWrap),
-           DontClose
+    // "&WordWrap"   [OnOffStr(Query(WordWrap)):3], Toggle(WordWrap),
+           // DontClose
     "&RIGHT Margin"  [Query(RightMargin):3], mRightMargin(), DontClose
     "&Left Margin"   [Query(LeftMargin):3],  mLeftMargin() , DontClose
 
