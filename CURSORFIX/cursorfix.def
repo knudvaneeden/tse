@@ -1,0 +1,4 @@
+LIBRARY CURSORFIX
+
+EXPORTS
+    ForceCursorFix
