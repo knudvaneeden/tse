@@ -1,7 +1,7 @@
 /*
    File       : cursorfix.s
    Purpose    : Restore TSE's blinking text cursor, with a DLL fallback.
-   Version    : 1.0.0.0.4
+   Version    : 1.0.0.0.5
    Date       : 2026-09-03
    LLM        : OpenAI GPT-5.6
 */
@@ -22,7 +22,7 @@ PROC Main()
         Set( OverwriteCursorSize, 2 )
     ENDIF
 
-    /* Reinitialize TSE's own cursor-visible state. */
+    /* Reinitialize TSE's own cursor visibility and blinking state. */
     Set( Cursor, OFF )
     Set( Cursor, ON )
 

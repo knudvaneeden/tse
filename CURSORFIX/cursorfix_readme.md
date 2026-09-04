@@ -1,6 +1,6 @@
 # TSE Cursor Recovery
 
-**Version:** 1.0.0.0.4  
+**Version:** 1.0.0.0.5  
 **Date:** 2026-09-03  
 **Purpose:** Restore the blinking text cursor in the Windows GUI version of TSE (`g32.exe`).
 
@@ -17,7 +17,8 @@ TSE's `Cursor` setting off and on, and redraws all editor windows.
 
 The DLL repair obtains the caret owned by the current TSE GUI thread and calls
 the Windows `ShowCaret()` function until Windows reports that the caret is
-blinking. It does not create or replace TSE's caret.
+blinking. If Windows caret blinking has been disabled, it restores a normal
+530 millisecond blink interval. It does not create or replace TSE's caret.
 
 ## Package files
 
@@ -74,6 +75,7 @@ blinking caret.
 | `-1` | No focused TSE window was found. |
 | `-2` | No standard Win32 caret was found; TSE may be painting its own cursor. |
 | `-3` | Windows rejected `ShowCaret()`. |
+| `-4` | Windows could not restore the caret blink interval. |
 
 ## Important notes
 
@@ -86,6 +88,14 @@ blinking caret.
 - The DLL is deliberately 32-bit for use with `g32.exe`.
 
 ## Version history
+
+### 1.0.0.0.5 - 2026-09-04
+
+- Added explicit recovery of cursor blinking.
+- If Windows reports that caret blinking is disabled, the DLL restores a
+  530 millisecond caret blink interval.
+- Clarified that the native TSE cursor reset restores both visibility and
+  blinking state.
 
 ### 1.0.0.0.4 - 2026-09-03
 

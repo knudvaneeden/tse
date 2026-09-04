@@ -1,6 +1,6 @@
 @echo off
 rem File    : build.bat
-rem Version : 1.0.0.0.4
+rem Version : 1.0.0.0.5
 rem Date    : 2026-09-03
 
 setlocal
