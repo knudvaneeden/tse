@@ -43,6 +43,9 @@ proc mCount()
     endif
 end
 
+PROC Main()
+ mCount()
+END
+
 <Alt V> mCount()
 
-
