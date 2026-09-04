@@ -1,0 +1,10 @@
+Csv2flv 1.1 for TSE Pro 2.5e upwards.
+
+Convert a comma (or semicolon) separated
+values file to a fixed length values file.
+
+New in version 1.1: Added an optional field
+separator for the generated FLV file.
+
+Author: Carlo.Hogeveen@xs4all.nl.
+
