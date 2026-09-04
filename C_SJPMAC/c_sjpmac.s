@@ -274,7 +274,8 @@ proc mCompile()
     src_filename = CurrFilename()
     if (mCConfigfor (cur_ext))
         OneWindow()
-        if (isChanged())
+        // if (isChanged())
+        if (FileChanged())
             //
             // If it has been changed save it as a temporary file
             // before compiling and re configure the command line.
