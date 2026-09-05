@@ -1,9 +1,19 @@
 //
-//  File$Id: dspell.s 0.12.0.1 1995/07/15 14:38:04 drm Exp $
+//  File$Id: dspell.s 0.12.0.5 2026/09/05 23:09:04 Exp $
 //  $Source: C:/USR/TSE/RCS/dspell.s $
 //
 //  Alternative Spelling Checker for TSE by Dave Monksfield
-//  (uses the TSE spell checking engine spellbin.bin)
+//  (uses the TSE spell checking engine spell.dll)
+//
+//  Version 0.12.0.2: Replaced the obsolete spellbin.bin interface with
+//  the current 32-bit TSE spell.dll interface and named DLL exports.
+//  Version 0.12.0.3: Replaced obsolete GetFreeHistory() use with
+//  TSE's built-in _REPLACE_HISTORY_ for spelling suggestions.
+//  Version 0.12.0.4: Use a unique temporary word-list buffer so a
+//  leftover *WL* buffer cannot prevent DSPELL from starting.
+//  Version 0.12.0.5: Explicitly display the temporary word-list buffer
+//  in the new right-hand window before locating misspelled words.
+//  Adapted with OpenAI Codex.
 //
 //  Comments or suggestions to: drm@myob.demon.co.uk
 //
@@ -24,13 +34,14 @@
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-// External spell checking engine
-binary ['spellbin.bin']
-    integer proc OpenSpell(string fn) : 0
-    integer proc CloseSpell() : 3
-    integer proc SpellCheckWord(string word) : 6
-    integer proc SuggestWord(string word) : 9
-    proc GetSuggestion(var string word, integer n) : 12
+// External spell checking DLL
+dll "spell.dll"
+    integer proc OpenSpell(string fn) : "_OpenSpell"
+    integer proc CloseSpell() : "_CloseSpell"
+    integer proc SpellCheckWord(string st) : "_SpellCheckWord"
+    integer proc SuggestWord(string st) : "_SuggestWord"
+            proc GetSuggestion(var string st, integer n) : "_GetSuggestion"
+            proc RemoveQuotes(var string st) : "_RemoveQuotes"
 end
 
 // Global constants
@@ -66,7 +77,7 @@ proc mSpellCheck()
         return()
     endif
     PushPosition()
-    WordListBuf = CreateBuffer("*WL*")
+    WordListBuf = CreateTempBuffer()
     PopPosition()
     if not WordListBuf
         CloseSpell()
@@ -127,6 +138,7 @@ proc mViewWordlist()
     OneWindow()
     DocumentWindow = WindowID()
     VWindow()
+    GotoBufferId(WordListBuf)
     ResizeWindow(_LEFT_, 16-Query(WindowCols))
     UpdateDisplay(_WINDOW_REFRESH_)
     WordListWindow = WindowID()
@@ -206,27 +218,23 @@ proc mChangeWord()
     string curr_word[80] = ""
     string new_word[80] = ""
     string suggest[80] = ""
-    integer hist, n
+    integer n
 
     mGetCurrWord(curr_word)
-    hist = GetFreeHistory()
-    if hist
-        n = SuggestWord(curr_word)
-        while n > 0
-            GetSuggestion(suggest, n)
-            AddHistoryStr(suggest, hist)
-            n = n - 1
-        endwhile
-    endif
+    n = SuggestWord(curr_word)
+    while n > 0
+        GetSuggestion(suggest, n)
+        AddHistoryStr(suggest, _REPLACE_HISTORY_)
+        n = n - 1
+    endwhile
     new_word = curr_word
-    if Ask('Change "' + curr_word + '" (press <CursorUp> for suggestions)', new_word, hist)
+    if Ask('Change "' + curr_word + '" (press <CursorUp> for suggestions)', new_word, _REPLACE_HISTORY_)
     and new_word <> curr_word
         GotoWindow(DocumentWindow)
         lReplace(curr_word, new_word, "gwn" + FindScope)
         GotoWindow(WordListWindow)
         lReplace(curr_word, new_word, "gwn")
     endif
-    DelHistory(hist)
     UpdateDisplay(_ALL_WINDOWS_REFRESH_)
 end
 
@@ -291,3 +299,6 @@ proc mDisplayProgress()
     endif
 end
 
+PROC Main()
+ mSpellCheck()
+END
