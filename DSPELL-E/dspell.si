@@ -1,0 +1,38 @@
+// Global constants -------------------------------------------------------
+
+/*
+
+By request, I have added some special support for blind users.  This
+includes:
+
+	ù clicking while spell checking so you can tell that DSpell is making
+	  progress through the file, higher pitched beep when done.
+	ù all prompt boxes are positioned in the upper left corner, instead of
+	  near the cursor.
+
+To enable the special support for blind users, #define BLIND, then recompile
+all DSpell source files.
+
+*/
+
+//#define BLIND 1
+#define RETURN_TO_ORIGIN 1
+
+constant SPELL_AUTO = 0
+constant SPELL_WORD = 1
+constant SPELL_BLOCK = 2
+constant SPELL_REST = 3
+constant SPELL_FILE = 4
+
+constant PATHLEN = 80
+constant MIN_WORD_SIZE = 2
+
+constant MAXWORD = 32		// max length of a word (used by SpellWord)
+constant MAXLONGWORD = 80	// max length of a long (normal) word
+
+constant DocumentWindow = 1
+constant WordListWindow = 2
+
+string occurs[] = "({[0-9]#})"
+string AlphaWordSet[32] = ChrSet("A-Za-z'\d128-\d165")
+string gstr_findscope[] = "D:FndScope"
