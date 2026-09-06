@@ -267,7 +267,7 @@ proc set_possibles_case()
                while nn <= Length(abbrev)
                     possible = possible
                                + iif(abbrev_case[nn]  == '1',
-                                     UpCase(lo_possible[nn]),
+                                     Upper(lo_possible[nn]),
                                      lo_possible[nn]
                                     )
                     nn = nn + 1
@@ -423,8 +423,8 @@ proc expand()
           goto begin_internal
      endif
 
-     Sound(3000) DeLay(1) NoSound() Delay(2) // should only get here when no [more]
-     Sound(1500) DeLay(1) NoSound()          // finds occur
+     Sound(3000,18) DeLay(1) NoSound() Delay(2) // should only get here when no [more]
+     Sound(1500,18) DeLay(1) NoSound()          // finds occur
      InsertText(abbrev, _INSERT_)            // reinsertabbreviation
      return()
 end
