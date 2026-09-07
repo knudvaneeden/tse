@@ -13,7 +13,7 @@ END
 
 // --- LIBRARY --- //
 
-// library: file: get: size: buffer: memory: current <description></description> <version control></version control> <version>1.0.0.0.4</version> <version control></version control> (filenamemacro=getfisme.s) [<Program>] [<Research>] [kn, ri, sa, 05-09-2026 18:24:30]
+// library: file: get: size: buffer: memory: current <description></description> <version control></version control> <version>1.0.0.0.5</version> <version control></version control> (filenamemacro=getfisme\getfisme.s) [<Program>] [<Research>] [kn, ri, sa, 05-09-2026 18:24:30]
 INTEGER PROC FNFileGetBufferMemorySizeCurrentI()
  // e.g. PROC Main()
  // e.g.  Warn( "Total bytes used in this buffer", " ", "=", " ", FNFileGetBufferMemorySizeCurrentI() ) // gives e.g. 12345 bytes as filesize on memory
