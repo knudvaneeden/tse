@@ -1,13 +1,23 @@
 /* FILEFIN2 ZIP central-directory reader for TSE 4.50.
    Supports classic ZIP, data descriptors, UTF-8 names and ZIP64 metadata.
    Uses Win32 only: no Borland C runtime library is required.
-   Version 1.0.0.0.13 - 2026-09-08 - OpenAI Codex */
+   Version 1.0.0.0.17 - 2026-09-08 - OpenAI Codex */
 
 #include <windows.h>
+
+#ifndef CREATE_NO_WINDOW
+#define CREATE_NO_WINDOW 0x08000000UL
+#endif
+
+#ifndef INVALID_FILE_ATTRIBUTES
+#define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
+#endif
 
 #define MAX_ZIPS 8
 #define SAL_TEXT_MAX 255
 #define EOCD_SCAN_MAX 65557UL
+#define PATH_TEXT_MAX 520
+#define LINE_TEXT_MAX 1024
 
 typedef unsigned __int64 U64;
 
@@ -19,14 +29,20 @@ typedef struct SAL_STRING_TAG {
 typedef struct ZIP_CONTEXT_TAG {
     int used;
     HANDLE file;
+    HANDLE nestedFile;
     U64 remaining;
     U64 size;
     unsigned short dosDate;
     unsigned short dosTime;
+    int hasNested;
+    int nestedPrepared;
+    char archivePath[PATH_TEXT_MAX];
+    char nestedPath[MAX_PATH];
     char name[SAL_TEXT_MAX + 1];
 } ZIP_CONTEXT;
 
 static ZIP_CONTEXT contexts[MAX_ZIPS];
+static HINSTANCE moduleInstance;
 
 static unsigned short get16(const unsigned char *data)
 {
@@ -105,6 +121,33 @@ static const char *member_base_name(const char *name)
     return base;
 }
 
+static int is_zip_name(const char *name)
+{
+    int length = text_length(name);
+    if (length < 4) return 0;
+    return name[length - 4] == '.' &&
+           upper_char(name[length - 3]) == 'Z' &&
+           upper_char(name[length - 2]) == 'I' &&
+           upper_char(name[length - 1]) == 'P';
+}
+
+static void copy_text(char *target, const char *source, int maximum)
+{
+    int count = text_length(source);
+    if (count > maximum) count = maximum;
+    if (count > 0) copy_bytes(target, source, count);
+    target[count] = '\0';
+}
+
+static void append_text(char *target, const char *source, int maximum)
+{
+    int targetLength = text_length(target);
+    int sourceIndex = 0;
+    while (targetLength < maximum && source[sourceIndex])
+        target[targetLength++] = source[sourceIndex++];
+    target[targetLength] = '\0';
+}
+
 static void sal_to_c(const SAL_STRING *source, char *target, int targetSize)
 {
     int count;
@@ -176,8 +219,13 @@ static ZIP_CONTEXT *get_context(const SAL_STRING *state)
 static void close_context(ZIP_CONTEXT *context)
 {
     if (context && context->used) {
-        CloseHandle(context->file);
+        if (context->file != INVALID_HANDLE_VALUE) CloseHandle(context->file);
+        if (context->nestedFile != INVALID_HANDLE_VALUE)
+            CloseHandle(context->nestedFile);
+        if (context->nestedPath[0]) DeleteFileA(context->nestedPath);
         context->file = INVALID_HANDLE_VALUE;
+        context->nestedFile = INVALID_HANDLE_VALUE;
+        context->nestedPath[0] = '\0';
         context->used = 0;
     }
 }
@@ -258,11 +306,140 @@ static void store_name(ZIP_CONTEXT *context, const unsigned char *name,
     context->name[count] = '\0';
 }
 
+static int run_nested_scanner(ZIP_CONTEXT *context)
+{
+    char modulePath[PATH_TEXT_MAX];
+    char scriptPath[PATH_TEXT_MAX];
+    char tempDirectory[MAX_PATH];
+    char command[1600];
+    int index;
+    STARTUPINFOA startup;
+    PROCESS_INFORMATION process;
+    DWORD exitCode = 1;
+
+    if (!GetModuleFileNameA((HMODULE)moduleInstance, modulePath,
+                            PATH_TEXT_MAX - 1)) return 0;
+    modulePath[PATH_TEXT_MAX - 1] = '\0';
+    index = text_length(modulePath);
+    while (index > 0 && modulePath[index - 1] != '\\' &&
+           modulePath[index - 1] != '/') index--;
+    modulePath[index] = '\0';
+    copy_text(scriptPath, modulePath, PATH_TEXT_MAX - 1);
+    append_text(scriptPath, "zip_nested.ps1", PATH_TEXT_MAX - 1);
+    if (GetFileAttributesA(scriptPath) == INVALID_FILE_ATTRIBUTES) return 0;
+
+    if (!GetTempPathA(MAX_PATH, tempDirectory) ||
+        !GetTempFileNameA(tempDirectory, "FFZ", 0, context->nestedPath))
+        return 0;
+
+    command[0] = '\0';
+    append_text(command, "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"",
+                1599);
+    append_text(command, scriptPath, 1599);
+    append_text(command, "\" \"", 1599);
+    append_text(command, context->archivePath, 1599);
+    append_text(command, "\" \"", 1599);
+    append_text(command, context->nestedPath, 1599);
+    append_text(command, "\"", 1599);
+
+    for (index = 0; index < (int)sizeof(startup); index++)
+        ((unsigned char *)&startup)[index] = 0;
+    for (index = 0; index < (int)sizeof(process); index++)
+        ((unsigned char *)&process)[index] = 0;
+    startup.cb = sizeof(startup);
+    startup.dwFlags = STARTF_USESHOWWINDOW;
+    startup.wShowWindow = SW_HIDE;
+
+    if (!CreateProcessA(NULL, command, NULL, NULL, FALSE, CREATE_NO_WINDOW,
+                        NULL, NULL, &startup, &process)) {
+        DeleteFileA(context->nestedPath);
+        context->nestedPath[0] = '\0';
+        return 0;
+    }
+    WaitForSingleObject(process.hProcess, INFINITE);
+    GetExitCodeProcess(process.hProcess, &exitCode);
+    CloseHandle(process.hThread);
+    CloseHandle(process.hProcess);
+    if (exitCode != 0) {
+        DeleteFileA(context->nestedPath);
+        context->nestedPath[0] = '\0';
+        return 0;
+    }
+
+    context->nestedFile = CreateFileA(
+        context->nestedPath, GENERIC_READ, FILE_SHARE_READ, NULL,
+        OPEN_EXISTING, FILE_ATTRIBUTE_TEMPORARY, NULL);
+    return context->nestedFile != INVALID_HANDLE_VALUE;
+}
+
+static unsigned long decimal_value(const char *text)
+{
+    unsigned long result = 0;
+    while (*text >= '0' && *text <= '9') {
+        unsigned long digit = (unsigned long)(*text - '0');
+        if (result > 214748364UL ||
+            (result == 214748364UL && digit > 7UL))
+            return 2147483647UL;
+        result = result * 10UL + digit;
+        text++;
+    }
+    return result;
+}
+
+static int next_nested_entry(ZIP_CONTEXT *context)
+{
+    char line[LINE_TEXT_MAX];
+    char *field[4];
+    DWORD actual;
+    char value;
+    int length = 0;
+    int fields = 1;
+    int index;
+
+    if (context->nestedFile == INVALID_HANDLE_VALUE) return 0;
+    while (length < LINE_TEXT_MAX - 1) {
+        if (!ReadFile(context->nestedFile, &value, 1, &actual, NULL) ||
+            actual != 1) break;
+        if (value == '\n') break;
+        if (value != '\r') line[length++] = value;
+    }
+    if (length == 0) return 0;
+    line[length] = '\0';
+    field[0] = line;
+    for (index = 0; index < length && fields < 4; index++) {
+        if (line[index] == '\t') {
+            line[index] = '\0';
+            field[fields++] = line + index + 1;
+        }
+    }
+    if (fields != 4) return 0;
+    context->size = decimal_value(field[0]);
+    copy_text(context->name, field[3], SAL_TEXT_MAX);
+    context->dosDate = 0;
+    context->dosTime = 0;
+    if (text_length(field[1]) == 8) {
+        unsigned int month = (field[1][0] - '0') * 10 + field[1][1] - '0';
+        unsigned int day = (field[1][3] - '0') * 10 + field[1][4] - '0';
+        unsigned int year = (field[1][6] - '0') * 10 + field[1][7] - '0';
+        year = year >= 80 ? year - 80 : year + 20;
+        context->dosDate = (unsigned short)((year << 9) |
+                                            (month << 5) | day);
+    }
+    if (text_length(field[2]) == 8) {
+        unsigned int hour = (field[2][0] - '0') * 10 + field[2][1] - '0';
+        unsigned int minute = (field[2][3] - '0') * 10 + field[2][4] - '0';
+        unsigned int second = (field[2][6] - '0') * 10 + field[2][7] - '0';
+        context->dosTime = (unsigned short)((hour << 11) |
+                                            (minute << 5) | (second / 2));
+    }
+    return 1;
+}
+
 BOOL WINAPI DllEntryPoint(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
     int index;
-    (void)instance;
     (void)reserved;
+    if (reason == DLL_PROCESS_ATTACH) moduleInstance = instance;
     if (reason == DLL_PROCESS_DETACH)
         for (index = 0; index < MAX_ZIPS; index++) close_context(&contexts[index]);
     return TRUE;
@@ -293,7 +470,12 @@ __declspec(dllexport) int PASCAL ZIP_Open(SAL_STRING *pathS, SAL_STRING *stateS)
     }
     contexts[slot].used = 1;
     contexts[slot].file = file;
+    contexts[slot].nestedFile = INVALID_HANDLE_VALUE;
     contexts[slot].remaining = entries;
+    contexts[slot].hasNested = 0;
+    contexts[slot].nestedPrepared = 0;
+    contexts[slot].nestedPath[0] = '\0';
+    copy_text(contexts[slot].archivePath, path, PATH_TEXT_MAX - 1);
     set_state(stateS, slot);
     return 1;
 }
@@ -312,7 +494,14 @@ __declspec(dllexport) int PASCAL ZIP_Next(SAL_STRING *stateS)
     U64 size64;
     unsigned long position;
 
-    if (!context || context->remaining == 0) return 0;
+    if (!context) return 0;
+    if (context->remaining == 0) {
+        if (!context->nestedPrepared) {
+            context->nestedPrepared = 1;
+            if (context->hasNested) run_nested_scanner(context);
+        }
+        return next_nested_entry(context);
+    }
     if (!read_exact(context->file, header, 46) || get32(header) != 0x02014b50UL) {
         close_context(context);
         return 0;
@@ -337,6 +526,7 @@ __declspec(dllexport) int PASCAL ZIP_Next(SAL_STRING *stateS)
     }
 
     store_name(context, name, nameLength, flags);
+    if (is_zip_name(member_base_name(context->name))) context->hasNested = 1;
     if (size32 == 0xffffffffUL) {
         position = 0;
         while (position + 4UL <= (unsigned long)extraLength) {

@@ -1,8 +1,8 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.13  
+**Version:** 1.0.0.0.17  
 **Date:** 2026-09-08  
-**Time:** 02:30 CEST (UTC+02:00)  
+**Time:** 15:20 CEST (UTC+02:00)  
 **LLM:** OpenAI Codex  
 
 ## Description
@@ -23,7 +23,10 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 - Double quotes are ignored while parsing search input. Both `C:\TEMP\FF.S` and `"C:\TEMP\FF.S"` therefore search the same valid Windows path; an unmatched quote recalled from input history is also harmless.
 - Pressing **Ctrl+Alt+Shift+F** runs the FILEFIN2 search prompt directly while the compiled macro is loaded.
 - Filename masks accept `*` or `.*` anywhere for zero or more characters and `?` anywhere for exactly one character. This applies identically to ordinary filenames and member names inside ZIP files.
-- ZIP masks are matched against the final member filename, not the ZIP's internal directory prefix. Thus `FF.S` finds `filefin2_portable_1.0.0.0.13/FF.S`, while the full internal member path remains visible in the results.
+- ZIP masks are matched against the final member filename, not the ZIP's internal directory prefix. Thus `FF.S` finds `filefin2_portable_1.0.0.0.17/FF.S`, while the full internal member path remains visible in the results.
+- Result columns use a right-aligned ten-character size field and explicit two-space separators between size, date, time, and filename. Full-width values can no longer run into the following date.
+- ZIP searching descends into ZIP members that are themselves ZIP archives. Nested entries use a `::` separator, such as `inner.zip::folder/FF.S  <-  outer.zip`.
+- Nested decompression uses the included `zip_nested.ps1` helper and Windows PowerShell only when a ZIP member is detected.
 
 ## Files
 
@@ -32,6 +35,7 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 | `FF.S` | Updated main TSE SAL macro |
 | `ff_dll.c` | Borland C source for `ff.dll` |
 | `zip_dll.c` | Borland C source for the modern central-directory `zip.dll` |
+| `zip_nested.ps1` | PowerShell helper for recursively reading compressed ZIP members |
 | `build.bat` | Builds both 32-bit DLLs |
 
 ## Build the DLLs
@@ -73,12 +77,12 @@ No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly
 ## Install and run
 
 1. Put the compiled `FF.MAC` where TSE loads macros.
-2. Put `ff.dll` and `zip.dll` in a directory from which Windows can load them. The simplest choices are the directory containing the TSE executable or another directory already in `PATH`.
+2. Put `ff.dll`, `zip.dll`, and `zip_nested.ps1` together in a directory from which Windows can load the DLLs. The simplest choice is the directory containing the TSE executable.
 3. Restart TSE after replacing either DLL, because Windows/TSE may retain a loaded DLL in memory.
 4. Execute the `FF` macro, or press **Ctrl+Alt+Shift+F** while it is loaded. The macro creates and displays a dedicated results buffer.
 5. Enter either a wildcard mask or a full starting path and mask, such as `*.S`, `e.*list`, `elist.?`, `FILE?.TXT`, or `C:\TEMP\*.TXT`.
 6. When only a wildcard is entered, searching starts at the root of the current drive. When a path is included, searching starts in that directory.
-7. Choose whether member names inside ZIP files should also be searched.
+7. Choose whether member names inside ZIP files, including nested ZIP files, should also be searched.
 
 The macro recursively appends matching filenames, sizes, dates, and times to its dedicated results buffer. Searching starts at the supplied directory, or at the root of the current drive when only a mask is entered.
 
@@ -113,6 +117,8 @@ You are compiling an older source. Version 1.0.0.0.9 is standalone and contains 
 
 The DLL searches the central directory, so compression method and data descriptors do not affect member-name listing. Classic ZIP and ZIP64 metadata are supported. Multi-disk/spanned archives are not supported. UTF-8 member names are converted to the active Windows ANSI code page because TSE 4.50 SAL strings are not Unicode.
 
+Nested ZIP searching requires `zip_nested.ps1` beside `zip.dll` and Windows PowerShell 5.1 or later. Encrypted or unsupported nested archives are skipped. Recursion is limited to eight ZIP levels, 256 MiB per nested ZIP, and 512 MiB cumulative expanded nested data per outer archive.
+
 ### Large file sizes show `2147483647`
 
 TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are clamped to that maximum value.
@@ -135,3 +141,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 | 1.0.0.0.11 | 2026-09-08 | Documented and exposed `*` and `?` wildcard searching in the prompt, including `e.*list` and `elist.?` examples |
 | 1.0.0.0.12 | 2026-09-08 | Made `.*` a wildcard alias for `*`, so a mask such as `e.*list.s` matches `eList.s` |
 | 1.0.0.0.13 | 2026-09-08 | Fixed ZIP searches by matching the mask against each member's basename instead of its complete internal directory path |
+| 1.0.0.0.14 | 2026-09-08 | Aligned result fields, added explicit separators so file size, date, time, and path never concatenate, and renamed the package documentation to `filefin2_readme.md` |
+| 1.0.0.0.15 | 2026-09-08 | Added recursive filename searching inside ZIP files nested in other ZIP files, with `::` archive-chain display and safety limits |
+| 1.0.0.0.16 | 2026-09-08 | Added an `INVALID_FILE_ATTRIBUTES` compatibility definition for the older Windows headers supplied with Borland C++ 5.5.1 |
+| 1.0.0.0.17 | 2026-09-08 | Removed the Borland `_llmul` linker dependency by parsing the already-capped nested member size with bounded 32-bit arithmetic |

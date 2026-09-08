@@ -1,5 +1,5 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.13
+// Version : 1.0.0.0.17
 // Date    : 2026-09-08
 // LLM     : OpenAI Codex
 //
@@ -108,8 +108,8 @@ proc PROCZipLook(string pathS)
                 ZIP_GetDate(stateS, dateS)
                 ZIP_GetTime(stateS, timeS)
                 sizeI = ZIP_GetSize(stateS)
-                cTmpLine = Format(sizeI:9, dateS:10, timeS:10,
-                                  "  ", nameS, "  <-  ", pathS)
+                cTmpLine = Format(sizeI:10, "  ", dateS, "  ",
+                                  timeS, "  ", nameS, "  <-  ", pathS)
                 AddLine(cTmpLine, origId)
                 resultCount = resultCount + 1
             endif
@@ -133,9 +133,8 @@ proc PROCSearchTree()
                 file_time = ""
                 FF_TreeGetDate(stateS, file_date)
                 FF_TreeGetTime(stateS, file_time)
-                cTmpLine = Format(FF_TreeGetSize(stateS):9,
-                                  file_date:-10,
-                                  file_time:-10,
+                cTmpLine = Format(FF_TreeGetSize(stateS):10, "  ",
+                                  file_date, "  ", file_time, "  ",
                                   pathS)
                 AddLine(cTmpLine, origId)
                 resultCount = resultCount + 1
