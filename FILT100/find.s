@@ -16,8 +16,11 @@
 proc main()
     string opt[1] = ""
     string cmd[128] = Query(MacroCmdLine)
-
-
+    //
+    IF NOT YesNo( Format( "This will run a capture via filt100\find.s. Abandon all files first as it might affect your working files." ) )
+     Halt
+    ENDIF
+    //
     if Lower(GetToken(cmd," ",1)) == "-x"
         opt = "x"
     endif
