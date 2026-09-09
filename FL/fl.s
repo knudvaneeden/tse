@@ -1,5 +1,11 @@
 /***************************************************************************
 
+  Windows DLL edition 1.0.0.0.12
+  Date: 2026-09-09
+  Updated with ChatGPT Codex (GPT-5)
+
+  Replaces the DOS-era WP.BIN helper with FL32.DLL for 32-bit Windows TSE.
+
   Author:     Richard Blackburn
 
   Date:        Description:
@@ -53,10 +59,10 @@ string ZIP[] = "unzip"
                 integer proc SetAttrib(string file, integer attrib)
 
  ***********************************************************************/
-binary ['wp.bin']
-    integer proc _ff(string path, var string ffblk, integer attribs) : 0
-    integer proc _fn(var string ffblk) : 3
-    integer proc _SetAttrib(string file, integer attrib) : 6
+dll "fl32.dll"
+    integer proc FLBUILDLIST(integer attribs)
+    integer proc FLGETTOTALSIZE()
+    integer proc FLSETATTR(string file, integer attrib)
 end
 
 constant    ffNORMAL    = 0x00,
@@ -69,69 +75,13 @@ constant    ffNORMAL    = 0x00,
             ffALL       = 0x3f,
             ffALLNV     = 0x37       // All except ffVOLUMNE
 
-string ffblk[43]
 integer dirchanged=0      // DAG::941024  Flag for deliberate Dir change
 
 integer proc SetAttrib(string file, integer attrib)
-    return(_SetAttrib(file + Chr(0), attrib))
+    return(FLSETATTR(file + Chr(0), attrib))
 end
 
-string proc ffName(string ffblk)
-    integer p = Pos(Chr(0),SubStr(ffblk,31,13))
-    return (SubStr(ffblk,31,iif(p,p-1,13)))
-end
-
-integer proc ffAttr(string ffblk)
-    return (Asc(ffblk[22]))
-end
-
-string proc ffAttrStr(string ffblk)
-    string  s[5] = ''
-    integer a = ffAttr(ffblk)
-
-    s = iif(a & ffRDONLY, 'R', '_')
-    s = s + iif(a & ffHIDDEN, 'H', '_')
-    s = s + iif(a & ffSYSTEM, 'S', '_')
-    s = s + iif(a & ffARCH,   'A', '_')
-    s = s + iif(a & ffSUBDIR, 'D', '_')
-    return (s)
-end ffAttrStr
-
-string proc ffTime(string ffblk)
-    integer t = (Asc(ffblk[24]) shl 8) | Asc(ffblk[23])
-    string  s[8] = ''
-
-    s = Format(((t & 0xF800) shr 11):2:'0', ':',
-               ((t & 0x07E0) shr  5):2:'0', ':',
-               ((t & 0x001F) shl  1):2:'0')
-    return (s)
-end ffTime
-
-string proc ffDate(string ffblk)
-    integer d = (Asc(ffblk[26]) shl 8) | Asc(ffblk[25])
-    string  s[8] = ''
-
-    s = Format(((d & 0x01E0) shr 5):2:'0', '-',
-               (d & 0x001F):2:'0', '-',
-               ((((d & 0xFE00) shr 9)+ 80) mod 100):2:'0')
-    return (s)
-end ffDate
-
-integer proc ffSize(string ffblk)
-    return ((Asc(ffblk[30]) shl 24) | (Asc(ffblk[29]) shl 16) |
-            (Asc(ffblk[28]) shl  8) | (Asc(ffblk[27])))
-end ffSize
-
-integer proc FindFirst(string path, var string ffblk, integer attribs)
-    return(_ff(path+Chr(0), ffblk, attribs))
-end FindFirst
-
-integer proc FindNext(var string ffblk)
-    return(_fn(ffblk))
-end FindNext
-
-
-/****************** end of binary helper routines ********************/
+/****************** end of DLL helper declarations ********************/
 
 constant    MARKCOL     = 60,
             DIRCOL      = 51,
@@ -168,49 +118,27 @@ proc PutOnStatusLine(string outstring)
 end
 
  /***********************************************************************
-  Format and return the file name and extention.
- ***********************************************************************/
-string proc mffName(string ffblk)
-    string n[20] = ffName(ffblk)
-    if n == '..'
-        return ('..')
-    endif
-    return (Format(SplitPath(n,_NAME_):-9,SplitPath(n,_EXT_):-8))
-end mffName
-
- /***********************************************************************
-  Return the file size, or a nul string if it is a SubDir.
- ***********************************************************************/
-string proc mffSize(string ffblk)
-    if ffAttr(ffblk) & ffSUBDIR
-        return ('')
-    endif
-    return (Str(ffSize(ffblk)))
-end mffSize
-
- /***********************************************************************
   This will generate the pick buffer that the users sees.
  ***********************************************************************/
-integer proc mGeneratePickBuffer(string path)
+integer proc mGeneratePickBuffer()
+    string tempFile[255]
+    integer resultI
+
     num_files = 0
     total_size = 0
-    if FindFirst(path, ffblk, ffALL ^ ffVOLUME)
-        repeat
-            num_files = num_files + 1
-            total_size = total_size + ffSize(ffblk)
-            if ffName(ffblk) <> '.'
-                AddLine(
-                            Format( mffName(ffblk):-17,
-                                    mffsize(ffblk):8,
-                                    ffdate(ffblk):10,
-                                    SubStr(ffTime(ffblk),1,5):10,
-                                    ' ', ffAttrStr(ffblk)
-                            )
-                )
-            endif
-        until not FindNext(ffblk)
+    tempFile = GetEnvStr("TEMP") + "\\$FLLIST$.$$$"
+    resultI = FLBUILDLIST(ffALL ^ ffVOLUME)
+    if (resultI < 0)
+        Warn("FL32 directory error: ", -resultI)
+        return(FALSE)
+    endif
+    num_files = resultI
+    total_size = FLGETTOTALSIZE()
+    if InsertFile(tempFile)
+        EraseDiskFile(tempFile)
         return(TRUE)
     endif
+    EraseDiskFile(tempFile)
     return(FALSE)
 end
 
@@ -246,7 +174,7 @@ integer proc SetUpPickList(string s)
     LogDrive(SplitPath(path, _DRIVE_))
     ChDir(SplitPath(path, _PATH_))
     EmptyBuffer()
-    if NOT mGeneratePickBuffer(path)
+    if NOT mGeneratePickBuffer()
         return(FALSE)
     endif
     GotoLine(line)
@@ -296,9 +224,9 @@ end
 
 
 /*****************************************************************************
-ÚÄÄÄÄÄÄÄÄÄ¿
-³ ViewZIP ³
-ÀÄÄÄÄÄÄÄÄÄÙ
++---------+
+| ViewZIP |
++---------+
   Added by Dave Gwillim  24 Oct 1994
 */
 proc ViewZIP(string zipviewcmd)
@@ -441,7 +369,7 @@ end
  /***********************************************************************
   This procedure will copy one file.
  ***********************************************************************/
-integer proc CopyFile(string copyto)
+integer proc FNIntegerCopySelectedFileI(string copyto)
     string  fn[8] = UniqueName()
 
     Dos('Copy ' + FileName() + ' ' + copyto + '>' + fn, 2)
@@ -456,7 +384,7 @@ integer proc CopyFile(string copyto)
     PopPosition()
     Set(Cursor,On)
     return(NOT error_level)
-end
+end FNIntegerCopySelectedFileI
 
  /***********************************************************************
   Copy a single file, or multiple files using copy file.
@@ -466,7 +394,7 @@ proc CopyIt()
 
     if NOT marked
         if mAsk("Copy to:", copyto)
-            if NOT CopyFile(copyto)
+            if NOT FNIntegerCopySelectedFileI(copyto)
                 Warn('Error in copying... error level = ', error_level)
             endif
         endif
@@ -484,7 +412,7 @@ proc CopyIt()
                 if LFind('*', 'gl')
                     repeat
                         marked = marked - 1
-                        if NOT CopyFile(copyto)
+                        if NOT FNIntegerCopySelectedFileI(copyto)
                             Warn('Error in copying... error level = ', error_level)
                         endif
                         GotoBlockBegin()
@@ -508,7 +436,7 @@ proc mSet(integer i)
 end
 
 string proc CheckAttr(integer i)
-    return (iif(newattr & i, "û", ""))
+    return (iif(newattr & i, "X", ""))
 end
 
 menu AttrMenu()
@@ -556,7 +484,7 @@ end
  /***********************************************************************
   Rename the current file.
  ***********************************************************************/
-proc Rename()
+proc PROCRenameSelectedFile()
     string nfn[13] = ''
 
     if mAsk('New filename:', nfn)
@@ -565,7 +493,7 @@ proc Rename()
         BegLine()
         InsertText(Format(SplitPath(nfn, _NAME_):-9, SplitPath(nfn, _EXT_):-8), _OVERWRITE_)
     endif
-end
+end PROCRenameSelectedFile
 
 proc PrintIt()
     PushPosition()
@@ -585,7 +513,7 @@ integer proc Loadit()
     return (TRUE)
 end
 
-proc ChangeDir()
+proc PROCChangeDirectory()
     string path[80] = ExpandPath(".")
     integer restore_original = FALSE
 
@@ -600,7 +528,7 @@ proc ChangeDir()
     if restore_original
         SetUpPickList(ExpandPath("."))
     endif
-end
+end PROCChangeDirectory
 
  /***********************************************************************
   The help screen.
@@ -634,11 +562,10 @@ keydef file_keys
     <HelpLine>          '1 {R}etrieve 2 {D}elete 3 {M}ove/Rename 4 {P}rint 6 {L}ook 7 {O}ther dir 8 {C}opy'
     <1>                 if Loadit() EndProcess(2) endif // in WP
     <R>                 if Loadit() EndProcess(2) endif // in WP
-    <Shift R>           if Loadit() EndProcess(2) endif // in WP
 
-    <3>                 Rename()      // in WP
-    <M>                 Rename()      // in WP
-    <Shift M>           Rename()
+    <3>                 PROCRenameSelectedFile()      // in WP
+    <M>                 PROCRenameSelectedFile()      // in WP
+    <Shift M>           PROCRenameSelectedFile()
 
     <2>                 DelIt()        // in WP
     <D>                 DelIt()        // in WP
@@ -656,7 +583,6 @@ keydef file_keys
     <Shift L>           ViewIt()
 
     <Z>                 ViewZip(ZIP + " -vb")  // DAG::941024
-    <Shift Z>           ViewZip(ZIP + " -vb")  // DAG::941024
 
     <F1>                QuickHelp(FListHelp)
     <F3>                QuickHelp(FListHelp)
@@ -666,9 +592,9 @@ keydef file_keys
     <PgUp>              PageUp()
     <PgDn>              PageDown()
 
-    <7>                 ChangeDir()   // in WP
-    <O>                 ChangeDir()   // in WP
-    <Shift O>           ChangeDir()
+    <7>                 PROCChangeDirectory()   // in WP
+    <O>                 PROCChangeDirectory()   // in WP
+    <Shift O>           PROCChangeDirectory()
 
     <4>                 PrintIt()
     <P>                 PrintIt()
@@ -709,12 +635,12 @@ proc mListFiles()
   12-11-92  03:13p            Directory F:\SE\*.*
 Document size:      338   Free:  7,884,800 Used:    248,789     Files:      10
 
- .    Current    <Dir>                  ³ ..   Parent     <Dir>
- MACROS  .       <Dir>  12-11-92 02:15p ³ CONFIG  .S     52,966  12-11-92 02:15p
- DEFAULTS.S      3,749  12-11-92 02:15p ³ E       .EXE   95,484  12-11-92 02:16p
- HELP    .S        776  12-11-92 02:16p ³ ICONFIG .MAC   16,388  12-11-92 02:16p
- ICONFIG2.MAC    7,300  12-11-92 02:16p ³ KEYS    .S      6,753  12-11-92 02:16p
- READ    .ME     2,445  12-11-92 02:16p ³ SC      .EXE   59,602  12-11-92 02:16p
+ .    Current    <Dir>                  | ..   Parent     <Dir>
+ MACROS  .       <Dir>  12-11-92 02:15p | CONFIG  .S     52,966  12-11-92 02:15p
+ DEFAULTS.S      3,749  12-11-92 02:15p | E       .EXE   95,484  12-11-92 02:16p
+ HELP    .S        776  12-11-92 02:16p | ICONFIG .MAC   16,388  12-11-92 02:16p
+ ICONFIG2.MAC    7,300  12-11-92 02:16p | KEYS    .S      6,753  12-11-92 02:16p
+ READ    .ME     2,445  12-11-92 02:16p | SC      .EXE   59,602  12-11-92 02:16p
  SHOWKEY .EXE    3,326  12-11-92 02:16p
  ***********************************************************************/
     string path[80]
@@ -722,7 +648,6 @@ Document size:      338   Free:  7,884,800 Used:    248,789     Files:      10
     integer ssl     = Set(StatusLineUpdating, Off),
             hl      = Set(ShowHelpLine, ON),
             msgl    = Set(MsgLevel, _WARNINGS_ONLY_),
-            scattr  = Set(CursorAttr, iif(Query(AttrSet) == _COLOR_, Color(White on Red), Color(Black on White))),
             seof    = Set(ShowEofMarker, OFF),
             i
 
@@ -750,7 +675,6 @@ Document size:      338   Free:  7,884,800 Used:    248,789     Files:      10
     Set(ShowHelpLine, hl)
     Set(StatusLineUpdating, ssl)
     Set(MsgLevel, msgl)
-    Set(CursorAttr, scattr)
     Set(ShowEofMarker, seof)
     UpdateDisplay(_ALL_WINDOWS_REFRESH_)
     if (not dirchanged)
