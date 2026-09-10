@@ -1,6 +1,10 @@
 /*  Sort utility. Run an external sort if more than 1000 lines to
     sort. Emulates the internal sort pretty well.
 
+    Stand-alone adaptation version: 1.0.0.0.2
+    Adapted: 2026-09-10 03:13:27 CEST
+    LLM: OpenAI GPT-5.6
+
     Written for Mike Albert's FSORT, available on the SemWare BBS.
 
     By Terry Harris, extentions by Mel Hulse
@@ -11,55 +15,55 @@
 
     Version 1.3
 
-    þ   Problem with external case sensitive sorts fixed.
+    ?   Problem with external case sensitive sorts fixed.
 
-    þ   "Sort" from main menu bypasses the Sort Menu and executes
+    ?   "Sort" from main menu bypasses the Sort Menu and executes
         with parameters set from utility menu.
 
     Version 1.4
 
-    þ   Enhancements made to macro to allow the user to specify multiple
+    ?   Enhancements made to macro to allow the user to specify multiple
         sort "keys".  When user selects the multiple sort keys option, they
         may specify up to ten (10) keys for the external sort program to
         act upon.  (See Features Below).
 
     Features (changes marked with "|"):
 
-    þ   Prompted choice of internal or external sort with default based
+    ?   Prompted choice of internal or external sort with default based
         on number of lines less/greater than 1000.
 
-    þ   Sort Menu provided to set parameters and select internal or
+    ?   Sort Menu provided to set parameters and select internal or
         external sort.
 
-|   þ   Choice of Main or Sort Menus to set TSE parameters and
+|   ?   Choice of Main or Sort Menus to set TSE parameters and
 |       execute.  Sort direct from Main Menu if desired.
 
-    þ   Only one added keystroke if default sort is wanted.
+    ?   Only one added keystroke if default sort is wanted.
 
-    þ   Uses block type to determine sort field.  If a column block,
+    ?   Uses block type to determine sort field.  If a column block,
         uses start and width. Otherwise uses first 80 columns of each
         line.
 
-    þ   Supports decimal column sort with "+", "-" and ".". Numbers need
+    ?   Supports decimal column sort with "+", "-" and ".". Numbers need
         not be aligned. If selected, defaults to external sort.
 
-    þ   Deletion of lines with duplicate sort keys.  If selected,
+    ?   Deletion of lines with duplicate sort keys.  If selected,
         defaults to external sort.
 
-    þ   Sort parameters isolated to a single macro (BuildKey()).
+    ?   Sort parameters isolated to a single macro (BuildKey()).
         However, menu must be changed to accomodate capability
         differences.
 
-|   þ   Multiple sort "keys" option to allow the user to specify multiple
+|   ?   Multiple sort "keys" option to allow the user to specify multiple
 |       sort "keys".  When user selects the multiple sort keys option, they
 |       may specify up to ten (10) keys for the external sort program to
 |       act upon.  If selected, defaults to external sort.
 
-|   þ   When the multiple sort keys option is selected, each sort key may be
+|   ?   When the multiple sort keys option is selected, each sort key may be
 |       sorted differently (some ascending / some desending) then the other
 |       keys.
 
-|   þ   When the multiple sort keys option is selected, the user may specify
+|   ?   When the multiple sort keys option is selected, the user may specify
 |       the starting and ending column positions of the sort keys by one of
 |       two methods.
 |
@@ -85,38 +89,13 @@
 |       make up the key (within the current line) are "highlighted" to show
 |       the user a "graphic representation" of the sort key positions.
 |
-    Setup:
+    Stand-alone setup:
 
-|   1)  FSort must be in a directory in your PATH statement.
-|       ***** Correction made to load the FSort program from the directory
-|             specified by the "MacPath" variable (can be set in the
-|             configuration through the "Option" section of the pull-down
-|             menu).  If the FSort program is not found in the specified
-|             directory, the root directory is searched and then the path
-|             statement is used.
+    1)  Compile this source directly with SC32: sc32 msort.s
 
-    2)  Read the FSort manual.
+    2)  Put FSORT.EXE in a directory on PATH.
 
-    3)  #include this file in TSE.S just prior to the #include
-        "TSE.KEYS" statement.  mSort uses TSE.S macros.
-
-|   4)  In the list of global variables in TSE.S (around line 90) insert:
-|       sort_flags,
-|       ***** This variable already exists, ignor this step.
-
-|   5)  After the list of global variables insert:
-|
-|       FORWARD PROC mSort(integer M)
-
-|   6)  Modify the TSE.S UtilMenu "&Sort" entry to call "mSort(Off)"
-|       instead of "Sort(sort_flags)".
-
-|   7)  Bind mSort(On) to a key in TSE.KEY if you want the Sort
-|       Menu for access to additional features.
-|       ***** It is suggested that you change the standard binding for the
-|             "Shift F3" key to call this macro.
-
-    8)  Recompile/burn-in TSE.S.
+    3)  Load/run MSORT.MAC from TSE. No edit of TSE.S or TSE.KEYS is needed.
 
     Usage:
 
@@ -132,7 +111,10 @@
 |   5)  From Sort Menu select "S" when ready or "Q" to quit.
 */
 
-integer btype, dups, ext, decimal, good, extra // "sort_flags" already in TSE.S
+integer btype, dups, ext, decimal, good, extra,
+        sort_flags = 0
+
+string  workPath[255]
 
 integer skey1start = 1,    // default multi key start
         skey1end = 80,     // default multi key end
@@ -173,6 +155,58 @@ string  sAskStart[4],      // default multi key start
         mark_char[1]       // mark multiple key char
 
 FORWARD INTEGER PROC ReWriteKeys()
+FORWARD PROC mSort(INTEGER M)
+
+STRING PROC OnOffStr(INTEGER valueI)
+    IF valueI
+        Return("On")
+    ENDIF
+    Return("Off")
+END
+
+STRING PROC ShowSortFlag()
+    IF sort_flags == 0 OR sort_flags == 2
+        Return("Ascending")
+    ENDIF
+    Return("Descending")
+END
+
+PROC ToggleSortFlag(INTEGER flagI)
+    IF flagI == 1
+        IF sort_flags == 0
+            sort_flags = 1
+        ELSEIF sort_flags == 1
+            sort_flags = 0
+        ELSEIF sort_flags == 2
+            sort_flags = 3
+        ELSE
+            sort_flags = 2
+        ENDIF
+    ELSE
+        IF sort_flags == 0
+            sort_flags = 2
+        ELSEIF sort_flags == 2
+            sort_flags = 0
+        ELSEIF sort_flags == 1
+            sort_flags = 3
+        ELSE
+            sort_flags = 1
+        ENDIF
+    ENDIF
+END
+
+PROC SetWorkPath()
+    workPath = GetEnvStr("TEMP")
+    IF workPath == ""
+        workPath = GetEnvStr("TMP")
+    ENDIF
+    IF workPath == ""
+        workPath = "."
+    ENDIF
+    IF SubStr(workPath, Length(workPath), 1) <> "\"
+        workPath = workPath + "\"
+    ENDIF
+END
 
 INTEGER PROC GetUserKey()
     GetUserKeyLoop:
@@ -1187,7 +1221,7 @@ INTEGER PROC SortRoutine(Integer bbl, Integer bel)
     GotoLine(bel)
     MarkLine()
     // save the block to a temp file and check for error
-    If SaveBlock(Query(SwapPath) + "$tsees$i.$$$", _OVERWRITE_) == 0
+    If SaveBlock(workPath + "$tsees$i.$$$", _OVERWRITE_) == 0
         Warn("Could not write block")
         Return(FALSE)
     Else                    // no error, do fsort with parms & error check
@@ -1195,15 +1229,15 @@ INTEGER PROC SortRoutine(Integer bbl, Integer bel)
         Delay(9)
         case keys
              when on
-                   If Dos(Format(Query(MacPath), "fsort ",
-                                 Query(SwapPath), "$tsees$i.$$$ ",
-                                 Query(SwapPath), "$tsees$o.$$$ ",
+                   If Dos(Format("fsort ",
+                                 workPath, "$tsees$i.$$$ ",
+                                 workPath, "$tsees$o.$$$ ",
                                  BuildMultiKey()), _DONTCLEAR_) == 0
                        Warn("Could not run external sort program")
                    Else
                        DelBlock()      // delete saved block from file
                        GotoPos(0)      // beginning of line
-                       If InsertFile(Query(SwapPath) + "$tsees$o.$$$") == 0
+                       If InsertFile(workPath + "$tsees$o.$$$") == 0
                            Undelete()  // error? get deleted data back
                            Warn("Could not read sorted block")
                        Else
@@ -1211,15 +1245,15 @@ INTEGER PROC SortRoutine(Integer bbl, Integer bel)
                        EndIf
                    EndIf
              otherwise
-                   If Dos(Format(Query(MacPath), "fsort ",
-                                 Query(SwapPath), "$tsees$i.$$$ ",
-                                 Query(SwapPath), "$tsees$o.$$$ ",
+                   If Dos(Format("fsort ",
+                                 workPath, "$tsees$i.$$$ ",
+                                 workPath, "$tsees$o.$$$ ",
                                  BuildKey(sbbc, sbec)), _DONTCLEAR_) == 0
                        Warn("Could not run external sort program")
                    Else
                        DelBlock()      // delete saved block from file
                        GotoPos(0)      // beginning of line
-                       If InsertFile(Query(SwapPath) + "$tsees$o.$$$") == 0
+                       If InsertFile(workPath + "$tsees$o.$$$") == 0
                            Undelete()  // error? get deleted data back
                            Warn("Could not read sorted block")
                        Else
@@ -1231,7 +1265,7 @@ INTEGER PROC SortRoutine(Integer bbl, Integer bel)
     // Delete temp files
     Message("Deleting temp files...")
     Delay(9)
-    Dos("del " + Query(SwapPath) + "$tsees$?.$$$ > nul", _DONTCLEAR_)
+    Dos("del " + workPath + "$tsees$?.$$$ > nul", _DONTCLEAR_)
     GotoLine(bbl)           // Go back
     GotoColumn(bbc)         // ...to where we started
     If btype == _COLUMN_    // ...and based on previous block type,
@@ -1292,12 +1326,17 @@ PROC WorkDone()                         // End game
     Integer i = 3
     Message("Done...")
     Repeat
-        Sound(5000) Delay(1) NoSound()
-        Sound(4000) Delay(1)  NoSound()
+        Sound(5000, 1) Delay(1) NoSound()
+        Sound(4000, 1) Delay(1) NoSound()
         i = i - 1
     Until i <= 0
     Delay(15)
     UpdateDisplay()
+END
+
+PROC Main()
+    SetWorkPath()
+    mSort(ON)
 END
 
 MENU SortMenu()
@@ -1328,7 +1367,7 @@ MENU SortMenu()
         ToggleExtSort()         , ,//DontClose,
     "Force an external sort."
     "",                         , Divide
-    "ÍÍÍÍµForces External SourceÆÍÍÍÍÍ"  ,, Skip
+    "?????Forces External Source??????"  ,, Skip
     "Specify &Multiple Sort Keys" [OnOffStr(keys) : 3],
         ToggleMultiKeys()       , ,//DontClose,
         "Specify multiple sort key indexies."
