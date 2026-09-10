@@ -1,4 +1,0 @@
-constant ID_LST1_HIST = 10
-constant ID_BTN1_KILL = 50
-constant ID_BTN1_SCAN = 51
-constant ID_BTN1_USER = 52

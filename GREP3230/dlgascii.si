@@ -1,6 +1,0 @@
-constant    ID_EDT_TEXT     =   10
-constant    ID_CTR_ASCII    =   20
-constant    ID_TXT_HEX      =   30
-constant    ID_TXT_DEC      =   31
-constant    ID_BTN_CLIP     =   40
-constant    ID_BTN_INSERT   =   41

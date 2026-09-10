@@ -22,8 +22,6 @@
 ///////////////////////////////////////////////////////////////////////////
 // Definitions
 
-STRING iniFileNameGS[255] = ".\grep3230.ini"
-
 // these should either be defined to 1, or not defined at all
 //#define DEBUG 1
 #define AUTO_HILITE 1			// AUTO_HILITE:	 hilite filename lines via TSE's _DISPLAY_FINDS_ mode
@@ -32,8 +30,7 @@ STRING iniFileNameGS[255] = ".\grep3230.ini"
 
 
 // these must be defined to some value
-// #define VARIATION 2				// VARIATION:  0=Ask, 1=Menu, 2=Dialog // old [kn, ri, tu, 29-11-2022 18:14:36]
-#define VARIATION 1				// VARIATION:  0=Ask, 1=Menu, 2=Dialog // new [kn, ri, tu, 29-11-2022 18:14:42]
+#define VARIATION 2				// VARIATION:  0=Ask, 1=Menu, 2=Dialog
 #define BACKGROUNDSEARCH TRUE	// BACKGROUNDSEARCH:  TRUE=Always, FALSE=Never
 
 
@@ -325,12 +322,10 @@ proc Context(integer n, integer fDown, integer id)
 			break
 		endif
 		if fDown
-			// AddLine(Format(CurrLine():6, '  ',
-			AddLine(Format(CurrLine():10, '  ',
+			AddLine(Format(CurrLine():6, '  ',
 					GetText(1, CurrLineLen())), id)
 		else
-			// InsertLine(Format(CurrLine():6, '  ',
-			InsertLine(Format(CurrLine():10, '  ',
+			InsertLine(Format(CurrLine():6, '  ',
 					GetText(1, CurrLineLen())), id)
 		endif
 	endfor
@@ -363,16 +358,16 @@ proc XferSettings(integer fLoad)
 	#endif
 
 	if fLoad
-		UpdateHistoryStr(GetProfileStr(section, GrepOptions, "vm", iniFileNameGS ), hist_opts)
-		UpdateHistoryStr(GetProfileStr(section, GrepExclude, stDefExcl, iniFileNameGS ), hist_excl)
+		UpdateHistoryStr(GetProfileStr(section, GrepOptions, "vm"), hist_opts)
+		UpdateHistoryStr(GetProfileStr(section, GrepExclude, stDefExcl), hist_excl)
 		#ifdef CONTEXT_WINDOW
-		g_fCtxWin = GetProfileInt(section, GrepCtxWin, TRUE, iniFileNameGS )
+		g_fCtxWin = GetProfileInt(section, GrepCtxWin, TRUE)
 		#endif
 	else
-		WriteProfileStr(section, GrepOptions, g_opts, iniFileNameGS )
-		WriteProfileStr(section, GrepExclude, g_excl, iniFileNameGS )
+		WriteProfileStr(section, GrepOptions, g_opts)
+		WriteProfileStr(section, GrepExclude, g_excl)
 		#ifdef CONTEXT_WINDOW
-		WriteProfileInt(section, GrepCtxWin, g_fCtxWin, iniFileNameGS )
+		WriteProfileInt(section, GrepCtxWin, g_fCtxWin)
 		#endif
 	endif
 
@@ -1066,8 +1061,7 @@ proc NonEditIdle()
 		g_nColOfsPrev = g_nColOfs
 
 		// get line number
-		// ln = Val(GetText(1, 8))
-		ln = Val(GetText(1, 20))
+		ln = Val(GetText(1, 8))
 
 		// get filename
 		PushPosition()
@@ -1770,8 +1764,7 @@ endif
 				endif
 
 				// add match to results buffer
-				// i = AppendToBuffer(id, Format(CurrLine():6, ': ',
-				i = AppendToBuffer(id, Format(CurrLine():10, ': ',
+				i = AppendToBuffer(id, Format(CurrLine():6, ': ',
 											  GetText(1, CurrLineLen())))
 
 				// record which line to highlight in results list
@@ -1800,8 +1793,7 @@ endif
 					if Length(s) > 240
 						s = DelStr(s, 241, 50)+"..."
 					endif
-					// WriteLine(CurrLine():6, ': ', s)
-					WriteLine(CurrLine():10, ': ', s)
+					WriteLine(CurrLine():6, ': ', s)
 				endif
 
 				if not InteractiveKeys()
@@ -2651,8 +2643,7 @@ retry:
 			else
 				fTwoWindows = (Query(Key) == <Ctrl Enter>)
 				PushPosition()
-				// ln = Val(GetText(1, 8))
-				ln = Val(GetText(1, 20))
+				ln = Val(GetText(1, 8))
 				EndLine()
 				if lFind(prefix, "^b")
 					path = QuotePath(ExtractFilename())
@@ -2875,6 +2866,7 @@ integer proc Engine(string _needle, string szOpts, string filespec, string exclu
 				opts = opts + szOpts[i]
 		endcase
 	endfor
+
 	// for safety (and speed)
 	hs = SetHookState(OFF)
 
@@ -3422,7 +3414,6 @@ proc UI()
 	integer fOk
 
 	#ifdef WIN32CONSOLE
-        // ExecMacro( "setwiyde" ) // operation: set: window: warn/yesno: position: x: y: default // new [kn, ri, tu, 29-11-2022 18:15:58]
 	fOk = Stuff("Grep ["+CurrDir()+"]")
 	#else
 	fOk = iif(not g_idSearch,
@@ -3623,7 +3614,7 @@ end
 		-e...		exclude files matching {...}.
 		-c			search current file only.
 //$ todo: 		-F...		file {...} is a list of files to search.
-		-Bn			bufferid {n} is a list of files to search (NOTE: grep
+		-Bn			bufferid {n} is a list of files to search (NOTE: grep 
 					takes ownership of the buffer, modifies it, and frees it).
 
 */

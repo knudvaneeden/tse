@@ -1,6 +1,0 @@
-constant    ID_EDT_MAC      =  10
-constant    ID_LST_MAC      =  20
-constant    ID_BTN_FIND     =  50
-constant    ID_BTN_LOAD     =  51
-constant    ID_BTN_PURGE    =  52
-constant    ID_BTN_UNLOAD   =  53

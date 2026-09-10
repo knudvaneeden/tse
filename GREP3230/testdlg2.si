@@ -1,4 +1,0 @@
-constant id_text     = 10
-constant id_scroll   = 11
-constant id_click    = 20
-constant id_beep     = 30

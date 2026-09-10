@@ -1,7 +1,0 @@
-constant id_cmb_folder = 10
-constant id_cmb_types = 11
-constant id_lst_files = 16
-constant id_edt_name = 20
-constant id_btn_dirup = 30
-constant id_btn_dirnew = 31
-constant id_btn_opts = 32

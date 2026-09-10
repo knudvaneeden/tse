@@ -1,7 +1,0 @@
-constant id_chk_noinfo  = 10
-constant id_chk_nodirs  = 11
-constant id_chk_bin     = 20
-constant id_chk_hex     = 21
-constant id_chk_chdir   = 22
-constant id_chk_ldwild  = 23
-constant id_btn_drives  = 50

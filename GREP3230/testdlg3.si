@@ -1,7 +1,0 @@
-constant id_text1    = 10
-constant id_combo    = 11
-constant id_open1    = 12
-constant id_text2    = 20
-constant id_list     = 21
-constant id_scroll   = 22
-constant id_enable   = 50

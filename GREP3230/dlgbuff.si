@@ -1,5 +1,0 @@
-constant ID_LST_BUFF = 10
-constant ID_BTN_RCNT = 50
-constant ID_BTN_OPEN = 51
-constant ID_BTN_SAVE = 52
-constant ID_BTN_CLOSE = 53

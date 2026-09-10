@@ -1,6 +1,0 @@
-constant    ID_CTL_TIME     =   10
-constant    ID_CTL_TEST     =   12
-constant    ID_CHK_PURGE    =   20
-constant    ID_BTN_CLR      =   50
-constant    ID_BTN_DEF      =   51
-constant    ID_BTN_VER      =   52

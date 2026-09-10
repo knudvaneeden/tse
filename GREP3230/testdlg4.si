@@ -1,4 +1,0 @@
-constant ID_CLOCK = 10
-constant ID_FILE = 12
-constant ID_FOLDER = 20
-constant ID_START = 50

@@ -1,6 +1,0 @@
-constant ID_LST_BUFF = 10
-constant ID_BTN_OPEN = 50
-constant ID_BTN_LIST = 51
-constant ID_BTN_DEL = 52
-constant ID_BTN_EMPTY = 53
-constant ID_BTN_CLEAN = 54
