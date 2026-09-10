@@ -13,7 +13,7 @@
     Thanks to Richard for pounding the RegEx's into my thick scull!
 */
 
-PROC GetWord()
+PROC GetWord_()
     String  TheWord[40] = "",           // holds the part word
             BigWord[40] = "",           // holds the found word
             Quote[1]    = " "
@@ -41,4 +41,8 @@ PROC GetWord()
     Message("No Matching Word...")      // tell the user
     PopPosition()                       // clear saved position
     InsertText(TheWord, _INSERT_)       // put the original back
+END
+
+PROC Main()
+ GetWord_()
 END
