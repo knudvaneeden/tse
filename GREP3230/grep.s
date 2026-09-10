@@ -110,6 +110,9 @@ string g_excl[255]
 string g_dir[255]
 integer g_idSearch = 0
 
+// Directory containing this portable GREP macro and its dependencies.
+string g_stMacroDir[255] = ""
+
 string g_stTitle[255]
 integer g_cid
 integer g_lineno
@@ -379,7 +382,8 @@ end
 
 
 proc mHelp(string topic)
-	ExecMacro("gethelp -fgrep.hlp "+topic)
+	ExecMacro('"' + g_stMacroDir + 'gethelp.mac" -f"' +
+		g_stMacroDir + 'grep.hlp" ' + topic)
 end
 
 
@@ -2489,6 +2493,7 @@ forward integer proc Engine(string _needle, string szOpts, string filespec, stri
 // give picklist with results
 proc ShowResults(integer ulFlags)
 	string path[255] = ""
+	string selectedLine[255] = ""
 	integer cid = GetBufferId()
 	integer fExit = FALSE
 	integer i, ln
@@ -2641,6 +2646,15 @@ retry:
 				// a key caused the List to exit, without being specifically
 				// handled, so just exit.  (for instance <Escape>)
 			else
+				selectedLine = GetText(1, 255)
+				if selectedLine == "<Finished>" or
+					selectedLine == "<Terminated>" or
+					selectedLine == "<Error>" or
+					Pos("Not found.", selectedLine) == 1
+					// Status lines do not contain a filename to open.
+					fExit = TRUE
+					GotoBufferId(cid)
+				else
 				fTwoWindows = (Query(Key) == <Ctrl Enter>)
 				PushPosition()
 				ln = Val(GetText(1, 8))
@@ -2706,6 +2720,7 @@ retry:
 					GotoBufferId(cid)
 					Warn("Unable to parse filename.")
 					goto retry
+				endif
 				endif
 			endif
 	endcase
@@ -3253,7 +3268,8 @@ proc UI()
 
 	PushBlock()
 	id = CreateTempBuffer()
-	if id and InsertData(grepdlg) and ExecMacro("dialog grep")
+	if id and InsertData(grepdlg) and
+		ExecMacro('"' + g_stMacroDir + 'dialog.mac" grep')
 		AbandonFile(id)
 		if Val(Query(MacroCmdLine)) == ID_OK
 			Engine(g_expr, g_opts, g_files, g_excl, 0)
@@ -3512,6 +3528,8 @@ end
 
 proc WhenLoaded()
 	integer cid = GetBufferId()
+
+	g_stMacroDir = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_)
 
 	g_idHistory = CreateTempBuffer()
 	GotoBufferId(cid)

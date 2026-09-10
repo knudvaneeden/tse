@@ -224,7 +224,7 @@ constant _WHEEL_DOWN        = <WheelDown>
             per nested dynamic call.
 \****************************************************************************/
 
-string Paint[] = "DialogP"                      // name of paint module
+string Paint[255] = "DialogP"                   // name or full path of paint module
 string DlgPaintState[] = "DlgPaintState"        // name of argument var
 
 /****************************************************************************\
@@ -3270,6 +3270,9 @@ proc WhenLoaded()
     integer msg, ok
     integer bid = GetBufferId()
     string cmd[32] = Query(MacroCmdLine)
+
+    // Load DialogP from the same directory as this portable Dialog macro.
+    Paint = SplitPath(CurrMacroFilename(),_DRIVE_|_PATH_) + "dialogp.mac"
 
     // load trace module
 

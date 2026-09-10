@@ -1,6 +1,6 @@
 @echo off
 setlocal
-cd /d "%~dp0"
+pushd "%~dp0" >nul
 
 echo Building GREP3230 portable package...
 echo.
@@ -37,8 +37,10 @@ goto build_done
 :build_failed
 echo.
 echo BUILD FAILED. Review the compiler error shown above.
-exit /b 1
+popd
+endlocal
+goto :eof
 
 :build_done
+popd
 endlocal
-exit /b 0

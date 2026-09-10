@@ -1,7 +1,7 @@
 # GREP3230 for The SemWare Editor (TSE)
 
-**README version:** 1.0.0.0.1  
-**Updated:** 2026-09-10 20:02:38 CEST  
+**README version:** 1.0.0.0.5  
+**Updated:** 2026-09-10 20:42:47 CEST  
 **Package version:** GREP v3.0  
 **Original package date:** 2002-05-15  
 **Original author:** Christopher Antos
@@ -59,7 +59,7 @@ No files from `dlg222p.zip` are present in the final portable archive.
 ## Installation
 
 1. Close TSE before replacing any macros that may already be loaded.
-2. Extract `grep3230_portable_1.0.0.0.0.zip` to a directory of your choice.
+2. Extract `grep3230_portable_1.0.0.0.4.zip` to a directory of your choice.
 3. Ensure `sc32.exe` is available through `PATH`.
 4. Run `build.bat` in the extracted directory.
 5. Confirm that the build created `dialogp.mac`, `dialog.mac`, `GETHELP.mac`, `HELPHELP.mac`, and `grep.mac`.
@@ -72,13 +72,15 @@ No files from `dlg222p.zip` are present in the final portable archive.
 
 The portable package includes `build.bat`, which compiles all required macros with the SAL compiler belonging to the installed TSE version. Keep all extracted files together and make sure `sc32.exe` is available through `PATH`.
 
+The new portable path code and `build.bat` use plain ASCII. Some original GREP, DialogP, and GETHELP source strings contain DOS/OEM line-drawing or help-format characters used by their interfaces. Those required legacy bytes are intentionally preserved. Binary/generated `.DAT`, `.K32`, and `.HLP` resources must not be converted to text or UTF-8.
+
 Example:
 
 ```text
 build.bat
 ```
 
-The batch file changes to its own directory, so it can be started from any working directory. It stops immediately if a compilation fails.
+The batch file temporarily switches to its own directory with `pushd`, so it can be started from any working directory. It stops immediately if a compilation fails. It does not use `cd /d` or `exit /b`, avoiding the extra command-description messages shown by some TSE/TCC command environments.
 
 Compilation occurs in this order:
 
@@ -242,7 +244,45 @@ Recompile `grep.s` after changing these definitions.
 - `-Bnumber` transfers ownership of the specified file-list buffer to GREP; GREP may modify and free that buffer.
 - Restart TSE after replacing a loaded compiled macro if the old version remains active.
 
+## Portable dependency loading
+
+Portable package version 1.0.0.0.4 no longer relies on TSE's configured macro directory or the process's current working directory:
+
+- `grep.mac` derives its own directory from `CurrMacroFilename()`.
+- GREP executes `dialog.mac` from that directory.
+- GREP executes `gethelp.mac` from that directory and supplies the full path to `grep.hlp`.
+- `dialog.mac` loads `dialogp.mac` from its own directory using the complete filename, including the required `.mac` extension.
+- Dialog's `Paint` variable is explicitly declared as a 255-character string, preventing the absolute DialogP pathname from being truncated to the length of the original `"DialogP"` initializer.
+
+Keep these files together after compiling: `grep.mac`, `dialog.mac`, `dialogp.mac`, `gethelp.mac`, `helphelp.mac`, `grep.hlp`, `GETHELP.DAT`, and `GETHELP.HLP`.
+
 ## Version history of this README
+
+### 1.0.0.0.5 — 2026-09-10 20:42:47 CEST
+
+- Fixed `Unable to parse filename.` after pressing **Enter** on a completed search with no matches.
+- GREP now recognizes `<Finished>`, `<Terminated>`, `<Error>`, and `Not found...` as status rows rather than filenames.
+- Pressing **Enter** on one of these rows closes the results list cleanly.
+
+### 1.0.0.0.4 — 2026-09-10 20:36:34 CEST
+
+- Fixed the persistent `Dialog: Cannot load modules.` error at its root cause.
+- Expanded Dialog's `Paint` variable from an inferred short string to `string Paint[255]`.
+- This allows the complete absolute `dialogp.mac` pathname to reach `LoadMacro()` without truncation.
+
+### 1.0.0.0.3 — 2026-09-10 20:33:00 CEST
+
+- Corrected the DialogP absolute loader path after the `Dialog: Cannot load modules.` runtime error.
+- The full path passed to `LoadMacro()` now ends explicitly in `dialogp.mac`.
+- Retained the ASCII build changes and required original OEM interface characters.
+
+### 1.0.0.0.2 — 2026-09-10 20:27:17 CEST
+
+- Fixed the remaining macro-path dependency found with TSE SAL Compiler V4.50.26.
+- GREP now resolves Dialog, GETHELP, and `grep.hlp` relative to its own macro directory.
+- Dialog now resolves DialogP relative to its own macro directory.
+- Replaced `cd /d` and `exit /b` in `build.bat` to avoid shell-description messages.
+- Kept new source changes in ASCII while preserving required original OEM interface characters and binary help resources.
 
 ### 1.0.0.0.1 — 2026-09-10 20:02:38 CEST
 
