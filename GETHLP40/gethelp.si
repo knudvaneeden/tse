@@ -6,9 +6,7 @@
 // <Shift F1>		Show syntax window.
 // <Ctrl F1>		Full help menu.
 
-STRING loadDirGS[255] = "" // [kn, ri, fr, 02-12-2022 01:20:32]
 
-STRING iniFileNameGS[255] = ".\gethlp40.ini" // [kn, ri, sa, 03-12-2022 19:52:37]
 
 #ifndef WIN32
 proc COMPILE_ERROR()
@@ -16,7 +14,7 @@ GETHELP_needs_TSE_2_6_or_higher
 end
 #endif
 
-#include [ "guiinc.inc" ]
+#include "guiinc.inc"
 
 
 
@@ -1565,19 +1563,10 @@ integer proc LoadHelpFile(string helpfile)
 
 	// get help file
 	g_stHelpFile = iif(Length(helpfile), helpfile, stHelpSupl)
-	// stHelpFile = mSearchPath(g_stHelpFile, Query(TSEPath), "help") // gives 'GETHELP.HLP' [kn, ri, su, 02-10-2022 14:53:24]
-	stHelpFile = mSearchPath(g_stHelpFile, loadDirGS, "help") // gives 'GETHELP.HLP' [kn, ri, fr, 02-12-2022 01:25:57]
+	stHelpFile = mSearchPath(g_stHelpFile, Query(TSEPath), "help")
 	if not Length(stHelpFile)
 		stHelpFile = mSearchPath(g_stHelpFile, Query(TSEPath), "mac")
 	endif
-        //
-        // new [kn, ri, we, 12-10-2022 19:16:35]
-        //
-        IF NOT FileExists( stHelpFile )
-         Warn( "GETHELP.HLP file not found in your TSEPath", " ", Query( TSEPath ), "mac or", " ", Query( TSEPath ), "help or", " ", Query( TSEPath ), ".", " ", "Please put it there first." )
-         Halt
-        ENDIF
-        //
 	g_stHelpFile = stHelpFile
 
 	// create help buffer
@@ -3565,7 +3554,6 @@ proc WhenLoaded()
 	integer cid = GetBufferId()
 	integer ok
 	string stDat[MAXPATH]
-        loadDirGS = SplitPath( CurrFileName(), _DRIVE_ | _PATH_ ) // [kn, ri, fr, 02-12-2022 01:21:08]
 
 	// get macro name, for warning messages
 	g_stMacro = Upper(SplitPath(CurrMacroFilename(), _NAME_))
@@ -3577,23 +3565,11 @@ proc WhenLoaded()
 		// load DAT file
 		PushBlock()
 		stDat = mSearchPath(g_stDatFile, Query(TSEPath), ".")
-                //
-                // new [kn, ri, we, 12-10-2022 19:16:35]
-                //
-                // IF NOT FileExists( Format( Query( TSEPath ), g_stDatFile ) ) // old [kn, ri, fr, 02-12-2022 01:22:12]
-                IF NOT FileExists( Format( loadDirGS, g_stDatFile ) )
-
-                 Warn( "GETHELP.DAT file not found at", " ", loadDirGS, ".", " ", "Please put it there first." )
-                 Halt
-                ENDIF
-                //
 		if not Length(stDat)
-			// stDat = LoadDir()+g_stDatFile // old [kn, ri, fr, 02-12-2022 01:21:29]
-			stDat = loadDirGS + g_stDatFile // new [kn, ri, fr, 02-12-2022 01:21:29]
+			stDat = LoadDir()+g_stDatFile
 		endif
 		g_stDatFile = stDat
-		// if InsertFile(mSearchPath(g_stDatFile, Query(TSEPath), "."), _DONT_PROMPT_) // old [kn, ri, su, 02-10-2022 15:15:17]
-		if InsertFile( g_stDatFile, _DONT_PROMPT_)
+		if InsertFile(mSearchPath(g_stDatFile, Query(TSEPath), "."), _DONT_PROMPT_)
 			UnMarkBlock()
 			BegFile()
 			g_stHelpPath = GetText(1, CurrLineLen())
@@ -3754,6 +3730,7 @@ proc Main()
 	integer fSyntax = FALSE
 	integer fHelpHelp = FALSE
 	integer rc = 0
+
 	// show welcome screen if command line is empty
 	if not Length(Trim(Query(MacroCmdLine)))
 		MyHelp("Welcome to GETHELP")
