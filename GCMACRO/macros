@@ -1,0 +1,42 @@
+// SHORT MACROS TO BURN INTO SE
+
+/******************************************************************************
+  12 April 93: G. Grafton Cole                                  ENHANCED SORT
+
+  This can be assigned to a key.  I hate menus.
+ *****************************************************************************/
+menu SortTypeMenu()
+  "Sort &Ascending"
+  "Sort &Descending"
+  "Sort Ascending  &Nocase"
+  "Sort Descending n&Ocase"
+end
+
+proc mSort()
+  SortTypeMenu()
+  Sort(MenuOption()-1)
+end
+
+/*****************************************************************************
+  7 May 93: G. Grafton Cole                               ENHANCED MACRO LOAD
+
+  Pass the name of the macro to execute.  Will check for an enviornmental
+    variable SEMAC, current directory, and finally DOS path.  Could return
+    message "NOT FOUND", but that adds bytes.  I burn this macro into SE. It
+    is used to invoke ShareSpell and the SS1WORD addition to ShareSpell.  This
+    keeps bytes out of SE unless I really need spell checking.
+ ****************************************************************************/
+
+integer proc mExecMacro(string macro)
+    string macEV[30] = GetEnvStr("SEMAC")   // EV path to SE macros
+
+    if Length(macEV)                        // is there an EV path
+        ExecMacro(macEV+"\"+macro)
+    elseif  FileExists(LoadDir()+macro)     // if not in environment assume
+        ExecMacro(LoadDir()+macro)          //   SS in same directory as SE
+    else
+        ExecMacro(macro)                    // hope it's on the path
+    endif
+    return(FALSE)
+end
+

@@ -1,0 +1,22 @@
+9 May 93: G. Grafton Cole
+          7303 RedBrigdge Court
+          Springfield  VA 22153
+
+    File list:  README     This file
+                MACROS     Short macros
+                BLOCK.s    Enhanced block functions
+                SCROLL.s   Enhanced scroll functions
+                SS.s       Modified SS.s for ShareSpell
+                SS1WORD.s  Allows checking a single word with ShareSpell
+
+    I have done very little work with the SE macro language so these macros
+are mostly brute force and very little finesse.  They were hacked to get the
+job done.  I am a 'die hard' WordStar command key user, so the first thing I
+did was to strip out all the menues and assign things to key strokes.  Anyone
+who can give some elegance to these macros, and kill bytes is more than
+welcome.  I don't have time to go online often, but I do read my mail.
+
+To SEMWARE:  I would love to be able to have room on the status line to
+             implement uses defined toggles. I would not mind a truncating
+             the path/file area.
+
