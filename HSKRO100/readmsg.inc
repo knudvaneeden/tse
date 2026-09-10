@@ -38,8 +38,7 @@ proc mMessageIfReadOnly()
     if Setting_Display <> READONLY_DISPLAY_NOTHING
 
         // Is the file marked as Read-Only?
-        if FindFirst( CurrFilename(), ffblk, ffALLNV ) AND
-           ( ffAttr(ffblk) & ffRDONLY )
+        if HSKIsReadOnly(CurrFilename())
 
             // Sound the alarm?
             if Setting_Alarm

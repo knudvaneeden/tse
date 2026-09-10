@@ -56,7 +56,7 @@ proc mHskListOpenFiles()
                     prefix = iif( FileChanged(), '*', ' ' )
                     suffix = ''
                 when READONLY_BUFFERLIST_RO_MOD_FNAME
-                    if FindFirst( fn, ffblk, ffALLNV ) AND ( ffAttr(ffblk) & ffRDONLY )
+                    if HSKIsReadOnly(fn)
                         prefix = 'R' + iif( FileChanged(), '*', ' ' )
                     else
                         prefix = ' ' + iif( FileChanged(), '*', ' ' )
@@ -64,7 +64,7 @@ proc mHskListOpenFiles()
                     suffix = ''
                 when READONLY_BUFFERLIST_MOD_FNAME_RO
                     prefix = iif( FileChanged(), '*', ' ' )
-                    if FindFirst( fn, ffblk, ffALLNV ) AND ( ffAttr(ffblk) & ffRDONLY )
+                    if HSKIsReadOnly(fn)
                         suffix = ' (RO)'
                     else
                         suffix = ''

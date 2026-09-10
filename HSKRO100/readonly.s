@@ -6,6 +6,9 @@
 ////
 //// Recommended key bindings:  <CenterCursor>  mHskListOpenFiles()
 ////
+//// Win32 port version: 1.0.0.0.1
+//// LLM: OpenAI Codex (GPT-5)
+////
 //// Last Update:
 ////    02/22/95 10:41 pm HSK0  Created (1.0)
 ////
@@ -22,12 +25,12 @@
 ////
 ////
 ////
-#include ["readhlpr.s"]
+#include ["readhlpr.inc"]
 //***SEEME***
-#include ["readlist.s"]
-#include ["readmsg.s"]
-#include ["readstat.s"]
-#include ["readmenu.s"]
+#include ["readlist.inc"]
+#include ["readmsg.inc"]
+#include ["readstat.inc"]
+#include ["readmenu.inc"]
 //
 //
 // Global Variables

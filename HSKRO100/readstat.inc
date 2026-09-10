@@ -44,12 +44,8 @@ proc mHook_SaveFileAttributeInfo()
     endif
 
     // Get the file's attributes
-    if FindFirst( CurrFilename(), ffblk, ffALLNV )
-
-        // File found, get the attributes
-        Attributes = ffAttr( ffblk )
-
-    else
+    Attributes = HSKGetFileAttributes(CurrFilename())
+    if Attributes == -1
 
         // File not found, assume no attributes
         Attributes = 0
