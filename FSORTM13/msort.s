@@ -78,7 +78,30 @@
 |   5)  From Sort Menu select "S" when ready or "Q" to quit.
 */
 
-integer btype, dups, ext, decimal, good, extra // "sort_flags" already in TSE.S
+integer btype, dups, ext, decimal, good, extra,
+        sort_flags = 0
+
+STRING PROC OnOffStr(Integer stateI)
+    If stateI
+        return("On")
+    EndIf
+    return("Off")
+END
+
+STRING PROC ShowSortFlag()
+    If (sort_flags & 1)
+        return("Descending")
+    EndIf
+    return("Ascending")
+END
+
+PROC ToggleSortFlag(Integer flagI)
+    If (sort_flags & flagI)
+        sort_flags = sort_flags - flagI
+    Else
+        sort_flags = sort_flags + flagI
+    EndIf
+END
 
 STRING PROC BuildKey(Integer sbbc, Integer sbec)
 
@@ -103,6 +126,21 @@ INTEGER PROC SortRoutine(Integer bbl, Integer bel)
             sc   = CurrCol(),
             bbc  = Query(BlockBegCol),
             bec  = Query(BlockEndCol)
+    string tempDir[255]   = GetEnvStr("TEMP"),
+           tempInput[255],
+           tempOutput[255]
+
+    If tempDir == ""
+        tempDir = GetEnvStr("TMP")
+    EndIf
+    If tempDir == ""
+        tempDir = "."
+    EndIf
+    If SubStr(tempDir, Length(tempDir), 1) <> "\"
+        tempDir = tempDir + "\"
+    EndIf
+    tempInput  = tempDir + "$tsees$i.$$$"
+    tempOutput = tempDir + "$tsees$o.$$$"
 
     Message("Preparing...")
     If(btype == _COLUMN_)   // If it's a column
@@ -114,20 +152,20 @@ INTEGER PROC SortRoutine(Integer bbl, Integer bel)
     GotoLine(bel)
     MarkLine()
     // save the block to a temp file and check for error
-    If SaveBlock(Query(SwapPath) + "$tsees$i.$$$", _OVERWRITE_) == 0
+    If SaveBlock(tempInput, _OVERWRITE_) == 0
         Warn("Could not write block")
         Return(FALSE)
     Else                    // no error, do fsort with parms & error check
         Message("Sorting...")
         If Dos(Format("fsort ",
-                      Query(SwapPath), "$tsees$i.$$$ ",
-                      Query(SwapPath), "$tsees$o.$$$ ",
+                      Chr(34), tempInput, Chr(34), " ",
+                      Chr(34), tempOutput, Chr(34), " ",
                       BuildKey(sbbc, sbec)), _DONTCLEAR_) == 0
             Warn("Could not run external sort program")
         Else
             DelBlock()      // delete saved block from file
             GotoPos(0)      // beginning of line
-            If InsertFile(Query(SwapPath) + "$tsees$o.$$$") == 0
+            If InsertFile(tempOutput) == 0
                 Undelete()  // error? get deleted data back
                 Warn("Could not read sorted block")
             Else
@@ -137,7 +175,8 @@ INTEGER PROC SortRoutine(Integer bbl, Integer bel)
     EndIf
     // Delete temp files
     Message("Deleting temp files...")
-    Dos("del " + Query(SwapPath) + "$tsees$?.$$$ > nul", _DONTCLEAR_)
+    Dos(Format("del /q ", Chr(34), tempInput, Chr(34), " ",
+               Chr(34), tempOutput, Chr(34), " > nul"), _DONTCLEAR_)
     GotoLine(bbl)           // Go back
     GotoColumn(bbc)         // ...to where we started
     If btype == _COLUMN_    // ...and based on previous block type,
@@ -193,8 +232,8 @@ PROC WorkDone()                         // End game
     Integer i = 3
     Message("Done...")
     Repeat
-        Sound(5000) Delay(1) NoSound()
-        Sound(4000) Delay(1)  NoSound()
+        Sound(5000, 1) Delay(1) NoSound()
+        Sound(4000, 1) Delay(1) NoSound()
         i = i - 1
     Until i <= 0
     Delay(15)
@@ -299,4 +338,8 @@ Integer bbl     = Query(BlockBegLine),
             Warn("Error in running external sort...")
         EndIf
     EndIf
+END
+
+PROC Main()
+    mSort(ON)
 END
