@@ -41,46 +41,45 @@
 
   So generate uses this extra zero's
  ************************************************************************/
-integer gen_repeat_hist,gen_step_hist
+/*
+  Modernized for TSE SAL Compiler V4.50.rc23.
+  Version: 1.0.0.0.2
+  Date:    2026-09-10
+
+  The original GetFreeHistory() calls are not accepted by the current
+  compiler.  Use TSE's standard edit history and retain useful defaults in
+  global strings instead.
+
+  GetClipboardId() and SetClipboardId() were also removed because they are
+  unavailable in TSE 4.50.  The macro now uses the active TSE clipboard.
+*/
+string GSRepeatS[6] = ''
+string GSStepS[6]   = '1'
 
 proc main()
 /* why have 10 subprocs. 1 big main does the job */
-string dumbo[6]=''
 string strfigure1[10]=''
 string strfigure2[10]=''
 string prefix[10]=''
 integer repeteer,gen_step,ok,bufid,index1,index2,extra
-integer newbufid,oldbufid,oldclpbrd,newclpbrd
+integer newbufid,oldbufid
 integer cijfpos,figure1,figure2,lengonefigure,lprefix,lprefixmin
 integer typeblock,saveilba
 
-/* Setup Historybuffers for repeat and gen_step
-   If this is the first time generate is called we have to setup these buffers */
-if gen_repeat_hist==0
-   gen_repeat_hist=getfreehistory()
-   gen_step_hist=  getfreehistory()
-   AddHistoryStr(str(1),gen_step_hist)
-endif
-
 /* Ask 2 things: # repeat and step */
-ok=ask("Repeat #: ",dumbo,gen_repeat_hist)
-repeteer=val(dumbo)
-if ok and length(dumbo)>0
-  dumbo=''
-  ok=ask("Step: ",dumbo,gen_step_hist)
-  gen_step=val(dumbo)
-  if ok and length(dumbo)>0
+ok=ask("Repeat #: ",GSRepeatS,_EDIT_HISTORY_)
+repeteer=val(GSRepeatS)
+if ok and length(GSRepeatS)>0
+  ok=ask("Step: ",GSStepS,_EDIT_HISTORY_)
+  gen_step=val(GSStepS)
+  if ok and length(GSStepS)>0
 
-/* Setup the right buffers. I work via a temporary clipboard (newclpbrd)
-   I don't want to change the active clipboard.
-   Also a temporary buffer is created to gather the results. */
+/* Create a temporary buffer to gather the results.  TSE 4.50 no longer
+   supports the old clipboard-buffer ID API, so the active clipboard is used. */
 
     message('Working')
     oldbufid=getbufferid()
     newbufid=createtempbuffer()
-    oldclpbrd=getclipboardid()
-    newclpbrd=createtempbuffer()
-    setclipboardid(newclpbrd)
 
 /*  the text is copied into the new clipboard
     If no block is active the active line is used.
@@ -166,8 +165,6 @@ if ok and length(dumbo)>0
     gotobufferid(oldbufid)
     set(insertlineblocksabove,saveilba)
     paste()
-    setclipboardid(oldclpbrd)
-    abandonfile(newclpbrd)
     abandonfile(newbufid)
     gotobufferid(oldbufid)
     updatedisplay(_STATUSLINE_REFRESH_)
