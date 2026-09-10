@@ -1,0 +1,178 @@
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®S¯®/S¯ù Index
+
+®B¯--- Help with GREP ---®/B¯
+
+®L¯Introduction®/L¯
+
+®L¯Samples of How to Use Grep®/L¯
+®L¯Searching with Regular Expressions®/L¯
+
+®L¯Grep Dialog®/L¯
+®L¯Grep Keys®/L¯
+®L¯Grep List®/L¯
+
+®L¯Grep from the DOS Prompt®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Introduction
+
+Grep lets you search multiple files for a string of text.
+
+
+®B¯Features:®/B¯
+
+    ù ...Under Construction... (and yes, i suppose that's a feature <g>)
+
+    ù Optional window shows the lines surrounding each matching line; this
+      window can be scrolled.
+    ù "Refresh" command re-does the search, to reflect any changes made since
+      the search was last performed.
+
+
+®B¯Problems?  Suggestions?®/B¯
+
+Feel free to email me with questions, bug reports, complaints, suggestions, or
+whatever, at ®I¯chrisant@microsoft.com®/I¯.  I will reply as quickly as I can, which
+may be days or even weeks if I'm really busy.  (Please do not write me about
+Microsoft software, I have to ignore any such email; please pursue questions
+about Microsoft software through official channels).
+
+
+®B¯Disclaimer:®/B¯
+
+You know the drill; as they say, "You get what you pay for".  This is totally
+Freeware, so you get whatever support I have time to offer out of my limited
+free time.  Enjoy the macro; it's extremely useful to me, and I hope it's
+equally useful for you.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Grep Keys
+
+®B¯When Grep.Mac is loaded, the following keys become active:®/B¯
+
+®I¯<Alt G>®/I¯                 Show the Grep Dialog, allowing you to set your search
+                        options and start the search.  The results are
+                        displayed in a list on the screen.  This list is
+                        called the ®L¯Grep List®/L¯.
+
+®I¯<AltShift G>®/I¯            Redisplay the results of the most recent Grep search
+                        (the ®L¯Grep List®/L¯).
+
+®I¯<Ctrl G>®/I¯                If a word is under the cursor, looks in the current
+                        file for a function declared with that name and jumps
+                        to that line.  If no word is under the cursor, a list
+                        is shown of all function declarations in the current
+                        file.  (Works for SAL, C, C++, Pascal, Assembler,
+                        Basic, and a couple others).
+
+®I¯<Ctrl '>®/I¯                Search loaded files for the word under the cursor (if
+                        no word is under the cursor, you are prompted to enter
+                        an expression to search for).
+
+®I¯<CtrlShift '>®/I¯           Search all files in the current directory for the word
+                        under the cursor (if no word is under the cursor, you
+                        are prompted to enter an expression to search for).
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Grep List
+
+The Grep List shows the files and lines that match what you searched for.
+If you close the Grep list, you can open it again by pressing <AltShift G>.
+
+If the context window is visible and the file it is displaying is a
+programming language source code file and the hilited line is in a function,
+the name of the function is displayed at the top of the context window.
+
+
+®B¯Keys Available in the Grep List:®/B¯
+
+®I¯<F1>®/I¯                    Help.
+
+®I¯<Enter>®/I¯                 Go to the selected line in the selected file.
+
+®I¯<Ctrl Enter>®/I¯            Open a second window and go to selected line in the
+                        selected file.
+
+®I¯<Escape>®/I¯                Close the Grep List.
+
+®I¯<Down/Up>®/I¯               Go to next or previous line in the list.
+
+®I¯<Shift PgDn/PgUp>®/I¯       Position cursor on the next or previous file in the
+                        list.
+
+®I¯<Del>®/I¯                   Deletes the current match from list, or if cursor is
+                        on a filename, delete all matches in that file from
+                        the list.
+
+®I¯<Alt E>®/I¯                 Edit the Grep List as a file.
+
+®I¯<F5>®/I¯                    Refresh the results list (do the whole search over
+                        again).
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Grep Dialog
+
+This dialog lets you enter what you want to search for, and set options
+to control the search.
+
+...Under Construction...
+
+®L¯Summary List of Regular Expression Operators®/L¯
+®L¯Searching with Regular Expressions®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Grep from the DOS Prompt
+
+You can use GREP from the DOS Prompt, too, by using the G.BAT batch file. For
+example, the command:
+
+    ®I¯G hello *.txt®/I¯
+
+finds all occurrences of "hello" in the files matching *.txt in the current
+directory.
+
+
+®B¯--- Options ---®/B¯
+
+Enter G all by itself at the DOS Prompt to see a list of the options that G
+supports.  Here is the same list, with more detail:
+
+®B¯G [-deilpwx] ®I¯Needle®/I¯ ®I¯Filespec®/I¯®/B¯
+
+Searches all files matching ®I¯Filespec®/I¯ for the string ®I¯Needle®/I¯.
+
+®B¯Options:®/B¯
+
+    -d              Searches subdirectories, too.
+
+    -e®I¯Filespec®/I¯      Excludes files that match ®I¯Filespec®/I¯.
+
+                    Example:
+                    G -e*.bak,*.tmp hello *.*
+
+                    Searches all files in current directory, except *.bat and
+                    *.tmp, for the string "hello".
+
+    -i              Ignore case (treat lower case and upper as identical).
+
+    -l              Only list the names of files that have matches; don't list
+                    the matches themselves.
+
+    -p®I¯Dir®/I¯           Begins the search from the path ®I¯Dir®/I¯.
+
+    -w              Match whole words.
+
+    -x              Use regular expressions.
+                    (see ®L¯Searching with Regular Expressions®/L¯)
+
+
+®B¯NOTE:®/B¯ G.BAT should be in a directory that is listed in your PATH environment
+      variable.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Samples of How to Use Grep
+
+...Under Construction...
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ

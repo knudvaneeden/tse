@@ -1,0 +1,127 @@
+// GetHelp ----------------------------------------------------------------
+// Chris Antos, chrisant@microsoft.com
+// portions by Steve Watkins, SemWare Corporation
+
+
+Release Notes:
+
+v4.0, 05/19/02
+-
+
+v2.8a, 05/06/98
+- uses undocumented HELPHELP.MAC to handle F1 while in TSE menus.
+- detects ( or () and looks for the word before them.
+- Ctrl-V isn't overridden anymore (to avoid conflicting with the Paste
+  command).
+- TOO BIG FOR TSE 2.5, abandoning support for TSE 2.5 (sorry).
+
+v2.8, 06/26/97
+- support TSE 2.8.
+
+v2.1, 03/27/97
+- minor changes to help files.
+- when linking to a subtopic, the subtopic is always displayed at the top of
+  the screen.
+
+v2.0:
+- various fixes.
+- the help file for GetHelp is complete.
+
+v1.01:
+- NEW: <Alt P> prints out the current help topic.
+- The supplementary help files now include a Table of Contents in
+  book-like format; now you can read the online TSE help as though it
+  were a printed manual.
+- My apologies for my lousy testing on TSE 2.5!  I'm using TSE 2.6
+  exclusively, and I discovered several bugs using GetHelp with TSE 2.5.
+  This time I tried to test it pretty exhaustively on TSE 2.5;
+  everything should work fine in this version.
+
+v1.00:
+- My apologies to TSE 2.5 users who noticed the file ini.si was missing
+  in a previous release -- the file is no longer needed.
+- My apologies for the previous release not compiling at all on TSE 2.5,
+  plus other various bugs.
+- The previous releases of GETHELP had such a large keydef that an error
+  often occurred when loading GETHELP, or when loading another macro
+  after loading GETHELP.  The error message was "KeyBoard table full".
+  This has been fixed.  You might still get that error, but if you do
+  then you must have a lot of macros loaded!!
+
+
+
+-- Setting up GETHELP --------------------------------------------------------
+
+        GETHELP comes pre-compiled for TSE 4.0, but can be recompiled
+        for TSE 2.6 through 4.0.
+
+
+
+Instructions for TSE 2.6 thru TSE 4.0:
+
+        1. Unzip GETHELP.ZIP to your MAC\ directory.
+        2. Move GETHELP.DAT and HELP*.HLP to your main TSE directory.
+        3. Compile the macros by running these DOS prompt commands:
+           - Run the DOS prompt command "sc32 gethelp.si".
+           - Run the DOS prompt command "sc32 helphelp.s".
+        4. Add GETHELP.MAC to your AutoLoad list:
+           - Start TSE
+           - Go to the main menu, choose the "Macro" menu
+           - Choose "AutoLoad List..."
+           - Press <Ins>
+           - Type "GETHELP" and press <Enter> (without entering the
+             quotation marks)
+           - Press <Enter> to close the AutoLoad List
+        5. See "Using GETHELP", below.
+
+
+
+Instructions for TSE 2.5 (DOS):
+
+        SORRY:  Download GETHLP20.ZIP instead from ftp.semware.com.
+
+
+
+-- Using GETHELP -------------------------------------------------------------
+
+HINT:   For help on using GETHELP, just execute the GETHELP.MAC macro,
+        and the "Welcome to GETHELP" help topic will automatically
+        appear.
+
+        Or, load the GETHELP macro, and press <Ctrl F1>, then select
+        "Help on GETHELP" from the menu.
+
+
+
+Quick Summary of Keys:
+
+        <F1>             Context sensitive help based on file extension.
+        <Shift F1>       Show syntax window.
+        <Ctrl F1>        Full help menu.
+
+        To configure the list of help files, hit <Ctrl F1>, then hit
+        <Alt E>.
+
+
+
+NEW:    You can now add Windows help files, TSE help files, or help
+        programs (such as 4help.exe that comes with 4DOS) to the help
+        menu!  Hit F1 and depending on the extension of the file you're
+        editing, you get a menu of the available help files for that
+        extension.  (If there's only one help file for that extension,
+        it just goes straight to the help file w/o showing a menu).  To
+        add/remove help files, hit <Ctrl F1>, then <Alt E>.
+
+
+
+-- Advanced Users ------------------------------------------------------------
+
+        - See GETHELP.SI for technical information, and command line
+          parameters for the macro.  (Or press <Ctrl F1>, then <F1>,
+          then <Alt I>, then select "Command Line Options for GETHELP
+          Macro")
+
+        - You can use GETHELP to show help files for your own macros!
+          Look at the "MyHelp" procedure in GETHELP.SI for an example of
+          how to connect it up.
+

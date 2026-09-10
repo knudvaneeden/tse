@@ -1,0 +1,606 @@
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Index
+
+®B¯--- Quick Summary ---®/B¯
+
+®I¯<F1>®/I¯         Get help on the word under the cursor,
+®I¯<Ctrl F1>®/I¯    Show the full list of all available help files,
+®I¯<Shift F1>®/I¯   Show the syntax for a TSE command.
+
+
+®B¯--- Index ---®/B¯
+
+Getting started:
+
+    ®L¯Welcome to GETHELP®/L¯
+®GH://$ todo: (chrisant) how to quickly set up GETHELP to work for you¯
+
+
+Configuring GETHELP:
+
+    ®L¯Editing a Help Group®/L¯
+    ®L¯Editing the List of Help Files®/L¯
+    ®L¯Help Menu®/L¯
+    ®L¯Search Path for Windows Help Files®/L¯
+    ®L¯The "Help Groups" Menu®/L¯
+
+
+Writing help files:
+
+    ®L¯Help Editing Keys®/L¯
+    ®L¯How to Write Help Topics®/L¯
+    ®L¯Infoboxes®/L¯
+    ®L¯Links®/L¯
+
+
+Miscellaneous:
+
+    ®L¯Command Line Options for GETHELP Macro®/L¯
+    ®L¯Using GETHELP with Your Own Macros®/L¯
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Welcome to GETHELP
+
+Welcome to GETHELP!
+
+To browse through the online help, go to the ®L¯Index®/L¯ now!
+
+
+®B¯--- Quick Summary ---®/B¯
+
+®I¯<F1>®/I¯         Get help on the word under the cursor,
+®I¯<Ctrl F1>®/I¯    Show the full list of all available help files,
+®I¯<Shift F1>®/I¯   Show the syntax for a TSE command.
+
+
+GETHELP offers four major features:
+
+    ù It supplements the TSE help system with information on undocumented TSE
+      commands.
+
+    ù It enhances the TSE help system by allowing you to add your own help
+      files.
+
+    ù It allows you to connect to Windows help files or DOS help programs from
+      within TSE.
+
+    ù In the help system, You can print out help topics by pressing ®I¯<Alt P>®/I¯.
+
+
+Some examples of using GETHELP:
+
+    ù If you are programming for Windows, you can connect to the Windows SDK
+      help files to get help on Win32 APIs, OLE, MFC, etc.  Or you can get
+      help on Borland C++, etc.  Any Windows help file can be accessed.
+
+    ù If you are writing DOS batch files, and you have the 4DOS command shell
+      from JP Software (see ®L¯ftp:ftp.std.com/vendors/jpsoft®/L¯ or
+      ®L¯http://www.jpsoft.com®/L¯), you can connect to the 4DOS help system.
+
+    ù You can write your own help file, and connect it to your macro (See the
+      "MyHelp" function in GETHELP.SI for an example of how to do this).
+
+
+®B¯--- About GETHELP ---®/B¯
+
+GETHELP was written by Chris Antos (®L¯mailto:chrisant@microsoft.com®/L¯).
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Command Line Options for GETHELP Macro
+
+This information is intended for ADVANCED USAGE.
+
+
+If the command line is empty, the "Welcome to GETHELP" screen is displayed.
+
+-w                          Show help for word under the cursor.
+
+-m                          Show full menu of available help files.
+
+-s ®I¯<help topic>®/I¯             Show syntax for "help topic".  If -s is used by
+                            itself, with no help topic specified, GETHELP will
+                            look up the word under the cursor.  (Don't type
+                            the angle brackets; they are for illustrative
+                            purposes only)
+
+®I¯<help topic>®/I¯                If a help topic name is specified, but no other
+                            options are specified, the help topic is looked
+                            up, and help is
+                            displayed.  (Don't type the angle brackets; they
+                            are for illustrative purposes only)
+
+-f®I¯<helpfile>®/I¯ ®I¯<help topic>®/I¯   Specifies the help file to use, and
+                            optionally specifies the help topic to look up.
+                            You can write your own help file, then reference
+                            it in your macros via this option.  This option
+                            can be used along with the "-s", "-i", or "-I"
+                            options.  (Don't type the angle brackets; they are
+                            for illustrative purposes only)
+
+-i ®I¯<help topic>®/I¯             Inserts the help text from the specified
+                            help topic.  All special help formatting codes are
+                            stripped before inserting the help text.  This
+                            option can be used along with the "-f" option.
+
+-I ®I¯<help topic>®/I¯             Same as the "-i" option, except the help
+                            codes are not stripped.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Help Menu
+
+This lists help files that relate to the extension of the current file.
+Select a help file and press ®I¯<Enter>®/I¯ to view the help.
+
+The list of help files is user-configurable.  To edit the list of help files,
+press ®I¯<Alt E>®/I¯, and see ®L¯Editing the List of Help Files®/L¯.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Editing the List of Help Files
+
+The list of help files is user-configurable.  You can add new file extensions
+and new help files.
+
+If you are not already at the Help menu, press ®I¯<Ctrl F1>®/I¯.
+
+
+®B¯®S¯The "Help Groups" Menu®/S¯®/B¯
+
+Once you are at the Help menu, press ®I¯<Alt E>®/I¯.  There is now a menu displayed,
+that looks something like this:
+
+    ÚÄÄÄÄÄÄÄÄÄÄÄÄÄ Help Groups ÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    ³±Supplement±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+    ³ C                                     Û
+    ³ BAT                                   °
+    ³ Help on GETHELP                       °
+    ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ°
+    ³ Search path for Windows help files... 
+    ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ F1-Help ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+    The last menu item lets you change the ®L¯Search Path for Windows Help Files®/L¯.
+
+    The Help Groups menu lists the different groups of available help files.
+    The groups are based on filename extension.  For example, a "C" group
+    would probably be associated with the extensions ®B¯c®/B¯, ®B¯cpp®/B¯, ®B¯h®/B¯, ®B¯hpp®/B¯, etc,
+    since these are common filename extensions for the C programming language.
+
+    When you press ®I¯<F1>®/I¯ in the editor, GETHELP checks the filename extension
+    of the file you're editing, and looks through the Help Groups menu for
+    groups of help files that are associated with that filename extension.
+
+    ®B¯Available Keys:®/B¯
+
+    ®I¯<Enter>®/I¯             Edits the hilited group.  See ®L¯Editing a Help Group®/L¯,
+                        below.
+
+    ®I¯<Del>®/I¯               Deletes the hilited group.  You are prompted to
+                        confirm that you want to delete the group.
+
+    ®I¯<Ins>®/I¯               Adds a new group.  See ®L¯Editing a Help Group®/L¯, below.
+
+    ®I¯<Ctrl CursorUp>®/I¯     Moves the hilited group upward in the list.  This lets
+                        you change the order of the help groups in the Help menu.
+
+    ®I¯<Ctrl CursorDown>®/I¯   Moves the hilited group downward in the list.  This
+                        lets you change the order of the help groups in the
+                        Help menu.
+
+    ®I¯<Escape>®/I¯            Closes the menu.
+
+
+®B¯®S¯Editing a Help Group®/S¯®/B¯
+
+After you press ®I¯<Ins>®/I¯ (to add a new group) or ®I¯<Enter>®/I¯ (to edit a group), a
+menu is displayed that looks something like this:
+
+    ÚÄÄÄÄÄÄÄÄÄÄÄÄÄ Edit Help Group ÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    ³±Help±Files±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±³
+    ³ Name (optional) [          New Help Group] ³
+    ³ Extensions...   [                        ] ³
+    ³ Separator before:                    [Yes] ³
+    ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
+    ³ Cancel                                     ³
+    ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+    ®B¯Help Files  ®/B¯
+    To edit the list of help files in this help group, hilite this menu item
+    and press ®I¯<Enter>®/I¯.  See ®L¯The "Help Files" Menu®/L¯, below.
+
+    ®B¯Name (optional)®/B¯
+    This is the name of the help group, as it appears in the Help Groups menu.
+    The name is purely for your own reference, and is only used in the Help
+    Groups menu; it is not used in any other way.
+
+    ®B¯Extensions...®/B¯
+    The filename extensions associated with this help group.  To change the
+    associated extensions, hilite this and press ®I¯<Enter>®/I¯.  Then edit the
+    associated extensions and press ®I¯<Enter>®/I¯, or press ®I¯<Escape>®/I¯ to discard your
+    changes.
+
+    When entering associated extensions, do not include periods, and put a
+    space between each extension.  If you want this help group to match any
+    extension, enter an asterisk (*) all by itself (wildcards are not
+    supported, except for this special case).  If you want this help group to
+    only appear in the full help menu (when ®I¯<Ctrl F1>®/I¯ is pressed), leave the
+    associated extensions blank.
+
+    ®B¯Separator before:®/B¯
+    When this is ®I¯Yes®/I¯, a separator line is inserted before this help group in
+    the Help menu.  To toggle this between ®I¯Yes®/I¯ and ®I¯No®/I¯, hilite it and press
+    ®I¯<Enter>®/I¯.
+
+    ®B¯Cancel®/B¯
+    Choosing ®I¯Cancel®/I¯ discards any changes you've made and closes the menu.
+
+
+®B¯®S¯The "Help Files" Menu®/S¯®/B¯
+
+A menu is displayed, that looks something like this:
+
+    ÚÄÄÄÄÄ Help Files ÄÄÄÄÄÄ¿
+    ³±Supplement±±±±±±±±±±±±
+    ³ Commands by Category  Û
+    ³ Variables by Category 
+    ÀÄÄÄÄÄÄÄ F1-Help ÄÄÄÄÄÄÄÙ
+
+    ®B¯Available Keys:®/B¯
+
+    <Enter>             Edits the hilited help file entry.
+                        See ®L¯Editing a Help File Entry®/L¯, below.
+
+    <Del>               Deletes the hilited help file entry.  You are prompted
+                        to confirm that you want to delete the help file
+                        entry.
+
+    <Ins>               Inserts a new help file entry.
+                        See ®L¯Editing a Help File Entry®/L¯, below.
+
+    ®I¯<Ctrl CursorUp>®/I¯     Moves the hilited entry upward in the list.  This lets
+                        you change the order of the help files in the Help
+                        menu.
+
+    ®I¯<Ctrl CursorDown>®/I¯   Moves the hilited entry downward in the list.  This
+                        lets you change the order of the help groups in the
+                        Help menu.
+
+    ®I¯<Escape>®/I¯            Closes the menu.
+
+
+®B¯®S¯Editing a Help File Entry®/S¯®/B¯
+
+A menu is displayed that looks something like this:
+
+    ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄ Edit Help File Entry ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    ³±Help±name:±±±±±±±±±±±±±[±±±±±±±±±±±New±Help±File]±³
+    ³ Help style:                             [    TSE] ³
+    ³ Help filename/command: [                        ] ³
+    ³ Help topic (optional): [                        ] ³
+    ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
+    ³ Cancel                                            ³
+    ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+    ®B¯Help name:®/B¯
+    This is the name that appears in the Help menu.  This is for your
+    reference, so you can tell the help files from each other.  It is
+    recommended that each help file entry has a unique name.
+
+    ®B¯Help style:®/B¯
+    There are four help styles:  ®I¯TSE Help File®/I¯, ®I¯Windows Help File®/I¯,
+    ®I¯Exe (DOS command)®/I¯, and ®I¯Exe (Windows command)®/I¯.  To select the style for
+    this help file entry, hilite this menu item and press ®I¯<Enter>®/I¯.
+
+        ù ®I¯TSE Help File®/I¯ means the help file is a TSE style help file, which is
+          directly compatible with GETHELP.  This is the style to use for help
+          files you've written for TSE.
+
+        ù ®I¯Windows Help File®/I¯ means the help file is a Windows help file.
+
+        ù ®I¯Exe (DOS command)®/I¯ means a DOS (or Windows) program must be executed
+          to view the help.  For example, 4DOS from JP Software provides a
+          program called 4HELP.EXE, which can be used to view help on 4DOS.
+
+        ®B¯Only supported by TSE 2.6 and higher:®/B¯
+        ù ®I¯Exe (Windows command)®/I¯ means a Windows program must be executed to
+          view the help.  This also lets you launch document files (for
+          instance, setting the ®I¯Help filename/command®/I¯ (below) to "Info.Doc"
+          will open "Info.Doc" using whatever application is associated with
+          .Doc files).
+
+    ®B¯Help filename/command:®/B¯
+    This specifies the help file to use (or if the style is Exe, it specifies
+    the DOS or Windows program to execute).
+
+    ®B¯Help topic (optional):®/B¯
+    You can optionally specify a help topic.  If a help topic is specified,
+    that help topic will always be displayed when this help file entry is
+    selected.  This is generally not useful, and should usually be left blank.
+
+    ®B¯Cancel®/B¯
+    Choosing ®I¯Cancel®/I¯ discards any changes you've made and closes the menu.
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Using GETHELP with Your Own Macros
+
+®B¯Loading a specific help topic®/B¯
+
+To display a specific help topic, execute the GETHELP macro with the
+appropriate ®L {Command Line Options for GETHELP Macro}¯command line options®/L¯.  Generally, you only need to specify
+the help file and the topic name.  For example:
+
+    ExecMacro("gethelp -fmyhelp.hlp My Help Topic")
+
+This tells GETHELP to look in Myhelp.hlp for the topic called "My Help Topic".
+
+
+®B¯Enabling <F1> help in your menus®/B¯
+
+Before calling a menu, first indicate what help file to look in.  When <F1> is
+pressed in the menu, it will first look in the help file you specified to find
+the appropriate topic.  The topic name consists of the menu title followed by
+"->" followed by the menu item string (for instance, in the example below, the
+topic names would be "My Menu->Beep" and "My Menu->BeepBeep"; note that
+trailing ellipses are trimmed automatically).
+
+Example:
+
+    // the menu
+    menu MyMenu()
+        title = "My Menu"
+        "&Beep...", Alarm()
+        "BeepBee&p", Alarm() Alarm()
+    end
+
+    // instead of calling MyMenu directly, call DoMyMenu to enable the help
+    integer proc DoMyMenu()
+        string hlp[255]
+        integer n
+
+        // remember the current help file so we can restore it
+        hlp = GetGlobalStr("GETHELP_MenuHelpFile")
+
+        // indicate what help file to look in (e.g., myhelp.hlp)
+        SetGlobalStr("GETHELP_MenuHelpFile", "myhelp.hlp")
+
+        // now call the menu
+        n = MyMenu()
+
+        // restore previous help file
+        SetGlobalStr("GETHELP_MenuHelpFile", hlp)
+
+        return(n)
+    end
+
+
+Note:  HELPHELP.MAC (included with GETHELP) is required in order for this to
+       work.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Search Path for Windows Help Files
+
+If the help menu connects to a Windows help file, but does not know the full
+path name for the help file, it will look for the help file along this path.
+
+To change the search path for Windows help files:
+    ù Press ®I¯<Ctrl F1>®/I¯.
+    ù Press ®I¯<Alt E>®/I¯.
+    ù Select the menu item "Search path for Windows help files...", and press
+      ®I¯<Enter>®/I¯.
+    ù Edit the search path, and press ®I¯<Enter>®/I¯ when done.  Or press ®I¯<Escape>®/I¯ to
+      discard any changes you made.  NOTE:  Multiple paths can be specified,
+      just separate them with semicolons (eg, "c:\windows;c:\tse;c:\help").
+      You can also use environment variables, for example,
+      "c:\windows;c:\help;%PATH%".  Remember that environment variable names
+      are case sensitive.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù How to Write Help Topics
+
+A help file is a plain text file.  It contains help topics, listed in no
+particular order.  It can optionally contain a topic named "Index".  If the
+"Index" topic does not exist, a simple one will automatically be generated
+when needed.
+
+Help topics are separated from each other by a dashed line, or by a solid
+line.  To insert a solid line, make sure the ®L¯Help Editing Keys®/L¯ are turned on,
+then press ®I¯<CtrlShift ->®/I¯.  Once you have two solid lines, you can write a help
+topic in between them.
+
+
+®B¯The Topic Name®/B¯
+
+The first line of the help topic should contain the name of the topic.  There
+are two ways to enter the name of the topic.  The difference between the two
+ways is that the first is easier to read, and therefore works great if you
+want your help file to be easily printed or read outside of TSE.
+
+    ®B¯Method 1:  (Preferred)®/B¯
+
+    Go to the beginning of the line, make sure the ®L¯Help Editing Keys®/L¯ are
+    turned on, then press ®I¯<CtrlShift B>®/I¯.  This inserts a dot followed
+    by a space.  Now type the name of your help topic.  (See GETHELP.HLP for
+    examples).
+
+    ®B¯Method 2:®/B¯
+
+    Make sure the ®L¯Help Editing Keys®/L¯ are turned on, then press ®I¯<Ctrl T>®/I¯.  This
+    inserts the topic marker help codes.  The cursor is positioned in between
+    the two marker codes; now, type the name of your topic.
+
+
+®B¯The Topic Text®/B¯
+
+After the line with the topic name, comes the text of the help topic.
+
+You can add special formatting (boldface, italics®I¯*®/I¯, links, etc) by
+using the ®L¯Help Editing Keys®/L¯, described below.
+
+®I¯*®/I¯ Italics are only available in TSE 2.6 and higher; the italics codes are
+  converted to boldface in TSE 2.5.
+
+
+®B¯®S¯Links®/S¯®/B¯
+
+For example, to insert a ®LI¯link®/L¯, first type the name of the ®LI¯topic®/L¯ (or ®LI¯subtopic®/L¯)
+you want to link to.  Next, mark a block containing the name of the topic.
+Now, make sure the ®L¯Help Editing Keys®/L¯ are turned on, and press ®I¯<Ctrl L>®/I¯.
+
+In the Win32 versions of TSE, a link can also launch an Internet URL.  For
+instance, ®L¯http://www.semware.com®/L¯ launches your web browser and displays
+SemWare's WWW home page.  The Internet protocols that are recognized are
+®I¯mailto:®/I¯, ®I¯http:®/I¯, ®I¯ftp:®/I¯, and ®I¯file:®/I¯.
+
+
+®B¯®S¯Infoboxes®/S¯®/B¯
+
+An ®LI¯infobox®/L¯ is like a mini-topic.  It uses the same format as a normal help
+topic (separated from other topics by two solid lines, first line contains the
+topic name, etc).  However, the topic name is preceded by "Info->".  When an
+infobox link is selected, a little infobox pops up to show the help
+information.  The infobox disappears when any key is pressed.
+
+The word "infobox" in the preceding paragraph is an example of an infobox.  It
+behaves like a normal ®LI¯link®/L¯, except that it is a different color.  When the
+infobox link is selected, it doesn't jump to a new help topic, it just pops up
+a little infobox to clarify something.  To see an example of an infobox in
+action, try selecting the word "infobox" in the preceding paragraph, or the
+word "link" in this paragraph.
+
+An infobox help topic should not contain any help codes (boldface, italics,
+etc).  They are ignored.
+
+You insert an infobox link the same way you insert a normal link, except that
+in the last step, you press ®I¯<Ctrl F>®/I¯ instead of ®I¯<Ctrl L>®/I¯.
+
+
+®B¯®S¯Help Editing Keys®/S¯®/B¯
+
+®I¯<CtrlAlt H>®/I¯     Turns help editing keys on/off.
+
+
+Once the help editing keys are on, the following keys work:
+
+®I¯<Alt H>®/I¯         Toggles the window between normal mode and help mode.  When in
+                help mode, the text is displayed exactly as in a help window;
+                this lets you preview what your help topic will look like.
+
+®I¯<CtrlShift H>®/I¯   Display a ®L {Editing Commands}¯menu of Help editing commands®/L¯.
+
+®I¯<F1>®/I¯            Shows this help topic.
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Editing Commands
+ù Editing Commands->Bold
+ù Editing Commands->Italic
+ù Editing Commands->Link
+ù Editing Commands->Infobox
+ù Editing Commands->Variable
+ù Editing Commands->Topic
+ù Editing Commands->Topic Divider <->
+ù Editing Commands->Subtopic
+ù Editing Commands->Bullet (ù)
+ù Editing Commands->Insert Topic
+ù Editing Commands->WordWrap
+
+Pressing ®I¯<Ctrl H>®/I¯ displays a menu of editing commands:
+
+    Ú Editing Commands Ä¿
+    ³°Bold°°°°°°°°°°°°°°³
+    ³ Italic            ³
+    ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
+    ³ Link              ³
+    ³ Infobox           ³
+    ³ Variable          ³
+    ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
+    ³ Topic             ³
+    ³ Topic Divider <-> ³
+    ³ Subtopic          ³
+    ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
+    ³ Bullet (ù)        ³
+    ³ Insert Topic      ³
+    ³ WordWrap          ³
+    ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+    ®B¯Bold:®/B¯
+    Make current word (or block) boldface.
+
+    ®B¯Italic:®/B¯
+    Make current word (or block) italic.
+
+    ®B¯Link:®/B¯
+    Mark the current word (or block) as a ®LI¯link®/L¯.
+
+    ®B¯Infobox:®/B¯
+    Mark the current word (or block) as an ®LI¯infobox®/L¯ link.
+
+    ®B¯Variable:®/B¯
+    Mark the current word (or block) as a TSE GlobalVar.  When the help topic
+    is displayed, this will be replaced by the contents of the TSE GlobalVar
+    with this name.
+
+    ®B¯Topic:®/B¯
+    Mark the current word (or block) as a ®LI¯topic®/L¯.
+
+    ®B¯Topic Divider:®/B¯
+    Insert a topic divider line, above the cursor line.
+
+    ®B¯Subtopic:®/B¯
+    Mark the current word (or block) as a ®LI¯subtopic®/L¯.
+
+    ®B¯Bullet:®/B¯
+    Insert a bullet mark ("ù ").
+
+    ®B¯Insert Topic:®/B¯
+    Asks for a help topic, then inserts its text at the current cursor
+    position.  (Only works on TSE 2.6 and higher)
+
+    ®B¯WordWrap:®/B¯
+    Word wrap a paragraph, allowing for help codes.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Info->link
+
+A help topic may contain links to other help topics.
+
+A link is a word or phrase that points to another
+help topic.  The word or phrase can be selected,
+using the arrow cursor keys.  When the link is
+selected, you can press <Enter> to follow the link
+and jump to that help topic.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Info->infobox
+
+This is an infobox.
+
+An infobox is like others link, but when you choose
+the infobox link, a miniature help window pops up,
+instead of an entire help topic.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Info->topic
+
+A help topic is like a mini-document describing
+something.  It contains descriptive or explanatory
+text, and may contain links to other help topics.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Info->subtopic
+
+A topic within a topic, so to speak.
+
+A topic may have no subtopics, or it may contain one
+or more subtopics.  A link to one of the subtopics
+opens the whole topic, but scrolls the subtopic into
+view.
+
+You can link to a topic or a subtopic.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Edit Help Group->Help Files
+
+//$ todo: (chrisant) Under Construction...
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ

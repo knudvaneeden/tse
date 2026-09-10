@@ -1,0 +1,23 @@
+constant    ID_EDT_EXPR     =   10
+constant    ID_EDT_FILES    =   11
+constant    ID_EDT_EXCL     =   12
+constant    ID_EDT_DIR      =   13
+constant    ID_EDT_CTX      =   14
+
+constant    ID_CHK_MEM      =   20
+constant    ID_CHK_VERBOSE  =   21
+constant    ID_CHK_SUBDIRS  =   22
+constant    ID_CHK_FNAMES   =   23
+
+constant    ID_CHK_BACK     =   30
+
+constant    ID_CHK_BOL      =   35
+constant    ID_CHK_EOL      =   36
+
+constant    ID_CHK_CASE     =   40
+constant    ID_CHK_WORDS    =   41
+constant    ID_CHK_EXPR     =   42
+
+constant    ID_CHK_CTXWIN   =   50
+
+constant    ID_BTN_OPTS     =   60

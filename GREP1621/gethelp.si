@@ -1,0 +1,3838 @@
+// GetHelp ----------------------------------------------------------------
+// Chris Antos, chrisant@microsoft.com
+// portions by Steve Watkins, SemWare Corporation
+
+// Portable adaptation version 1.0.0.0.0 - 2026-09-10
+// Adapted by OpenAI Codex (GPT-5)
+
+// <F1>				Context sensitive help based on file extension.
+// <Shift F1>		Show syntax window.
+// <Ctrl F1>		Full help menu.
+
+
+
+#ifndef WIN32
+proc COMPILE_ERROR()
+GETHELP_needs_TSE_2_6_or_higher
+end
+#endif
+
+#include "guiinc.inc"
+
+
+
+/*
+
+v1.01, 11/27/96
+ù added <Alt P> to print current topic.
+
+v1.02, 01/18/97
+ù minor speed improvements.
+ù now supports launching Windows documents.
+
+v2.0, ??
+ù various fixes, improvements.
+
+v2.1, 03/27/97
+ù minor changes to help files.
+ù when linking to a subtopic, the subtopic is always displayed at the top of
+  the screen.
+
+v2.8, 06/26/97
+ù support TSE 2.8.
+
+v2.8a, 05/06/98
+ù uses undocumented HELPHELP.MAC to handle F1 while in TSE menus.
+ù detects ( or () and looks for the word before them (useful for programmers).
+ù TOO BIG FOR TSE 2.5, abandoning support for TSE 2.5 (sorry).
+
+v3.0, 02/10/99
+ù uses HELP30.HLP now.
+
+v4.0, 05/19/02
+ù support for the MSWHEEL macro.
+ù support TSE 4.0 (including the built in wheel support in G32.exe).
+
+*/
+
+
+
+/*	//$ todo:
+
+ù Remember:	 ÄÄ ALWAYS TEST ON TSE 2.5 TOO! ÄÄ
+
+MUST:
+(all "must" items have been completed)
+
+
+LIKE:
+ù Up/Down are way too slow.
+ù annotations.
+ù allow %@topic% anywhere on command line for Exe style; Exe style specifies a
+  command line, not just an exe.
+
+
+MAYBE SOMEDAY:
+ù <Ctrl S> search text help file
+ù way for separators to have titles in the help file menu?
+
+*/
+
+
+
+/*	Noteworthy Features:
+ù help editing commands:
+	ù <CtrlAlt H> toggles help editing keys.
+	ù <Ctrl R> wraps paragraph, allowing for presense of help codes!
+	ù <CtrlAlt I> inserts topic from main TSE help system.
+	ù various other keys to insert help codes.
+ù builds menu of help files available based on a file's extension.
+ù list of available help files is easily configurable.
+ù <Alt P> to print current topic.
+
+*/
+
+
+
+/*	Performance Issues:
+
+ù should i hold on to the most recently used help file buffer instead of
+  purging it each time? if so, probably should set a file size limit; if
+  exceeds, purge it.
+ù should i hold on to the index instead of building it on the fly every single
+  time?
+ù should Back list hold onto the buffers with the topics, instead of just the
+  topic name and position info?
+
+*/
+
+
+
+/*	Help System Notes:
+
+Help topics:
+
+	Topics are denoted with your choice of "ù Topic" or "®T¯Topic®/T¯".
+	Between help topics, you need a line beginning with at least 5 dashes
+	("-----") (see HELP26.HLP for example).  This allows you to create
+	text-only help files that do not use any special help file codes, or you
+	can use the full set of help codes (outlined below).  Subtopic codes
+	(®S¯subtopic®/S¯) can be included within a topic's text body to create
+	subtopics (a help file can contain links to topics and subtopics).  See
+	HELP26.HLP for examples of use of various help file codes.
+
+Help file codes:
+
+	-- TSE/32 --		-- TSE/DOS --
+	®I¯		®/I¯		N/A			N/A			italics on/off
+	®B¯		®/B¯		0x02		0x02		bold on/off
+	®L¯		®/L¯		0x0c 0xae	0xaf		link on/off
+	®LI¯	®/L¯		0x04 0xae	0xaf		infobox link on/off
+	®T¯		®/T¯		?			?			topic
+	®S¯		®/S¯		0x02?		0x02?		subtopic
+
+*/
+
+
+
+/*	Compatibility Notes:
+
+Supports:
+ù Infoboxes (for topics in both custom help files and built in TSE help).
+ù Topics and subtopics.
+ù Normal links, plus "®L {full name of link}¯abbreviated name®/L¯" on TSE 2.6.
+ù On TSE 2.5, converts italic codes to bold codes.
+
+*/
+
+
+
+/*	Command Line Options:
+
+Syntax:		[-f<helpfile>] [-m] [-i] [-I] [-t<topic>]
+
+ù "-m" - menu
+ù "-s" - show syntax window
+ù "-f<helpfile>" - look in <helpfile> (must be quoted for long filenames).
+  <helpfile> is an uncompressed text help file.  see HELP26.HLP as an example.
+ù "-i" - insert topic into current buffer, stripping help codes.
+ù "-I" - insert topic into current buffer, including help codes.
+ù "<topic>" - show topic <topic>
+
+*/
+
+
+
+//#pragma inhouse
+
+//#define DEBUG 1
+#define BACKWARDS_COMPATIBILITY 1
+
+
+#ifdef EDITOR_VERSION
+#if EDITOR_VERSION >=0x4000
+#define HAS_WHEEL_SUPPORT 1
+#endif
+#endif
+
+
+// AUTOSIZE: when defined, automatically sizes the syntax window.
+#define AUTOSIZE 1
+#define MIN_ROWS 3
+#define MAX_ROWS 12
+#define BEEP_ON_FAIL 1
+
+
+#ifdef WIN32
+constant MAXPATH = 255								// _MAXPATH_
+constant MAXEXT = 12
+constant EXECFLAGS = 0x0a00							// _START_HIDDEN_ | _CREATE_NEW_CONSOLE_
+constant DISPLAY_HELP = 3							// _DISPLAY_HELP_
+
+#ifdef MenuGrayAttr
+#ifdef EDITOR_VERSION
+string stHelpSupl[] = "help30.hlp"
+#else
+string stHelpSupl[] = "help28.hlp"
+#endif
+#else
+string stHelpSupl[] = "help26.hlp"
+#endif
+
+string stInfo[] = "Info->"
+string stPrompt[] = "Prompt->"
+
+string c_stNoHelpHelp[] = "GETHELP_NoHelpHelp"
+string c_stMenuHelpFile[] = "GETHELP_MenuHelpFile"
+
+constant TAG_LINKTOPIC = 2
+string stFindLink[] = "®LI?{ \{{.*}\}}?¯"
+string stClickLinkEnd[] = "®/"
+string stGetTopic[] = "¯{[~®]@}®"
+string stInfoboxLink[] = "®LI¯"
+
+constant TAG_TOPIC = 3
+string stFindTopic1[] = "{^ù }|{®T|S¯}{"
+string stFindTopic2Fuzzy[] = ".*}$|{®/T|S¯}"
+string stFindTopic2[] = "}$|{®/T|S¯}"
+string stKillTopic[] = "{^ù }|{®T¯}{.*}$|{®/T¯}"
+
+string stLink1[] = "®L¯"
+string stLink2[] = "®/L¯"
+
+/*
+string stTopicBegin[] = "®T¯"
+string stTopicEnd[] = "®/T¯"
+string stSubTopicBegin[] = "®S¯"
+string stSubTopicEnd[] = "®/S¯"
+*/
+#else
+constant MAXPATH = 128
+constant MAXEXT = 12
+constant EXECFLAGS = 0								// only supported in WIN32
+constant DISPLAY_HELP = 3
+string stHelpSupl[] = "help25.hlp"
+string stInfo[] = "Info->"
+string stPrompt[] = "Prompt->"
+
+constant TAG_LINKTOPIC = 9							// bogus number, forces alternate find method
+string stFindLink[] = "{\x04®}|{\x0c®}"
+string stClickLinkEnd[] = "¯"
+string stGetTopic[] = "®{[~¯]@}¯"
+string stInfoboxLink[] = Chr(4)+"®"
+
+constant TAG_TOPIC = 3
+string stFindTopic1[] = "{^ù }|{®T|S¯}{"
+string stFindTopic2Fuzzy[] = ".*}$|{®/T|S¯}"
+string stFindTopic2[] = "}$|{®/T|S¯}"
+string stKillTopic[] = "{^ù }|{®T¯}{.*}$|{®/T¯}"	// work like TSE32
+//string stFindTopic[] = "®T|S¯{.*}®/T|S¯"
+
+string stLink1[] = "®L¯"
+string stLink2[] = "®/L¯"
+
+/*
+string stTopicBegin[] = "®T¯"
+string stTopicEnd[] = "®/T¯"
+string stSubTopicBegin[] = "®S¯"
+string stSubTopicEnd[] = "®/S¯"
+*/
+#endif
+
+
+string i_stHelpPathDef[] = "%PATH%"
+
+string stHlpFile[] = "gethelp.hlp"
+string stIndex[] = "Index"              // name of index topic
+string g_stHelpFile[MAXPATH]			// help file to search in
+string g_stHelpPath[MAXPATH] = ""		// search path for help files
+// "c:\msdev\help;c:\help;c:\help\mapi;c:\help\win95"
+
+string stFooter[] = " {F1}-Help "
+
+
+string g_stMacro[32] = ""				// macro name
+string g_stMacroDir[MAXPATH] = ""		// directory containing GETHELP.MAC
+string g_stTopic[80] = ""				// current topic
+
+integer g_fPartial = FALSE
+string g_stPartial[80] = ""
+
+#ifdef WIN32
+integer g_fReplaceTseHelp = FALSE
+#endif
+
+integer g_idDat = 0						// buffer with dat file
+integer g_idHelp = 0					// buffer with help file
+integer g_idBack = 0					// buffer with previous keywords
+integer g_idKeywords = 0				// buffer with valid keywords
+integer g_idRecentSelections = 0		// buffer with recent menu selections
+
+
+// flags for SetupHelp
+constant SH_PROMPT		= 0x0001
+constant SH_INDEX		= 0x0002
+constant SH_BACK		= 0x0004
+constant SH_INSERT		= 0x0008
+constant SH_EXACTHEIGHT	= 0x0010		// don't extend height with blank lines
+
+
+constant MAX_RECENT = 10
+
+
+// dat file stuff
+constant CX_MENU_MIN = 8
+
+string g_stDatFile[MAXPATH] = "gethelp.dat"
+string stFindHelpMenu[] = "^°±²Ý{.*}Þ{_}?{({.@})}?$"
+
+constant TAG_MENUNAME = 1
+constant TAG_SEPARATOR = 2
+constant TAG_EXTENSIONS = 4
+
+string stDiv[] = "Ý"
+
+constant TSE_STYLE = 1
+constant WIN_STYLE = 2
+constant DOSEXE_STYLE = 3
+constant WINEXE_STYLE = 4
+
+
+
+forward integer proc SetupHelp(string topic, integer flags)
+
+
+
+// Help Files -------------------------------------------------------------
+
+/*
+string HlpWin32[] = "api32.hlp"
+string HlpMapi[] = "mapisdk.hlp"
+string HlpOle2[] = "ole20.hlp"
+string HlpMFC[] = "mfc30.hlp"
+//string HlpMSDN[] = "c:\progra~1\micros~4\library\infoview msdncd15.mvb"
+//string HlpVCBOOKS[] = "c:\progra~1\micros~4\library\infoview"
+*/
+
+#ifdef WIN32
+dll "<shell32.dll>"
+//integer proc ShellExecute(integer hwnd, string operation:cstrval,
+integer proc ShellExecute(integer hwnd, integer operation,
+						string file:cstrval, string parameters:cstrval,
+						string dir:cstrval, integer nCmdShow) : "ShellExecuteA"
+end
+
+dll "<user32.dll>"
+// data can be different things based on command.  see Windows SDK.
+integer proc WinHelpData(integer hwnd, string helpfile:cstrval,
+						integer command, integer data) : "WinHelpA"
+integer proc WinHelpTopic(integer hwnd, string helpfile:cstrval,
+						integer command, string data:cstrval) : "WinHelpA"
+end
+
+#define HELP_CONTEXT	  0x0001   /* Display topic in ulTopic */
+#define HELP_QUIT		  0x0002   /* Terminate help */
+#define HELP_INDEX		  0x0003   /* Display index */
+#define HELP_CONTENTS	  0x0003
+#define HELP_HELPONHELP	  0x0004   /* Display help on using help */
+#define HELP_SETINDEX	  0x0005   /* Set current Index for multi index help */
+#define HELP_SETCONTENTS  0x0005
+#define HELP_CONTEXTPOPUP 0x0008
+#define HELP_FORCEFILE	  0x0009
+#define HELP_KEY		  0x0101   /* Display topic for keyword in offabData */
+#define HELP_COMMAND	  0x0102
+#define HELP_PARTIALKEY	  0x0105
+#define HELP_MULTIKEY	  0x0201
+#define HELP_SETWINPOS	  0x0203
+#ifdef WINVER
+	#if(WINVER >= 0x0400)
+	#define HELP_CONTEXTMENU  0x000a
+	#define HELP_FINDER		  0x000b
+	#define HELP_WM_HELP	  0x000c
+	#define HELP_SETPOPUP_POS 0x000d
+
+	#define HELP_TCARD				0x8000
+	#define HELP_TCARD_DATA			0x0010
+	#define HELP_TCARD_OTHER_CALLER 0x0011
+
+	// These are in winhelp.h in Win95.
+	#define IDH_NO_HELP						28440
+	#define IDH_MISSING_CONTEXT				28441 // Control doesn't have matching help context
+	#define IDH_GENERIC_HELP_BUTTON			28442 // Property sheet help button
+	#define IDH_OK							28443
+	#define IDH_CANCEL						28444
+	#define IDH_HELP						28445
+
+	#endif /* WINVER >= 0x0400 */
+#endif //WINVER
+
+#endif //WIN32
+
+
+
+// DOS Compatibility ------------------------------------------------------
+
+#ifndef WIN32
+
+// emulates TSE 2.6 XlatHelp function - only works with TSE 2.6 help codes
+integer proc XlatHelp(integer nPos, integer fStripHelp)
+	integer i = 1
+	integer n = 0
+
+	while i <= nPos
+		n = n + 1
+
+		if CurrChar(i) == 174
+			if not fStripHelp and i >= nPos
+				break
+			endif
+
+			repeat
+				if not fStripHelp
+					n = n + 1
+					nPos = nPos + 1
+				endif
+				i = i + 1
+			until CurrChar(i-1) == 175 or CurrChar(i) == _BEYOND_EOL_
+		endif
+
+		if CurrChar(i) == _BEYOND_EOL_
+			break
+		endif
+		i = i + 1
+	endwhile
+
+	return(n)
+end
+
+
+// only works for TSE 2.5 help codes
+string stCodes[] = Chr(2)+Chr(4)+Chr(12)+Chr(174)+Chr(175)
+integer proc XlatHelp2(integer nPos, integer fStripHelp)
+	integer i = 1
+	integer n = 0
+
+	while i <= nPos
+		n = n + 1
+
+		if Pos(Chr(CurrChar(i-fStripHelp)), stCodes)
+			if fStripHelp
+				n = n - 1
+			else
+				if i >= nPos
+					break
+				endif
+				n = n + 1
+				nPos = nPos + 1
+			endif
+		endif
+
+		if CurrChar(i) == _BEYOND_EOL_
+			break
+		endif
+		i = i + 1
+	endwhile
+
+	return(n)
+end
+
+
+integer proc isTypeableKey(integer key)
+	integer lo = LoByte(key)
+
+	return(HiByte(key) == 0 or
+			lo >= 32 and (lo < 0xfa or lo > 0xfd) and
+			lo <> 0xf4 and lo <> 0xe0)
+end
+
+
+integer proc LongestLineInBuffer()
+	integer maxlen = 0
+
+	PushPosition()
+	BegFile()
+	repeat
+		maxlen = Max(maxlen, CurrLineLen())
+	until not Down()
+	PopPosition()
+	return (maxlen)
+end
+
+
+proc GotoNextNonWhite()
+	while isWhite() and Right()
+	endwhile
+end
+
+
+string proc QuotePath(string path)
+	return(path)
+end
+
+#else
+
+integer proc XlatHelp2(integer nPos, integer fStripHelp)
+	return(XlatHelp(nPos, fStripHelp))
+end
+
+#endif
+
+
+
+// Keywords ---------------------------------------------------------------
+
+#ifdef WIN32
+#include ["gethelp.k32"]
+#endif
+
+
+
+// Utility ----------------------------------------------------------------
+
+proc RemoveQuotes(var string s)
+	if Length(s)
+		if s[1] == '"'
+			s = s[2:255]
+		endif
+		if s[Length(s)] == '"'
+			s = s[1:Length(s)-1]
+		endif
+	endif
+end
+
+
+proc ToggleDisplayMode()
+	DisplayMode(iif(DisplayMode() == _DISPLAY_TEXT_,
+			DISPLAY_HELP, _DISPLAY_TEXT_))
+end
+
+
+integer proc StripInteger(var string s)
+	integer n = Val(GetToken(s, " ", 1))
+
+	s = LTrim(s)
+	if Pos(" ", s)
+		s = LTrim(s[Pos(" ", s):255])
+	else
+		s = ""
+	endif
+	return(n)
+end
+
+
+// mGetWord()
+// works like GetWord, but if TRUE is passed and GetWord fails, will WordLeft
+// and check again.
+string proc mGetWord(integer fLeft)
+	string s[255] = GetWord(fLeft)
+
+	if fLeft and not Length(s)
+		PushPosition()
+		WordLeft()
+		s = GetWord(FALSE)
+		PopPosition()
+	endif
+	return(s)
+end
+
+
+// ExpandEnvVars()
+// return string with environment variables expanded.  (use %@ to reference
+// TSE global vars).
+integer proc ExpandEnvVars(var string st)
+	integer i, j
+	string env[33]
+	string s[MAXPATH]
+
+	s = st
+	st = ""
+	for i = 1 to Length(s)
+		if s[i:2] == "%%"
+			i = i + 1								// inc extra time
+			st = st + "%"							// append %
+		elseif s[i] == "%"
+			i = i + 1								// inc past %
+			j = i
+			while i <= Length(s) and (s[i] in 'A'..'Z', 'a'..'z', '0'..'9', '_')
+				i = i + 1
+			endwhile
+			env = s[j:(i - j)]
+			if s[i] <> "%"
+				i = i - 1
+			endif
+			if Length(env)
+				st = st + iif(env[1] == "@",
+							  GetGlobalStr(env[2:sizeof(env)]), GetEnvStr(env))
+			endif
+		else
+			st = st + s[i]							// copy char
+		endif
+	endfor
+
+	#ifdef DEBUG
+	Warn(st)
+	#endif
+
+	return(st <> s)
+end
+
+
+// mSearchPath()
+// behaves like SearchPath, but can deal with path string up to TSE maximum
+// string length.  also expands environment variables.  a given path cannot
+// exceed the TSE maximum string length, either.  environment variables are
+// expanded before evaluating each path instead of once at the beginning.
+string proc mSearchPath(string fn, string path, string sub)
+	integer ich = 1, j = 1
+	integer iSemi
+	string s[MAXPATH] = ""
+	string tmp[MAXPATH] = ""
+
+	if Length(path)
+		while Length(s) == 0 and ich <= Length(path)
+			//$ todo: doesn't deal with ";" inside quotes
+			//$ todo: doesn't deal with quotes, period
+			j = Pos(";", SubStr(path, ich, Length(path)))
+			if j == 0
+				iSemi = (Length(path) - ich) + 2
+			else
+				iSemi = j
+			endif
+
+			tmp = SubStr(path, ich, iSemi - 1)
+			ExpandEnvVars(tmp)
+			s = ExpandPath(tmp + "\" + fn)
+			if Length(s) == 0 and Length(sub) > 0
+				s = ExpandPath(tmp + "\" + sub + "\" + fn)
+			endif
+			if not FileExists(s)
+				s = ""
+			endif
+
+			ich = ich + iSemi
+		endwhile
+	else
+		if Length(sub)
+			s = SearchPath(fn, path, sub)
+		else
+			s = SearchPath(fn, path)
+		endif
+	endif
+
+	return(s)
+end
+
+
+// StripHelpCodes()
+// strips help codes from marked block
+proc StripHelpCodes()
+	#ifndef WIN32
+	// remove TSE 2.5 help codes
+	lReplace("{\x01}|{\x04®}|{\x0a®}|{¯}", "", "gnlx")
+	#endif
+
+	// remove TSE 2.6 help codes -- do this even on TSE 2.5, since custom
+	// topics are written using TSE 2.6 codes and then translated at the last
+	// moment to TSE 2.5 codes.
+	lReplace("®.*¯", "", "gnlx")
+end
+
+
+// RegExStr()
+// returns string with regular expression operator chars escaped so it can be
+// used as part of a regex string.
+string proc RegExStr(string st)
+	integer i, j
+	integer n = Length(st)
+	string stRet[255] = ""
+
+	j = 1
+	for i = 1 to n
+		// escape regex chars
+		if Pos(st[i], "[]{}\.*+@#^$|?")
+			if j + 1 >= sizeof(stRet)
+				// avoid escape char being last char in string
+				break
+			endif
+			stRet[j] = '\'
+			j = j + 1
+		endif
+		stRet[j] = st[i]
+		j = j + 1
+	endfor
+	return(stRet)
+end
+
+
+string proc HelpName()
+	return(GetToken(GetText(1, CurrLineLen()), stDiv, 1))
+end
+
+
+proc NoHelpHelp(integer f)
+	if f
+#ifdef WIN32
+		#ifdef DEBUG
+		Warn(c_stNoHelpHelp; 1)
+		#endif
+		SetGlobalInt(c_stNoHelpHelp, TRUE)
+	else
+		DelGlobalVar(c_stNoHelpHelp)
+		#ifdef DEBUG
+		Warn(c_stNoHelpHelp; 0)
+		#endif
+#endif
+	endif
+end
+
+
+proc SetMenuHelpFile(integer f)
+	if f
+#ifdef WIN32
+		SetGlobalStr(c_stMenuHelpFile, stHlpFile)
+	else
+		DelGlobalVar(c_stMenuHelpFile)
+#endif
+	endif
+end
+
+
+proc SaveDat()
+	integer cid
+
+	cid = GotoBufferId(g_idDat)
+	if cid
+		// insert help path as first line
+		BegFile()
+		KillLine()
+		InsertLine(g_stHelpPath)
+
+		// save dat file
+		SaveAs(g_stDatFile, _OVERWRITE_)
+
+		GotoBufferId(cid)
+	endif
+end
+
+
+
+// Help Keys --------------------------------------------------------------
+
+string g_stIncrFind[80] = ""
+proc ResetFindLink()
+	g_stIncrFind = ""
+end
+
+
+proc FindLink()
+	string stKey[1] = Chr(LoByte(Query(Key)))
+
+	if Query(Key) == <Backspace>
+		g_stIncrFind = g_stIncrFind[1:Length(g_stIncrFind)-1]
+	elseif Asc(stKey) >= 32
+		g_stIncrFind = g_stIncrFind + stKey
+	endif
+
+	#ifdef DEBUG
+	Message(g_stIncrFind)
+	#endif
+
+	if Length(g_stIncrFind)
+		if lFind(stFindLink+RegExStr(g_stIncrFind), "gix")
+			ScrollToCenter()
+			MarkFoundText()
+			HiliteFoundText()
+		elseif Query(Key) <> <Backspace>
+			#ifdef DEBUG
+			Delay(8)
+			#endif
+
+			// reject this char, but avoid unbounded recursion!
+			Set(Key, <Backspace>)
+			FindLink()
+		endif
+	else
+		UpdateDisplay(_CLINE_REFRESH_)
+	endif
+end
+
+
+proc FindPartialLink(string s)
+	integer i
+
+	ResetFindLink()
+	for i = 1 to Length(s)
+		if Asc(s[i]) < 32
+			break
+		endif
+
+		g_stIncrFind = g_stIncrFind + s[i]
+
+		#ifdef DEBUG
+		Message(g_stIncrFind)
+		#endif
+
+		if not lFind(stFindLink+RegExStr(g_stIncrFind), "gix")
+			g_stIncrFind = g_stIncrFind[1:i-1]
+			break
+		endif
+	endfor
+
+	if lFind(stFindLink+RegExStr(g_stIncrFind), "gix")
+		ScrollToCenter()
+		MarkFoundText()
+		HiliteFoundText()
+	else
+		UpdateDisplay(_CLINE_REFRESH_)
+	endif
+end
+
+
+integer proc NextLink(integer fFirst)
+	integer fFound
+	integer ln = CurrLine()
+	integer row = CurrRow()
+	integer endln
+	integer rc = FALSE
+
+	PushBlock()
+	PushPosition()
+	UnMarkBlock()
+	MarkChar()
+	EndWindow()
+	endln = CurrLine()
+	Down()
+	EndLine()
+	MarkChar()
+	PopPosition()
+	fFound = lFind(stFindLink, iif(fFirst, "xli", "xli+"))
+	PopBlock()
+	if fFound
+		if CurrLine() >= ln and CurrLine() <= endln
+			ScrollToRow(row+CurrLine()-ln)
+		else
+			ScrollToRow(Query(WindowRows))
+		endif
+		MarkFoundText()
+		if not fFirst
+			UpdateDisplay(_CLINE_REFRESH_)
+		endif
+		rc = TRUE
+	endif
+	return(rc)
+end
+
+
+integer proc PrevLink(integer fUp)
+	integer fFound
+	integer ln = CurrLine()
+	integer row = CurrRow()
+	integer begln
+	integer rc = FALSE
+
+	PushBlock()
+	PushPosition()
+	UnMarkBlock()
+	MarkChar()
+	BegWindow()
+	begln = CurrLine()
+	if fUp
+		Up()
+	endif
+	BegLine()
+	MarkChar()
+	PopPosition()
+	fFound = lFind(stFindLink, "xlib")
+	PopBlock()
+	if fFound
+		if CurrLine() <= ln and CurrLine() >= begln
+			ScrollToRow(row+CurrLine()-ln)
+		else
+			ScrollToTop()
+		endif
+		MarkFoundText()
+		UpdateDisplay(_CLINE_REFRESH_)
+		rc = TRUE
+	endif
+	return(rc)
+end
+
+
+proc HelpNext()
+	integer ln = CurrLine()
+	integer row = CurrRow()
+
+	ResetFindLink()
+	if lFind(stFindLink, "xi+")
+		if CurrLine() <= ln and CurrLine() >= (ln-row+1)
+			ScrollToRow(row+CurrLine()-ln)
+		else
+			ScrollToRow(Query(WindowRows))
+		endif
+		MarkFoundText()
+	else
+		ScrollToTop()
+	endif
+	UpdateDisplay(_CLINE_REFRESH_)
+end
+
+
+proc HelpPrev()
+	integer ln = CurrLine()
+	integer row = CurrRow()
+
+	ResetFindLink()
+	if lFind(stFindLink, "xib")
+		if CurrLine() <= ln and CurrLine() >= (ln-row+1)
+			ScrollToRow(row+CurrLine()-ln)
+		else
+			ScrollToTop()
+		endif
+		MarkFoundText()
+	else
+		ScrollToRow(Query(WindowRows))
+	endif
+	UpdateDisplay(_CLINE_REFRESH_)
+end
+
+
+integer proc HelpLeftRight(integer dir)
+	integer rc
+
+	ResetFindLink()
+	if Query(BlockBegLine) == CurrLine()
+		GotoBlockBegin()
+	endif
+	rc = iif(dir, NextLink(FALSE), PrevLink(TRUE))
+	if not rc
+		iif(dir, ScrollDown(), ScrollUp())
+	endif
+	return(rc)
+end
+
+
+proc HelpPgUp()
+	ResetFindLink()
+	PageUp()
+	BegWindow()
+	BegLine()
+	NextLink(TRUE)
+end
+
+
+proc HelpPgDn()
+	integer ln
+
+	ResetFindLink()
+	PushPosition()
+	EndWindow()
+	ln = CurrLine()
+	PopPosition()
+
+	if NumLines() <= ln
+		// end of file is showing, go to last link
+		EndFile()
+		PrevLink(FALSE)
+	else
+		PageDown()
+		BegWindow()
+		BegLine()
+		NextLink(TRUE)
+	endif
+end
+
+
+#ifdef WIN32
+string proc StLinkPositions(integer p)
+	integer i
+	integer j = 0
+	integer fCode = FALSE
+	string s[255] = Format(" ":255)
+
+	for i = 1 to CurrLineLen()
+		if not fCode
+			j = j + 1
+			if Upper(GetText(i, 2)) == "®L"
+				s[j] = iif(i == p, "!", ".")
+			endif
+		endif
+
+		if not fCode and CurrChar(i) == 174
+			fCode = TRUE
+		elseif fCode and CurrChar(i) == 175
+			fCode = FALSE
+		endif
+	endfor
+	return(s[1:j])
+end
+#else
+string proc StLinkPositions(integer p)
+	integer i
+	integer j = 0
+	integer fLink = FALSE
+	string s[255] = Format(" ":255)
+
+	for i = 1 to CurrLineLen()
+		case CurrChar(i)
+			when 2
+				// ignore it
+			when 4, 12
+				// link
+//$ review: (chrisant) this will behave unpredictably if links are nested
+// (which is improperly formed and will display unpredictably, too).
+				i = i + 1
+				if CurrChar(i) == 174
+					fLink = TRUE
+					i = i + 1
+					if not (CurrChar(i) in _BEYOND_EOL_, _AT_EOL_)
+						j = j + 1
+						s[j] = iif(i-2 == p, "!", ".")
+					endif
+				endif
+			otherwise
+				if fLink and CurrChar(i) == 175
+					fLink = FALSE
+					// just turn off the link mode
+				endif
+		endcase
+	endfor
+	return(s[1:j])
+end
+#endif
+
+
+integer proc GotoLinkAboveBelow(integer dir)
+	integer p
+	string st[255]
+	integer i
+	integer n
+	integer l2
+	integer nLink = 0
+	integer j
+
+	if not isBlockInCurrFile()
+		return(FALSE)
+	endif
+
+	PushPosition()
+	p = Pos("!", StLinkPositions(CurrPos()))
+	if p
+		// look up to 6 lines above/below
+		for j = 1 to 6
+			iif(dir, Down(), Up())
+			st = StLinkPositions(0)
+			l2 = Length(st)
+
+			// look 10 columns to left/right
+			for n = 0 to 10
+				if p+n <= l2
+					if st[p+n] == "."
+						nLink = p+n
+						break
+					endif
+				endif
+				if p-n > 0 and p-n <= l2
+					if st[p-n] == "."
+						nLink = p-n
+						break
+					endif
+				endif
+			endfor
+
+			if nLink
+				// found one
+				n = 0
+				for i = 1 to nLink
+					if st[i] == "."
+						n = n + 1
+					endif
+				endfor
+
+				// it is the <n>th link on the line, so go there and stop
+				BegLine()
+				for i = n downto 1
+					lFind(stFindLink, iif(i == n, "cix", "cix+"))
+				endfor
+
+				// we assume the lFind worked, above
+				MarkFoundText()
+				UpdateDisplay(_CLINE_REFRESH_)
+				KillPosition()
+				return(TRUE)
+			endif
+		endfor
+	endif
+	PopPosition()
+	return(FALSE)
+end
+
+
+proc HelpUp()
+	ResetFindLink()
+	if not GotoLinkAboveBelow(FALSE)
+		if CurrRow() == Query(WindowRows)
+			BegLine()
+			UnMarkBlock()
+			HelpLeftRight(FALSE)
+		elseif not isBlockMarked()
+			HelpLeftRight(FALSE)
+		else
+			ScrollUp()
+		endif
+	endif
+end
+
+
+proc HelpDown()
+	ResetFindLink()
+	if not GotoLinkAboveBelow(TRUE)
+		if CurrRow() == 1
+			EndLine()
+			UnMarkBlock()
+			HelpLeftRight(TRUE)
+		elseif not isBlockMarked()
+			HelpLeftRight(TRUE)
+		else
+			ScrollDown()
+		endif
+	endif
+end
+
+
+proc HelpHome()
+	ResetFindLink()
+	BegWindow()
+	BegLine()
+	NextLink(TRUE)
+end
+
+
+proc HelpEnd()
+	ResetFindLink()
+	EndWindow()
+	EndLine()
+	PrevLink(FALSE)
+end
+
+
+proc HelpSelectAtCursor(integer fUp)
+	ResetFindLink()
+	if fUp
+		EndLine()
+		PrevLink(FALSE)
+	else
+		BegLine()
+		NextLink(TRUE)
+	endif
+end
+
+
+proc HelpInfobox(string topic)
+	integer cid = GetBufferId()
+	integer idTmp
+	integer x, y, cx, cy
+
+	// new buffer
+	idTmp = CreateTempBuffer()
+	PushBlock()
+
+	// load topic into buffer
+	if SetupHelp(stInfo+topic, SH_EXACTHEIGHT)
+		// extra line at end got inserted because buffer was empty
+		EndFile()
+		KillLine()
+	else
+		#ifdef WIN32
+		InsertTopic(stInfo+topic, 0x00)
+		KillLine()
+		KillLine()
+		UnMarkBlock()
+		#endif
+	endif
+
+	if NumLines()
+		// show infobox
+		x = WhereXAbs()+1
+		y = WhereYAbs()+1
+		cx = LongestLineInBuffer()+3
+		cy = NumLines()+1
+
+		if x+cx > Query(ScreenCols)
+			x = Query(ScreenCols) - cx
+		endif
+		if y+cy > Query(ScreenRows)
+			y = y - (cy+1)
+		endif
+
+		#ifdef WIN32
+		BufferVideo()
+		#endif
+
+		if PopWinOpen(x, y, x+cx, y+cy, 1, "", Query(MenuBorderAttr))
+			Set(Attr, Query(HelpTextAttr))
+			ClrScr()
+			BegFile()
+			loop
+				Write(GetText(1, CurrLineLen()))
+				if CurrLine() >= NumLines() or not Down()
+					break
+				endif
+				WriteLine("")
+			endloop
+			WindowFooter("Press any key to continue")
+			#ifdef WIN32
+			UnBufferVideo()
+			#endif
+			GetKey()
+			PopWinClose()
+		else
+			#ifdef WIN32
+			UnBufferVideo()
+			#endif
+			Warn("Error opening infobox")
+		endif
+	else
+		Warn("Unable to find topic"; stInfo+topic)
+	endif
+
+	// clean up
+	PopBlock()
+	GotoBufferId(cid)
+	AbandonFile(idTmp)
+end
+
+
+// GetLinkName()
+// expects to be called from beginning of link when link is marked
+string proc GetLinkName()
+	string topic[80] = ""
+
+	PushBlock()
+	PushPosition()
+	if lFind(stFindLink, "xil")
+		topic = GetFoundText(TAG_LINKTOPIC)
+	endif
+	PopPosition()
+	PushPosition()
+	if not Length(topic) and lFind(stGetTopic, "cxi")
+		topic = GetFoundText(1)
+	endif
+	PopPosition()
+	PopBlock()
+	return(topic)
+end
+
+
+integer proc HelpEnter()
+	string topic[80] = ""
+	integer rc = TRUE
+	integer fInfo = FALSE
+
+	ResetFindLink()
+	if isBlockMarked()
+		GotoBlockBegin()
+
+		// infobox links are special
+		fInfo = (GetText(CurrPos(), Length(stInfoboxLink)) == stInfoboxLink)
+
+		// get topic name
+		topic = GetLinkName()
+
+		#ifdef DEBUG
+		Warn(g_stMacro, ': topic = "', topic, '"')
+		#endif
+
+		// find topic
+		if Length(topic)
+			if SubStr(topic, 1, Pos(":", topic)) in "mailto:", "http:", "ftp:", "file:"
+				#ifdef WIN32
+				// handle URLs
+				//Dos(QuotePath(topic), _DONT_PROMPT_|_DONT_CLEAR_|EXECFLAGS)
+				if ShellExecute(0, 0, topic, "", "", 1) <= 32
+					Warn('Error launching "', topic, '"')
+				endif
+				#else
+				Dos('start "'+topic+'"', _DONT_PROMPT_|_DONT_CLEAR_|EXECFLAGS)
+				#endif
+			elseif fInfo
+				HelpInfobox(topic)
+				//$ review: i added this line b/c it looked like it should be
+				// here; did i goof?
+			else
+				if SetupHelp(topic, SH_BACK)
+					ListHeader(g_stTopic)
+				else
+					// force mHelp() to look in built-it TSE help
+					g_stTopic = topic
+					rc = FALSE
+				endif
+			endif
+		endif
+	endif
+
+	return(rc)
+end
+
+
+proc PrintTopic()
+	integer cid = GetBufferId()
+	integer id
+
+	id = CreateTempBuffer()
+	if id
+		GotoBufferId(cid)
+		PushBlock()
+
+		// mark the topic
+		MarkLine(1, NumLines())
+
+		// copy the topic
+		GotoBufferId(id)
+		CopyBlock()
+
+		// strip help codes
+		StripHelpCodes()
+
+		// print buffer
+		PrintFile()
+
+		// clean up
+		PopBlock()
+		GotoBufferId(cid)
+		AbandonFile(id)
+	endif
+end
+
+
+proc PrevTopic()
+	integer cid
+	string s[255]
+	integer ln
+	integer row
+	integer cpos
+	integer blkln
+	integer blkpos
+
+	ResetFindLink()
+	cid = GotoBufferId(g_idBack)
+	#ifdef DEBUG
+	List("DEBUG ù PrevTopic buffer", Query(ScreenCols))
+	#endif
+	if cid
+		EndFile()
+		s = GetText(1, CurrLineLen())
+		ln = StripInteger(s)
+		row = StripInteger(s)
+		cpos = StripInteger(s)
+		blkln = StripInteger(s)
+		blkpos = StripInteger(s)
+		// s now contains the topic name
+		KillLine()
+		EndFile()
+		GotoBufferId(cid)
+		if Length(s) and SetupHelp(s, 0)
+			if blkln
+				GotoLine(blkln)
+				GotoPos(blkpos)
+				UnMarkBlock()
+				MarkStream()
+				MarkStream()
+			endif
+			GotoLine(ln)
+			ScrollToRow(row)
+			GotoPos(cpos)
+			ListHeader(s)
+		endif
+	endif
+	GotoBufferId(cid)
+end
+
+
+proc HelpClick()
+	integer nPos
+
+	#ifdef DEBUG
+	Set(Break, ON)
+	#endif
+
+	ResetFindLink()
+	case MouseHotSpot()
+		when _MOUSE_MARKING_
+			PushPosition()
+
+			// goto mouse cursor pos
+			BegLine()
+			GotoMouseCursor()
+			nPos = CurrPos()
+
+			// account for help codes
+			nPos = XlatHelp2(nPos, FALSE)
+			GotoPos(nPos)
+
+			// clicked on a link?
+			if lFind(stFindLink, "cxib")
+				lFind(stClickLinkEnd, "ci")
+				if CurrPos() > nPos
+					// yes
+					KillPosition()
+					PrevLink(FALSE)
+					PushKey(<Enter>)
+					return()
+				endif
+			endif
+			PopPosition()
+		when _MOUSE_CLOSE_
+			Escape()
+		when _MOUSE_UP_
+			HelpUp()
+		when _MOUSE_DOWN_
+			HelpDown()
+		when _MOUSE_PAGEUP_
+			HelpPgUp()
+		when _MOUSE_PAGEDOWN_
+			HelpPgDn()
+		when _MOUSE_VELEVATOR_
+			ProcessHotSpot()
+	endcase
+end
+
+
+integer proc HelpIndex(string topic)
+	ResetFindLink()
+	if SetupHelp(topic, SH_BACK)
+		ListHeader(g_stTopic)
+	else
+		//$ review: (chrisant) do i really want to always degrade to TSE help?
+
+		// force mHelp() to look in built-it TSE help
+		g_stTopic = topic
+		return(FALSE)
+	endif
+	return(TRUE)
+end
+
+
+
+// Help List --------------------------------------------------------------
+
+proc ProcessHelpWindow()
+	integer ch
+	integer rc = TRUE
+	integer equate = Set(EquateEnhancedKbd, ON)
+
+	loop
+		UpdateDisplay()
+		ch = GetKey()
+		case ch
+			when <Escape>, <RightBtn>, <Alt S>
+				rc = FALSE
+				break
+
+			when <Tab>					HelpNext()
+			when <Shift Tab>			HelpPrev()
+
+			when <CursorRight>			HelpLeftRight(TRUE)
+			when <CursorLeft>			HelpLeftRight(FALSE)
+
+			when <CursorUp>				HelpUp()
+			when <CursorDown>			HelpDown()
+
+			when <Ctrl CursorUp>		RollUp() HelpSelectAtCursor(TRUE)
+			when <Ctrl CursorDown>		RollDown() HelpSelectAtCursor(FALSE)
+			when <AltShift CursorUp>	ScrollUp() HelpSelectAtCursor(TRUE)
+			when <AltShift CursorDown>	ScrollDown() HelpSelectAtCursor(FALSE)
+			when <AltShift GreyCursorUp>	ScrollUp() HelpSelectAtCursor(TRUE)
+			when <AltShift GreyCursorDown>	ScrollDown() HelpSelectAtCursor(FALSE)
+
+#ifdef HAS_WHEEL_SUPPORT
+			when <WheelUp>				RollUp(GetWheelScrollLines()) HelpSelectAtCursor(TRUE)
+			when <WheelDown>			RollDown(GetWheelScrollLines()) HelpSelectAtCursor(FALSE)
+#endif
+
+			when <PgDn>					HelpPgDn()
+			when <PgUp>					HelpPgUp()
+
+			when <Ctrl PgDn>			EndFile() HelpPgDn()
+			when <Ctrl PgUp>			BegFile() HelpPgUp()
+
+			when <Home>					HelpHome()
+			when <End>					HelpEnd()
+
+			when <LeftBtn>				HelpClick()
+			when <Enter>				if not HelpEnter() break endif
+
+			when <Alt B>				PrevTopic()
+
+			when <Alt P>				PrintTopic()
+
+			when <Alt C>, <Alt H>, <Alt I>
+				if not HelpIndex(iif(ch == <Alt C>, "Table Of Contents",
+						iif(ch == <Alt H>, "Help on Help", stIndex)))
+					break
+				endif
+
+			when <Ctrl Enter>
+				// look up topic in built-in TSE help
+				break
+
+			otherwise
+				#ifdef DEBUG
+				if ch == <Alt Z>
+					DisplayMode(iif(DisplayMode() == _DISPLAY_TEXT_,
+							DISPLAY_HELP, _DISPLAY_TEXT_))
+				endif
+				#endif
+
+				if isTypeableKey(ch) or ch == <BackSpace>
+					FindLink()
+				endif
+		endcase
+	endloop
+	Set(EquateEnhancedKbd, equate)
+	EndProcess(rc)
+end
+
+
+proc ListStartup()
+	integer fCenter = Set(CenterFinds, OFF)
+
+	UnHook(ListStartup)
+	ListHeader(g_stTopic)
+	ListFooter(" {Alt H}-Help on Help  {Alt C}-Contents  {Alt I}-Index  {Alt B}-Back  {Alt S}-Search ")
+
+	if g_fPartial
+		g_fPartial = FALSE
+		FindPartialLink(g_stPartial)
+	endif
+
+	Set(CenterFinds, fCenter)
+
+	ProcessHelpWindow()
+end
+
+
+// isKeyword()
+// NOTE:  keywords MUST NOT contain spaces.
+integer proc isKeyword(string topic)
+	integer cid
+	integer fKeyword = FALSE
+	string wordset[32] = ChrSet("A-Za-z_0-9")
+	string ws[32]
+
+	ws = Set(WordSet, wordset)
+	cid = GotoBufferId(g_idKeywords)
+	if cid
+		fKeyword = lFind(topic, "^igw")
+		GotoBufferId(cid)
+	endif
+	Set(WordSet, ws)
+	return(fKeyword)
+end
+
+
+proc CloseHelpFile()
+	AbandonFile(g_idHelp)
+	g_idHelp = 0
+end
+
+
+integer proc LoadHelpFile(string helpfile)
+	string stHelpFile[MAXPATH]
+	integer cid = GetBufferId()
+	integer rc = TRUE
+
+	#ifdef WIN32
+	g_fReplaceTseHelp = FALSE
+	#endif
+
+	// get help file
+	g_stHelpFile = iif(Length(helpfile), helpfile, stHelpSupl)
+	if FileExists(g_stHelpFile)
+		stHelpFile = ExpandPath(g_stHelpFile)
+	elseif FileExists(g_stMacroDir+g_stHelpFile)
+		stHelpFile = ExpandPath(g_stMacroDir+g_stHelpFile)
+	else
+		stHelpFile = mSearchPath(g_stHelpFile, Query(TSEPath), "help")
+		if not Length(stHelpFile)
+			stHelpFile = mSearchPath(g_stHelpFile, Query(TSEPath), "mac")
+		endif
+	endif
+	g_stHelpFile = stHelpFile
+
+	// create help buffer
+	g_idHelp = CreateTempBuffer()
+	if not g_idHelp
+		Warn(g_stMacro, ": Unable to create temporary buffer.")
+		rc = FALSE
+		goto Out
+	endif
+
+	// load help file
+	if Length(g_stHelpFile)
+		PushBlock()
+		rc = InsertFile(g_stHelpFile, _DONT_PROMPT_)
+		PopBlock()
+	endif
+
+Out:
+	GotoBufferId(cid)
+	return(rc)
+end
+
+
+// SetupHelp()
+// returns TRUE if successful
+integer proc SetupHelp(string topic, integer flags)
+	integer cid
+	integer idTmp
+	integer fIndexOnTheFly = FALSE
+	integer rc = FALSE
+	integer lnBeg, lnEnd
+	string stBack[255]
+	string xtopic[80] = RegExStr(topic)
+	#ifdef WIN32
+	string stInsertTopic[80]
+	#endif
+
+	g_fPartial = FALSE
+
+	// get info for PrevTopic command
+	lnBeg = 0
+	lnEnd = 0
+	if isBlockInCurrFile()
+		lnBeg = Query(BlockBegLine)
+		lnEnd = Query(BlockBegCol)
+	endif
+	stBack = Format(CurrLine(); CurrRow(); CurrPos(); lnBeg; lnEnd; g_stTopic)
+
+	// setup temp buffer for matches
+	cid = GetBufferId()
+	idTmp = CreateTempBuffer()
+	if not idTmp
+		Warn(g_stMacro, ": Can't create temp buffer.")
+		goto Out
+	endif
+
+	// look for matches
+	if GotoBufferId(g_idHelp)
+		if (flags & SH_PROMPT) and topic == stIndex
+			fIndexOnTheFly = not lFind(stFindTopic1+stIndex+stFindTopic2, "gx")
+			if fIndexOnTheFly
+				xtopic = "[A-Za-z_]"
+			endif
+		endif
+
+		BegFile()
+		PushBlock()
+		while lFind(stFindTopic1+xtopic+stFindTopic2Fuzzy, "ix")
+			MarkFoundText(TAG_TOPIC)
+
+			if not fIndexOnTheFly or
+					not (SubStr(GetMarkedText(), 1, Length(stInfo)) in
+					stInfo, stPrompt)
+				// add to match list
+				AddLine(GetMarkedText(), idTmp)
+
+				// see if exact match
+				if Lower(GetMarkedText()) == Lower(topic)
+					// break out as soon as an exact match is found; remove all
+					// other matches
+					GotoBufferId(idTmp)
+					BegLine()
+					UnMarkBlock()
+					MarkChar()
+					if BegFile()
+						MarkChar()
+						KillBlock()
+					endif
+					UnMarkBlock()
+					GotoBufferId(g_idHelp)
+					break
+				endif
+			endif
+
+			GotoBlockEnd()
+		endwhile
+		PopBlock()
+	endif
+
+	// show help
+	GotoBufferId(idTmp)
+	if NumLines()
+		BegFile()
+
+		// look for exact match
+		if isKeyword(topic) and not lFind(topic, "^$gi")
+			// if topic is a keyword but no exact matches, break out and use
+			// built in help system.
+			goto Out
+		endif
+
+		// if multiple matches, prompt
+		if NumLines() > 1 and (flags & SH_PROMPT) and not (flags & SH_INSERT)
+			if not fIndexOnTheFly
+				GotoBufferId(g_idHelp)
+				fIndexOnTheFly = not lFind(stFindTopic1+stIndex+stFindTopic2, "gix")
+				GotoBufferId(idTmp)
+			endif
+
+			if fIndexOnTheFly
+				// sort
+				Set(MsgLevel, _NONE_)
+				MarkLine(1, NumLines())
+				Sort(_IGNORE_CASE_)
+				Set(MsgLevel, _ALL_MESSAGES_)
+
+				// insert blank line between sections starting with a new letter
+				BegFile()
+				xtopic = Upper(GetText(1, 1))+" "
+				while Down()
+					xtopic[2] = Upper(GetText(1, 1))
+					if xtopic[1] <> xtopic[2]
+						InsertLine()
+					endif
+					xtopic[1] = xtopic[2]
+				endwhile
+
+				// build index on the fly from matches
+				lReplace(".#", stLink1+"\0"+stLink2, "gnx")
+			endif
+
+			g_fPartial = TRUE
+			g_stPartial = topic
+			g_stTopic = stIndex
+		endif
+
+		// success -- DO NOT FAIL AFTER THIS POINT
+		#ifdef WIN32
+setup_topic:
+		#endif
+		rc = TRUE
+		ResetFindLink()
+
+		// add topic to "back" list
+		if flags & SH_BACK
+			AddLine(stBack, g_idBack)
+		endif
+
+		// mark help topic
+		if not g_fPartial
+			BegLine()
+			g_stTopic = GetText(1, sizeof(g_stTopic))
+		endif
+
+		// extract help topic
+		GotoBufferId(iif(fIndexOnTheFly, idTmp, g_idHelp))
+		lnBeg = 1
+		lnEnd = NumLines()
+
+		if not fIndexOnTheFly
+			lFind(stFindTopic1+RegExStr(g_stTopic)+stFindTopic2, "gix")
+			if lFind("{-----}|{ÄÄÄÄÄ}", "^bx")
+				// strip stuff from above
+				Down()
+				lnBeg = CurrLine()
+			endif
+			if lFind("{-----}|{ÄÄÄÄÄ}", "^x")
+				// strip stuff from below
+				lnEnd = CurrLine()
+			endif
+		endif
+
+		// copy to help buffer
+		Set(MsgLevel, _NONE_)
+		UnMarkBlock()
+		GotoLine(lnBeg)
+		BegLine()
+		MarkChar()
+		GotoLine(lnEnd)
+		MarkChar()
+		GotoBufferId(cid)
+		if not (flags & SH_INSERT)
+			EmptyBuffer()
+		endif
+		CopyBlock()
+		Set(MsgLevel, _ALL_MESSAGES_)
+
+		// translate the replace codes
+		while lFind("®R¯{.*}®/R¯", "gix")
+			lReplace(GetFoundText(), GetGlobalStr(GetFoundText(1)), "1")
+		endwhile
+
+		#ifndef WIN32
+		// translate WIN32 help tags to DOS help tags
+		lReplace("®/?I¯", Chr(2), "ginx")			// italic on/off (converted to bold)
+		lReplace("®/?B¯", Chr(2), "ginx")			// bold on/off
+		lReplace("®L¯", Chr(12)+Chr(174), "gin")	// link
+		lReplace("®LI¯", Chr(4)+Chr(174), "gin")	// infobox link
+		lReplace("®/L¯", Chr(175), "gin")			// link off (either type)
+
+		//$ review: oh this is tricky.  can't really support for TSE DOS, so i
+		// guess we have to degrade and bail!
+		lReplace("®L \{.*\}¯", Chr(4)+Chr(174), "ginx")
+		#endif
+
+		// allow inserting text from built-in TSE help topics
+		#ifdef WIN32
+		GotoBlockBegin()
+		while lFind("®insert:{.*}¯", "^ixl")
+			// insert topic
+			stInsertTopic = GetFoundText(1)
+			if Length(stInsertTopic)
+				PushBlock()
+				MarkFoundText()
+				KillBlock()
+				//$ review: (chrisant) wow, this is kind of slow compared to
+				// the Help() command, i wonder why?
+				NoHelpHelp(TRUE)
+				InsertTopic(stInsertTopic, 0x01)
+				NoHelpHelp(FALSE)
+				KillLine()								// remove topic name
+				GotoBlockEnd()
+				BegLine()
+				PopBlock()
+			endif
+		endwhile
+		#else
+		//$ review: (chrisant) without TSE 2.5's sci.exe, can't do the above
+		// feature, so i have to bail.
+		lReplace("®insert:.*¯", "", "^ginxl")
+		#endif
+
+		if not (flags & SH_INSERT)
+			// position to start of topic or subtopic
+			//BegFile()
+			lFind(stFindTopic1+RegExStr(g_stTopic)+stFindTopic2, "gix")
+			while Up() and CurrLineLen()
+			endwhile
+
+			// pad with blank lines to screen height
+			if not (flags & SH_EXACTHEIGHT)
+				lnBeg = CurrLine()
+				PushPosition()
+				EndFile()
+				while NumLines() - lnBeg <= Query(WindowRows)
+					AddLine()
+				endwhile
+				PopPosition()
+			endif
+
+			ScrollToRow(1)
+
+			// check for special GetHelp codes
+			PushPosition()
+			#ifdef WIN32
+			if lFind("®GH:LocalLinks¯", "gi")
+				// turn on until exit help system
+				g_fReplaceTseHelp = TRUE
+			endif
+			#endif
+			while lFind("®GH:.*¯", "gxi")
+				KillLine()
+			endwhile
+			PopPosition()
+
+			// remove topic marker lines
+			PushPosition()
+			BegFile()
+			while lFind(stKillTopic, "ix")
+				KillLine()
+			endwhile
+			PopPosition()
+
+			// go to first link
+			NextLink(TRUE)
+		endif
+
+		#ifndef WIN32
+		// subtopic
+		lReplace("®/?S¯", "", "ginx")
+		#endif
+	elseif flags & SH_INSERT
+		#ifdef WIN32
+		GotoBufferId(cid)
+		NoHelpHelp(TRUE)
+		InsertTopic(topic, 0x01)
+		NoHelpHelp(FALSE)
+		rc = TRUE
+		#else
+		Warn("TSE 2.5 can only insert CUSTOM help topics")
+		#endif
+	else
+		#ifdef WIN32
+		if g_fReplaceTseHelp
+			EmptyBuffer()
+			NoHelpHelp(TRUE)
+			if InsertTopic(topic, 0x01)
+				fIndexOnTheFly = TRUE
+				g_stTopic = topic
+				g_fPartial = TRUE
+				goto setup_topic
+			endif
+			NoHelpHelp(FALSE)
+		endif
+		#endif
+	endif
+
+Out:
+	GotoBufferId(cid)
+	AbandonFile(idTmp)
+	return(rc)
+end
+
+
+
+// Main Help Functions ----------------------------------------------------
+
+#ifndef WIN32
+keydef PrintKeys
+<Alt P>					PrintTopic()
+end
+
+proc EnablePrintKeys()
+	UnHook(EnablePrintKeys)
+	Enable(PrintKeys)
+end
+#endif
+
+integer proc mHelp(string helpfile, string word, integer fIndex, integer fHelpHelp)
+	integer fHelp = TRUE
+	integer cid, idCmd
+	string stWord[80] = ""
+	string wordset[32] = ChrSet("A-Za-z_0-9")
+	integer i
+	integer fOk = TRUE
+	integer rc = FALSE
+
+	stWord = iif(Length(word), Trim(word), mGetWord(TRUE))
+	if not Length(stWord)
+		stWord = stIndex
+	endif
+
+	// load help file
+	if not LoadHelpFile(helpfile)
+		goto Out
+	endif
+
+	// bail if not a word
+	if not Length(word)
+		for i = 1 to Length(stWord)
+			if not GetBit(wordset, Asc(stWord[i]))
+				fOk = FALSE
+				break
+			endif
+		endfor
+	endif
+
+	g_stTopic = stWord
+
+	// look in supplementary documentation
+	if Length(stWord) and fOk
+		PushBlock()
+		cid = GetBufferId()
+		EmptyBuffer(g_idBack)						// empty back list
+		if CreateTempBuffer()
+			if SetupHelp(stWord, iif(Length(word),
+					SH_PROMPT|SH_INDEX, SH_PROMPT))
+				// show help
+				Hook(_LIST_STARTUP_, ListStartup)
+				DisplayMode(DISPLAY_HELP)
+				//$ review: (chrisant) if i were using a keydef in lList,
+				// instead of ProcessHelpWindow(), i'd have to use
+				// _ENABLE_HSCROLL_ or lList always forces the cursor to the
+				// beginning of the line.
+				fHelp = lList("",
+						Query(ScreenCols)-2, Query(ScreenRows)-2,
+						_ENABLE_SEARCH_|_FIXED_HEIGHT_)
+				DisplayMode(_DISPLAY_TEXT_)
+				UnHook(ListStartup)
+				rc = TRUE					// we showed some help
+
+				// help commands
+				if Query(Key) == <Alt S>
+					SearchHelp()
+				endif
+			endif
+
+			idCmd = GotoBufferId(cid)
+			AbandonFile(idCmd)
+		else
+			Warn(g_stMacro, ": Unable to create temporary buffer.")
+		endif
+		PopBlock()
+	endif
+
+	// if called from HELPHELP.MAC and topic was not found in custom help
+	// file, DO NOT call Help().
+	if fHelp and (not fHelpHelp or rc)
+		#ifndef WIN32
+		Hook(_NONEDIT_IDLE_, EnablePrintKeys)
+		#endif
+
+		NoHelpHelp(TRUE)
+		Help(g_stTopic, fIndex)
+		rc = TRUE							// we showed some help
+		NoHelpHelp(FALSE)
+
+		#ifndef WIN32
+		Disable(PrintKeys)
+		UnHook(EnablePrintKeys)
+		#endif
+	endif
+
+Out:
+	EmptyBuffer(g_idBack)
+	CloseHelpFile()
+
+	// return TRUE == we handled it
+	// return FALSE == we did not handle it
+	return (rc)
+end
+
+
+proc MyHelp(string topic)
+	// NOTE: in GETHELP, we can directly call mHelp().  In your own macro, you
+	// would want to use something like this:
+	//ExecMacro("gethelp -fmyhelpfile Table of Contents")
+	//                     ÀÄÄÄÂÄÄÄÄÙ ÀÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÙ
+	//  your help file <ÄÄÄÄÄÄÄÙ              ÀÄÄÄÄÄÄÄÄÄÄÄ> your help topic
+
+	mHelp(stHlpFile, topic, TRUE, FALSE)
+end
+
+
+proc TopicError(string topic, string msg)
+	do MIN_ROWS times
+		AddLine()
+	enddo
+	GotoLine((MIN_ROWS+1)/2)
+	InsertText("Topic '®B¯" + topic + "®/B¯'" + msg)
+	#ifdef BEEP_ON_FAIL
+	Alarm()
+	#endif
+end
+
+
+// DisplaySyntax()
+// by Steve Watkins, SemWare Corporation; modifications by Chris Antos.
+integer widSyntax = 0	// syntax window id
+integer idSyntax = 0	// syntax buffer id
+proc DisplaySyntax(string command)
+	integer window_id, lines
+
+	#ifdef WIN32
+	BufferVideo()
+	#endif
+
+	window_id = WindowId()
+	GotoWindow(widSyntax)
+	if WindowId() <> widSyntax
+		// create it
+		OneWindow()
+		HWindow()
+		ResizeWindow(_UP_,MIN_ROWS - Query(WindowRows))
+		widSyntax = WindowId()
+	endif
+
+	if not GotoBufferId(idSyntax)
+		PushPosition()
+		idSyntax = CreateTempBuffer()
+		PopPosition()
+	endif
+
+	if GotoBufferId(idSyntax)
+		DisplayMode(DISPLAY_HELP)
+		EmptyBuffer()
+		PushBlock()
+		lines = MIN_ROWS
+		//if not InsertTopic(command, 0x01)
+		if not SetupHelp(command, SH_INSERT)
+			//$ todo: (chrisant) don't like this
+			TopicError(command, " not found")
+		elseif not lFind("Syntax:","^g")
+			//$ todo: (chrisant) don't like this
+			EmptyBuffer()
+			TopicError(command, " is not a TSE macro command")
+		else
+			BegFile()
+			repeat
+				KillLine()
+			until CurrLineLen()
+			if lFind("Returns:","^")
+				while CurrLineLen() and Down()
+				endwhile
+				if CurrLineLen() == 0
+					MarkLine(CurrLine(), NumLines())
+					KillBlock()
+				endif
+			endif
+			BegFile()
+			lFind("Syntax:","^")
+			ScrollToRow(1)
+
+			#ifdef AUTOSIZE
+			lines = CurrLine()
+			PushPosition()
+			lines = iif(lFind("Returns:","^"), CurrLine() - lines, MIN_ROWS)
+			PopPosition()
+			#endif
+		endif
+
+		#ifdef AUTOSIZE
+		ResizeWindow(_UP_,MIN(MAX_ROWS, lines) - Query(WindowRows))
+		if Query(WindowRows) < MIN_ROWS
+			ResizeWindow(_UP_,MIN_ROWS)
+		endif
+		#endif
+
+		FileChanged(FALSE)
+		PopBlock()
+	endif
+
+	GotoWindow(window_id)
+
+	#ifdef WIN32
+	UnbufferVideo()
+	#endif
+end
+
+
+string stWindir[] = "windir"
+#ifdef WIN32
+proc WinHelp(string fn, string topic)
+	integer n
+	string path[MAXPATH] = fn
+
+	// look for help file
+	if not Length(SplitPath(fn, _DRIVE_)) and
+			SubStr(SplitPath(fn, _PATH_), 1, 1) <> "\"
+		path = mSearchPath(fn, g_stHelpPath, "help")
+		if not Length(path)
+			path = mSearchPath(fn, GetEnvStr(stWindir), "system")
+			if not Length(path)
+				path = mSearchPath(fn, GetEnvStr(stWindir), "system32")
+			endif
+		endif
+	endif
+
+	// open help file
+	if Length(path)
+		n = FileExists(Trim(path))
+		if n and not (n & _DIRECTORY_)
+			// look for topic, show index if not found
+			WinHelpTopic(0, path, HELP_PARTIALKEY, topic)
+			return()
+		endif
+	endif
+
+	Warn('Unable to find help file "', fn, '"')
+end
+#else
+proc WinHelp(string fn, string topic)
+	integer n
+	string path[MAXPATH] = fn
+	string gethelp[MAXPATH]
+
+	//$ todo: (chrisant) test if Windows is running
+
+	// look for help file
+	if not Length(SplitPath(fn, _DRIVE_)) and
+			SubStr(SplitPath(fn, _PATH_), 1, 1) <> "\"
+		path = mSearchPath(fn, ExpandEnvVars(g_stHelpPath), "help")
+		if not Length(path)
+			path = mSearchPath(fn, GetEnvStr(stWindir), "system")
+			if not Length(path)
+				path = mSearchPath(fn, GetEnvStr(stWindir), "system32")
+			endif
+		endif
+	endif
+
+	// open help file
+	if Length(path)
+		n = FileExists(Trim(path))
+		if n and not (n & _DIRECTORY_)
+			gethelp = mSearchPath("gethelp.exe", Query(TSEPath), ".")
+			if Length(gethelp)
+				lDos(gethelp, path+" "+topic, _DONT_PROMPT_|_DONT_CLEAR_)
+			else
+				Warn("Unable to find GETHELP.EXE")
+			endif
+			return()
+		endif
+	endif
+
+	Warn('Unable to find help file "', fn, '"')
+end
+#endif
+
+
+
+// Menu Functions ---------------------------------------------------------
+
+constant MENU_REDISPLAY = -1
+
+
+#ifdef WIN32
+integer g_cposHi = 0
+integer g_cxHi = 0
+integer g_clnHi = 0
+proc UserHiHook()
+	g_cposHi = CurrPos()
+	g_cxHi = Length(GetFoundText())
+	g_clnHi = CurrLine()
+	UpdateDisplay(_WINDOW_REFRESH_)
+end
+
+
+proc UserHi()
+	if g_cposHi and g_clnHi == CurrLine()
+		VGotoXY(g_cposHi+1, VWhereY())
+		PutAttr(Query(MsgAttr), g_cxHi)
+		g_cposHi = 0
+		g_cxHi = 0
+		g_clnHi = 0
+	endif
+end
+#endif
+
+
+integer proc isSeparator()
+	return(CurrChar(1) == Asc("Ä"))
+end
+
+
+string proc MenuString()
+	string s[1] = iif(isSeparator(), "", " ")
+	return(s+RTrim(GetToken(GetText(1, CurrLineLen()), stDiv, 1))+s)
+end
+
+
+integer proc LongestMenuString()
+	integer maxlen = 0
+
+	PushPosition()
+	BegFile()
+	repeat
+		if not isSeparator()
+			maxlen = Max(maxlen, Length(MenuString()))
+		endif
+	until not Down()
+	PopPosition()
+	return (maxlen)
+end
+
+
+proc MenuEnd(integer dir)
+	if iif(dir, EndFile(), BegFile())
+		while isSeparator() and iif(dir, Up(), Down())
+		endwhile
+	endif
+end
+
+
+proc MenuUpDn(integer dir)
+	if iif(dir, Down(), Up())
+		if isSeparator()
+			if not iif(dir, Down(), Up())
+				iif(dir, Up(), Down())
+			endif
+		endif
+	endif
+end
+
+
+proc MenuPgUpDn(integer dir)
+	if iif(dir, PageDown(), PageUp())
+		while isSeparator()
+			if dir
+				RollUp()
+				if not Up()
+					break
+				endif
+			else
+				RollDown()
+				if not Down()
+					break
+				endif
+			endif
+		endwhile
+	endif
+end
+
+
+proc MenuEnter()
+	if not isSeparator()
+		EndProcess(TRUE)
+	endif
+end
+
+
+proc MenuLeftBtn()
+	case MouseHotSpot()
+		when _MOUSE_CLOSE_
+			// nothing
+		when _MOUSE_MARKING_
+			GotoMouseCursor()
+			PushKey(<Enter>)
+		otherwise
+			ProcessHotSpot()
+	endcase
+end
+
+
+keydef MenuKeys
+<Home>					MenuEnd(FALSE)
+<End>					MenuEnd(TRUE)
+<Ctrl Home>				MenuEnd(FALSE)
+<Ctrl End>				MenuEnd(TRUE)
+<Ctrl PgUp>				MenuEnd(FALSE)
+<Ctrl PgDn>				MenuEnd(TRUE)
+<PgUp>					MenuPgUpDn(FALSE)
+<PgDn>					MenuPgUpDn(TRUE)
+<CursorUp>				MenuUpDn(FALSE)
+<CursorDown>			MenuUpDn(TRUE)
+<Enter>					MenuEnter()
+
+//<GreyHome>				MenuEnd(FALSE)
+//<GreyEnd>				MenuEnd(TRUE)
+//<Ctrl GreyHome>			MenuEnd(FALSE)
+//<Ctrl GreyEnd>			MenuEnd(TRUE)
+//<Ctrl GreyPgUp>			MenuEnd(FALSE)
+//<Ctrl GreyPgDn>			MenuEnd(TRUE)
+//<GreyPgUp>				MenuPgUpDn(FALSE)
+//<GreyPgDn>				MenuPgUpDn(TRUE)
+//<GreyCursorUp>			MenuUpDn(FALSE)
+//<GreyCursorDown>		MenuUpDn(TRUE)
+//<GreyEnter>				MenuEnter()
+
+<Tab>					MenuUpDn(FALSE)
+<Shift Tab>				MenuUpDn(TRUE)
+<LeftBtn>				MenuLeftBtn()
+end
+
+
+#ifdef WIN32
+proc DisplayMenuItem(/*integer fCursorline*/)
+	integer fSep = FALSE
+	integer x, y
+	string s[80] = MenuString()
+	integer attr = Query(Attr)
+
+	if isSeparator()
+		s = Format("":Query(WindowCols):"Ä")
+		attr = Query(MenuBorderAttr)
+		fSep = TRUE
+	endif
+
+	y = VWhereY()+Query(PopWinY1)-1
+	mPutOemStrXY(VWhereX(), VWhereY(), Format(s:-Query(WindowCols)), attr, iif(fSep, FUse3D(), FALSE))
+
+	// hilite incremental search match
+	UserHi()
+
+	x = Query(PopWinX1) - 1
+	Window(1, 1, Query(ScreenCols), Query(ScreenRows))
+	mPutOemStrXY(x, y, iif(fSep, "Ã", "³"), Query(MenuBorderAttr), FUse3D())
+	FullWindow()
+end
+#endif
+
+
+string stMenuTitle[80] = ""
+proc MenuStartup()
+	UnHook(MenuStartup)
+	Enable(MenuKeys)
+
+	mPutOemStrXY(1, 0, "ÄÄÄ", Query(MenuBorderAttr), FUse3D())
+	if Length(stMenuTitle)
+		Window(Query(PopWinX1)-1, Query(PopWinY1)-1,
+				Query(PopWinX1)+Query(PopWinCols), Query(PopWinY1)-1)
+		PutCtrStr(stMenuTitle[1:Query(PopWinCols)-2], 1)
+		FullWindow()
+	endif
+
+	#ifndef WIN32
+	// this is done in MenuStartup because this is the earliest that we know
+	// the actual width of the list window.
+	PushPosition()
+	BegFile()
+	repeat
+		if isSeparator()
+			// extend separator lines to full width
+			BegLine()
+			KillToEol()
+			InsertText(Format("":Query(PopWinCols):"Ä"))
+		elseif Pos(stDiv, GetText(1, CurrLineLen()))
+			// push menu item data past visible xoffset
+			GotoPos(Pos(stDiv, GetText(1, CurrLineLen())))
+			InsertText(Format("":Query(PopWinCols)-CurrPos()+1:" "), _INSERT_)
+		endif
+	until not Down()
+	PopPosition()
+	#endif
+end
+
+
+integer proc DoMenu(string title)
+	integer cLen
+	integer cLines
+	integer nHelp
+	integer nBorder
+
+	cLen = max(CX_MENU_MIN, Length(title)+2)
+	cLen = max(cLen, LongestMenuString())
+	cLen = min(cLen, Query(ScreenCols)-2)
+	cLines = min(NumLines(), Query(ScreenRows)-2)
+
+	// position same as how TSE positions menus
+	if not Query(X1)
+		Set(X1, Query(WindowX1)+(WhereX()-1)/2)
+	endif
+	if not Query(Y1)
+		Set(Y1, Query(WindowY1)+WhereY()/2-1)
+	endif
+	if Query(X1)+cLen+1 > Query(ScreenCols)
+		Set(X1, Query(ScreenCols)-(cLen+1))
+	endif
+	if Query(Y1)+cLines+2 > Query(ScreenRows)
+		Set(Y1, Query(ScreenRows)-(cLines+2))
+	endif
+
+	#ifdef WIN32
+	HookDisplay(DisplayMenuItem,,,UserHiHook)
+	#endif
+
+	Hook(_LIST_STARTUP_, MenuStartup)
+	nBorder = Set(CurrWinBorderType, 1)
+	stMenuTitle = title
+	nHelp = lList("", cLen, cLines,
+			_ENABLE_SEARCH_|_ANCHOR_SEARCH_|_FIXED_WIDTH_)
+	Set(CurrWinBorderType, nBorder)
+	UnHook(MenuStartup)
+
+	#ifdef WIN32
+	UnHookDisplay()
+	#endif
+
+	#ifndef WIN32
+	// remove the extra spaces we inserted
+	PushPosition()
+	lReplace("{.@[~ ]} @"+stDiv, "\1"+stDiv, "^gnx")
+	PopPosition()
+	#endif
+
+	return(nHelp)
+end
+
+
+
+// Config -----------------------------------------------------------------
+
+proc ParseHelpEntry(var integer n, var string fn, var string topic)
+	string stToken[sizeof(stDiv)] = stDiv
+
+	lFind(stToken, "gc")
+	Right()
+	PushPosition()
+
+#ifdef BACKWARDS_COMPATIBILITY
+	if not Pos(stDiv, GetText(CurrPos(), CurrLineLen()))
+		// drat!  this is necessary for backwards compatibility with a
+		// pre-release version.
+		stToken = ","
+	endif
+#endif
+
+	n = 1
+	fn = ""
+	topic = ""
+	if lFind("{.*}\c"+stToken, "cx")
+		n = Val(GetFoundText(1))
+		Right()
+		if lFind("{.*}\c"+stToken, "cx")
+			fn = GetFoundText(1)
+			Right()
+			if lFind("{.*}$", "cx")
+				topic = GetFoundText(1)
+			endif
+		endif
+	endif
+
+#ifdef BACKWARDS_COMPATIBILITY
+	if stToken <> stDiv
+		RemoveQuotes(fn)
+		RemoveQuotes(topic)
+	endif
+#endif
+
+	PopPosition()
+end
+
+
+proc ToggleVar(var integer f)
+	f = not f
+end
+
+
+string proc YesNoStr(integer f)
+	return(iif(f, "Yes", "No"))
+end
+
+
+string proc HelpStyle(integer nStyle)
+	case nStyle
+		when TSE_STYLE
+			return("TSE")
+		when DOSEXE_STYLE
+			return("Dos Exe")
+		when WINEXE_STYLE
+			return("Windows Exe")
+		when WIN_STYLE
+			return("Windows Help")
+	endcase
+	return("")
+end
+
+
+string stHelpName[32] = ""
+integer nHelpStyle = 0
+string stHelpEntryFilename[MAXPATH] = ""
+string stHelpEntryTopic[80] = ""
+
+
+#ifdef WIN32
+menu HelpStyleMenu()
+	history = nHelpStyle
+
+	"&TSE Help File",,CloseAfter
+	"&Windows Help File (.HLP)",,CloseAfter
+	"&Exe (DOS Command)",,CloseAfter
+	"&Exe (Windows Command)",,CloseAfter
+end
+#else
+menu HelpStyleMenu()
+	history = nHelpStyle
+
+	"&TSE Help File",,CloseAfter
+	"&Windows Help File (.HLP)",,CloseAfter
+	"&Exe (DOS Command)",,CloseAfter
+end
+#endif
+
+
+proc DoHelpStyleMenu()
+	integer n = 0
+	integer style
+
+	style = nHelpStyle
+	case HelpStyleMenu()
+		when 1
+			n = TSE_STYLE
+		when 2
+			n = WIN_STYLE
+		when 3
+			n = DOSEXE_STYLE
+#ifdef WIN32
+		when 4
+			n = WINEXE_STYLE
+#endif
+	endcase
+	nHelpStyle = iif(n, n, style)
+end
+
+
+menu HelpFileEntryMenu()
+title = "Edit Help File Entry"
+"Help &name:" [Trim(stHelpName):24], Read(stHelpName), DontClose//, "Name that appears on help menu"
+"Help &style:" [HelpStyle(nHelpStyle):12], DoHelpStyleMenu(), DontClose//, "Available styles:  TSE help file, Windows help file, or DOS command"
+"Help &filename/command:" [stHelpEntryFilename:24], Read(stHelpEntryFilename), DontClose//, "Optional help filename (TSE/Win styles), or help command (Exe style)"
+"Help &topic (optional):" [Trim(stHelpEntryTopic):24], Read(stHelpEntryTopic), DontClose//, "Leave this blank unless you always want to show help on this specific topic"
+"",,Divide
+"&Cancel",,CloseAfter
+end
+
+
+proc EditHelpFileEntry()
+	integer i
+
+	PushPosition()
+
+	// get opts
+	stHelpName = Trim(HelpName())
+	ParseHelpEntry(nHelpStyle, stHelpEntryFilename, stHelpEntryTopic)
+
+	// (Esc==0 is only way to exit menu w/o canceling)
+	if not HelpFileEntryMenu()
+		PushPosition()
+		PushBlock()
+		UnMarkBlock()
+		Left()
+		i = CurrPos()-1
+		MarkChar()
+		BegLine()
+		MarkChar()
+		KillBlock()
+		if Length(RTrim(stHelpName)) < i
+			InsertText(Format(RTrim(stHelpName):-i:" "), _INSERT_)
+		else
+			InsertText(RTrim(stHelpName), _INSERT_)
+		endif
+		PopBlock()
+		PopPosition()
+
+		KillToEol()
+		InsertText(Format(Str(nHelpStyle), stDiv,
+				stHelpEntryFilename, stDiv, Trim(stHelpEntryTopic)))
+
+		EndProcess(MENU_REDISPLAY)
+	endif
+
+	PopPosition()
+end
+
+
+proc InsertHelpFile()
+	InsertLine("New Help FileÝ1ÝÝ")
+	PushKey(<Enter>)
+	EndProcess(MENU_REDISPLAY)
+end
+
+
+proc DeleteHelpFile()
+	// prompt before deleting
+	Set(X1, WhereXAbs())
+	Set(Y1, WhereYAbs()+1)
+	if YesNo('Delete "'+Trim(MenuString())+'"?') <> 1
+		return()
+	endif
+
+	KillLine()
+	EndProcess(MENU_REDISPLAY)
+end
+
+
+proc MoveIt(integer dir)
+	if iif(dir, CurrLine() < NumLines(), CurrLine() > 1)
+		PushBlock()
+		UnMarkBlock()
+		BegLine()
+		MarkChar()
+		EndLine()
+		MarkChar()
+		if dir
+			Down()
+			AddLine()
+		else
+			Up()
+			InsertLine()
+		endif
+		BegLine()
+		MoveBlock()
+		PushPosition()
+		if dir
+			Up(2)
+		else
+			Down(2)
+		endif
+		KillLine()
+		PopPosition()
+		PopBlock()
+	endif
+end
+
+
+keydef HelpFilesKeys
+<F1>					MyHelp("Edit a Help Group")
+<Enter>					EditHelpFileEntry()
+<Ins>					InsertHelpFile()
+<Del>					DeleteHelpFile()
+<Ctrl CursorUp>			MoveIt(FALSE)
+<Ctrl CursorDown>		MoveIt(TRUE)
+
+//<GreyIns>				InsertHelpFile()
+//<GreyDel>				DeleteHelpFile()
+<Ctrl GreyCursorUp>		MoveIt(FALSE)
+<Ctrl GreyCursorDown>	MoveIt(TRUE)
+end
+
+
+proc HelpFilesStartup()
+	UnHook(HelpFilesStartup)
+	if Enable(HelpFilesKeys)
+		WindowFooter(stFooter)
+	endif
+end
+
+
+proc EditHelpFiles()
+	integer cid = GetBufferId()
+	integer idTmp
+	integer x,y
+	integer n
+
+	idTmp = CreateTempBuffer()
+	if idTmp
+		PushBlock()
+		GotoBufferId(g_idDat)
+		PushPosition()
+		if Down() and CurrLineLen()
+			UnMarkBlock()
+			BegLine()
+			MarkChar()
+
+			while Down() and CurrLineLen()
+			endwhile
+
+			if CurrLineLen()
+				// each section should have a blank line after it!
+				AddLine()
+			endif
+
+			MarkChar()
+		endif
+		PopPosition()
+		GotoBufferId(idTmp)
+
+		// transfer to temp buffer
+		BegFile()
+		if isBlockMarked()
+			MoveBlock()
+			EndFile()
+			KillLine()
+			BegFile()
+		endif
+
+		x = WhereXAbs()
+		y = WhereYAbs()
+
+redisplay:
+		Set(X1, x)
+		Set(Y1, y)
+		Hook(_LIST_STARTUP_, HelpFilesStartup)
+		n = DoMenu("Help Files")
+		UnHook(HelpFilesStartup)
+		if n == MENU_REDISPLAY
+			goto redisplay
+		endif
+
+		// transfer back to dat buffer
+		UnMarkBlock()
+		BegFile()
+		MarkChar()
+		EndFile()
+		AddLine()
+		BegLine()
+		MarkChar()
+		GotoBufferId(g_idDat)
+		PushPosition()
+		if not Down()
+			AddLine()
+		endif
+		BegLine()
+		if isBlockMarked()
+			MoveBlock()
+		endif
+		PopPosition()
+
+		GotoBufferId(cid)
+		AbandonFile(idTmp)
+		PopBlock()
+	endif
+end
+
+
+string m_stName[40] = ""
+string m_stExts[40] = ""
+integer m_fSep = FALSE
+menu SectionOptions()
+title = "Edit Help Group"
+"&Help Files  ", EditHelpFiles(), DontClose
+"&Name (optional)" [Trim(m_stName):24], Read(m_stName), DontClose
+"&Extensions..." [Trim(m_stExts):24], Read(m_stExts), DontClose, "File extensions (no periods, put space between extensions)"
+"&Separator before:" [YesNoStr(m_fSep):3], ToggleVar(m_fSep), DontClose
+"",,Divide
+"&Cancel",,CloseAfter
+end
+
+
+proc DoSectionOptions()
+	integer cid = GetBufferId()
+	integer i
+
+	if not isSeparator() and lFind(stDiv, "gc") and Right()
+		GotoNextNonWhite()
+		i = Val(GetText(CurrPos(), 10))
+		cid = GotoBufferId(g_idDat)
+		GotoLine(i)
+		lFind(stFindHelpMenu, "gcx")
+		m_stName = GetFoundText(TAG_MENUNAME)
+		m_stExts = GetFoundText(TAG_EXTENSIONS)
+		m_fSep = GetFoundText(TAG_SEPARATOR) == "_"
+		GotoBufferId(cid)
+
+		Set(X1, WhereXAbs())
+		Set(Y1, WhereYAbs()+1)
+
+		// (Esc==0 is only way to exit menu w/o canceling)
+		SetMenuHelpFile(TRUE)
+		if not SectionOptions()
+			GotoBufferId(g_idDat)
+			BegLine()
+			KillToEol()
+			InsertText("°±²Ý"+Trim(m_stName)+"Þ")
+			if m_fSep
+				InsertText("_")
+			endif
+			if Length(m_stExts)
+				InsertText("("+Trim(m_stExts)+")")
+			endif
+			GotoBufferId(cid)
+		endif
+		SetMenuHelpFile(FALSE)
+	endif
+end
+
+
+proc BuildHelpSectionMenu(integer id)
+	integer cid
+
+	EmptyBuffer(id)
+	cid = GotoBufferId(g_idDat)
+	if cid
+		BegFile()
+		while lFind(stFindHelpMenu, "x")
+			AddLine(GetFoundText(TAG_MENUNAME)+stDiv+Str(CurrLine()), id)
+			EndLine()
+		endwhile
+		EndFile()
+		if NumLines()
+			AddLine("Ä", id)
+		endif
+		AddLine("Search path for Windows help files...", id)
+		GotoBufferId(cid)
+	endif
+end
+
+
+proc InsertSection()
+	integer cid = GetBufferId()
+	integer i, n
+
+	if not isSeparator() and CurrLine() < NumLines() and
+			lFind(stDiv, "gc") and Right()
+		i = CurrLine()
+		n = Val(GetText(CurrPos(), 10))
+
+		GotoBufferId(g_idDat)
+		GotoLine(n)
+
+		// insert new section
+		InsertLine("")
+		InsertLine("°±²ÝNew Help GroupÞ_()")
+
+		GotoBufferId(cid)
+
+		// rebuild section menu
+		BuildHelpSectionMenu(cid)
+
+		// position cursor line on new section
+		GotoLine(i)
+
+		EndProcess(MENU_REDISPLAY)
+		PushKey(<Enter>)
+	endif
+end
+
+
+proc DeleteSection()
+	integer cid = GetBufferId()
+	integer i, n
+
+	if not isSeparator() and CurrLine() < NumLines() and
+			lFind(stDiv, "gc") and Right()
+		// prompt before deleting
+		Set(X1, WhereXAbs())
+		Set(Y1, WhereYAbs()+1)
+		if YesNo('Delete group "'+Trim(MenuString())+'"?') <> 1
+			return()
+		endif
+
+		i = CurrLine()
+		n = Val(GetText(CurrPos(), 10))
+
+		GotoBufferId(g_idDat)
+		GotoLine(n)
+		PushBlock()
+
+		// delete section
+		UnMarkBlock()
+		MarkLine()
+		while Down() and CurrLineLen()
+		endwhile
+		MarkLine()
+		KillBlock()
+
+		PopBlock()
+		GotoBufferId(cid)
+
+		// rebuild section menu
+		BuildHelpSectionMenu(cid)
+
+		// position cursor line
+		GotoLine(i)
+		if isSeparator()
+			RollUp()
+			Up()
+		endif
+
+		EndProcess(MENU_REDISPLAY)
+	endif
+end
+
+
+proc AskHelpPath()
+	string s[255] = g_stHelpPath
+
+	Set(X1, WhereXAbs())
+	Set(Y1, WhereYAbs())
+	if Ask("Search path for Windows help files:", s)
+		g_stHelpPath = s
+	endif
+end
+
+
+proc SectionEnter()
+	if not isSeparator()
+		if CurrLine() == NumLines()
+			AskHelpPath()
+		else
+			DoSectionOptions()
+		endif
+	endif
+end
+
+
+proc MoveSection(integer dir)
+	integer cid = GetBufferId()
+	integer ilba = Query(InsertLineBlocksAbove)
+	integer i, n
+
+	i = CurrLine()
+
+	if iif(dir, i < NumLines()-2, i > 1 and i <= NumLines()-2)
+		lFind(stDiv, "gc")
+		Right()
+		n = Val(GetText(CurrPos(), 10))
+
+		GotoBufferId(g_idDat)
+		GotoLine(n)
+		PushBlock()
+
+		if not dir
+			PushPosition()
+		endif
+
+		// mark section
+		UnMarkBlock()
+		MarkLine()
+		while Down() and CurrLineLen()
+		endwhile
+		MarkLine()
+
+		if not dir
+			PopPosition()
+		endif
+
+		// find where to move it to
+		if dir
+			while Down() and CurrLineLen()
+			endwhile
+		else
+			Up()
+			lFind(stFindHelpMenu, "bx")
+		endif
+
+		// move section
+		Set(InsertLineBlocksAbove, not dir)
+		MoveBlock()
+
+		PopBlock()
+		GotoBufferId(cid)
+
+		// rebuild menu
+		BuildHelpSectionMenu(cid)
+
+		// position cursor line
+		GotoLine(iif(dir, i+1, i-1))
+	endif
+
+	Set(InsertLineBlocksAbove, ilba)
+end
+
+
+keydef EditKeys
+<F1>					MyHelp('The "Help Groups" Menu')
+<Enter>					SectionEnter()
+<Ins>					InsertSection()
+<Del>					DeleteSection()
+<Ctrl CursorUp>			MoveSection(FALSE)
+<Ctrl CursorDown>		MoveSection(TRUE)
+
+//<GreyIns>				InsertSection()
+//<GreyDel>				DeleteSection()
+<Ctrl GreyCursorUp>		MoveSection(FALSE)
+<Ctrl GreyCursorDown>	MoveSection(TRUE)
+end
+
+
+proc EditStartup()
+	UnHook(EditStartup)
+	if Enable(EditKeys)
+		WindowFooter(stFooter)
+	endif
+end
+
+
+proc EditHelpSections()
+	integer idTmp
+	integer cid = GetBufferId()
+	integer x,y
+	integer n
+
+	idTmp = CreateTempBuffer()
+	if idTmp
+		BuildHelpSectionMenu(idTmp)
+		BegFile()
+
+		x = WhereXAbs()
+		y = WhereYAbs()
+
+redisplay:
+		Set(X1, x)
+		Set(Y1, y)
+		Hook(_LIST_STARTUP_, EditStartup)
+		n = DoMenu("Help Groups")
+		UnHook(EditStartup)
+		if n == MENU_REDISPLAY
+			goto redisplay
+		endif
+	endif
+
+	GotoBufferId(cid)
+	AbandonFile(idTmp)
+end
+
+
+proc DoConfigMenu()
+	EditHelpSections()
+	SaveDat()
+	EndProcess(MENU_REDISPLAY)
+end
+
+
+
+// Help Menu --------------------------------------------------------------
+
+keydef HelpMenuKeys
+<F1>					MyHelp("Help Menu")
+<F10>					DoConfigMenu()
+<Ctrl Enter>			DoConfigMenu()
+<Alt C>					DoConfigMenu()
+<Alt E>					DoConfigMenu()
+end
+
+
+proc HelpMenuStartup()
+	UnHook(HelpMenuStartup)
+	if Enable(HelpMenuKeys)
+		WindowFooter(stFooter)
+	endif
+end
+
+
+proc DoHelpMenu(string ext)
+	string ws[32]
+	integer nHelp
+	integer cid = GetBufferId()
+	integer idTmp
+	integer fMatch
+	integer fSep
+	integer i
+	string stExts[80]
+	integer nHelpType
+	string stHelpExe[MAXPATH]
+	string stHelpFile[MAXPATH] = ""		// = "" placates compiler
+	string stHelpTopic[80] = ""			// = "" placates compiler
+	integer x, y
+
+	#ifdef DEBUG
+	Set(Break, ON)
+	#endif
+
+	x = WhereXAbs()
+	y = WhereYAbs()
+
+	// create help menu buffer
+	idTmp = CreateTempBuffer()
+redisplay:
+	if idTmp
+		if GotoBufferId(g_idDat)
+			BegFile()
+			while lFind(stFindHelpMenu, "x")
+				// (empty ext matches everything)
+				stExts = GetFoundText(TAG_EXTENSIONS)
+				fSep = GetFoundText(TAG_SEPARATOR) == "_"
+				fMatch = (stExts == "*" or not Length(ext))
+
+				// does ext match this set of help files?
+				if not fMatch
+					for i = NumTokens(stExts, " ") downto 1
+						if Lower(ext) == Lower("."+GetToken(stExts, " ", i))
+							fMatch = TRUE
+							break
+						endif
+					endfor
+				endif
+
+				// if matched extension
+				if fMatch
+					// insert separator
+					if fSep
+						GotoBufferId(idTmp)
+						if NumLines()
+							AddLine("Ä", idTmp)
+						endif
+						GotoBufferId(g_idDat)
+					endif
+
+					loop
+						// bail if end of section
+						if not Down() or not CurrLineLen()
+							break
+						endif
+
+						// add help files
+						AddLine(Trim(HelpName())+stDiv+Str(CurrLine()), idTmp)
+					endloop
+				else
+					if not Down()
+						break
+					endif
+				endif
+			endwhile
+		endif
+	endif
+
+	GotoBufferId(idTmp)
+	BegFile()
+	if NumLines() == 1 and Length(ext)
+		nHelp = TRUE
+	elseif NumLines() or not Length(ext)
+		Set(X1, x)
+		Set(Y1, y)
+
+		// put cursor on recent selection
+//		if Length(ext)
+			GotoBufferId(g_idRecentSelections)
+			#ifdef DEBUG
+			List("DEBUG ù RecentSelections buffer", Query(ScreenCols))
+			#endif
+			BegFile()
+			repeat
+				stHelpFile = GetText(1, CurrLineLen())
+				GotoBufferId(idTmp)
+//				//$ review: duplicate menu item names will confuse this.
+//				if lFind(RegExStr(stHelpFile)+"[ ]@"+stDiv, "^gx")
+//					break
+//				endif
+				if lFind(stHelpFile, "^g$")
+					break
+				endif
+				GotoBufferId(g_idRecentSelections)
+			until not Down()
+			GotoBufferId(idTmp)
+//		endif
+
+		Hook(_LIST_STARTUP_, HelpMenuStartup)
+		nHelp = DoMenu("Help")
+		UnHook(HelpMenuStartup)
+
+		if nHelp == MENU_REDISPLAY
+			EmptyBuffer()
+			goto redisplay
+		endif
+	else
+		//Message("No help available for '", Upper(ext), "'")
+		GotoBufferId(cid)
+		mHelp("", "", TRUE, FALSE)
+		nHelp = FALSE
+	endif
+
+	if nHelp
+		// add to list of recent selections
+//		if Length(ext)
+//			//$ review: duplicate menu item names will confuse this.
+//			stHelpFile = RTrim(HelpName())
+			stHelpFile = GetText(1, CurrLineLen())
+			GotoBufferId(g_idRecentSelections)
+			BegFile()
+			InsertLine(stHelpFile)
+			if NumLines() > MAX_RECENT
+				GotoLine(MAX_RECENT+1)
+				while KillLine()
+				endwhile
+			endif
+			GotoBufferId(idTmp)
+//		endif
+
+		// goto matching definition line
+		lFind(stDiv, "gc")
+		Right()
+		GotoNextNonWhite()
+		i = Val(GetText(CurrPos(), 10))
+		GotoBufferId(g_idDat)
+		GotoLine(i)
+
+		// parse help definition
+		ParseHelpEntry(nHelpType, stHelpFile, stHelpTopic)
+
+		GotoBufferId(cid)
+
+		if not Length(stHelpTopic)
+			//$ review: (chrisant) use special wordset always, or only for
+			// 4dos files?
+			//$ review: (chrisant) per-section setting for wordset?
+			ws = Set(WordSet, ChrSet("0-9@A-Z_a-z"))
+			PushPosition()
+			PushBlock()
+			UnMarkBlock()
+			MarkWord()
+			if not isBlockMarked()
+				if CurrChar() == Asc("<")
+					i = -1
+				elseif GetText(CurrPos()-2, 2) == "()"
+					i = 3
+				elseif GetText(CurrPos()-1, 1) == "("
+					i = 2
+				elseif CurrChar(CurrPos()) == Asc(">")
+					i = 1
+				elseif CurrChar(CurrPos()-1) == Asc(">")
+					i = 2
+				else
+					i = 1
+				endif
+
+				PushPosition()
+				if i > 0
+					Left(i)
+				elseif i < 0
+					Right(i)
+				endif
+				MarkWord()
+				PopPosition()
+			endif
+			if isBlockMarked()
+				if Length(ext) and Pos(Lower(ext)+".", ".htm.html.shtml.asp.")
+					// try to include < > in html
+					GotoBlockBegin()
+					if Left() and CurrChar() == Asc("<")
+						MarkChar()
+					endif
+					GotoBlockEnd()
+					if CurrChar() == Asc(">")
+						Right()
+						MarkChar()
+					endif
+				endif
+				stHelpTopic = GetMarkedText()
+			endif
+			PopBlock()
+			PopPosition()
+			Set(WordSet, ws)
+		endif
+
+		// execute help command
+		ExpandEnvVars(stHelpFile)
+		ExpandEnvVars(stHelpTopic)
+		RemoveQuotes(stHelpFile)
+		case nHelpType
+			when TSE_STYLE
+				mHelp(stHelpFile, stHelpTopic, TRUE, FALSE)
+			when WIN_STYLE
+				WinHelp(stHelpFile, stHelpTopic)
+			when DOSEXE_STYLE
+				#ifdef BACKWARDS_COMPATIBILITY
+				stHelpExe = mSearchPath(stHelpFile, GetEnvStr("PATH"), "")
+				if not Length(stHelpExe)
+					stHelpExe = mSearchPath(stHelpFile, Query(TSEPath), ".")
+				endif
+
+				// allow file associations w/Windows 95, and aliases w/4DOS
+				if not Length(stHelpExe)
+					stHelpExe = stHelpFile
+				endif
+
+				if Length(stHelpExe)
+					if isMacroLoaded("mswheel")
+						ExecMacro("MSWHEEL_DisableWheel")
+					endif
+
+					Dos(QuotePath(stHelpExe)+" "+stHelpTopic,
+							_DONT_PROMPT_|_DONT_CLEAR_)
+//							CREATE_NEW_CONSOLE|_DONT_PROMPT_|_DONT_CLEAR_)
+
+					if isMacroLoaded("mswheel")
+						ExecMacro("MSWHEEL_EnableWheel")
+					endif
+				else
+					Warn('Unable to find help program "', stHelpFile, '"')
+				endif
+				#else
+				//$ todo: strip off exe name
+				//$ todo: mSearchPath for exe name
+				//$ todo: if not found, give error and bail
+				//$ todo: should i append "%@topic%" if not there?
+				//$ todo: fill in %@topic% with the topic name
+				//$ todo: execute the command
+				Warn("NYI")
+				#endif
+
+			when WINEXE_STYLE
+#ifdef WIN32
+				if ShellExecute(0, 0, stHelpFile, stHelpTopic, "", 1) <= 32
+					Warn('Error starting "', stHelpFile, '"')
+				endif
+#else
+				Warn('The "Windows Exe" style is not supported in TSE 2.5')
+#endif
+
+			otherwise
+				Warn("Error:  Unknown help type ", nHelpType)
+		endcase
+	endif
+
+	GotoBufferId(cid)
+	AbandonFile(idTmp)
+end
+
+
+
+// Help Editing Keys ------------------------------------------------------
+
+integer fEnabled = FALSE
+
+string stEditBold[]			= "®B¯ ®/B¯"
+string stEditItalic[]		= "®I¯ ®/I¯"
+string stEditLink[]			= "®L¯ ®/L¯"
+string stEditInfobox[]		= "®LI¯ ®/L¯"
+string stEditSubtopic[]		= "®S¯ ®/S¯"
+string stEditTopic[]		= "®T¯ ®/T¯"
+string stEditReplace[]		= "®R¯ ®/R¯"
+
+
+proc HelpTag(string s)
+	integer nBlock = 0
+	integer fWord = FALSE
+
+	nBlock = iif(Query(BlockBegLine) == Query(BlockEndLine) and
+			(isCursorInBlock() in _INCLUSIVE_, _NONINCLUSIVE_),
+			isCursorInBlock(), FALSE)
+	fWord = (not nBlock) and Length(GetWord())
+
+	if nBlock
+		GotoBlockBegin()
+	elseif fWord
+		BegWord()
+	endif
+	InsertText(GetToken(s, " ", 1), _INSERT_)
+	PushPosition()
+	if nBlock
+		GotoBlockEnd()
+	elseif fWord
+		EndWord()
+	endif
+	if nBlock
+		PushPosition()
+		GotoPos(Query(BlockBegCol)+Length(GetToken(s, " ", 1)))
+		UnMarkBlock()
+		Mark(nBlock)
+		PopPosition()
+		Mark(nBlock)
+	endif
+	InsertText(GetToken(s, " ", 2), _INSERT_)
+	PopPosition()
+end
+
+
+proc HelpInsertTopic()
+	#ifdef WIN32
+	string s[60] = ""
+
+	if Ask("Insert Topic:", s) and Length(s)
+		InsertTopic(s, TRUE)
+	endif
+	#else
+	Warn("Can't insert topics under TSE 2.5")
+	#endif
+end
+
+
+integer proc HelpCodeLen()
+	return (XlatHelp(CurrLineLen(), TRUE))
+end
+
+
+// HelpWrap()
+// Wraps a paragraph, allowing for help codes.  It stops wrapping only when a
+// blank line (or end of file) is reached, regardless of the ParaEndStyle
+// setting.
+proc HelpWrap()
+	integer i
+	integer fBullet
+	string stIndent[80]
+	integer rmargin = Query(RightMargin)
+
+	if not CurrLineLen()
+		return()
+	endif
+
+	repeat
+		fBullet = GetText(PosFirstNonWhite(), 2) == "ù "
+
+		if Down()
+			if CurrLineLen() and HelpCodeLen() <= rmargin
+				PushBlock()
+				UnMarkBlock()
+				GotoPos(PosFirstNonWhite())
+				MarkChar()
+				if BegLine()
+					MarkChar()
+					KillBlock()
+				endif
+				PopBlock()
+
+				Up()
+				EndLine()
+				InsertText(" ")
+				JoinLine()
+			else
+				Up()
+			endif
+		endif
+
+		// find where to wrap
+		i = XlatHelp(rmargin, FALSE)
+
+		// wrap
+		Set(RightMargin, i)
+		if CurrLineLen() > i
+			WrapLine()
+			Up()
+		endif
+
+		if fBullet
+			stIndent = GetText(1, PosFirstNonWhite()-1)
+			if Down()
+				PushBlock()
+				UnMarkBlock()
+				GotoPos(PosFirstNonWhite())
+				MarkChar()
+				if BegLine()
+					MarkChar()
+					KillBlock()
+				endif
+				PopBlock()
+
+				BegLine()
+				InsertText(stIndent+"  ", _INSERT_)
+				Up()
+			endif
+		endif
+	until not Down() or not CurrLineLen()
+
+	Set(RightMargin, rmargin)
+end
+
+
+string helpline[] = "{HELP MODE} ù {F1}-Help on Help Mode"
+//string c_helpline[] = "{HELP MODE} ù {Ctrl:} "
+string cs_helpline[] = "{HELP MODE} ù {CtrlShift:} {H}-Editing Commands"
+string ca_helpline[] = "{HELP MODE} ù {CtrlAlt:} {H}-Toggle Help Editing"
+string a_helpline[] = "{HELP MODE} ù {Alt:} {H}-Toggle Help Display"
+
+
+menu EditingCommands()
+title = "Editing Commands"
+history
+"&Bold",				HelpTag(stEditBold)
+"&Italic",				HelpTag(stEditItalic)
+"",,Divide
+"&Link",				HelpTag(stEditLink)
+"In&fobox",				HelpTag(stEditInfobox)
+"&Variable",			HelpTag(stEditReplace)
+"",,Divide
+"&Topic",				HelpTag(stEditTopic)
+"Topic Divider <&->",	InsertLine(Format("":78:"-"))
+"&Subtopic",			HelpTag(stEditSubtopic)
+"",,Divide
+"B&ullet (ù)",			InsertText("ù ", _INSERT_)
+"I&nsert Topic",		HelpInsertTopic()
+"WordW&rap",			HelpWrap()
+end
+
+#ifdef WIN32
+proc DoEditingCommands()
+	string hlp[MAXPATH]
+
+	// remember the current help file so we can restore it
+	hlp = GetGlobalStr(c_stMenuHelpFile)
+
+	// indicate what help file to look in
+	SetGlobalStr(c_stMenuHelpFile, stHlpFile)
+
+	// now call the menu
+	EditingCommands()
+
+	// restore previous help file
+	SetGlobalStr(c_stMenuHelpFile, hlp)
+end
+#endif
+
+
+keydef HelpEditKeys
+<HelpLine>				helpline
+//<Ctrl HelpLine>			c_helpline
+<CtrlShift HelpLine>	cs_helpline
+<CtrlAlt HelpLine>		ca_helpline
+<Alt HelpLine>			a_helpline
+
+<F1>					MyHelp("Help Editing Keys")
+
+#ifdef WIN32
+<CtrlShift H>			DoEditingCommands()
+#else
+<CtrlShift H>			EditingCommands()
+#endif
+
+<Alt H>					ToggleDisplayMode()
+end
+
+
+proc ToggleKeys()
+	fEnabled = not fEnabled
+	if fEnabled
+		Enable(HelpEditKeys)
+	else
+		Disable(HelpEditKeys)
+	endif
+	Message("Help editing keys"; iif(fEnabled, "ON", "off"), ".")
+end
+
+
+
+// Auto -------------------------------------------------------------------
+
+proc WhenPurged()
+	AbandonFile(g_idDat)
+	AbandonFile(g_idBack)
+	AbandonFile(g_idKeywords)
+	AbandonFile(g_idRecentSelections)
+end
+
+
+proc WhenLoaded()
+	integer cid = GetBufferId()
+	integer ok
+	string stDat[MAXPATH]
+
+	// get macro name, for warning messages
+	g_stMacro = Upper(SplitPath(CurrMacroFilename(), _NAME_))
+	g_stMacroDir = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_)
+
+	// cerate DAT buffer
+	g_idDat = CreateTempBuffer()
+	if g_idDat
+		BinaryMode(-2)
+		// load DAT file
+		PushBlock()
+		stDat = g_stMacroDir+g_stDatFile
+		if not FileExists(stDat)
+			stDat = mSearchPath(g_stDatFile, Query(TSEPath), ".")
+		endif
+		if not Length(stDat)
+			stDat = g_stMacroDir+g_stDatFile
+		endif
+		g_stDatFile = stDat
+		if InsertFile(g_stDatFile, _DONT_PROMPT_)
+			UnMarkBlock()
+			BegFile()
+			g_stHelpPath = GetText(1, CurrLineLen())
+		else
+			g_stHelpPath = i_stHelpPathDef
+		endif
+		PopBlock()
+	else
+		Warn(g_stMacro, ": Unable to create data buffer.")
+Error:
+		PurgeMacro(CurrMacroFilename())
+		return()
+	endif
+
+	// get back buffer
+	g_idBack = CreateTempBuffer()
+	if not g_idBack
+		Warn(g_stMacro, ": Unable to create temporary buffer.")
+		goto Error
+	endif
+
+	// get recent selections buffer
+	g_idRecentSelections = CreateTempBuffer()
+
+	// get keyword buffer
+	g_idKeywords = CreateTempBuffer()
+	if g_idKeywords
+		PushBlock()
+		#ifdef WIN32
+		ok = InsertData(Keywords)
+		#else
+		ok = InsertFile(mSearchPath("gethelp.k16", Query(TSEPath), "."), _DONT_PROMPT_)
+		#endif
+		GotoBufferId(cid)
+		if not ok
+			AbandonFile(g_idKeywords)
+			g_idKeywords = 0
+		endif
+		PopBlock()
+	endif
+end
+
+
+
+// Main -------------------------------------------------------------------
+
+integer proc QuotedArg(string quote, var string s, var string arg)
+	integer i
+	integer j
+
+	arg = ""
+	// is arg quoted with <quote>?
+	i = Pos(s[1], quote)
+	if i
+		// remove beg-quote from temp
+		s = DelStr(s, 1, 1)
+		j = Pos(quote[i], s)
+		if j
+			// get quoted arg
+			arg = s[1:j-1]
+			if j == Length(s) or (j < Length(s) and s[j+1] == " ")
+				// remove arg, end-quote, and space from temp
+				s = DelStr(s, 1, Length(arg)+2)
+				return(TRUE)
+			else
+				Warn("Quoted argument improperly formed.")
+			endif
+		else
+			Warn("Argument missing end-quote.")
+		endif
+	endif
+	return(FALSE)
+end
+
+
+// CmdLineOptionUsed()
+// looks for -<option>, sets global str Arg<option> if found
+integer proc CmdLineOptionUsed(STRING option)
+	string temp[255] = Query(MacroCmdLine)+" ",
+			arg[80] = "",
+			opt[20] = "-" + option
+	integer i
+	integer j
+
+	j = Pos(opt, temp)
+	if j
+		// option found
+		i = j + Length(opt)
+		if temp[i] == " "
+			// no argument used, reset cmd line
+			temp = DelStr(temp, j, Length(opt)+1)
+			Set(MacroCmdLine, temp)
+		else
+			// argument used
+			// truncate the cmd line at the option
+			Set(MacroCmdLine, temp[1:i-Length(opt)-1])
+			// whack off everything before the arg
+			temp = DelStr(temp, 1, i-1)
+			// handle quoted args
+			if not QuotedArg(Chr(1)+Chr(34)+"'", temp, arg)
+				// get arg
+				arg = temp[1:Pos(" ", temp)-1]
+				// remove arg and space from temp
+				temp = DelStr(temp, 1, Pos(" ", temp))
+			endif
+			// tack on remainder
+			Set(MacroCmdLine, Query(MacroCmdLine) + RTrim(temp))
+		endif
+		SetGlobalStr('Arg' + option, Arg)
+		return(TRUE)
+	endif
+	return(FALSE)
+end
+
+
+proc HelpOnWordAtCursor()
+	string ext[MAXEXT] = CurrExt()
+
+	// handle special filenames (eg, "[READONLY: program.s]")
+	if Pos("]", ext)
+		// only take what's before the "]"
+		ext = GetToken(ext, "]", 1)
+	endif
+
+	DoHelpMenu(ext)
+end
+
+
+proc ShowSyntax(string helpfile, string topic)
+	string stTopic[255] = topic
+
+	PushPosition()
+
+	if not Length(stTopic)
+		stTopic = GetWord(TRUE)
+		if not Length(stTopic)
+			WordLeft()
+			stTopic = GetWord(TRUE)
+		endif
+	endif
+
+	// if we have a topic, look it up
+	if Length(stTopic)
+		LoadHelpFile(helpfile)
+		DisplaySyntax(stTopic)
+		CloseHelpFile()
+	endif
+
+	PopPosition()
+end
+
+
+proc Main()
+	string stHelpFile[MAXPATH] = ""
+	string stTopic[255] = ""
+	integer fStrip = FALSE
+	integer fInsert = FALSE
+	integer fSyntax = FALSE
+	integer fHelpHelp = FALSE
+	integer rc = 0
+
+	// show welcome screen if command line is empty
+	if not Length(Trim(Query(MacroCmdLine)))
+		MyHelp("Welcome to GETHELP")
+		//$ todo: set rc as appropriate
+		goto Out
+	endif
+
+	// -w (help on word at cursor)
+	if CmdLineOptionUsed("w")
+		HelpOnWordAtCursor()
+		//$ todo: set rc as appropriate
+		goto Out
+	endif
+
+	// -f<helpfile> (text help file to use)
+	if CmdLineOptionUsed("f")
+		stHelpFile = GetGlobalStr("Argf")
+	endif
+
+	// -m (menu)
+	if CmdLineOptionUsed("m")
+		DoHelpMenu("")
+		//$ todo: set rc as appropriate
+		goto Out
+	endif
+
+	// -i, -I (insert topic)
+	fStrip = CmdLineOptionUsed("i")
+	fInsert = CmdLineOptionUsed("I")
+	fInsert = fStrip or fInsert
+
+#ifdef WIN32
+	// -1 (called by HELPHELP.MAC)
+	fHelpHelp = CmdLineOptionUsed("1")
+#endif
+
+	// -s (show syntax)
+	fSyntax = CmdLineOptionUsed("s")
+
+	// <topic> (topic)
+	stTopic = Query(MacroCmdLine)
+
+	if fInsert
+		rc = LoadHelpFile(stHelpFile)
+		if rc
+			rc = SetupHelp(stTopic, SH_INSERT)
+			if rc
+				if fStrip
+					StripHelpCodes()
+				endif
+			endif
+			CloseHelpFile()
+		endif
+		goto Out
+	endif
+
+	if fSyntax
+		ShowSyntax(stHelpFile, stTopic)
+		//$ todo: set rc as appropriate
+		goto Out
+	endif
+
+	if Length(stTopic)
+#ifdef WIN32
+		if fHelpHelp
+			stHelpFile = GetGlobalStr(c_stMenuHelpFile)
+		endif
+#endif
+		rc = mHelp(stHelpFile, stTopic, FALSE, fHelpHelp)
+		if rc and fHelpHelp
+			//$ HACK: oh well, can't figure out how else to tell Help() to
+			// abort what it's doing.
+			PushKey(<Escape>)
+		endif
+		goto Out
+	endif
+
+Out:
+	Set(MacroCmdLine, Str(iif(rc, TRUE, FALSE)))
+end
+
+
+
+// Keys -------------------------------------------------------------------
+
+<F1>					HelpOnWordAtCursor()
+<Ctrl F1>				DoHelpMenu("")
+<Shift F1>				ShowSyntax("", "")
+
+<CtrlAlt H>				ToggleKeys()
+

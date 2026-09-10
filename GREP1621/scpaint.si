@@ -1,0 +1,79 @@
+/****************************************************************************\
+
+    SCPaint.SI
+
+    Shared code for Dialog and DialogP.
+
+    Version         v2.10/30.11.00
+    Copyright       (c) 1995-2000 by DiK
+
+\****************************************************************************/
+
+/****************************************************************************\
+    helper: find specific control
+\****************************************************************************/
+
+integer proc FindCntrlWithId( string id )
+    integer rc
+
+    MarkColumn(1,POS_ID,NumLines(),POS_ID)
+    rc = lFind(Chr(Val(id)),"gl")
+    UnmarkBlock()
+    return (rc)
+end
+
+/****************************************************************************\
+    helper: get control data
+\****************************************************************************/
+
+proc GetCntrlData( var string data )
+    integer buff
+    integer line
+
+    line = CurrLine()
+    buff = GotoBufferId(dlg_data)
+    GotoLine(line)
+    data = GetText(1,CurrLineLen())
+    GotoBufferId(buff)
+end
+
+integer proc GetCntrlDataInt()
+    string data[8] = ""
+
+    GetCntrlData(data)
+    return (Val(data))
+end
+
+/****************************************************************************\
+    helper: get control title and hint
+\****************************************************************************/
+
+proc GetCntrlTitle( var string title )
+    GotoPos(POS_TITLE)
+    UnmarkBlock()
+    MarkChar()
+    lFind(Chr(END_OF_TITLE),"c")
+    title = GetMarkedText()
+    UnmarkBlock()
+end
+
+proc GetCntrlHint( var string hint )
+    GotoPos(POS_TITLE)
+    lFind(Chr(END_OF_TITLE),"c")
+    NextChar()
+    MarkToEol()
+    hint = GetMarkedText()
+    UnmarkBlock()
+end
+
+/****************************************************************************\
+    helper: scroll bar movement
+\****************************************************************************/
+
+integer proc MouseLocation()
+    if CurrChar(POS_CNTRL) == CNTRL_VSCROLL
+        return (Query(MouseY) - Query(PopWinY1) - CurrChar(POS_Y1) + 2)
+    endif
+    return (Query(MouseX) - Query(PopWinX1) - CurrChar(POS_X1) + 2)
+end
+

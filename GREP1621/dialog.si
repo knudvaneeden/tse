@@ -1,0 +1,131 @@
+/****************************************************************************\
+
+    Dialog.SI
+
+    Common constants for Dialog.S
+
+    Version         v2.20/09.04.02
+    Copyright       (c) 1995-2002 by DiK
+
+\****************************************************************************/
+
+/****************************************************************************\
+    define EDITOR_VERSION for early versions of TSE
+\****************************************************************************/
+
+#ifndef EDITOR_VERSION                  // define for previous versions
+#ifdef WIN32
+#define EDITOR_VERSION 0x2800
+#else
+#define EDITOR_VERSION 0x2500           // or earlier, e.g. all DOS versions
+#endif
+#endif
+
+/****************************************************************************\
+    pre-defined control identifiers
+\****************************************************************************/
+
+constant ID_CANCEL      =  1
+constant ID_OK          =  2
+constant ID_YES         =  3
+constant ID_NO          =  4
+constant ID_HELP        =  5
+
+/****************************************************************************\
+    pre-defined control types
+\****************************************************************************/
+
+constant CNTRL_DIALOG   =  0
+constant CNTRL_GROUP    =  1
+constant CNTRL_FRAME    =  2
+constant CNTRL_LTEXT    =  3
+constant CNTRL_RTEXT    =  4
+constant CNTRL_CTEXT    =  5
+constant CNTRL_OPEN     =  6
+constant CNTRL_EDIT     =  7
+constant CNTRL_BUTTON   =  8
+constant CNTRL_DEFBTN   =  9
+constant CNTRL_RADIO    = 10
+constant CNTRL_CHECK    = 11
+constant CNTRL_COMBO    = 12
+constant CNTRL_LIST     = 13
+constant CNTRL_HSCROLL  = 14
+constant CNTRL_VSCROLL  = 15
+constant CNTRL_SCREDGE  = 16
+constant CNTRL_CONTROL  = 99
+
+/****************************************************************************\
+    status of controls
+\****************************************************************************/
+
+constant STATE_NORMAL   =  0
+constant STATE_DISABLE  =  1
+constant STATE_DEFAULT  =  2
+constant STATE_ACTIVE   =  3
+constant STATE_PRESSED  =  4
+
+/****************************************************************************\
+    keys and events
+\****************************************************************************/
+
+constant KEY_NOTHING    =  0
+constant KEY_LISTMENU   =  0xFFF0
+constant KEY_RETURN     =  0xFFF1
+constant KEY_BREAK      =  0xFFF2
+
+constant EVENT_OTHER    =  0
+constant EVENT_MOUSE    =  1
+constant EVENT_HTKEY    =  2
+constant EVENT_TAB      =  3
+constant EVENT_GROUP    =  4
+constant EVENT_CONTEXT  =  5
+
+constant SCROLL_UP      =  1
+constant SCROLL_DN      =  2
+constant SCROLL_PGUP    =  3
+constant SCROLL_PGDN    =  4
+
+#ifndef WIN32
+
+constant MOUSE_MARK     =  0xE6E0       // <CtrlShift NoBtn> :-)
+
+#else
+
+constant MOUSE_MARK     =  0x1300       // <CtrlShift NoBtn> :-)
+
+#endif
+
+/****************************************************************************\
+    resource item indices
+\****************************************************************************/
+
+constant POS_CNTRL      =  1
+constant POS_ID         =  2
+constant POS_ENABLE     =  3
+constant POS_GROUP      =  4
+constant POS_X1         =  5
+constant POS_Y1         =  6
+constant POS_X2         =  7
+constant POS_Y2         =  8
+constant POS_HKPOS      =  9
+constant POS_HTKEY      = 10
+constant POS_TITLE      = 11
+
+/****************************************************************************\
+    title and hint indices
+\****************************************************************************/
+
+constant INDEX_TITLE    =   1
+constant INDEX_HINT     =   2
+constant END_OF_TITLE   = 255
+
+/****************************************************************************\
+    global variable used to pass control titles
+\****************************************************************************/
+
+#ifdef INC_MSGTEXT
+
+string DlgMsgText[] = "DlgMsgText"
+
+#endif
+

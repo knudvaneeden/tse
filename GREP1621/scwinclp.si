@@ -1,0 +1,20 @@
+/****************************************************************************\
+
+    SCWinClp.SI
+
+    Use the windows clipboard instead of the internal one
+
+    Version         v2.20/09.04.02
+    Copyright       (c) 1995-2002 by DiK
+
+    History
+
+    v2.20/09.04.02  adaption to TSE32 v4.0
+    v2.10/07.06.01  first version
+
+\****************************************************************************/
+
+#if EDITOR_VERSION >= 0x3000
+#define USE_WIN_CLIP 1
+#endif
+

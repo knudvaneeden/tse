@@ -1,0 +1,4306 @@
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Index
+
+®B¯--- Commands and Variables ---®/B¯
+
+®L¯AddFFInfoToBuffer®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯BrowseMode®/L¯®B¯()®/B¯                ®I¯3.0®/I¯
+®L¯ChangedFilesExist®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯ClearBufferDaTmAttr®/L¯®B¯()®/B¯       ®I¯3.0®/I¯
+®L¯ClearEditWindows®/L¯®B¯()®/B¯
+®L¯ClearPhysicalScreen®/L¯®B¯()®/B¯
+®L¯ClearUndoRedoList®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯CutToWinClip®/L¯®B¯()®/B¯              ®I¯3.0®/I¯
+®L¯DisplayMode®/L¯®B¯()®/B¯
+®L¯Dos®/L¯®B¯()®/B¯
+®L¯EDITOR_VERSION®/L¯              ®I¯3.0®/I¯
+®L¯ExpandPath®/L¯®B¯()®/B¯
+®L¯FinishEditWindows®/L¯®B¯()®/B¯
+®L¯FlushProfile®/L¯®B¯()®/B¯
+®L¯GetKey®/L¯®B¯()®/B¯
+®L¯GetNextConnection®/L¯®B¯()®/B¯
+®L¯GetNextProfileItem®/L¯®B¯()®/B¯
+®L¯GetNextProfileSectionName®/L¯®B¯()®/B¯
+®L¯GetPositionInfo®/L¯®B¯()®/B¯
+®L¯GetProfileInt®/L¯®B¯()®/B¯
+®L¯GetProfileStr®/L¯®B¯()®/B¯
+®L¯Hook®/L¯®B¯()®/B¯
+®L¯isAlpha®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯isAlphaNum®/L¯®B¯()®/B¯                ®I¯3.0®/I¯
+®L¯isCurrLineInBlock®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯isDigit®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯isHexDigit®/L¯®B¯()®/B¯                ®I¯3.0®/I¯
+®L¯isLower®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯isUpper®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯isWhite®/L¯®B¯()®/B¯
+®L¯isWinClipAvailable®/L¯®B¯()®/B¯        ®I¯3.0®/I¯
+®L¯isWord®/L¯®B¯()®/B¯
+®L¯KeepUndoBeyondSave®/L¯          ®I¯3.0®/I¯
+®L¯lDos®/L¯®B¯()®/B¯
+®L¯lList®/L¯®B¯()®/B¯
+®L¯LoadDir®/L¯®B¯()®/B¯
+®L¯LoadHistory®/L¯®B¯()®/B¯               ®I¯3.0®/I¯
+®L¯LoadProfileSection®/L¯®B¯()®/B¯
+®L¯LoadProfileSectionNames®/L¯®B¯()®/B¯
+®L¯LockCurrentFile®/L¯®B¯()®/B¯           ®I¯3.0®/I¯
+®L¯MakeEditWindow®/L¯®B¯()®/B¯
+®L¯MsgBox®/L¯®B¯()®/B¯
+®L¯MsgBoxBuff®/L¯®B¯()®/B¯
+®L¯MsgBoxEx®/L¯®B¯()®/B¯                  ®I¯3.0®/I¯
+®L¯PickDrive®/L¯®B¯()®/B¯                 ®I¯3.0®/I¯
+®L¯PickFile®/L¯®B¯()®/B¯                  ®I¯3.0®/I¯
+®L¯PickFilePath®/L¯
+®L¯RealToVirtualScreen®/L¯®B¯()®/B¯
+®L¯Redo®/L¯®B¯()®/B¯                      ®I¯3.0®/I¯
+®L¯RedoCount®/L¯®B¯()®/B¯                 ®I¯3.0®/I¯
+®L¯Redrawn®/L¯
+®L¯RemoveProfileItem®/L¯®B¯()®/B¯
+®L¯RemoveProfileSection®/L¯®B¯()®/B¯
+®L¯RightStr®/L¯®B¯()®/B¯                  ®I¯3.0®/I¯
+®L¯SetMenuBar®/L¯®B¯()®/B¯                ®I¯3.0®/I¯
+®L¯SqueezePath®/L¯®B¯()®/B¯               ®I¯3.0®/I¯
+®L¯StartedFromDosPrompt®/L¯®B¯()®/B¯      ®I¯3.0®/I¯
+®L¯StartupFlags®/L¯
+®L¯SwapPosition®/L¯®B¯()®/B¯              ®I¯3.0®/I¯
+®L¯TerminateEvent®/L¯®B¯()®/B¯            ®I¯3.0®/I¯
+®L¯Undo®/L¯®B¯()®/B¯                      ®I¯3.0®/I¯
+®L¯UndoCount®/L¯®B¯()®/B¯                 ®I¯3.0®/I¯
+®L¯UnLockCurrentFile®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯UpdateBufferDaTmAttr®/L¯®B¯()®/B¯      ®I¯3.0®/I¯
+®L¯UpdateDisplayFlags®/L¯
+®L¯UseCommonDialogs®/L¯            ®I¯3.0®/I¯
+®L¯VirtualToRealScreen®/L¯®B¯()®/B¯
+®L¯WhichOS®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯WriteProfileInt®/L¯®B¯()®/B¯
+®L¯WriteProfileStr®/L¯®B¯()®/B¯
+
+®L {Conditional Compilation Directives}¯#define®/L¯
+®L {Conditional Compilation Directives}¯#else®/L¯
+®L {Conditional Compilation Directives}¯#endif®/L¯
+®L {Conditional Compilation Directives}¯#if®/L¯
+
+
+®B¯--- Articles ---®/B¯
+
+®L¯Conversion hints for converting TSE 2.5 macros to TSE 2.6®/L¯
+®L¯Writing dual-platform macros®/L¯
+®L¯Common SAL Programming Caveats®/L¯
+
+®L¯Undocumented Stuff Not Covered Yet In This Help File®/L¯
+®L¯Miscellaneous Information®/L¯
+
+®B¯--- Manuals ---®/B¯
+
+®L¯User's Guide®/L¯
+®L¯Macro Reference Guide®/L¯
+
+
+
+®B¯--- TSE 3.0 Help ---®/B¯
+®insert:Index¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù ClearEditWindows
+
+?
+
+See Also:   ®L¯FinishEditWindows®/L¯(), ®L¯MakeEditWindow®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù ClearPhysicalScreen
+
+Immediately clears the physical screen.
+
+Syntax:     ®B¯ClearPhysicalScreen®/B¯()
+
+See Also:   ®L¯RealToVirtualScreen®/L¯(), ®L¯VirtualToRealScreen®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù DisplayMode
+
+®I¯[Undocumented modes listed below]®/I¯
+
+Sets or queries the current display mode.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯DisplayMode®/B¯([INTEGER ®I¯mode®/I¯])
+
+            ù ®I¯mode®/I¯ is the optional display mode to set.  Supported values
+              for mode are:
+
+              ù ®B¯_DISPLAY_TEXT_®/B¯ places the screen display in standard display
+                mode.
+
+              ù ®B¯_DISPLAY_HEX_®/B¯ places the screen display in Hex display mode.
+
+              ù ®B¯_DISPLAY_PICKFILE_®/B¯ places the screen display in the PickFile
+                display mode.
+
+              ®I¯Undocumented modes:®/I¯
+
+              ù ®B¯_DISPLAY_FINDS_®/B¯ lines beginning with "File: " that have a
+                Chr(0) somewhere in them are hilited and do not scroll
+                horizontally even when the rest of the buffer is scrolled
+                horizontally.  If, after the Chr(0), the end of the line ends
+                in "occurrences found", the text following the Chr(0) is also
+                displayed.
+
+              ù ®B¯_DISPLAY_HELP_®/B¯ (The SC 2.5 compiler doesn't recognize
+                _DISPLAY_HELP_; you must use the value 3 instead for the macro
+                to compile for TSE 2.5) a complex mode; I have lots of info
+                but haven't documented it yet.  Examine GETHELP.SI for
+                examples.
+
+              ù ®B¯_DISPLAY_USER_®/B¯ HookDisplay has been used to provide a
+                custom draw procedure.
+
+
+Returns:    The display mode in effect when this command is invoked.
+
+Notes:      When Hex mode is enabled, each line is displayed in both text and
+            hexadecimal format.  In Hex mode, the hexadecimal values are
+            displayed on the right, while the text is displayed on the left.
+            (See the ®L¯HexEdit®/L¯() command for information on how to set ON
+            hex-editing mode, to allow the user to enter or modify the
+            hexadecimal format of the data on the right.)
+
+            Activating Hex mode does not place the file in Binary mode, but
+            rather simply changes the view from text to hexadecimal.  To place
+            a file in Binary mode, it must be loaded in Binary mode using the
+            -b switch, or by using the BinaryMode() command.
+
+            PickFile display mode is only valid for files in which the data
+            was generated with the ®L¯BuildPickBufferEx®/L¯() command.  The
+            PickFile() command uses this display mode.
+
+Examples:
+
+            // Toggle between Hex and text display modes:
+            DisplayMode(iif(DisplayMode() == _DISPLAY_TEXT_,
+                    _DISPLAY_HEX_, _DISPLAY_TEXT_))
+
+See Also:   ®L¯BinaryMode®/L¯(), ®L¯EditFile®/L¯(), ®L¯BuildPickBufferEx®/L¯(), ®L¯PickFile®/L¯(),
+            ®L¯HexEdit®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Dos
+
+®I¯[Undocumented flags listed below]®/I¯
+
+Passes a command to the operating system for execution.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯Dos®/B¯([®LI¯STRING®/L¯ ®I¯cmdline®/I¯ [, INTEGER ®I¯flag®/I¯]])
+
+            ù ®I¯cmdline®/I¯ is the optional command line passed to the operating
+              system, in order to execute an external command from within the
+              editor.  If omitted, the editor will prompt for the command to
+              execute.
+
+            ù ®I¯flag®/I¯ is an optional integer that determines how the Dos()
+              command operates.  If not specified, ®B¯_DEFAULT_®/B¯ is used.
+              Supported values for ®I¯flag®/I¯ are:
+
+              ù ®B¯_DEFAULT_®/B¯ causes the screen to be cleared and the command
+                issued.  After completion, the editor prompts with "Press a
+                key to continue...".  Once a key is pressed, the editor's
+                screen is restored.
+
+              ù ®B¯_DONT_PROMPT_®/B¯ causes the screen to be cleared and the
+                command issued.  After completion, control returns immediately
+                to the editor, and the editor's screen is restored.  This
+                option differs from ®B¯_DEFAULT_®/B¯ (above) in that the editor
+                does not issue the "Press a key to continue..." prompt.
+
+              ù ®B¯_DONT_CLEAR_®/B¯ causes the command to be issued without the
+                screen being cleared.  After completion, control returns
+                immediately to the editor.  The editor does not issue the
+                "Press a key to continue..." prompt, and the editor's screen
+                is not restored.  This setting is useful for piping the
+                command's output, or when the command itself restores the
+                application screen after completion.
+
+              ù ®B¯_TEE_OUTPUT_®/B¯ is useful when the external command's output
+                is being redirected to another file.  Using the ®B¯_TEE_OUTPUT_®/B¯
+                ®I¯flag®/I¯ will also place that redirected output on the screen.
+                This is primarily useful for long-running commands, in order
+                to give the user feedback as to the progression of the
+                command.  Good examples would be a long MAKE, or compiling
+                with a very slow compiler.  The return code of the command
+                passed to the operating system is available via the
+                ®L¯DosIOResult®/L¯() command.
+
+              ù ®B¯_RETURN_CODE_®/B¯ causes the Dos() command to process in such a
+                way as to make the return code from the command passed to the
+                operating system available via the ®L¯DosIOResult®/L¯() command.
+
+              ù ®B¯_RUN_DETACHED_®/B¯ causes ®I¯cmdline®/I¯ to be run as a detached
+                process.
+
+              ®I¯Undocumented flags:®/I¯
+
+              ù ®B¯_CREATE_NEW_CONSOLE_®/B¯ creates new console window instead of
+                reusing the current console window.
+
+              ù ®B¯_START_HIDDEN_®/B¯ starts the console as a hidden window.
+
+              ù ®B¯_START_MAXIMIZED_®/B¯ starts the console window maximized.
+
+              ù ®B¯_START_MINIMIZED_®/B¯ starts the console window minimized.
+
+              ù ®B¯_PRESERVE_SCREEN_®/B¯ - unknown.
+
+              ù ®B¯_DONT_CHANGE_VIDEO_®/B¯ - do not change the video mode (prevents
+                console from resizing).
+
+              ù ®B¯_DONT_WAIT_®/B¯ - unknown.
+
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      This command fails if there is not enough memory to successfully
+            complete the operation.
+
+
+            This command includes a history list of previous entries passed to
+            it.  See ®L¯AddHistoryStr®/L¯() for additional information.
+
+Examples:
+
+            /********************************************************
+              Example 1
+
+              The user is prompted for a command.
+             ********************************************************/
+
+            Dos()
+
+            /********************************************************
+              Example 2
+
+              Issue the DIR command.  The screen will be cleared, the
+              command executed, and after completion, the editor will
+              issue a "continue" prompt.
+             ********************************************************/
+
+            Dos("dir *.bat")
+
+            /********************************************************
+              Example 3
+
+              Issue the dir command, and pipe the output to the file
+              "save.dat".  The editor's screen will not be cleared,
+              and control will return to the editor without a
+              "continue" prompt being issued.
+             ********************************************************/
+
+            Dos("dir *.bak >save.dat", _DONT_CLEAR_)
+
+            /********************************************************
+              Example 4
+
+              Invoke the CC program, passing it the name of the
+              currently edited file (which is saved first, so that the
+              disk copy and what is in memory are the same), and pipe
+              the output to the file "results".
+             ********************************************************/
+
+            SaveFile()
+            Dos("CC " + CurrFilename() + " >results", _DONT_CLEAR_)
+
+            /********************************************************
+              Example 5
+
+              Invoke the CC program, passing it the name of the
+              currently edited file (which is saved first, so that the
+              disk copy and what is in memory are the same), and pipe
+              the output to the file "results".  At the same time, any
+              piped output is also displayed on the screen.
+             ********************************************************/
+
+            SaveFile()
+            Dos("CC " + CurrFilename() + " >results",
+                _DONT_PROMPT_ | _TEE_OUTPUT_)
+
+See Also:   ®L¯Shell®/L¯(), ®L¯AddHistoryStr®/L¯(), ®L¯DosIOResult®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù EDITOR_VERSION
+
+In TSE 3.0 this is defined to 0x3000.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù ExpandPath
+
+Expands the specified ambiguous path to a complete path specification.
+
+Syntax:     ®LI¯STRING®/L¯ ®B¯ExpandPath®/B¯(STRING ®I¯partial_path®/I¯)
+
+            ù ®I¯partial_path®/I¯ is the ambiguous or incomplete path to expand.
+
+Returns:    The expanded path, or the empty string if the path could not be
+            expanded.
+
+Notes:      If the name passed to ExpandPath() is a directory name, "\*.*" is
+            appended to the returned string.
+
+            The Lower() command is issued on the return string just before
+            returning it to the user.
+
+     ®I¯[3.0]®/I¯  Returns the long version of the path, if it exists.
+
+Idioms:
+
+            /********************************************************
+              To obtain the current working drive and directory,
+              use the following:
+             ********************************************************/
+            string proc mCurrDir()
+                return (SplitPath(ExpandPath(""), _DRIVE_ | _PATH_))
+            end
+
+Examples:
+
+            Given:
+
+                string st[65], and the current path is "c:\tse\doc\ref"
+
+            then:
+
+                st = ExpandPath("foo")   // st is "c:\tse\doc\ref\foo"
+
+See Also:   SearchPath(), SplitPath()
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù FinishEditWindows
+
+?
+
+See Also:   ®L¯ClearEditWindows®/L¯(), ®L¯MakeEditWindow®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù FlushProfile
+
+? [should be optional, but how was it actually implemented?]
+
+Syntax:     ®B¯FlushProfile®/B¯([®LI¯STRING®/L¯ ®I¯ini_fn®/I¯])
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to use.  If ®I¯ini_fn®/I¯ is
+              not specifed, TSE.INI in the editor's load directory is assumed.
+
+See Also:   ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileInt®/L¯(), ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(),
+            ®L¯LoadProfileSectionNames®/L¯(), ®L¯RemoveProfileItem®/L¯(),
+            ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileInt®/L¯(), ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù GetKey
+
+Waits for the user to press a key and returns the keycode of the pressed key.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯GetKey®/B¯()
+
+     ®I¯[3.0]®/I¯  INTEGER ®B¯GetKey®/B¯([INTEGER flag])
+
+Returns:    The character and scan code for the key pressed.
+
+Notes:      See the output from the ShowKey macro (located in the MAC\ editor
+            subdirectory) for a list of keys and their respective codes.
+
+            Key names in the format <editor key-name> (as shown by ShowKey)
+            can be compared with the results returned from GetKey().
+
+            Keycodes returned from GetKey() are made up of a scan code and the
+            ASCII character of the key.  (The character is 0 (zero) if the key
+            was a function key.)
+
+     ®I¯[3.0]®/I¯  ù ®I¯flag®/I¯ is an optional integer that determines how the GetKey
+              function behaves.
+
+              ù ®B¯_EQUATEENHANCED_KBD_®/B¯ equates grey keys with their non-grey
+                counterparts.
+
+              ù ®B¯_UNEQUATEENHANCED_KBD_®/B¯ distinguishes between the grey keys and
+                their counterparts.  This is the default behavior.
+
+              ù ®B¯_LOWERCASE_KBD_®/B¯ forces upper-case typeable keys to lower-case.
+
+              ù ®B¯_UPPERCASE_KBD_®/B¯ forces lower-case typeable keys to upper-case.
+
+Idioms:
+
+            To isolate the separate portions of the keycode, use the following
+            code:
+
+            integer key, c, scan_code
+
+            key = GetKey()
+            c = key & 0xff  // c is the character or key-code portion
+            scan_code = key shr 8
+
+Examples:
+
+            Case GetKey()
+                when <CursorLeft>   Message("CursorLeft pressed")
+                when <CursorRight>  Message("CursorRight pressed")
+                when <CursorUp>     Message("CursorUp pressed")
+                when <CursorDown>   Message("CursorDown pressed")
+                Otherwise           Message("Non arrow key pressed")
+            endcase
+
+See Also:   ®L¯GetKeyFlags®/L¯(), ®L¯KeyPressed®/L¯(), ®L¯KeyCode®/L¯(), ®L¯KeyName®/L¯(), ®L¯PushKey®/L¯(),
+            ®L¯PressKey®/L¯(), ®L¯PushKeyStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù GetNextConnection
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯GetNextConnection®/B¯(®LI¯VAR STRING®/L¯ ®I¯driveinfo®/I¯)
+
+            Fills in ®I¯driveinfo®/I¯ with information about the first available
+            drive.  Use GetNextConnection() repeatedly to retrieve information
+            on other drives.  Returns FALSE when there are no more drives;
+            after it returns FALSE, the next time it will start at the first
+            drive again.
+
+Returns:    FALSE when there are no more drives or an error occurs, TRUE
+            otherwise.
+
+Example:
+
+            proc Main()
+                string s[255] = ""
+
+                // create a buffer and fill it with drives
+                CreateBuffer("Drive List")
+                loop
+                    if GetNextConnection(s)
+                        // add drive info to buffer
+                        AddLine(s)
+                    else
+                        // no more drives, so stop
+                        break
+                    endif
+                endloop
+
+                // list the drives
+                List("Drives", 40)
+
+                // clean up by killing the buffer
+                AbandonFile()
+            end
+
+            An example of the output these functions generates is:
+
+            a:              (REMOVABLE)
+            c:       MICRON     (FIXED)
+            d:  CHRISANTEXT     (FIXED)
+            f:   ENCARTA_95     (CDROM)
+            g:  CHRISANT6-C    (REMOTE)
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù GetNextProfileItem
+
+? Successively examines the items in a profile section after using
+LoadProfileSection to load a section.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯GetNextProfileItem®/B¯(, VAR STRING ®I¯value®/I¯)
+
+            ù ®I¯item®/I¯ is filled in with the item name.
+
+            ù ®I¯value®/I¯ is filled in with the item value.
+
+Returns:    Zero (FALSE) if there are no more profile items remaining in the
+            section, non-zero otherwise.
+
+Example:
+            if LoadProfileSection("Yada")
+                while GetNextProfileItem(item, value)
+                    AddLine(format(item:10,value:64)    // or something...
+                endwhile
+            endif
+
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileSectionName®/L¯(), ®L¯GetProfileInt®/L¯(),
+            ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(), ®L¯LoadProfileSectionNames®/L¯(),
+            ®L¯RemoveProfileItem®/L¯(), ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileInt®/L¯(),
+            ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù GetNextProfileSectionName
+
+? Successively examines the sections in a profile file after using
+LoadProfileSectionNames to load the section names.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯GetNextProfileSectionName®/B¯(®LI¯VAR STRING®/L¯ ®I¯section®/I¯)
+
+            ù ®I¯section®/I¯ is filled in with the next section name.
+
+Returns:    Zero (FALSE) if there are no more sections, non-zero otherwise.
+
+Example:
+            if LoadProfileSectionNames()
+                while GetNextProfileSectionName(section)
+                    Addline(section)                    // or something...
+                endwhile
+            endif
+
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetProfileInt®/L¯(),
+            ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(), ®L¯LoadProfileSectionNames®/L¯(),
+            ®L¯RemoveProfileItem®/L¯(), ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileInt®/L¯(),
+            ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù GetProfileInt
+
+Returns the integer value of an item in the specified .INI file.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯GetProfileInt®/B¯(®LI¯STRING®/L¯ ®I¯section®/I¯, STRING ®I¯item®/I¯,
+                                  INTEGER ®I¯default®/I¯ [, STRING ®I¯ini_fn®/I¯])
+
+            ù ®I¯section®/I¯ is the name of the section to look in.
+
+            ù ®I¯item®/I¯ is the name of the item to look for.
+
+            ù ®I¯default®/I¯ is the value to return if ®I¯item®/I¯ could not be found in the
+              profile section named by ®I¯section®/I¯.
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to look in.  If ®I¯ini_fn®/I¯
+              is not specifed, TSE.INI in the editor's load directory is
+              assumed.
+
+Returns:    The value found, or ®I¯default®/I¯ if ®I¯item®/I¯ was not found.
+
+Example:
+            color = GetProfileInt("MySettings", "Color", Color(white on blue))
+
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(), ®L¯LoadProfileSectionNames®/L¯(),
+            ®L¯RemoveProfileItem®/L¯(), ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileInt®/L¯(),
+            ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù GetProfileStr
+
+Returns the string value of an item in the specified .INI file.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯GetProfileStr®/B¯(®LI¯STRING®/L¯ ®I¯section®/I¯, STRING ®I¯item®/I¯,
+                                  STRING ®I¯default®/I¯ [, STRING ®I¯ini_fn®/I¯])
+
+            ù ®I¯section®/I¯ is the name of the section to look in.
+
+            ù ®I¯item®/I¯ is the name of the item to look for.
+
+            ù ®I¯default®/I¯ is the string to return if ®I¯item®/I¯ could not be found in
+              the profile section named by ®I¯section®/I¯.
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to look in.  If ®I¯ini_fn®/I¯
+              is not specifed, TSE.INI in the editor's load directory is
+              assumed.
+
+Returns:    The string value found, or ®I¯default®/I¯ if ®I¯item®/I¯ was not found.
+
+Example:
+            word = GetProfileStr("MySettings", "Word", "default")
+
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileInt®/L¯(), ®L¯LoadProfileSection®/L¯(), ®L¯LoadProfileSectionNames®/L¯(),
+            ®L¯RemoveProfileItem®/L¯(), ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileInt®/L¯(),
+            ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Hook
+
+®I¯[Undocumented events listed below]®/I¯
+
+Associates a procedure with an event.
+
+Syntax:     ®B¯Hook®/B¯(®LI¯INTEGER®/L¯ ®I¯event®/I¯, ®LI¯PROCEDURE®/L¯ ®I¯proc_name®/I¯)
+
+            ù ®I¯event®/I¯ is one of the editor's pre-defined events.
+
+            ù ®I¯proc_name®/I¯ is the name of a procedure to be associated with
+              ®I¯event®/I¯.
+
+Returns:    Non-zero if successful.  Zero (FALSE) if ®I¯proc_name®/I¯ is already
+            hooked to the same ®I¯event®/I¯, or if the maximum number of hooks is
+            reached.
+
+Notes:      This command gives the user a way to intercept and act on certain
+            editor events.  Events that may be hooked include:
+
+            ù ®B¯_ON_CHANGING_FILES_®/B¯  This event is called each time a different
+              file is switched to, with the following exceptions:
+
+              ù If the file was switched to via the GotoBufferId() command,
+                this event is NOT called.
+
+              ù If the file was switched to using the ®B¯_DONT_LOAD_®/B¯ option of
+                NextFile() or PrevFile() commands, this event is NOT called.
+
+              See the OnChangingFiles() macro in the TSE.UI user-interface
+              file (located in the UI\ editor subdirectory) for examples of
+              using this event.
+
+            ù ®B¯_ON_FIRST_EDIT_®/B¯  This event is called the first time a file is
+              loaded into the editor.  Therefore, it is only called once for
+              each file edited.  This event is not called by the
+              CreateBuffer() or CreateTempBuffer() commands.  When this event
+              is called, the file has already been loaded into the editor.
+
+            ù ®B¯_ON_FILE_LOAD_®/B¯  This event is called immediately before a
+              file is loaded into the editor.  It is called before
+              ®B¯_ON_FIRST_EDIT_®/B¯.
+              ®I¯[3.0]®/I¯  Calling ®L¯TerminateEvent®/L¯() from this event aborts the load.
+
+            ù ®B¯_ON_FILE_SAVE_®/B¯  This event is called just before the editor
+              saves a file.  It is not called by the SaveAs() and SaveBlock()
+              commands.
+              ®I¯[3.0]®/I¯  Calling ®L¯TerminateEvent®/L¯() from this event aborts the save.
+
+     ®I¯[3.0]®/I¯  ù ®B¯_AFTER_FILE_SAVE_®/B¯  This event is called just after the editor
+              saves a file.  It is not called by the SaveAs() and SaveBlock()
+              commands.
+
+            ù ®B¯_ON_FILE_QUIT_®/B¯  This event is called just before the editor
+              quits a file, via the single-file quitting commands (QuitFile(),
+              AbandonFile()).  If only a single file is loaded, this hook will
+              not be called unless the QuitToPrompt variable is ON.
+              ®I¯[3.0]®/I¯  Calling ®L¯TerminateEvent®/L¯() from this event aborts the quit.
+
+            ù ®B¯_ON_EXIT_CALLED_®/B¯  This event is called at the beginning of the
+              Exit() and SaveAllAndExit() commands.
+
+            ù ®B¯_ON_ABANDON_EDITOR_®/B¯  This event is called just before the editor
+              is terminated.
+
+            ù ®B¯_IDLE_®/B¯  This event is called from the editor's keyboard
+              processing loop, when no keys are available to be processed,
+              AND the editor is in a "text-editing" state (that is, the focus
+              is a text-editing window, as opposed to a prompt, menu, list,
+              or other similar input focus).
+
+            ù ®B¯_NONEDIT_IDLE_®/B¯  This event is called from the editor's
+              keyboard processing loop, when no keys are available to be
+              processed, AND the editor is in a "non-text-editing" state
+              (that is, the focus is a prompt, menu, list, or other similar
+              non-text-editing input focus).
+
+     ®I¯[3.0]®/I¯  ù ®B¯_PRE_UPDATE_ALL_WINDOWS_®/B¯  This event is called once at the
+              beginning of the UpdateDisplay() command, before any other
+              processing takes place, regardless of the number of windows
+              displayed.  This event is only called when the editor is in the
+              main editing loop.
+
+     ®I¯[3.0]®/I¯  ù ®B¯_POST_UPDATE_ALL_WINDOWS_®/B¯  This event is called once at the end
+              of the UpdateDisplay() command processing, regardless of the
+              number of windows displayed.  This event is only called when the
+              editor is in the main editing loop.
+
+            ù ®B¯_BEFORE_UPDATE_DISPLAY_®/B¯  This event is called before each window
+              is updated. The UpdateDisplay() command has no effect if called
+              from this event.  So, if there are two or more windows on the
+              screen, this event can be called at least twice when the
+              UpdateDisplay() command is called.
+
+            ù ®B¯_AFTER_UPDATE_DISPLAY_®/B¯  This event is called after each window
+              is updated. The UpdateDisplay() command has no effect if called
+              from this event. So, if there are two or more windows on the
+              screen, this event can be called at least twice when the
+              UpdateDisplay() command is called.
+
+            ù ®B¯_AFTER_UPDATE_STATUSLINE_®/B¯  This event is called after the
+              StatusLine is updated.
+
+            ù ®B¯_BEFORE_COMMAND_®/B¯  This event is called before each
+              text-editing command is processed.
+
+            ù ®B¯_AFTER_COMMAND_®/B¯  This event is called after each text-editing
+              command is processed.
+
+            ù ®B¯_BEFORE_NONEDIT_COMMAND_®/B¯  This event is called before each
+              non-text-editing command is processed.
+
+            ù ®B¯_AFTER_NONEDIT_COMMAND_®/B¯  This event is called after each
+              non-text-editing command is processed.
+
+            ù ®B¯_LIST_STARTUP_®/B¯  This event is called when the List() and
+              lList() commands start processing.
+
+            ù ®B¯_LIST_CLEANUP_®/B¯  This event is called when the List() and
+              lList() commands terminate.
+
+            ù ®B¯_PICKFILE_STARTUP_®/B¯  This event is called when the PickFile()
+              command (called explicitly or implicitly by EditFile() or
+              others) starts processing.
+
+            ù ®B¯_PICKFILE_CLEANUP_®/B¯  This event is called when the PickFile()
+              command terminates.
+
+            ù ®B¯_PROMPT_STARTUP_®/B¯  This event is called when the Ask() and
+              Read() family of commands start processing.
+
+            ù ®B¯_PROMPT_CLEANUP_®/B¯  This event is called when the Ask() and
+              Read() family of commands terminate.
+
+            ù ®B¯_ON_SELFINSERT_®/B¯  This event is called after a character is
+              inserted into a text-editing window.
+
+            ù ®B¯_ON_DELCHAR_®/B¯  This event is called after any of the following
+              commands are executed in a text-editing window:  DelChar(),
+              DelRightWord(), DelLeftWord(), BackSpace()
+
+            ù ®B¯_ON_UNASSIGNED_KEY_®/B¯  This event is called whenever an
+              unassigned key is pressed, AND the editor is in a "text-editing"
+              state (that is, the focus is a text-editing window, as opposed
+              to a prompt, menu, list, or other similar input focus).
+
+            ù ®B¯_ON_NONEDIT_UNASSIGNED_KEY_®/B¯  This event is called whenever an
+              unassigned key is pressed, AND the editor is in a
+              "non-text-editing" state (that is, the focus is a prompt, menu,
+              list, or other similar non-text-editing input focus).
+
+            ù ®B¯_AFTER_GETKEY_®/B¯  This event is called just after the editor has
+              gotten another key or mouse button, regardless of whether the
+              editor is in a "text-editing" or "non-text-editing" state.  (To
+              determine the current state of the editor, use the
+              ®L¯QueryEditState®/L¯() command.)
+
+            ù ®B¯_BEFORE_GETKEY_®/B¯  This event is called just before the editor
+              gets another key or mouse button, regardless of whether the
+              editor is in a "text-editing" or "non-text-editing" state.  (To
+              determine the current state of the editor, use the
+              ®L¯QueryEditState®/L¯() command.)
+
+            ®I¯Undocumented events:®/I¯
+
+            ù ®B¯_ON_CONTROL_BREAK_®/B¯ - unknown.
+            ù ®B¯_ON_MESSAGE_®/B¯ - unknown.
+            ù ®B¯_ON_WARNING_®/B¯ - unknown.
+
+
+            Multiple procedures can be hooked to the same event.  If this is
+            the case, the hooked procedures are called in a last-hooked,
+            first-called order.
+
+            The same procedure can also be hooked by multiple events.  The
+            same procedure can not be hooked more than once to the same event,
+            however.
+
+            The editor prevents hooked events from being recursively called.
+
+            A hooked event may be removed by calling the UnHook() command or
+            purging (or re-loading, since loading a macro file will cause an
+            already loaded macro file of the same name to be purged) the macro
+            file containing the hooked procedure.
+
+            Hooks may be temporarily disabled by using the ®L¯BreakHookChain®/L¯()
+            or ®L¯SetHookState®/L¯() commands.
+
+            Most editor events are only called when the editor's focus is a
+            text-editing window.
+
+            Several events (those with NONEDIT in the name, as well as the
+            ®B¯_AFTER_GET_KEY_®/B¯ and ®B¯_BEFORE_GET_KEY_®/B¯ events) are called when the
+            editor's focus is a non-text-editing window, such as a menu, a
+            prompt, or a list.  During these events, care must be taken not to
+            disturb the editor state.  In particular, the screen should not be
+            updated, and other events must not be called.  Typically, the best
+            thing to do in a non-text-editing event is to set a flag that a
+            later text-editing event or normal macro procedure can act upon.
+
+            If the same procedure is hooked to multiple events, some of which
+            are text-editing events, and some are non-text-editing events,
+            the need may arise to know which state (text-editing versus
+            non-text-editing) the editor is in.  This can be determined by
+            the ®L¯QueryEditState®/L¯() command.
+
+Examples:
+
+            proc foo()
+                Warn("I am in the ON_FIRST_EDIT hook!")
+            end
+
+            proc main()
+                Hook(®B¯_ON_FIRST_EDIT_®/B¯, foo)
+            end
+
+            If this macro file is executed, every time a new file (that is,
+            one that is not currently in the editor's Ring of files) is
+            loaded, the foo() macro will be executed.
+
+See Also:   ®L¯UnHook®/L¯(), ®L¯ExecHook®/L¯(), ®L¯BreakHookChain®/L¯(), ®L¯GetHookState®/L¯(),
+            ®L¯SetHookState®/L¯(), ®L¯AbandonFile®/L¯(), ®L¯Ask®/L¯(), ®L¯CreateBuffer®/L¯(),
+            ®L¯CreateTempBuffer®/L¯(), ®L¯EditFile®/L¯(), ®L¯Exit®/L¯(), ®L¯List®/L¯(),
+            ®L¯NextFile®/L¯(), ®L¯PickFile®/L¯(), ®L¯PrevFile®/L¯(), ®L¯QuitFile®/L¯(), ®L¯Read®/L¯(),
+            ®L¯SaveAllAndExit®/L¯(), ®L¯SaveAs®/L¯(), ®L¯SaveBlock®/L¯(), ®L¯lList®/L¯(),
+            ®L¯QueryEditState®/L¯(), ®L¯GetHookState®/L¯(), ®L¯SetHookState®/L¯()
+
+            Variables:  ®L¯QuitToPrompt®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isWhite
+
+Determines whether the character at the current position is a white character
+(space or tab).
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯isWhite®/B¯()
+
+     ®I¯[3.0]®/I¯  INTEGER ®B¯isWhite®/B¯([®LI¯STRING®/L¯ ®I¯s®/I¯])
+
+Returns:    Non-zero if the current character is a space or tab character;
+            otherwise, zero (FALSE).
+
+Notes:      Returns zero at or past the end-of-line position.
+
+     ®I¯[3.0]®/I¯  ù ®I¯s®/I¯ is an optional string.
+
+See Also:   ®L¯isWord®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isWord
+
+Determines whether the character at the cursor is in the currently-defined
+WordSet.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯isWord®/B¯()
+
+     ®I¯[3.0]®/I¯  INTEGER ®B¯isWord®/B¯([®LI¯STRING®/L¯ ®I¯s®/I¯ [, STRING ®I¯wordset®/I¯]])
+
+Returns:    Non-zero if the current character is in the currently-defined
+            WordSet; otherwise, zero (FALSE).
+
+Notes:      This command returns zero at or past the end-of-line position.
+
+     ®I¯[3.0]®/I¯  ù ®I¯s®/I¯ is an optional string.
+
+     ®I¯[3.0]®/I¯  ù ®I¯wordset®/I¯ is an optional ®L¯WordSet®/L¯ string.
+
+See Also:   ®L¯isWhite®/L¯(), ®L¯WordRight®/L¯(), ®L¯WordLeft®/L¯(), ®L¯BegWord®/L¯(), ®L¯EndWord®/L¯()
+
+            Variables:  ®L¯WordSet®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù lDos
+
+®I¯[Undocumented flags listed below]®/I¯
+
+Passes a command to the operating system for execution.
+
+This command is intended for ADVANCED USAGE.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯lDos®/B¯(®LI¯STRING®/L¯ ®I¯cmd®/I¯, STRING ®I¯cmdline®/I¯ [, INTEGER ®I¯flags®/I¯])
+
+            ù ®I¯cmd®/I¯ is the command to pass to the operating system.
+
+            ù ®I¯cmdline®/I¯ is the command line to pass to ®I¯cmd®/I¯.
+
+            ù ®I¯flags®/I¯ is an optional integer value.  Supported values for
+              ®I¯flags®/I¯ are:
+
+              ù ®B¯_DONT_CLEAR_®/B¯ prevents the editing screen from being cleared.
+
+              ù ®B¯_DONT_PROMPT_®/B¯ prevents the prompt, "Press a key to
+                continue", from being issued.
+
+              ù ®B¯_RETURN_CODE_®/B¯ causes the return code of ®I¯cmd®/I¯ to be trapped,
+                so that it can be returned via the ®L¯DosIOResult®/L¯() command.
+
+              ù ®B¯_TEE_OUTPUT_®/B¯ causes the output of ®I¯cmd®/I¯ to be displayed on the
+                screen, regardless of whether the output is redirected.
+
+              ù ®B¯_RUN_DETACHED_®/B¯ causes ®I¯cmd®/I¯ to be run as a detached process.
+
+              ®I¯Undocumented flags:®/I¯
+
+              ù ®B¯_CREATE_NEW_CONSOLE_®/B¯ creates new console window instead of
+                reusing the current console window.
+
+              ù ®B¯_START_HIDDEN_®/B¯ starts the console as a hidden window.
+
+              ù ®B¯_START_MAXIMIZED_®/B¯ starts the console window maximized.
+
+              ù ®B¯_START_MINIMIZED_®/B¯ starts the console window minimized.
+
+              ù ®B¯_PRESERVE_SCREEN_®/B¯ - unknown.
+
+              ù ®B¯_DONT_CHANGE_VIDEO_®/B¯ - unknown.
+
+              ù ®B¯_DONT_WAIT_®/B¯ - unknown.
+
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      Multiple ®I¯flags®/I¯ values can be combined with the bitwise logical
+            OR (|) operator.
+
+            If ®I¯cmd®/I¯ does not include the complete path, the operating system
+            will search for it.
+
+            The editing screen is saved and restored, as long as the number
+            of rows and columns can be restored after calling the operating
+            system.
+
+Examples:
+
+            The implementation of the editor's Shell() command is:
+
+                lDos(GetEnvStr("COMSPEC"), "")
+
+            The implementation of the editor's Dos() command is:
+
+                lDos(GetEnvStr("COMSPEC"), " /c " + cmdline)
+
+            To create a shell that has a 4k environment space:
+
+                lDos(GetEnvStr("COMSPEC"), " /e:4096")
+
+            To run the sc32 program directly, without loading a copy of the
+            command processor:
+
+                lDos("sc32.exe", "macro.s")
+
+            To run a program as a separate process (that is, one that is not
+            connected to the current editing session):
+
+                lDos("notepad.exe", "some.fle", _RUN_DETACHED_)
+
+See Also:   ®L¯Dos®/L¯(), ®L¯Shell®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù lList
+
+®I¯[Undocumented flags listed below]®/I¯
+
+Displays the current file in a read-only browse window.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯lList®/B¯(®LI¯STRING®/L¯ ®I¯title®/I¯, INTEGER ®I¯width®/I¯ , INTEGER ®I¯height®/I¯,
+                          INTEGER ®I¯flag®/I¯)
+
+            ù ®I¯title®/I¯ is the title for the List window; can be an empty
+              string.
+
+            ù ®I¯width®/I¯ is the width of the List window.
+
+            ù ®I¯height®/I¯ is the height of the List window.
+
+            ù ®I¯flag®/I¯ can be any combination of the following (OR'ed together
+              to obtain the desired result):
+
+              ù ®B¯_ENABLE_SEARCH_®/B¯ enables SpeedSearch in lList().
+
+              ù ®B¯_BLOCK_SEARCH_®/B¯  limits SpeedSearch within marked block of
+                file being listed.  Block MUST exist!
+
+              ù ®B¯_ANCHOR_SEARCH_®/B¯ anchors search to beginning of line or
+                beginning of block if ®B¯_BLOCK_SEARCH_®/B¯ specified.
+
+              ù ®B¯_ENABLE_HSCROLL_®/B¯ enables horizontal movement commands.
+
+              ®I¯Undocumented flags:®/I¯
+
+              ù ®B¯_FIXED_WIDTH_®/B¯ uses the exact width specified and does not
+                automatically shrink the width to fit the list.
+
+              ù ®B¯_FIXED_HEIGHT_®/B¯ uses the exact height specified and does not
+                automatically shrink the height to fit the list.
+
+              ù ®B¯_PRESERVE_HELPLINE_®/B¯ avoids covering up the helpline.
+
+
+Returns:    Non-zero if lList() is exited via <Enter>.  Zero if lList() is
+            exited via <Escape>.
+
+Notes:      lList() is similar to List() in operation, but lList() allows the
+            height of the List window to be specified, and provides the
+            ability to configure several options through the ®I¯flag®/I¯ parameter.
+
+            While the lList window is displayed, the following commands are
+            active:  Up(), Down(), BegFile(), CReturn(), Escape(), EndFile(),
+            PageUp(), PageDown().
+
+            Once lList() is exited, the current cursor line in the file will
+            be the same as the cursor line that was in use in lList() before
+            lList() was exited.  This functionality allows lList() to be used
+            as a simple "picker."
+
+            lList() automatically resizes the List window bottom line for
+            small files.
+
+            lList() does not automatically reposition the listed file at line
+            1.  If this is desired, the user must do it.
+
+            The lList window is centered on the screen.  To specify a new
+            location, use Set(X1) and/or Set(Y1) as discussed in the chapter
+            on "®L¯Editor Variables®/L¯."
+
+            The behavior of lList() can be modified by the use of the hooked
+            events ®B¯_LIST_STARTUP_®/B¯ and ®B¯_LIST_CLEANUP_®/B¯.
+
+See Also:   ®L¯List®/L¯(), ®L¯PickFile®/L¯(), ®L¯Hook®/L¯(), ®L¯ListFooter®/L¯(), ®L¯ListHeader®/L¯()
+
+            Variables:  ®L¯X1®/L¯, ®L¯Y1®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù LoadDir
+
+Returns the directory from which the editor was started.
+
+Syntax:     ®LI¯STRING®/L¯ ®B¯LoadDir®/B¯([®LI¯INTEGER®/L¯ ®I¯filename_also®/I¯])
+
+            ù ®I¯filename_also®/I¯, defaults to FALSE.  When TRUE, returns load
+              directory plus the editor's filename.
+
+Returns:    A string containing the directory from which the editor was
+            started.
+
+Notes:      The string will contain the full path of directory where the
+            editor executable program resides.  The path will include the
+            trailing backslash but not the name of the editor.
+
+
+See Also:   Variables: ®L¯TSEPath®/L¯, ®L¯DosCmdLine®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù LoadProfileSection
+
+? Loads all items in the specified profile section from the specified .INI
+file, into an internal buffer.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯LoadProfileSection®/B¯(®LI¯STRING®/L¯ ®I¯section®/I¯ [, STRING ®I¯ini_fn®/I¯])
+
+            ù ®I¯section®/I¯ is the name of the section to load.
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to look in.  If ®I¯ini_fn®/I¯
+              is not specifed, TSE.INI in the editor's load directory is
+              assumed.
+
+Returns:    Non-zero if successful, zero (FALSE) otherwise.
+
+Example:
+            if LoadProfileSection("Yada")
+                while GetNextProfileItem(item, value)
+                    AddLine(format(item:10,value:64)    // or something...
+                endwhile
+            endif
+
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileInt®/L¯(), ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSectionNames®/L¯(),
+            ®L¯RemoveProfileItem®/L¯(), ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileInt®/L¯(),
+            ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù LoadProfileSectionNames
+
+? Loads the names of all profile sections in the specified .INI file, into an
+internal buffer.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯LoadProfileSectionNames®/B¯([®LI¯STRING®/L¯ ®I¯ini_fn®/I¯])
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to look in.  If ®I¯ini_fn®/I¯
+              is not specifed, TSE.INI in the editor's load directory is
+              assumed.
+
+Returns:    Non-zero if successful, zero (FALSE) otherwise.
+
+Example:
+            if LoadProfileSectionNames()
+                while GetNextProfileSectionName(section)
+                    Addline(section)                    // or something...
+                endwhile
+            endif
+
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileInt®/L¯(), ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(),
+            ®L¯RemoveProfileItem®/L¯(), ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileInt®/L¯(),
+            ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù MakeEditWindow
+
+?
+
+See Also:   ®L¯ClearEditWindows®/L¯(), ®L¯FinishEditWindows®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù MsgBox
+
+Displays a message in a popup box, along with specified choices.
+
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯MsgBox®/B¯(®LI¯STRING®/L¯ ®I¯title®/I¯, STRING ®I¯message®/I¯ [, INTEGER ®I¯flag®/I¯])
+
+            ù ®I¯title®/I¯ is the title for the message box.
+
+            ù ®I¯message®/I¯ is the message to display in the message box.  ®I¯message®/I¯
+              is automatically word-wrapped.
+
+            ù ®I¯flag®/I¯ is optional.  If not passed, _OK_ is assumed.
+              Otherwise ®I¯flag®/I¯ can becan be one of the following:
+
+              ù 0                 - [Ok] button, always returns 0
+              ù ®B¯_OK_®/B¯              - [Ok] button
+              ù ®B¯_YES_NO_®/B¯          - [Yes] [No] buttons
+              ù ®B¯_YES_NO_CANCEL_®/B¯   - [Yes] [No] [Cancel] buttons
+
+Returns:
+            ù Zero (false) if <Escape> or <C> is pressed, or if [Cancel] is
+              selected.
+
+            ù 1 if <Y> or <O> is pressed, or if [Yes] or [Ok] is selected.
+
+            ù 2 if <N> is pressed or if [No] is selected.
+
+            The passed flag (_YES_NO_, _YES_NO_CANCEL_, or _OK_) determines
+            which of the above choices, and/or keys are relevant.
+
+Notes:      If title is longer than what can be displayed on the screen, title
+            is truncated appropriately.
+
+            The text of ®I¯message®/I¯ will wrap to a new line if the length is
+            longer than will fit within the MsgBox display width.  However,
+            the presence of the CR character within the msg string will cause
+            a line break to occur at that point.
+
+            MsgBox is centered on the screen.  To specify a new location, use
+            Set(X1) and/or Set(Y1) as discussed in ®L¯Editor Variables®/L¯.
+
+            Actual values of flags:
+
+            ®B¯_OK_®/B¯            = 1
+            ®B¯_YES_NO_®/B¯        = 2
+            ®B¯_YES_NO_CANCEL_®/B¯ = 3
+
+
+Examples:
+
+            MsgBox("", "Hello, World!")         // One line for msg
+
+            MsgBox("","Hello,"+chr(13)+World!") // Two lines for msg
+
+            MsgBox("Error!", "Quit now?", _YES_NO_CANCEL_)  // Three choices
+
+            The following macro displays a MsgBox (whose title is the
+            current Macro name, and whose message is "Finished!") in the
+            upper left hand corner of the editor window. The [Ok] choice is
+            displayed.
+
+            proc DisplayFinish()
+              integer x = Set(X1,1) // save current X1 value, set new one
+              integer y = Set(Y1,1) // save current Y1 value, set new one
+
+              MsgBox(SplitPath(CurrMacroFilename(), _NAME_),"Finished!")
+
+              Set(X1,x)             // restore saved X1 value
+              Set(Y1,y)             // restore saved Y1 value
+            end
+
+See Also:   ®L¯MsgBoxEx®/L¯(), ®L¯MsgBoxBuff®/L¯(), ®L¯YesNo®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù MsgBoxBuff
+
+Displays the current buffer in a message box.
+
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯MsgBoxBuff®/B¯(®LI¯STRING®/L¯ ®I¯title®/I¯ [, INTEGER ®I¯flag®/I¯
+                                            [, INTEGER ®I¯buff_id®/I¯]])
+
+            ù ®I¯title®/I¯ is the title of the message box.
+
+            ù ®I¯flag®/I¯ is optional.  If not passed, _OK_ is assumed.
+              Otherwise, the flag can be one of the following:
+
+              ù 0 (default)       - [Ok] button, always returns 0
+              ù ®B¯_OK_®/B¯              - [Ok] button
+              ù ®B¯_YES_NO_®/B¯          - [Yes] [No] buttons
+              ù ®B¯_YES_NO_CANCEL_®/B¯   - [Yes] [No] [Cancel] buttons
+
+            ù ®I¯buff_id®/I¯ is optional.  If not passed, the current buffer is
+              assumed.  The text of the message box is taken from this buffer.
+
+Returns:
+            ù 0 (false) if <Escape> or <C> is pressed, or if [Cancel] is
+              selected.
+
+            ù 1 if <Y> or <O> is pressed, or if [Yes] or [Ok] is selected.
+
+            ù 2 if <N> is pressed or if [No] is selected.
+
+            The passed flag (_YES_NO_, _YES_NO_CANCEL_, or _OK_) determines
+            which of the above choices, and/or keys are relevant.
+
+Notes:      It is up to the user to make sure that the contents of text will
+            fit in the MsgBox.  The editor should not bomb if buffer
+            lines/columns are greater than the maximum, but the results might
+            not be aesthetic.
+
+            Actual values of flags:
+
+            ®B¯_OK_®/B¯            = 1
+            ®B¯_YES_NO_®/B¯        = 2
+            ®B¯_YES_NO_CANCEL_®/B¯ = 3
+
+Examples:
+            proc main()
+                CreateTempBuffer()
+                AddLine("This is a test to see if this thing will not")
+                AddLine("rewrap the way I hope it won't.")
+                AddLine("Well, here goes nothing (or, famous last words!")
+                MsgBoxBuff("Testing", _YES_NO_CANCEL_, GetBufferId())
+            end
+
+
+See Also:   ®L¯MsgBox®/L¯(), ®L¯MsgBoxEx®/L¯(), ®L¯YesNo®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù MsgBoxEx
+
+Displays a message in a popup box, with user-defined buttons.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯MsgBoxEx®/B¯(®LI¯STRING®/L¯ ®I¯title®/I¯, STRING ®I¯msg®/I¯, STRING ®I¯buttons®/I¯)
+
+            ù ®I¯title®/I¯ is the title of the message box.
+
+            ù ®I¯msg®/I¯ is a message that appears as the body of the message box.
+
+            ù ®I¯buttons®/I¯ is a string representing the different choices.
+
+Returns:
+            ù 0 (false) if <Escape> is pressed or if Cancel (see below for
+              restrictions) is selected.
+
+            ù Otherwise, the button number that was selected.
+
+Notes:      ®I¯buttons®/I¯ is a ';' separated list of choices.  Each choice can have
+            a short-cut key, designated by '&'.  For instance,
+            "[&Append];[&Overwrite];[&Cancel]" would display 3 buttons, with
+            'A', 'O', and 'C' being the short-cut keys.
+
+            If the last button is "Cancel", instead of number-of-buttons being
+            returned, 0 is returned.
+
+Examples:
+            MsgBoxEx("File has changed", "Save changes?", "[&Yes];[&No];[&Cancel]")
+
+See Also:   ®L¯MsgBox®/L¯(), ®L¯MsgBoxBuff®/L¯(), ®L¯YesNo®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù PickDrive
+
+Allows the user to select a drive from a list and returns the selected drive.
+
+Syntax:     ®LI¯STRING®/L¯ ®B¯PickDrive®/B¯()
+
+Returns:    The selected drive, or a zero-length string if <Escape> was
+            pressed.
+
+Notes:      This is the same PickList used in the built-in PickFile() command,
+            when a drive-list is requested.
+
+See Also:   ®L¯PickFile®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù BrowseMode
+
+Sets or Queries the browse-only status of the current buffer.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯BrowseMode®/B¯([INTEGER ®I¯on_off®/I¯])
+
+            ù ®I¯on_off®/I¯ is optional.  If specified, it sets the current buffer's
+              browse-only status to either on or off.
+
+Returns:    The browse-only status of the current buffer at the time this
+            command is invoked.
+
+Notes:      Buffers that are marked as browse-only can not be saved.
+
+Examples:
+            // determine the browse-only status of the current buffer
+            integer browse_only
+
+            read_only = BrowseMode()
+
+            // Set the current buffer to browse-only
+            BrowseMode(TRUE)
+
+            // Set the current buffer to read-write
+            BrowseMode(FALSE)
+
+            // Toggle the current buffers browse-only status
+            BrowseMode(not BrowseMode())
+
+See Also:
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù PickFilePath
+
+Values:     ®LI¯STRING®/L¯
+
+Path that picklist is currently pointing to, when a picklist is in use.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù RealToVirtualScreen
+
+Copies the WIN32 console screen buffer to TSE's internal screen buffer.
+
+This command is intended for ADVANCED USAGE.
+
+
+Syntax:     ®B¯RealToVirtualScreen®/B¯()
+
+See Also:   ®L¯VirtualToRealScreen®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Redrawn
+
+Values:     ®LI¯INTEGER®/L¯
+
+Specifies what was redrawn in the most recent draw operation.
+Possible values are:
+
+constant UNHILITE_PREVIOUS_CURSORLINE  = 0x01
+constant HILITE_CURSORLINE             = 0x02
+constant REDRAW_CURSORLINE             = 0x04
+constant SCROLLED_UP                   = 0x08
+constant SCROLLED_DOWN                 = 0x10
+constant REDRAW                        = 0x20    // redraw whole screen
+constant HILITE_BLOCK                  = 0x40
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù RemoveProfileItem
+
+?
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯RemoveProfileItem®/B¯(®LI¯STRING®/L¯ ®I¯section®/I¯, STRING ®I¯item®/I¯
+                                      [, STRING ®I¯ini_fn®/I¯])
+
+            ù ®I¯section®/I¯ the section ®I¯item®/I¯ is in.
+
+            ù ®I¯item®/I¯ the item to remove.
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to look in.  If ®I¯ini_fn®/I¯
+              is not specifed, TSE.INI in the editor's load directory is
+              assumed.
+
+Returns:    Non-zero if successful, zero (FALSE) otherwise.
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileInt®/L¯(), ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(),
+            ®L¯LoadProfileSectionNames®/L¯(), ®L¯RemoveProfileItem®/L¯(), ®L¯WriteProfileInt®/L¯(),
+            ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù RemoveProfileSection
+
+?
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯RemoveProfileSection®/B¯(®LI¯STRING®/L¯ ®I¯section®/I¯ [, STRING ®I¯ini_fn®/I¯])
+
+            ù ®I¯section®/I¯ is the section to remove.
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to look in.  If ®I¯ini_fn®/I¯
+              is not specifed, TSE.INI in the editor's load directory is
+              assumed.
+
+Returns:    Non-zero if successful, zero (FALSE) otherwise.
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileInt®/L¯(), ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(),
+            ®L¯LoadProfileSectionNames®/L¯(), ®L¯RemoveProfileItem®/L¯(), ®L¯WriteProfileInt®/L¯(),
+            ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù StartupFlags
+
+®I¯[Undocumented flags listed below]®/I¯
+
+Controls how the editor obtains the file specification, or list of files, to
+process if the editor is started with an empty command line (that is, a
+command line on which no files or editor options are specified).
+
+Values:     ®LI¯INTEGER®/L¯
+
+            ù ®B¯_STARTUP_PROMPT_®/B¯ issues the "File(s) to edit:" prompt.
+
+            ù ®B¯_STARTUP_FILEMGR_®/B¯ runs F.MAC (FileManager macro), passing
+              it the string "*.*".
+
+            ù ®B¯_STARTUP_UNNAMED_®/B¯ executes the ®L¯NewFile®/L¯() command.
+
+            ù ®B¯_STARTUP_RECENTFILES_®/B¯ displays the recently-edited-files
+              list.
+
+            ù ®B¯_STARTUP_PICKLIST_®/B¯ displays a PickList of files in the
+              current directory.
+
+            ®I¯Undocumented flags:®/I¯
+
+            ù ®B¯_STARTUP_RESTORE_STATE_®/B¯ restores the editor state using the
+              STATE macro.
+
+            ù ®B¯_STARTUP_MENU_®/B¯ (= _NONE_) shows a menu when starting TSE.
+
+
+Default:    ®B¯_STARTUP_PROMPT_®/B¯
+
+Limits:     Has effect at startup only.
+
+Notes:      Only one of the above options can be specified at a time.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù VirtualToRealScreen
+
+Copies TSE's internal screen buffer to the WIN32 console screen buffer.
+
+This command is intended for ADVANCED USAGE.
+
+
+Syntax:     ®B¯VirtualToRealScreen®/B¯()
+
+See Also:   ®L¯RealToVirtualScreen®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù WriteProfileInt
+
+Writes an integer value to the specified item in the specified .INI file.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯WriteProfileInt®/B¯(®LI¯STRING®/L¯ ®I¯section®/I¯, STRING ®I¯item®/I¯,
+                                    INTEGER ®I¯value®/I¯ [, STRING ®I¯ini_fn®/I¯])
+
+            ù ®I¯section®/I¯ is the name of the section to write the value to.  The
+              section is created if it does not already exist.
+
+            ù ®I¯item®/I¯ is the name of the item to write the value to.  The item is
+              created at the end of the section if it does not already exist.
+
+            ù ®I¯value®/I¯ is the integer value to write.
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to look in.  If ®I¯ini_fn®/I¯
+              is not specifed, TSE.INI in the editor's load directory is
+              assumed.
+
+Returns:    Non-zero if successful, zero (FALSE) otherwise.
+
+Example:
+            WriteProfileInt("MySettings", "Color", Color(white on blue))
+
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileInt®/L¯(), ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(),
+            ®L¯LoadProfileSectionNames®/L¯(), ®L¯RemoveProfileItem®/L¯(),
+            ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù WriteProfileStr
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯WriteProfileStr®/B¯(®LI¯STRING®/L¯ ®I¯section®/I¯, STRING ®I¯item®/I¯,
+                                    STRING ®I¯value®/I¯ [, STRING ®I¯ini_fn®/I¯])
+
+            ù ®I¯section®/I¯ is the name of the section to write the value to.  The
+              section is created if it does not already exist.
+
+            ù ®I¯item®/I¯ is the name of the item to write the value to.  The item is
+              created at the end of the section if it does not already exist.
+
+            ù ®I¯value®/I¯ is the string to write.
+
+            ù ®I¯ini_fn®/I¯ is the filename of the .INI file to look in.  If ®I¯ini_fn®/I¯
+              is not specifed, TSE.INI in the editor's load directory is
+              assumed.
+
+Returns:    Non-zero if successful, zero (FALSE) otherwise.
+
+Example:
+            WriteProfileStr("MySettings", "Word", "something")
+
+
+See Also:   ®L¯FlushProfile®/L¯(), ®L¯GetNextProfileItem®/L¯(), ®L¯GetNextProfileSectionName®/L¯(),
+            ®L¯GetProfileInt®/L¯(), ®L¯GetProfileStr®/L¯(), ®L¯LoadProfileSection®/L¯(),
+            ®L¯LoadProfileSectionNames®/L¯(), ®L¯RemoveProfileItem®/L¯(),
+            ®L¯RemoveProfileSection®/L¯(), ®L¯WriteProfileInt®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù AddFFInfoToBuffer
+
+Adds the file info gathered from the last FindFirstFile() or FindThisFile()
+command to the indicated buffer.
+
+Syntax:     ®B¯AddFFInfoToBuffer®/B¯([®LI¯INTEGER®/L¯ ®I¯buf_id®/I¯ [,®LI¯STRING®/L¯ ®I¯path®/I¯]])
+
+            ù ®I¯buf_id®/I¯ is the optional buffer to which the information will be
+              added.  If not passed, the current buffer is assumed.
+
+            ù ®I¯path®/I¯ is an optional path that will be inserted before the
+              filename portion.
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      The info is added after the current line in buf_id.  The added
+            line becomes the new current line.
+
+            The file info is added in such a way that the PB??????()
+            commands can be used to retrieve the info added to the buffer.
+
+            The editor uses this command internally when doing the
+            BuildPickBufferEx() processing.
+
+Examples:
+            integer h, cur_id, pick_buf
+
+            cur_id = GetBufferId()
+            pick_buf = CreateTempBuffer()
+            GotoBufferId(cur_id)
+
+            h = FindFirstFile("*.*", _NORMAL_)
+            if h <> - 1
+                repeat
+                    AddFFInfoToBuffer(pick_buf)
+                until not FindNextFile(h, _NORMAL_)
+                FindFileClose(h)
+            endif
+
+See Also:   ®L¯FindFirstFile®/L¯(), ®L¯FindThisFile®/L¯(), ®L¯FFAttribute®/L¯(), ®L¯FFDate®/L¯(),
+            ®L¯FFName®/L¯(), ®L¯FFSize®/L¯(), ®L¯FFTime®/L¯(), ®L¯PBAttribute®/L¯(), ®L¯PBDate®/L¯(), ®L¯PBName®/L¯(),
+            ®L¯PBSize®/L¯(), ®L¯PBTime®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù CutToWinClip
+
+Copies the marked block to the Windows Clipboard.  The block is then removed
+from the file. The current contents of the Windows Clipboard are discarded
+before the operation starts.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯CutWinClip®/B¯()
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      This command fails if there is not enough memory to successfully
+            complete the operation.
+
+            CutToWinClip() will not cut a block that exists outside the
+            current file.
+
+            The block is removed after the copy is performed.
+
+            If there is no marked block, but the UseCurrLineIfNoBlock
+            variable is set ON, the current line is cut to the Clipboard.
+
+            To retrieve text from the Windows Clipboard, use the
+            PasteFromWinClip() command.
+
+See Also:   ®L¯PasteFromWinClip®/L¯(), ®L¯Cut®/L¯(), ®L¯Paste®/L¯(), ®L¯isBlockMarked®/L¯(),
+            ®L¯isBlockInCurrFile®/L¯(), ®L¯CopyToWinClip®/L¯()
+
+            Variables:  ®L¯BlockId®/L¯, ®L¯UseCurrLineIfNoBlock®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù EntabCurrLine
+
+Converts multiple adjacent space characters to the appropriate number of
+tabs, where possible.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯EntabCurrLine®/B¯([INTEGER ®I¯respect_column_block®/I¯])
+
+            ù optional ®I¯respect_column_block®/I¯, if non-zero, and the current line
+              is within a column block, causes the entabbing process to occur
+              only within the column block on that line.
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      The editor's TabWidth variable is used to determine how to
+            replace spaces with tabs.  If TabWidth is 0, EntabCurrLine does
+            nothing and returns FALSE.
+
+            Single characters are not replaced with tabs unless TabWidth is
+            set to 1.
+
+Examples:
+
+
+See Also:   ®L¯ExpandTabsToSpaces®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù is32BitApp
+
+Determines if the indicated program is a 32-bit executable, and if so,
+whether it is a GUI or CONSOLE program.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯is32BitApp®/B¯(®LI¯STRING®/L¯ ®I¯pgm_name®/I¯)
+
+            ù ®I¯pgm_name®/I¯ is the name of the program to test.  If an extension is
+              not specified, .exe is assumed.  If a path is not included, the
+              current directory is searched first, followed by all the
+              directories listed in the PATH environment variable.
+
+Returns:    0 if pgm_name could not be found, or is not a 32-bit executable.
+            Otherwise, either ®B¯_GUI_32BIT_®/B¯ or ®B¯_CONSOLE_32BIT_®/B¯ is returned,
+            depending on the type of application of pgm_name.
+
+Notes:
+
+Examples:
+
+
+See Also:
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isCurrLineInBlock
+
+Determines whether the cursor line is within a marked block and, if so, the
+type of block.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯isCurrLineInBlock®/B¯()
+
+Returns:    Zero (FALSE) if the cursor line is not within a marked block. If
+            it is within a marked block, the return value is one of the
+            following:
+
+            ù ®B¯_INCLUSIVE_®/B¯ for an inclusive character block
+
+            ù ®B¯_NONINCLUSIVE_®/B¯ for a non-inclusive character block
+
+            ù ®B¯_LINE_®/B¯ for a line block
+
+            ù ®B¯_COLUMN_®/B¯ for a column block
+
+Notes:      This command is very similar to the isCursorInBlock() command.
+
+See Also:   ®L¯isBlockMarked®/L¯(), ®L¯isBlockInCurrFile®/L¯(), ®L¯isCursorInBlock®/L¯()
+
+            Variables:  ®L¯BlockId®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù KeepUndoBeyondSave
+
+Determines if undo information is kept or discarded when a file is saved.
+
+Values:     ®I¯BOOLEAN®/I¯
+
+Default:    OFF
+
+Notes:      Normally, when a file is saved, previously accumulated undo
+            information is discarded.  The effect of this is that you can
+            not undo any changes made to a file that occur prior to the
+            file being saved.
+
+            If you want to be able to undo changes to a file, even those
+            that occur prior to a save, then set this variable ON.
+
+Affects:    ®L¯Undo®/L¯(), ®L¯Redo®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù LoadHistory
+
+Loads the history buffer from disk.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯LoadHistory®/B¯([®LI¯STRING®/L¯ ®I¯fn®/I¯])
+
+            ù ®I¯fn®/I¯ is the optional name of the history file to be loaded.  The
+              default name is LoadDir() + "tsehist.dat".  If ®I¯fn®/I¯ is specified,
+              and no path information is supplied, the current directory is
+              assumed.
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      The history is loaded from the file tsehist.dat, which is
+            assumed to be in the editors load directory.
+
+            If the history buffer already exists, its contents are deleted,
+            and then the buffer is loaded from disk.
+
+Examples:
+            LoadHistory()   // Loads the history from LoadDir() + "tsehist.dat"
+            LoadHistory("tsehist.dat")  // loads the history from the current dir
+            LoadHistory("c:\foo\abc.dat")
+
+See Also:   ®L¯SaveHistory®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù LockCurrentFile
+
+Locks the current file, to prevent it from being updated by other processes.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯LockCurrentFile®/B¯(®LI¯INTEGER®/L¯ ®I¯how_to_lock®/I¯)
+
+            ù ®I¯how_to_lock®/I¯ should be one of ®B¯_READONLY_LOCKING_®/B¯ or
+              ®B¯_HANDLE_LOCKING_®/B¯.
+
+Returns:    0 on success, otherwise:
+                ®B¯_FILE_ALREADY_LOCKED_®/B¯
+                ®B¯_CANT_CREATE_®/B¯
+                ®B¯_CANT_LOCK_FILE_®/B¯
+
+Notes:      If ®I¯how_to_lock®/I¯ is not _READONLY_LOCKING_ or _HANDLE_LOCKING_, this
+            command does nothing and returns 0.
+
+            If the current buffer is not a file buffer, or the current file is
+            already locked, this command does nothing and returns 0.
+
+            Only a limited number of files can be locked via _HANDLE_LOCKING_
+            - this limit is operating system dependant.  This limit may be
+            removed in a future version.
+
+            There is no limit to the number of files that can be locked via
+            _READONLY_LOCKING_.
+
+Examples:
+
+See Also:   ®L¯UnLockCurrentFile®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Redo
+
+Redo the last Undo.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯Redo®/B¯()
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      The redo list contains information needed to undo the most
+            recent undo commands.
+
+            The redo list is cleared when a command (except for Undo) is
+            issued that changes the current buffer.
+
+Examples:
+
+See Also:   ®L¯Undo®/L¯(), ®L¯Redo®/L¯(), ®L¯SetUndoOn®/L¯(), ®L¯SetUndoOff®/L¯(), ®L¯ClearUndoRedoList®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù RedoCount
+
+Returns the number of redo records for the current buffer.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯RedoCount®/B¯()
+
+Returns:    The number of redo records for the current buffer.
+
+Notes:      The count returned by RedoCount() does not mean that there are
+            RedoCount() events outstanding.  Most likely, many of the records
+            will be grouped together as a single redoable event.
+
+Examples:
+
+See Also:   ®L¯Redo®/L¯(), ®L¯UndoCount®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù SaveHistory
+
+Saves the history buffer to a file.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯SaveHistory®/B¯([®LI¯STRING®/L¯ ®I¯fn®/I¯])
+
+            ù ®I¯fn®/I¯ is the name to save the history buffer as.  The default name
+              is "tsehist.dat", if not specified.
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:
+
+Examples:
+
+See Also:   ®L¯LoadHistory®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù SetUndoOff
+
+Turns off undo processing for the current buffer, and also clears the
+current buffers undo information.
+
+Syntax:     ®B¯SetUndoOff®/B¯()
+
+Returns:    Nothing
+
+Notes:      Saving of undo information can be reactivated by calling
+            SetUndoOn().
+
+Examples:
+
+See Also:   ®L¯Undo®/L¯(), ®L¯Redo®/L¯(), ®L¯SetUndoOn®/L¯(), ®L¯ClearUndoRedoList®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù SetUndoOn
+
+Turns on undo processing for the current buffer.
+
+Syntax:     ®B¯SetUndoOn®/B¯()
+
+Returns:    Nothing
+
+Notes:
+
+Examples:
+
+See Also:   ®L¯Undo®/L¯(), ®L¯Redo®/L¯(), ®L¯SetUndoOff®/L¯(), ®L¯ClearUndoRedoList®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù SqueezePath
+
+Truncates a path as necessary to fit in a specified field width.
+
+Syntax:     ®LI¯STRING®/L¯ ®B¯SqueezePath®/B¯(STRING ®I¯path®/I¯, ®LI¯INTEGER®/L¯ ®I¯max_width®/I¯)
+
+            ù ®I¯path®/I¯ is the path that will be squeezed.
+
+            ù ®I¯max_width®/I¯ is the length that path will be squeezed to.
+
+Returns:    ®I¯path®/I¯ squeezed to a length of ®I¯max_width®/I¯.
+
+Notes:      If the length of ®I¯path®/I¯ is less than or equal to ®I¯max_width®/I¯, ®I¯path®/I¯ is
+            returned as is.  Otherwise, ®I¯path®/I¯ is truncated as necessary to fit
+            into ®I¯max_width®/I¯.
+
+Examples:
+
+            string s[60]
+
+            s = SqueezePath(CurrFilename(), 60)
+
+See Also:
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù StartedFromDosPrompt
+
+Determines if the editor was started from a DOS or Console prompt, or via some
+other method (Start->Run, or an icon, for instance).
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯StartedFromDosPrompt®/B¯()
+
+Returns:    Non-zero if the editor was started from a DOS or Console prompt,
+            otherwise, Zero (FALSE) is returned.
+
+Notes:
+
+Examples:
+
+See Also:
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù SwapPosition
+
+Changes the order of positions pushed with the PushPosition() command.
+
+Syntax:     ®LI¯BOOLEAN®/L¯ ®B¯SwapPosition®/B¯([®LI¯INTEGER®/L¯ ®I¯n®/I¯])
+
+            ù ®I¯n®/I¯ is the (optional) index into the position stack.  If ®I¯n®/I¯ is not
+              specified, it defaults to 2.
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      If called without a parameter, the last pushed position is
+            swapped with the next-to-last pushed position, as if ®I¯n®/I¯ was
+            specified as 2.  Otherwise, SwapPosition(®I¯n®/I¯) swaps the top-most
+            position with the ®I¯n®/I¯th position, where ®I¯n®/I¯ is only considered if it
+            is >= 1.  If ®I¯n®/I¯ is <= 1, no physical swapping actually occurs.
+
+            If there are no pushed positions, or if ®I¯n®/I¯ is greater than the
+            number of pushed positions, or if ®I¯n®/I¯ < 1, this command returns
+            FALSE.
+
+Examples:
+            SwapPosition()  // swap top two positions - returns false if
+                            // less than two positions pushed
+
+            SwapPosition(2) // same affect as above
+
+            SwapPosition(1) // no swap occurs - returns FALSE if no positions
+                            // pushed, otherwise non-zero.
+
+            SwapPosition(0) // no swap occurs - returns FALSE
+
+            SwapPosition(-1)// no swap occurs - returns FALSE
+
+See Also:   ®L¯PushPosition®/L¯(), ®L¯PopPosition®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù TerminateEvent
+
+Ends the hook chain for the current event handler, and terminates the event
+itself.
+
+Syntax:     ®B¯TerminateEvent®/B¯([®LI¯INTEGER®/L¯ ®I¯event_return_code®/I¯])
+
+            ù ®I¯event_return_code®/I¯ is an optional integer value specifying the
+              return code to use when the event is terminated.  The default
+              value is 0 (FALSE).
+
+Returns:    Nothing.
+
+Notes:      TerminateEvent() only has an effect when called from within a
+            hooked event.  Use it when you do not want any following hooks to
+            be processed, and you want to stop the editor event from
+            completing.
+
+            The following events can be terminated via this command:
+
+            ®B¯_ON_FILE_LOAD_®/B¯ - stops the file from being loaded.
+            ®B¯_ON_FILE_QUIT_®/B¯ - stops the file from being abandoned.
+            ®B¯_ON_FILE_SAVE_®/B¯ - stops the file from being saved.
+
+            This command is similar to the BreakHookChain() command, but in
+            addition to stoping the hook chain, it also stops the associated
+            event.
+
+Examples:
+
+See Also:   ®L¯BreakHookChain®/L¯(), ®L¯Hook®/L¯(), ®L¯UnHook®/L¯(), ®L¯ExecHook®/L¯(), ®L¯SetHookState®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Undo
+
+Recovers the last change made to the current buffer.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯Undo®/B¯()
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      When an undo is successful, the necessary information to undo the
+            undo is stored in the redo list.
+
+Examples:
+
+See Also:   ®L¯Redo®/L¯(), ®L¯SetUndoOn®/L¯(), ®L¯SetUndoOff®/L¯(), ®L¯ClearUndoRedoList®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù UndoCount
+
+Returns the number of undo records for the current buffer.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯UndoCount®/B¯()
+
+Returns:    The number of undo records for the current buffer.
+
+Notes:      The count returned by UndoCount() does not mean that there are
+            UndoCount() events outstanding.  Most likely, many of the
+            records will be grouped together as a single undoable event.
+
+Examples:
+
+See Also:   ®L¯Undo®/L¯(), ®L¯RedoCount®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù UnLockCurrentFile
+
+Unlocks the current file, if it had been previously been locked.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯UnlockCurrentFile®/B¯()
+
+Returns:    0 on success, otherwise ®B¯_FILE_NOT_LOCKED_®/B¯ or ®B¯_CANT_UNLOCK_FILE_®/B¯,
+
+Notes:      It doesn't matter if the file was locked using _READONLY_LOCKING_
+            or _HANDLE_LOCKING_ prior to calling this command.
+
+Examples:
+
+See Also:   ®L¯LockCurrentFile®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù UseCommonDialogs
+
+If on, affects EditFile and SaveAs and SaveBlock.
+
+Values:     ®LI¯INTEGER®/L¯
+
+Default:    OFF
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isWinClipAvailable
+
+Determines if there is data in the Windows clipboard that can be pasted into
+the editor.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯isWinClipAvailable®/B¯()
+
+Returns:    Non-zero if there is suitable data in the Windows clipboard;
+            otherwise, zero (FALSE).
+
+Notes:      The primary use for this command is to grey-out menu selections
+            that relate to pasting from the Windows clipboard.
+
+See Also:   ®L¯PasteFromWinClip®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù ChangedFilesExist
+
+Determines if there are any changed buffers in the editors file ring.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯ChangedFilesExist®/B¯()
+
+Returns:    Non-zero if there are any changed buffers loaded; otherwise, zero
+            (FALSE).
+
+Notes:      Only buffers with a BufferType of _NORMAL_ (typically, buffers
+            used to hold files) are checked.  Buffers with a BufferType of
+            _HIDDEN_ or _SYSTEM_ are excluded from this command.
+
+See Also:   ®L¯FileChanged®/L¯(), ®L¯BufferType®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù GetPositionInfo
+
+Returns information about the location of a specified Position, as set with
+the PushPosition and PopPosition commands.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯GetBookMarkInfo®/B¯(®LI¯INTEGER®/L¯ ®I¯position®/I¯, VAR INTEGER ®I¯id®/I¯,
+                                    VAR INTEGER ®I¯line®/I¯, VAR INTEGER ®I¯pos®/I¯,
+                                    VAR INTEGER ®I¯xoffset®/I¯, VAR INTEGER ®I¯row®/I¯)
+
+            ù ®I¯position®/I¯ is a number (in 1 through the number of Positions
+              currently set) that identifies the Position.
+
+            ù ®I¯id®/I¯ is the id of the buffer where the Position is located.
+
+            ù ®I¯line®/I¯ is the number of the line in the file on which the
+              Position is located.
+
+            ù ®I¯pos®/I¯ identifies the position of the Position on the line.
+
+            ù ®I¯xoffset®/I¯ indicates the number of columns by which the screen
+              was scrolled when the Position was set.
+
+            ù ®I¯row®/I¯ indicates the screen row on which the Position was placed.
+
+Returns:    Non-zero if successful; zero (FALSE) on failure.
+
+Notes:      This command allows you to examine information about a Position.
+
+            If this command fails, it is because the specified position number
+            does not exist.
+
+            If this command fails, the values of the Position parameters are
+            undefined.
+
+See Also:   ®L¯PushPosition®/L¯(), ®L¯PopPosition®/L¯(), ®L¯SwapPosition®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù PickFile
+
+Allows the user to select a file from a list and returns the filename.
+
+Syntax:     ®LI¯STRING®/L¯ ®B¯PickFile®/B¯(STRING ®I¯fn®/I¯ [, ®LI¯INTEGER®/L¯ ®I¯flags®/I¯])
+
+            ù ®I¯fn®/I¯ is a string that may include wildcards to specify files to
+              include in the PickList.  It may also include a specific drive
+              and/or directory.  If these are omitted from the string, the
+              current drive and/or directory are used.
+
+            ù ®I¯flags®/I¯ is optional.  Supported values for flags are:
+
+              ù ®B¯_INSERT_PATH_®/B¯ causes PickFile() to insert the entire path,
+                rather than just the name of the file.
+
+              ù ®B¯_RECURSE_DIRS_®/B¯ causes PickFile() to recurse any subdirectories
+                that are within the current search path.
+
+Returns:    The selected filename, or a zero-length string if <Escape> was
+            pressed.
+
+Notes:      If ®I¯fn®/I¯ is the name of a directory or of a filename containing
+            wildcard characters, a list of all matching files is presented
+            for selection.
+
+            This is the same PickList used in the built-in EditFile() command.
+
+See Also:   ®L¯EditFile®/L¯()
+
+            Variables: ®L¯PickFileFlags®/L¯, ®L¯PickFileSortOrder®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù RightStr
+
+Returns the right-most portion of a string.
+
+Syntax:     ®LI¯STRING®/L¯ ®B¯RightStr®/B¯(STRING ®I¯s®/I¯, ®LI¯INTEGER®/L¯ ®I¯len®/I¯)
+
+            ù ®I¯s®/I¯ is the string from which the substring is to be retrieved.
+
+            ù ®I¯len®/I¯ is the number of characters to retrieve, from the right side
+              of the string.
+
+Returns:    The string portion requested.
+
+Notes:      This command is a convenient short-cut for the slice feature,
+            when you need to get the right-most len characters of a
+            string.  With slicing, you must also compute the starting
+            position, which involves an extra (sometimes error-prone)
+            calculation.  With RightOfStr(), you simply specify how
+            many characters you want.
+
+            The entire string will be returned if len is greater than
+            or equal to the length of s.
+
+Examples:
+
+            To return the n rightmost characters of s:  s2 = RightStr(s, n).
+
+            Using slices: s2 = s[Length(s) - n + 1:n].
+
+            Given:
+
+                string abc[11] = "catastrophe"
+
+            then:
+
+                RightStr(abc, 6)     //returns "trophe"
+
+See Also:   ®L¯Pos®/L¯(), ®L¯DelStr®/L¯(), ®L¯InsStr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù UpdateDisplayFlags
+
+Sets or queries the current UpdateDisplay flags in effect.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯UpdateDisplayFlags®/B¯([INTEGER ®I¯refresh_flag®/I¯])
+
+            ù ®I¯refresh_flag®/I¯ is an optional integer.  refresh_flag values can be
+              OR'ed in order to achieve the desired result.  If not specified,
+              _DEFAULT_ is used.  Supported values for refresh_flag are:
+
+              ù ®B¯_DEFAULT_®/B¯ redraws any areas that are internally marked as
+                requiring redraw.
+
+              ù ®B¯_STATUSLINE_REFRESH_®/B¯ forces a StatusLine redraw.
+
+              ù ®B¯_CLINE_REFRESH_®/B¯ forces the current line to be redrawn.  The
+                current line is the line that is current at the time the
+                window is redrawn.
+
+              ù ®B¯_THIS_CLINE_REFRESH_®/B¯ forces the current line to be redrawn.
+                The current line is the line is the current line at the time
+                this command is invoked.
+
+              ù ®B¯_WINDOW_REFRESH_®/B¯ forces the entire current window less the
+                StatusLine to be redrawn.
+
+              ù ®B¯_HELPLINE_REFRESH_®/B¯ forces the HelpLine to be redrawn.
+
+              ù ®B¯_ALL_WINDOWS_REFRESH_®/B¯ forces all windows, their title lines,
+                and the StatusLine to be redrawn.
+
+              ù ®B¯_REFRESH_THIS_ONLY_®/B¯ forces only the specified areas to be
+                redrawn.  Any internally set redraw flags are cleared.
+
+Returns:    The UpdateDisplay flags in effect when this command is invoked.
+
+Notes:      This command does not cause any immediate changes to the editors
+            display, but rather, sets flags that will be used in conjunction
+            with internally generated flags, the next time the editor
+            updates the display.
+
+            Multiple refresh_flag values can be combined with the bitwise
+            logical OR (|) operator. For instance, to cause the StatusLine
+            and the current window to be re-displayed, use:
+
+            UpdateDisplayFlags(_STATUSLINE_REFRESH_ | _WINDOW_REFRESH_)
+
+See Also:   ®L¯UpdateDisplay®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù SetMenuBar
+
+Sets the main menubar to the specified menubar.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯SetMenuBar®/B¯(MENUBAR ®I¯menubar®/I¯)
+
+            or
+
+            INTEGER ®B¯SetMenuBar®/B¯(INTEGER ®I¯menubar_id®/I¯)
+
+            ù ®I¯menubar®/I¯ is the name of the menubar that is to be assigned as the
+              new main menubar.
+
+            ù ®I¯menubar_id®/I¯ is acquired by a previous call to this command.
+
+Returns:    The identifier (ID) of the previous main menubar.
+
+Notes:      The purpose of this command is to temporarily change the active
+            main menubar, and to later, be able to restore it, as desired.
+
+Examples:
+
+            To temporarily set the main menubar, assuming MyMenu is a
+            menubar:
+
+            integer oldmenubar = SetMenuBar(MyMenu)   // set new menubar, save current MenuBar
+
+            // do whatever here...
+
+            To restore the previous main menubar:
+
+            SetMenuBar(oldmenubar)                    // restore previous MenuBar
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù ClearBufferDaTmAttr
+
+Clears the current buffers Date, Time, Size and Attribute fields.
+
+Syntax:     ®B¯ClearBufferDaTmAttr®/B¯()
+
+Returns:    Nothing.
+
+Notes:      For each file loaded, the editor maintains a record of the files
+            date, time, size, and file attributes, as of the time the file
+            was loaded into the editor, or the last time it was saved.
+            ClearBufferDaTmAttr() sets these fields to zero. When a file is
+            edited that does not have an associated file on disk, this
+            command is invoked.
+
+            When the SaveFile() command is invoked, the editor uses this
+            information to determine if the file on disk has been changed
+            by another process.
+
+See Also:   ®L¯UpdateBufferDaTmAttr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù ClearUndoRedoList
+
+Clears all undo/redo information associated with the current file.
+
+Syntax:     ®B¯ClearUndoRedoList®/B¯()
+
+Returns:    Nothing.
+
+Notes:
+
+See Also:   ®L¯Undo®/L¯(), ®L¯Redo®/L¯(), ®L¯SetUndoOn®/L¯(), ®L¯SetUndoOff®/L¯(), ®L¯UndoCount®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isAlpha
+
+Determines whether the current character (or the passed string) is alphabetic
+(a-z and A-Z).
+
+Syntax:     ®LI¯BOOLEAN®/L¯ ®B¯isAlpha®/B¯([®LI¯STRING®/L¯ ®I¯s®/I¯])
+
+            ù ®I¯s®/I¯ is an optional string.  If ®I¯s®/I¯ is not specified, the character
+              at the cursor position is examined.
+
+Notes:      If ®I¯s®/I¯ is specified, then if any character in ®I¯s®/I¯ is not alphabetic,
+            the return value is FALSE.
+
+Returns:    Non-zero if the current or specified character or string is
+            alphabetic; otherwise, zero (FALSE).
+
+Examples:   isAlpha() // returns TRUE if the current character is alphabetic
+            isAlpha("abcd") // returns TRUE
+            isAlpha("12")   // returns FALSE
+            isAlpha("a2c")  // returns FALSE
+            isAlpha("a  ")  // returns FALSE
+            isAlpha("")     // returns FALSE
+
+See Also:   ®L¯isAlpha®/L¯(), ®L¯isAlphaNum®/L¯(), ®L¯isDigit®/L¯(), ®L¯isHexDigit®/L¯(), ®L¯isLower®/L¯(), ®L¯isUpper®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isAlphaNum
+
+Determines whether the current character (or the passed string) is
+alphanumeric.
+
+Syntax:     ®LI¯BOOLEAN®/L¯ ®B¯isAlphaNum®/B¯([®LI¯STRING®/L¯ ®I¯s®/I¯])
+
+            ù ®I¯s®/I¯ is an optional string.  If ®I¯s®/I¯ is not specified, the character
+              at the cursor position is examined.
+
+Returns:    Non-zero if the current or specified character or string is
+            alphanumeric; otherwise, zero (FALSE).
+
+Notes:      If ®I¯s®/I¯ is specified, then if any character in ®I¯s®/I¯ is not alphanumeric,
+            the return value is FALSE.  This command is implemented via
+            isAlpha() and isDigit().
+
+Examples:   isAlphaNum() // returns TRUE if the current character is alphanumeric
+            isAlphaNum("abcd") // returns TRUE
+            isAlphaNum("12")   // returns TRUE
+            isAlphaNum("abc123") // returns TRUE
+            isAlphaNum("a!c123") // returns FALSE
+            isAlphaNum("a!c1.3") // returns FALSE
+            isAlpha("a  ")  // returns FALSE
+            isAlpha("")     // returns FALSE
+
+See Also:   ®L¯isAlpha®/L¯(), ®L¯isAlphaNum®/L¯(), ®L¯isDigit®/L¯(), ®L¯isHexDigit®/L¯(), ®L¯isLower®/L¯(), ®L¯isUpper®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isDigit
+
+Determines whether the current character (or the passed string) is numeric
+(0-9).
+
+Syntax:     ®LI¯BOOLEAN®/L¯ ®B¯isDigit®/B¯([®LI¯STRING®/L¯ ®I¯s®/I¯])
+
+            ù ®I¯s®/I¯ is an optional string.  If ®I¯s®/I¯ is not specified, the character
+              at the cursor position is examined.
+
+Returns:    Non-zero if the current or specified character or string is
+            composed of digits; otherwise, zero (FALSE).
+
+Notes:      If ®I¯s®/I¯ is specified, then if any character in ®I¯s®/I¯ is not numeric, the
+            return value is FALSE.
+
+Examples:   isDigit() // returns TRUE if the current character is a digit
+            isDigit("abcd") // returns FALSE
+            isDigit("12")   // returns TRUE
+            isDigit("abc123") // returns FALSE
+            isDigit("1.1234") // returns FALSE
+            isDigit("1   ")   // returns FALSE
+            isDigit("")       // returns FALSE
+
+See Also:   ®L¯isAlpha®/L¯(), ®L¯isAlphaNum®/L¯(), ®L¯isDigit®/L¯(), ®L¯isHexDigit®/L¯(), ®L¯isLower®/L¯(), ®L¯isUpper®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isHexDigit
+
+Determines whether the current character (or the passed string) is composed of
+digits and/or hexadecimal characters.
+
+Syntax:     ®LI¯BOOLEAN®/L¯ ®B¯isHexDigit®/B¯([®LI¯STRING®/L¯ ®I¯s®/I¯])
+
+            ù ®I¯s®/I¯ is an optional string.  If ®I¯s®/I¯ is not specified, the character
+              at the cursor position is examined.
+
+Returns:    Non-zero if the current or specified character or string is
+            composed of digits and hexadecimal characters; otherwise, zero
+            (FALSE).
+
+Notes:      If ®I¯s®/I¯ is specified, then if any character in ®I¯s®/I¯ is not numeric or
+            hexadecimal, the return value is FALSE.
+
+            The hexadecimal digits are a..f, and A..F.
+
+Examples:   isHexDigit() // returns TRUE if the current character is hex
+            isHexDigit("abcd") // returns TRUE
+            isHexDigit("12")   // returns TRUE
+            isHexDigit("abc123") // returns TRUE
+            isHexDigit("1.1234") // returns FALSE
+            isHexDigit("1   ")   // returns FALSE
+            isHexDigit("")       // returns FALSE
+
+
+See Also:   ®L¯isAlpha®/L¯(), ®L¯isAlphaNum®/L¯(), ®L¯isDigit®/L¯(), ®L¯isHexDigit®/L¯(), ®L¯isLower®/L¯(), ®L¯isUpper®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isLower
+
+Determines whether the current character (or the passed string) is composed of
+lower-case characters (a..z).
+
+Syntax:     ®LI¯BOOLEAN®/L¯ ®B¯isLower®/B¯([®LI¯STRING®/L¯ ®I¯s®/I¯])
+
+            ù ®I¯s®/I¯ is an optional string.  If ®I¯s®/I¯ is not specified, the character
+              at the cursor position is examined.
+
+Returns:    Non-zero if the current or specified character or string is
+            lower-case; otherwise, zero (FALSE).
+
+Notes:      If ®I¯s®/I¯ is specified, then if any character in ®I¯s®/I¯ is not lower-case,
+            the return value is FALSE.
+
+Examples:   isLower() // returns TRUE if the current character is lower-case
+            isLower("abcd") // returns TRUE
+            isLower("aBcd") // returns FALSE
+            isLower("12")   // returns FALSE
+            isLower("abc123") // returns FALSE
+            isLower("1.1234") // returns FALSE
+            isLower("a   ")   // returns FALSE
+            isLower("")       // returns FALSE
+
+See Also:   ®L¯isAlpha®/L¯(), ®L¯isAlphaNum®/L¯(), ®L¯isDigit®/L¯(), ®L¯isHexDigit®/L¯(), ®L¯isLower®/L¯(), ®L¯isUpper®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù isUpper
+
+Determines whether the current character (or the passed string) is composed of
+upper-case characters (A..Z).
+
+Syntax:     ®LI¯BOOLEAN®/L¯ ®B¯isUpper®/B¯([®LI¯STRING®/L¯ ®I¯s®/I¯])
+
+            ù ®I¯s®/I¯ is an optional string.  If ®I¯s®/I¯ is not specified, the character
+              at the cursor position is examined.
+
+Returns:    Non-zero if the current or specified character or string is
+            upper-case; otherwise, zero (FALSE).
+
+Notes:      If ®I¯s®/I¯ is specified, then if any character in ®I¯s®/I¯ is not upper-case,
+            the return value is FALSE.
+
+Examples:   isUpper() // returns TRUE if the current character is alphanumeric
+            isUpper("abcd") // returns FALSE
+            isUpper("aBCd") // returns FALSE
+            isUpper("12")   // returns FALSE
+            isUpper("ABC123") // returns FALSE
+            isUpper("1.1234") // returns FALSE
+            isUpper("ABC") // returns TRUE
+            isUpper("A   ")   // returns FALSE
+            isUpper("")       // returns FALSE
+
+See Also:   ®L¯isAlpha®/L¯(), ®L¯isAlphaNum®/L¯(), ®L¯isDigit®/L¯(), ®L¯isHexDigit®/L¯(), ®L¯isLower®/L¯(), ®L¯isUpper®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù UpdateBufferDaTmAttr
+
+Updates the current buffers Date, Time, Size and Attribute fields from the
+associated disk file.
+
+Syntax:     ®B¯UpdateBufferDaTmAttr®/B¯()
+
+Returns:    Nothing.
+
+Notes:      For each file loaded into the editor, the editor maintains a
+            record of the files date, time, size, and file attributes, as of
+            the time the file was loaded into the editor, or the last time it
+            was saved.
+
+            When a file is edited that has an associated file on disk, this
+            command is invoked.
+
+Examples:
+
+See Also:   ®L¯ClearBufferDaTmAttr®/L¯()
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù WhichOS
+
+Identifies which operating system the editor is currently running under.
+
+Syntax:     ®LI¯INTEGER®/L¯ ®B¯WhichOS®/B¯()
+
+Returns:    ®B¯_WINDOWS_®/B¯ for Windows 95 and Windows 98, and ®B¯_WINDOWSNT_®/B¯ for
+            Windows NT.
+
+Examples:
+
+            case WhichOS()
+                when _WINDOWS_
+                    // do Non-WindowsNT specific code here
+                when _WINDOWSNT_
+                    // do WindowsNT specific code here
+            endcase
+
+See Also:
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Undocumented Stuff Not Covered Yet In This Help File
+
+®B¯--- Sketchy Docs ---®/B¯
+
+
+®B¯Normal:®/B¯
+
+    ù ®I¯®S¯CmpStr®/S¯®/I¯():  INTEGER CmpStr(STRING s1, STRING s2) - returns (-1) if s1 is
+      less than s2, (0) if equal, or (1) if s1 is greater than s2.
+
+    ù ®I¯®S¯GetVideoInfo®/S¯®/I¯() (not in 32-bit)
+
+    ù ®I¯®S¯PopFFInfo®/S¯®/I¯():  INTEGER PopFFInfo() - pops FF info.
+
+    ù ®I¯®S¯PromptString®/S¯®/I¯:  STRING, "Prompt String->" + actual prompt string.
+
+    ù ®I¯®S¯PushFFInfo®/S¯®/I¯():  INTEGER PushFFInfo() - pushes FF info.
+
+
+®B¯Inhouse:®/B¯
+
+    To use Inhouse commands, you must either give your macro source a ".si"
+    extension, or compile your macro using the "-i" option (sc32 -i macro.s).
+
+    ù ®I¯®S¯AskPopWin®/S¯®/I¯():  INTEGER AskPopWin(INTEGER width) - opens an Ask style
+      window, reqs. PopWinClose to close.
+
+    ù ®I¯®S¯EditPopWin®/S¯®/I¯():  INTEGER EditPopWin(STRING title, INTEGER x1, y1, x2, y2,
+      boxtype, ??) - opens popwin that looks like an edit buffer, reqs.
+      PopWinClose to close.
+
+    ù ®I¯®S¯HookDisplay®/S¯®/I¯(DrawProc, BeforeProc, AfterProc, HiliteProc):
+        - DrawProc(integer fCursorline) - is called to draw each line (one
+          call per line).
+        - BeforeProc - is called instead of executing the
+          _BEFORE_UPDATE_DISPLAY_ hook.
+        - AfterProc - is called instead of executing the
+          _AFTER_UPDATE_DISPLAY_ hook.
+        - HiliteProc - is called during incremental search to hilite found
+          text.  it can just call HiLiteFoundText(integer column_offset).
+
+    ù ®I¯®S¯UnHookDisplay®/S¯®/I¯():  INTEGER UnHookDisplay() - unhooks any procedures
+      hooked by HookDisplay.
+
+    ù ®I¯®S¯XlatHelp®/S¯®/I¯():  INTEGER XlatHelp(INTEGER pos, INTEGER fStripHelp) - when
+      fStripHelp is TRUE, returns pos minus any help codes (actual display
+      pos); when FALSE, returns pos plus help codes (actual pos on line).
+
+    ù ®I¯®S¯ReadCompressedLine®/S¯®/I¯():  call SetupCompressedRead() first - reads line
+      from datadef, use WorkLine() to access the contents of the line.
+
+    ù ®I¯®S¯SetupCompressedRead®/S¯®/I¯():  integer SetupCompressedRead(datadef) - returns
+      number of lines in datadef.
+
+    ù ®I¯®S¯Workline®/S¯®/I¯():  text read by ReadCompressedLine()
+
+
+
+®B¯--- Where No One Has Gone Before ---®/B¯
+
+
+®B¯Normal:®/B¯
+    ù ®S¯CodePage®/S¯
+    ù ®S¯Cut2®/S¯()
+    ù ®S¯HelpFile®/S¯
+    ù ®S¯KbdFlags®/S¯
+    ù ®S¯KbdId®/S¯
+    ù ®S¯LocalHelp®/S¯()
+    ù ®S¯PrevUpdateDisplayFlags®/S¯()
+    ù ®S¯Priority®/S¯
+    ù ®S¯PriorityFlags®/S¯
+    ù ®S¯QuittingFile®/S¯
+    ù ®S¯ReadFlags®/S¯
+    ù ®S¯ResetSynhiInfo®/S¯()
+    ù ®S¯StartupPath®/S¯
+
+
+®B¯Inhouse:®/B¯
+    ù ®S¯AddrPageSize®/S¯() (not in 32-bit)
+    ù ®S¯BorderFlags®/S¯
+    ù ®S¯CfgRange®/S¯()
+    ù ®S¯DisablePromptKeys®/S¯()
+    ù ®S¯Dup®/S¯() //NYI
+    ù ®S¯EditorType®/S¯()
+    ù ®S¯EffectiveWidth®/S¯() - seems to return same thing as Query(WindowCols).
+    ù ®S¯EnablePromptKeys®/S¯()
+    ù ®S¯ExecCmd®/S¯() (not in 32-bit)
+    ù ®S¯FindInfoPtr®/S¯()
+    ù ®S¯FixAndFindPath®/S¯()
+    ù ®S¯FooterLen®/S¯
+    ù ®S¯fRead2®/S¯()
+    ù ®S¯GenerateIndex2®/S¯()
+    ù ®S¯GetForcedCmd®/S¯()
+    ù ®S¯GetTeeReturnCode®/S¯()
+    ù ®S¯GetWindowHandleHack®/S¯()
+    ù ®S¯GotoNextNonWhite®/S¯()
+    ù ®S¯GotoNextWhite®/S¯()
+    ù ®S¯HelperFunctionOffset®/S¯()
+    ù ®S¯HelpLevel®/S¯
+    ù ®S¯HelpTranslation®/S¯() //NYI
+    ù ®S¯HiFind®/S¯
+    ù ®S¯HookDebugger®/S¯()
+    ù ®S¯HookTee®/S¯()
+    ù ®S¯InsertFileNow®/S¯()
+    ù ®S¯InsertHelp®/S¯()
+    ù ®S¯InsertKeyAssignments®/S¯()
+    ù ®S¯InsertTopic®/S¯()
+    ù ®S¯Interp®/S¯()
+    ù ®S¯lLeftBtn®/S¯()
+    ù ®S¯LoadUserInterface®/S¯()
+    ù ®S¯LockMacroId®/S¯()
+    ù ®S¯lProcess®/S¯()
+    ù ®S¯lRightBtn®/S¯()
+    ù ®S¯MaxBufferId®/S¯()
+    ù ®S¯MenuBarY®/S¯
+    ù ®S¯Move®/S¯()
+    ù ®S¯MultiUser®/S¯
+    ù ®S¯PathToExe®/S¯
+    ù ®S¯ProcessInWindow®/S¯()
+    ù ®S¯PurgeMacroAt®/S¯()
+    ù ®S¯QueryInt®/S¯()
+    ù ®S¯QueryStr®/S¯()
+    ù ®S¯ReadInUse®/S¯
+    ù ®S¯ReinitVideo®/S¯()
+    ù ®S¯RepeatCmd2®/S¯()
+    ù ®S¯RestoreCursorLineFlag®/S¯()
+    ù ®S¯RestoreMsgLevel®/S¯()
+    ù ®S¯RestoreVideoWindow®/S¯(): RestoreVideoWindow(VAR STRING)
+    ù ®S¯SaveSettingsEnd®/S¯
+    ù ®S¯SaveVideoWindow®/S¯(): SaveVideoWindow(VAR STRING)
+    ù ®S¯SerialNumber®/S¯()
+    ù ®S¯SerialNumberPtr®/S¯()
+    ù ®S¯SetCurrFilename®/S¯()
+    ù ®S¯SetDosIOResult®/S¯()
+    ù ®S¯SetInt®/S¯()
+    ù ®S¯SetLastFindUnknown®/S¯()
+    ù ®S¯SetMsgLevel®/S¯()
+    ù ®S¯SetRefreshWorld®/S¯()
+    ù ®S¯SetStr®/S¯()
+    ù ®S¯System®/S¯():  System(STRING, STRING, INTEGER) - a low-level lDos?
+    ù ®S¯ToggleInt®/S¯()
+    ù ®S¯TranslateToLiteralCh®/S¯()
+    ù ®S¯TurnOnOkToEraseFlag®/S¯()
+    ù ®S¯UnHookTee®/S¯()
+    ù ®S¯UnlockMacroId®/S¯()
+    ù ®S¯UpdateDisplayNoBlock®/S¯()
+    ù ®S¯UseInternationalKbd®/S¯ // NYI
+    ù ®S¯UserHiliteFoundText®/S¯():  calls proc 4 passed to HookDisplay()
+    ù ®S¯VerifyHelp®/S¯()
+    ù ®S¯WPutStrAttr®/S¯() //NYI
+    ù ®S¯WPutStrAttrToEOW®/S¯() //NYI
+
+
+®B¯TSE 3.0:®/B¯
+    ù ®S¯BuildSynhiExtList®/S¯()
+    ù ®S¯GetConnectionType®/S¯()
+    ù ®S¯GetRemoteName®/S¯()
+    ù ®S¯HashStr®/S¯()
+    ù ®S¯NextDiskConnection®/S¯()
+    ù ®S¯PopUndoMark®/S¯()
+    ù ®S¯PushUndoMark®/S¯()
+    ù ®S¯RootPath®/S¯()
+    ù ®S¯UseGivenScreenBuffer®/S¯ // probably intended for GUI version
+
+
+®B¯Incomplete Topics:®/B¯
+
+The following help topics are incomplete; there are new undocumented values
+that I haven't completely figured out yet.
+
+Topics:     ®L¯DisplayMode®/L¯®B¯()®/B¯, ®L¯Dos®/L¯®B¯()®/B¯, ®L¯Hook®/L¯®B¯()®/B¯, ®L¯lDos®/L¯®B¯()®/B¯, ®L¯StartupFlags®/L¯
+
+
+®S¯®/S¯®B¯Register Flags:  (effectively obsolete in TSE32)®/B¯
+    ù _FLCARRY_
+    ù _FLPARITY_
+    ù _FLAUX_
+    ù _FLZERO_
+    ù _FLSIGN_
+    ù _FLTRAP_
+    ù _FLINTERRUPT_
+    ù _FLDIRECTION_
+    ù _FLOVERFLOW_
+
+
+®B¯Unknown Values:®/B¯
+    ù _QUIET_ ?
+    ù _USE_BLOCK_ ?
+    ù _USE_HANDLE_ ?
+    ù _WRITE_BINARY_HEADER_ ?
+
+    ù _BUILD_PICKBUFFER_NOTIFY_ - Hook()?
+    ù _BREAK_MACRO_ - Hook()?
+    ù _BREAK_FIND_ - Hook()?
+    ù _BREAK_SORT_ - Hook()?
+    ù _BREAK_LOADFILE_ - Hook()?
+
+    ù _COUNTRY_ - Sort()
+
+    ù _STATE_EDIT_MAIN_LOOP_ ?
+
+    ù _KEY_ALT_
+
+    ù _KEY_CTRL_
+    ù _KEY_SHIFT_
+    ù _KEY_ENHANCED_
+    ù _KEY_VIRTUAL_
+    ù _KEY_KEYPAD_
+    ù _KEY_SCROLL_LOCK_
+    ù _KEY_ALT_GR_
+
+    ù _SIZE_OF_VIDEO_
+    ù _SIZE_OF_FIND_INFO_
+
+    ù _LOAD_INDEX_
+    ù _PREV_TOPIC_
+    ù _SEARCH_HELP_
+
+
+®B¯Documentation Addendums:®/B¯
+    ù Copy (available in prompts)
+    ù CopyAppend (available in prompts)
+    ù CopyToWinClip (available in prompts)
+    ù Cut (available in prompts)
+    ù CutAppend (available in prompts)
+    ù DelLeftWord (available in prompts)
+    ù PasteFromWinClip (available in prompts)
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Conversion hints for converting TSE 2.5 macros to TSE 2.6
+
+®B¯Miscellaneous:®/B¯
+
+    ù Watch out for case-sensitive filename comparisons!  Lots of macros have
+      trouble with this.
+
+    ù Key names are now case-sensitive for typeable letters:  <c> is different
+      from <C>.  You need to use <c> to catch when the "c" key is pressed.
+      However, <Shift c> and <Shift C> are supposedly the same but I haven't
+      been able to get them to work unless I use <Shift C> (uppercase).  If
+      some commands that are connected to letter keys stop working, this is
+      the first thing to look for.
+
+    ù Most .BIN files can be replaced either by linking to some existing
+      Windows DLL, or by using new built-in commands.  In TSE 2.50, I had
+      several .BIN files.  In TSE/32, I only needed to convert one to a DLL.
+      The functionality of all the others was easily duplicated with existing
+      Windows API calls, or new TSE commands.  (see GetStr, PutStr, FFName,
+      PBName, and all related functions -- these took care of most things that
+      used to need .BIN files, for me).
+
+    ù Writing macros that compile for both TSE 2.5 and TSE 2.6 can be a little
+      tricky.  For more help, see ®L¯Writing dual-platform macros®/L¯.
+
+®B¯Changed Commands:®/B¯
+
+    ù GetKeyFlags() returns different flag values for TSE/32.
+
+    ù KeyPressed() is significantly slower on TSE/32.  If your macro suddenly
+      runs much slower, and you call KeyPressed in a loop, try calling it less
+      frequently.
+
+®B¯Important Notes:®/B¯
+
+    ù FindFirstFile: whenever this function returns <> -1, you !MUST! call
+      FindFileClose to release the find-handle!
+
+    ù FindThisFile can be used when only trying to match one file and you
+      don't want to worry about calling FindFileClose.
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Writing dual-platform macros
+
+There are some tricks I've learned to writing a macro that can compile for
+both TSE 2.5 and TSE 2.6, and here I will outline several of them.
+
+The basic idea is to use "#ifdef WIN32" blocks to control which source code
+gets compiled for which version.
+
+Example:
+            proc MakeList(string wildcard)
+                #ifdef WIN32
+                // this code is used when compiling for TSE 2.6 (Win32)
+                BuildPickBufferEx(wildcard, -1, _INSERT_PATH_)
+                #else
+                // this code is used when compiling for TSE 2.5 (DOS)
+                BuildPickBuffer(wildcard, -1)
+                #endif
+            end
+
+
+®B¯Idiosyncrasies of SC.EXE®/B¯
+
+SC.EXE (the SAL compiler that comes with TSE 2.5 for DOS) has some
+idiosyncrasies when it comes to compiling macros written for TSE 2.6 (Win32).
+
+You might expect the above example to successfully compile using either SC.EXE
+or SC32.EXE.  Unfortunately, SC.EXE does not recognize reserved words defined
+in TSE 2.6, even when they are inside an "#ifdef WIN32" block.  Some examples
+are _INSERT_PATH_, _MAXPATH_, _RUN_DETACHED_, etc.  See ®L¯Trick 1®/L¯ for some ideas
+on how to work around this.
+
+
+®B¯®S¯Trick 1®/S¯®/B¯®B¯:  Declare constants that can be used for both TSE 2.5 and 2.6.®/B¯
+
+SC.EXE gives a syntax error on an unknown symbol even if it appears inside a
+conditional compilation directive that is not being compiled.  A simple
+solution is to declare some constants at the beginning of your macro, and use
+the constants instead of the reserved keywords.  Your constants can be named
+the same as the reserved words, just leave off either (or both) the leading or
+trailing underscore:
+
+Example:
+            #ifdef WIN32
+            constant MAXPATH = 255      // _MAXPATH_
+            constant INSERT_PATH = 1    // _INSERT_PATH_
+            #else
+            constant MAXPATH = 80
+            #endif
+
+            proc GetFilename()
+                string fn[MAXPATH] = ""
+
+                Ask("Filename:", fn)
+            end
+
+
+To find out the correct values to use for declaring constants, write a simple
+test macro like the following.  This example will display the values for
+_MAXPATH_ and _RUN_DETACHED_:
+
+            proc Main()
+                Warn("_MAXPATH_ =="; _MAXPATH_)
+                Warn("_RUN_DETACHED_ =="; _RUN_DETACHED_)
+            end
+
+
+®B¯®S¯Trick 2®/S¯®/B¯®B¯:  An "#ifdef WIN32" block must encompass a complete statement.®/B¯
+
+You'll get a syntax error if you do the following:
+
+            Message("I am using ",
+                    #ifdef WIN32
+                    "Win32")
+                    #else
+                    "DOS")
+                    #endif
+
+Instead, you must do this:
+
+            #ifdef WIN32
+            Message("I am using Win32")
+            #else
+            Message("I am using DOS")
+            #endif
+
+
+There are some creative approaches that can cut down on the clutter of using
+"#ifdef WIN32" blocks all over the place, see ®L¯Trick 3®/L¯.
+
+
+®B¯®S¯Trick 3®/S¯®/B¯®B¯:  Avoid using "#ifdef WIN32" blocks inside procedures.®/B¯
+
+Lots of "#ifdef WIN32" blocks with code in them can get pretty confusing.  It
+is often possible to avoid using an "#ifdef WIN32" block in the middle of some
+code, simply by declaring an extra constant.
+
+In the example below, notice the code is very easy to understand.
+
+Example:
+
+            ®B¯Easy to read®/B¯
+            #ifdef WIN32
+            constant RUN_DETACHED = 4
+            #else
+            constant RUN_DETACHED = 0       // no effect in DOS
+            #endif
+
+            proc MyDos(string cmd)
+                Dos(cmd, RUN_DETACHED)
+            end
+
+
+            ®B¯Harder to read®/B¯
+            #ifdef WIN32
+            constant RUN_DETACHED = 4
+            #endif
+
+            proc MyDos(string cmd)
+                #ifdef WIN32
+                Dos(cmd, RUN_DETACHED)
+                #else
+                Dos(cmd)
+                #endif
+            end
+
+
+We can also take an earlier example and greatly improve its readability using
+similar techniques:
+
+            #ifdef WIN32
+            string using[] = "Win32"
+            #else
+            string using[] = "DOS"
+            #endif
+
+            Message("I am using ", using)
+
+
+®B¯®S¯Trick 4®/S¯®/B¯®B¯:  Use include files.®/B¯
+
+If you don't like the above techniques, you could always package up
+version-specific parts of your macro into include files.  For instance:
+
+            #ifdef WIN32
+            #include "mymac32.inc"
+            #else
+            #include "mymac16.inc"
+            #endif
+
+
+®B¯®S¯Trick 5®/S¯®/B¯®B¯:  Duplicate a TSE 2.6 function in 2.5!®/B¯
+
+Some new TSE 2.6 functions can easily be duplicated for TSE 2.5.
+
+For example, QuotePath() is a new command which is needed when working with
+long filenames that contains spaces.  TSE 2.5 doesn't support long filenames,
+so the function can be trivially written for TSE 2.5 like this:
+
+            #ifndef WIN32
+            string proc QuotePath(string s)
+                return(s)
+            end
+            #endif
+
+This way, you can use QuotePath() freely, without having to use an "#ifdef
+WIN32" block.
+
+Our original example used BuildPickBuffer vs. BuildPickBufferEx.  We could
+rewrite the example in a more readable fashion using this trick:
+
+            #ifndef WIN32
+            integer proc BuildPickBufferEx(string s, integer attrib)
+                return(BuildPickBuffer(s, attrib))
+            end
+            #endif
+
+            proc MakeList(string wildcard)
+                // notice, with this method you can't pass the third parameter
+                // (which is new in TSE 2.6)
+                BuildPickBufferEx(wildcard, -1)
+            end
+
+Another good example is the new PBName() command and related commands.  These
+can also be written for TSE 2.5 without much effort.  Browse through the file
+COMPAT.SI for more examples.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Common SAL Programming Caveats
+
+This topic provides some special information for advanced users.
+
+This is a list of some common mistakes to avoid, some little-known details of
+various commands, plus some troubleshooting help for a couple very strange and
+difficult to track down bugs in macros.
+
+    ù When two windows are open and Next/Prev file makes BOTH windows switch
+      to the next/prev file, it means some macro is causing a PAINT during
+      _ON_CHANGING_FILES_ or _AFTER_UPDATE_DISPLAY_.  You cannot cause an
+      UpdateDisplay on another window inside of _AFTER_UPDATE_DISPLAY_, or
+      funny things happen.
+
+    ù _ON_CHANGING_FILES_ gets called *during* a screen paint when there are
+      multiple windows open with different files.  This is great, but it also
+      means your _ON_CHANGING_FILES_ hook procedures must be fast!  I strongly
+      discourage reading/writing to disk in an _ON_CHANGING_FILES_ hook
+      procedure.
+
+    ù _BEFORE_UPDATE_DISPLAY_ and _AFTER_UPDATE_DISPLAY_ both get called for
+      each window that is being painted.  Calling sequence during a paint is:
+          1. _BEFORE_UPDATE_DISPLAY_
+          2. _AFTER_UPDATE_DISPLAY_
+          3. if switching to a different file, _ON_CHANGING_FILES_ is called.
+
+    ù _ON_CHANGING_FILES_ is not called when switching to a _HIDDEN_ or
+      _SYSTEM_ buffer.
+
+    ù Don't call UpdateDisplay from within WhenLoaded, or the signon screen
+      can get messed up (TSE will display the autoload list buffer!).
+
+    ù If you Hook you have to UnHook...  but if you UnHook in the hooked
+      procedure, that's not sufficient to totally unhook it.  You have to
+      unhook it again outside the hooked procedure.
+
+          For example:
+
+            proc HookedProc()
+                UnHook(HookedProc)
+                // this unhook doesn't actually totally unhook it.
+                // instead, it simply prevents further calls to lList
+                // from executing this hook...until the first lList is
+                // exited.
+
+                // other stuff
+            end
+            proc Main()
+                Hook(_LIST_STARTUP_, HookedProc)
+                lList("test",40)
+                // note: UnHook returns non-zero if the function was
+                // hooked, and the Warn will prove that the HookedProc
+                // was not completely unhooked; it was more like
+                // disabled.
+                Warn(UnHook(HookedProc))
+            end
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Miscellaneous Information
+
+®B¯New keys:®/B¯
+
+    The "Application" key, found on the new Windows keyboards, is undocumented
+    but partially supported.  Unfortunately, it seems to return different
+    codes on Win95 and NT.
+
+    <0x8000>    - under NT
+    <0x80c1>    - under Win95
+
+    Use SHOWKEY to find the codes for it with Ctrl-, CtrlShift-, Alt-, etc.
+
+®B¯New flags:®/B¯
+
+    The -s flag opens files by recursively searching subdirectories.  The
+    ®L¯EditFile®/L¯, ®L¯InsertFile®/L¯, and ®L¯AskFilename®/L¯ commands support it.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù User's Guide
+®GH:LocalLinks¯
+
+®B¯--- User's Guide ---®/B¯
+
+®L¯INTRODUCTION®/L¯
+  ®L¯The Editor Features®/L¯
+  ®L¯The Editor Manuals®/L¯
+      ù ®L¯The User's Guide®/L¯
+      ù ®L¯The Macro Reference Guide®/L¯
+
+®L¯INSTALLATION OF THE SEMWARE EDITOR PROFESSIONAL/32®/L¯
+  ®L¯Editor Files and Directories®/L¯
+
+®L¯OVERVIEW OF THE EDITOR®/L¯
+  ®L¯Starting an Editing Session®/L¯
+      ù ®L¯Loading a File®/L¯
+      ù ®L¯Additional Options Available at Startup®/L¯
+  ®L¯Working in the Editor®/L¯
+      ù ®L¯Executing Commands®/L¯
+      ù ®L¯Getting Help®/L¯
+      ù ®L¯Using a Mouse®/L¯
+      ù ®L¯Editing Multiple Files and Displaying Multiple Windows®/L¯
+      ù ®L¯Changing Position in a File®/L¯
+      ù ®L¯Activating Editing Modes®/L¯
+      ù ®L¯Performing Editing Tasks®/L¯
+      ù ®L¯Using Keyboard Macros®/L¯
+  ®L¯Saving Files and Exiting from the Editor®/L¯
+  ®L¯Customizing the Editor®/L¯
+
+®L¯STARTING THE EDITOR®/L¯
+  ®L¯Starting the Editor from the Command Line®/L¯
+  ®L¯Selecting Files to Edit®/L¯
+  ®L¯Command-Line Options®/L¯
+  ®L¯Starting the Editor with no Command-Line Parameters®/L¯
+  ®L¯Editor Startup Processing®/L¯
+
+®L¯THE SCREEN LAYOUT®/L¯
+  ®L¯The StatusLine®/L¯
+  ®L¯The End-of-File Marker®/L¯
+  ®L¯The HelpLine®/L¯
+  ®L¯Windows®/L¯
+  ®L¯Mouse Symbols and Scrollbars®/L¯
+
+®L¯THE PULL-DOWN MENU SYSTEM®/L¯
+  ®L¯Activating the Pull-Down Menu®/L¯
+  ®L¯Accessing Sub-Menu Commands and Options®/L¯
+      ù ®L¯Sub-Menu Items that Execute a Command®/L¯
+      ù ®L¯Sub-Menu Items that Change an Editing Option®/L¯
+  ®L¯Exiting from the Menu System®/L¯
+  ®L¯Key Assignments Displayed on the Menu®/L¯
+  ®L¯Pull-Down Menu Categories®/L¯
+
+®L¯COMMAND PROMPTS AND PICKLISTS®/L¯
+  ®L¯Command Prompts®/L¯
+      ù ®L¯Prompt Box®/L¯
+          ®L¯History Buffer for Prompt Boxes®/L¯
+          ®L¯Obtaining a File PickList within a Prompt Box®/L¯
+      ù ®L¯StatusLine Prompt®/L¯
+      ù ®L¯Selection Menu®/L¯
+  ®L¯Using PickLists®/L¯
+  ®L¯SpeedSearch Feature®/L¯
+
+®L¯GETTING HELP IN THE EDITOR®/L¯
+  ®L¯The Customizable HelpLine®/L¯
+  ®L¯The HelpSystem®/L¯
+      ù ®L¯Obtaining HelpSystem Information®/L¯
+      ù ®L¯Navigating through the HelpSystem®/L¯
+      ù ®L¯Context-Sensitive Help®/L¯
+      ù ®L¯Files Needed by the HelpSystem®/L¯
+
+®L¯MOUSING AROUND THE EDITOR®/L¯
+  ®L¯Mouse Equipment®/L¯
+  ®L¯General Use of the Mouse®/L¯
+  ®L¯Using the Pull-Down Menu System®/L¯
+  ®L¯Positioning the Cursor and Scrolling Text®/L¯
+  ®L¯Marking a Block®/L¯
+  ®L¯Using the Pop-Up Mouse Menu®/L¯
+  ®L¯Working with Windows®/L¯
+  ®L¯Summary of Mouse Operations®/L¯
+
+®L¯LOADING, PROCESSING, AND SAVING FILES®/L¯
+  ®L¯Managing Multiple Files and Maintaining the File Ring®/L¯
+  ®L¯Adding Files to the Ring:  Specifying and Opening Files®/L¯
+  ®L¯Locking Files®/L¯
+  ®L¯Moving Between Files in the Ring®/L¯
+  ®L¯Saving and Closing Files, and Exiting from the Editor®/L¯
+      ù ®L¯What Happens when a File is Saved®/L¯
+      ù ®L¯Commands to Save and/or Close Files®/L¯
+      ù ®L¯Commands to Exit from the Editor®/L¯
+  ®L¯Alternative Modes for Viewing Files®/L¯
+      ù ®L¯Hex Mode®/L¯
+      ù ®L¯Binary Mode®/L¯
+  ®L¯Performing Other File-Processing Operations®/L¯
+
+®L¯SPLITTING THE SCREEN INTO WINDOWS®/L¯
+  ®L¯The Screen Layout with Multiple Windows®/L¯
+  ®L¯Opening Windows®/L¯
+  ®L¯Switching between Windows®/L¯
+  ®L¯Changing Window Size®/L¯
+  ®L¯Synchronized Scrolling in Windows®/L¯
+  ®L¯Closing Editing Windows®/L¯
+  ®L¯A Walk-Through of Window Commands®/L¯
+
+®L¯MOVING THROUGH TEXT IN A FILE®/L¯
+  ®L¯Changing Position in a File®/L¯
+      ù ®L¯Changing Position by One Character or Line®/L¯
+      ù ®L¯Changing Position by Multiple Characters or Lines®/L¯
+  ®L¯Scrolling Text®/L¯
+      ù ®L¯Scrolling Forward or Backward in a File®/L¯
+      ù ®L¯Scrolling the Current Line®/L¯
+
+®L¯USING TABS®/L¯
+  ®L¯Selecting the Tab Type®/L¯
+  ®L¯Setting Tab Stops®/L¯
+      ù ®L¯Soft and Hard Tabs®/L¯
+      ù ®L¯Variable Tabs®/L¯
+      ù ®L¯Smart Tabs®/L¯
+  ®L¯Using Positional Tabs:  Soft, Variable, and Smart®/L¯
+  ®L¯Using Physical Tabs:  Hard®/L¯
+  ®L¯Effects of ExpandTabs®/L¯
+
+®L¯MANIPULATING TEXT®/L¯
+  ®L¯Commands to Add Text®/L¯
+  ®L¯Commands to Copy Text®/L¯
+  ®L¯Commands to Move Text®/L¯
+  ®L¯Commands to Format Text®/L¯
+      ù ®L¯Behavior of WrapPara within a Block®/L¯
+  ®L¯Commands to Delete Text®/L¯
+  ®L¯Commands and Features that Allow Recovery of Text®/L¯
+      ù ®L¯The Deletion Buffer:  A Safety Net®/L¯
+
+®L¯EDITING MODES®/L¯
+  ®L¯Insert Mode®/L¯
+  ®L¯WordWrap Mode®/L¯
+  ®L¯AutoIndent mode®/L¯
+      ù ®L¯The Effective Left Margin®/L¯
+  ®L¯Template Mode®/L¯
+      ù ®L¯Basic Operation of Template Mode®/L¯
+      ù ®L¯Creating Your Own Template®/L¯
+      ù ®L¯Alternate Methods for Expanding a Template®/L¯
+      ù ®L¯Deleting an Existing Template®/L¯
+  ®L¯Special Programming-Language Modes®/L¯
+      ù ®L¯SmartIndent Mode®/L¯
+      ù ®L¯C Mode®/L¯
+
+®L¯BLOCK OPERATIONS®/L¯
+  ®L¯Marking and Manipulating a Block of Text®/L¯
+      ù ®L¯Opening and Closing a Block®/L¯
+      ù ®L¯Extending a Block®/L¯
+      ù ®L¯Block-Marking Commands®/L¯
+      ù ®L¯Unmarking a Block®/L¯
+      ù ®L¯Manipulating Text in a Block®/L¯
+      ù ®L¯Changing the Case of Characters in a Block®/L¯
+      ù ®L¯Moving to the Beginning or End of a Block®/L¯
+  ®L¯Manipulating Blocks via Clipboards®/L¯
+      ù ®L¯The ClipBoard Copy Commands®/L¯
+      ù ®L¯The ClipBoard CopyAppend Commands®/L¯
+      ù ®L¯The ClipBoard Cut Commands®/L¯
+      ù ®L¯The ClipBoard CutAppend Commands®/L¯
+      ù ®L¯The ClipBoard Paste Commands®/L¯
+      ù ®L¯The ClipBoard PasteOver Commands®/L¯
+      ù ®L¯The Microsoft Windows Clipboard Commands®/L¯
+
+®L¯SEARCH FEATURES:  FINDING AND REPLACING TEXT®/L¯
+  ®L¯Basic Find and Replace Options®/L¯
+  ®L¯Searching with Regular Expressions®/L¯
+      ù ®L¯Regular Expression Operators®/L¯
+      ù ®L¯Minimum/Maximum Closure®/L¯
+      ù ®L¯Additional Regular Expression Examples®/L¯
+      ù ®L¯Summary List of Regular Expression Operators®/L¯
+  ®L¯IncrementalSearch Feature®/L¯
+  ®L¯Listing All Occurrences of a Specified Text String®/L¯
+  ®L¯Other Special-Purpose Search Features®/L¯
+
+®L¯BOOKMARKS®/L¯
+  ®L¯Using Bookmarks®/L¯
+  ®L¯Bookmark Commands®/L¯
+  ®L¯Bookmark Shortcut®/L¯
+
+®L¯CHECKING YOUR SPELLING®/L¯
+  ®L¯Running SpellCheck®/L¯
+  ®L¯The User-Defined Word List®/L¯
+  ®L¯Files Needed by SpellCheck®/L¯
+
+®L¯PRINTING FROM THE EDITOR®/L¯
+  ®L¯Sending Output and Commands to the Printer®/L¯
+  ®L¯Formatting Print Output®/L¯
+  ®L¯Setting Print Options®/L¯
+  ®L¯Saving Print Options for Future Sessions®/L¯
+
+®L¯CREATING AND USING MACROS®/L¯
+  ®L¯Keyboard Macros®/L¯
+      ù ®L¯Recording Keyboard Macros®/L¯
+      ù ®L¯Re-Playing Keyboard Macros®/L¯
+      ù ®L¯Saving Keyboard Macros for Use in a Later Session®/L¯
+      ù ®L¯Loading Keyboard Macros Saved in a Previous Session®/L¯
+      ù ®L¯Purging Keyboard Macros from the Current Session®/L¯
+  ®L¯Introduction to External Compiled Macros®/L¯
+      ù ®L¯Creating and Using Compiled Macros®/L¯
+      ù ®L¯Compiling Macros®/L¯
+      ù ®L¯Loading and Executing Compiled Macros®/L¯
+          ®L¯The LoadMacro Command®/L¯
+          ®L¯The ExecMacro Command®/L¯
+          ®L¯The AutoLoadList Command®/L¯
+      ù ®L¯Purging Compiled Macros®/L¯
+      ù ®L¯Debugging Compiled Macros®/L¯
+
+®L¯SPECIAL COMMANDS AND FEATURES®/L¯
+  ®L¯Drawing Lines in the Text®/L¯
+  ®L¯Sorting Lines of Text®/L¯
+  ®L¯Accessing the Pop-Up ASCII Chart®/L¯
+  ®L¯Inserting the Date and Time into the Text®/L¯
+  ®L¯Selecting the Video Mode®/L¯
+  ®L¯Executing External Commands from within the Editor®/L¯
+  ®L¯Repeating a Character, Command, or Macro®/L¯
+  ®L¯Executing Supplemental Macros from the Potpourri®/L¯
+  ®L¯Compiling Programs from within the Editor®/L¯
+
+®L¯CONFIGURING THE EDITOR INTERACTIVELY®/L¯
+  ®L¯Methods for Interactively Configuring the Editor®/L¯
+  ®L¯Configuration Options Available Interactively®/L¯
+      ù ®L¯System/File Options®/L¯
+      ù ®L¯Keyboard/Mouse Options®/L¯
+      ù ®L¯Command/Format Options®/L¯
+      ù ®L¯Text Entry/Block Options®/L¯
+      ù ®L¯Tab/Margin Options®/L¯
+      ù ®L¯Display/Color Options®/L¯
+      ù ®L¯Print Output Options®/L¯
+  ®L¯Saving Configuration Settings®/L¯
+  ®L¯Writing Configuration Settings to a Settings File®/L¯
+  ®L¯Files Needed by IConfig®/L¯
+
+®L¯FULLY CUSTOMIZING THE EDITOR®/L¯
+  ®L¯Simple Customization from within the Editor®/L¯
+      ù ®L¯Changing Settings for Editing Options Using IConfig®/L¯
+      ù ®L¯Creating Keyboard Macros®/L¯
+      ù ®L¯Creating Templates/Abbreviations®/L¯
+  ®L¯Customization Using SAL Compiled Macros®/L¯
+      ù ®L¯Creating an External Compiled Macro®/L¯
+      ù ®L¯Adding an External Macro to the Potpourri®/L¯
+      ù ®L¯Maintaining a Macro Autoload File®/L¯
+      ù ®L¯Creating a TSEStart Macro File®/L¯
+      ù ®L¯Understanding User-Interface (UI) Macro Files®/L¯
+      ù ®L¯Installing a User-Interface (UI) Macro File®/L¯
+      ù ®L¯Adding or Changing Key Assignments®/L¯
+      ù ®L¯Changing the HelpLines®/L¯
+      ù ®L¯Modifying the Key-Assignment Help Screen®/L¯
+      ù ®L¯Making Changes to the Pull-Down Menu®/L¯
+      ù ®L¯Adding Macros to the User-Interface (UI) Macro File®/L¯
+      ù ®L¯Creating a Custom User-Interface (UI) Macro File®/L¯
+          ®L¯Starting Simple®/L¯
+          ®L¯Adding More Functionality®/L¯
+          ®L¯Adding Your Own Commands®/L¯
+
+®L¯APPENDIX A:  TECHNICAL SPECIFICATIONS®/L¯
+®L¯APPENDIX C:  STANDARD KEY ASSIGNMENTS®/L¯
+®L¯APPENDIX E:  COMMAND IMPLEMENTATION®/L¯
+®L¯APPENDIX F:  STANDARD CONFIGURATION SETTINGS®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Macro Reference Guide
+®GH:LocalLinks¯
+
+®B¯--- Macro Reference Guide ---®/B¯
+
+®L¯OVERVIEW OF THE MACRO PROGRAMMING LANGUAGE®/L¯
+  ®L¯Creating Macros (Overview)®/L¯
+  ®L¯Compiling Macros (Overview)®/L¯
+      ù ®L¯Compiling Macros from Inside the Editor®/L¯
+      ù ®L¯Compiling Macros from Outside the Editor®/L¯
+  ®L¯Executing Macros (Overview)®/L¯
+  ®L¯Macro Source Files vs. Macro Object Files®/L¯
+  ®L¯Macro Syntax®/L¯
+  ®L¯Some Simple Macro Examples®/L¯
+      ù ®L¯Obtaining Useful Information Within a Macro®/L¯
+      ù ®L¯Adding a Variable®/L¯
+      ù ®L¯Prompting the User®/L¯
+      ù ®L¯Flow of Control®/L¯
+      ù ®L¯Assigning a Macro to a Key®/L¯
+      ù ®L¯Creating a Menu®/L¯
+
+®L¯MACRO LANGUAGE SYNTAX®/L¯
+  ®L¯Identifiers®/L¯
+  ®L¯Reserved Words®/L¯
+  ®L¯Strings®/L¯
+  ®L¯Numbers®/L¯
+  ®L¯Constants®/L¯
+  ®L¯Pre-Defined Constants®/L¯
+  ®L¯Variables®/L¯
+      ù ®L¯Integer Variables®/L¯
+          ®L¯Declaring Global Integers®/L¯
+          ®L¯Referencing Global Integers®/L¯
+          ®L¯Declaring Local Integers®/L¯
+          ®L¯Referencing Local Integers®/L¯
+      ù ®L¯String Variables®/L¯
+          ®L¯Declaring Global Strings®/L¯
+          ®L¯Referencing Global Strings®/L¯
+          ®L¯Declaring Local Strings®/L¯
+          ®L¯Referencing Local Strings®/L¯
+  ®L¯White Characters®/L¯
+  ®L¯Comments®/L¯
+  ®L¯Statements®/L¯
+      ù ®L¯Variable Assignment Statements®/L¯
+      ù ®L¯Expressions®/L¯
+          ®L¯String Expressions®/L¯
+              ®L¯Concatenation Operators®/L¯
+              ®L¯Indexing Operators®/L¯
+              ®L¯String Slices®/L¯
+              ®L¯Relational Operators for String Expressions®/L¯
+          ®L¯Numeric Expressions®/L¯
+              ®L¯Arithmetic Operators®/L¯
+              ®L¯Relational Operators for Numeric Expressions®/L¯
+              ®L¯Logical Operators®/L¯
+              ®L¯Bitwise Logical Operators®/L¯
+          ®L¯Boolean Expressions®/L¯
+          ®L¯Constant Expressions®/L¯
+      ù ®L¯Precedence and Order of Evaluation in Expressions®/L¯
+      ù ®L¯Type Conversions within Expressions®/L¯
+      ù ®L¯Control Statements®/L¯
+          ®L¯Expressions in Control Statements®/L¯
+          ®L¯Conditional Execution ... if and iif®/L¯
+          ®L¯Mega-Conditional Statement ... case®/L¯
+          ®L¯Iterative Statements ... while, repeat, for, do, and loop®/L¯
+          ®L¯Termination Statements ... break, return, and halt®/L¯
+          ®L¯Jump Statement ... goto®/L¯
+      ù ®L¯Function Call Statements®/L¯
+  ®L¯Macro Procedures®/L¯
+      ù ®L¯Scope®/L¯
+      ù ®L¯Forward Procedures®/L¯
+      ù ®L¯Main®/L¯
+      ù ®L¯Global vs. Local Variables®/L¯
+      ù ®L¯Returning Values®/L¯
+      ù ®L¯Arguments - Passing and Retrieving Parameters®/L¯
+          ®L¯Passing and Retrieving Parameters by Value®/L¯
+          ®L¯Passing and Retrieving Parameters by Reference®/L¯
+      ù ®L¯Public®/L¯
+      ù ®L¯Using DLLs®/L¯
+          ®L¯DLL Parameters and Return Values®/L¯
+
+®L¯USING MACROS®/L¯
+  ®L¯External Macros vs. the User-Interface Macro®/L¯
+      ù ®L¯External Macro Files®/L¯
+      ù ®L¯The User-Interface Macro File (TSE.UI)®/L¯
+  ®L¯Creating Macros®/L¯
+  ®L¯Compiling Macros®/L¯
+  ®L¯Macro File Search Order and the TSEPath Variable®/L¯
+  ®L¯Loading/Executing Macros®/L¯
+  ®L¯Purging Macros®/L¯
+  ®L¯Debugging Macros®/L¯
+  ®L¯Startup Processing®/L¯
+      ù ®L¯The TSEStart Macro®/L¯
+      ù ®L¯The TSELOAD.DAT File®/L¯
+  ®L¯Terminating the Editor®/L¯
+  ®L¯Miscellaneous Questions®/L¯
+
+®L¯USING MACRO LANGUAGE FEATURES®/L¯
+  ®L¯Breaking Out of Run-Away Macros®/L¯
+  ®L¯Assigning Macro and Commands to Keys®/L¯
+  ®L¯Keydef®/L¯
+  ®L¯Command Prompts and Keydefs®/L¯
+  ®L¯Process() and Keydefs®/L¯
+  ®L¯HelpLines®/L¯
+  ®L¯Include Files®/L¯
+  ®L¯Using Command Lines in Macros®/L¯
+  ®L¯Session-Global Variables®/L¯
+  ®L¯Buffers®/L¯
+      ù ®L¯Manipulating Text in Buffers®/L¯
+          ®L¯Retrieving Text from Buffers®/L¯
+          ®L¯Storing Text in Buffers®/L¯
+      ù ®L¯Creating Buffers®/L¯
+      ù ®L¯Referencing and Switching to Buffers®/L¯
+  ®L¯Searching®/L¯
+  ®L¯Saving and Restoring State Information®/L¯
+  ®L¯Getting User Input®/L¯
+  ®L¯Menus®/L¯
+      ù ®L¯Defining a Pull-Down or Pop-Up Menu®/L¯
+      ù ®L¯Defining a Menu Bar®/L¯
+  ®L¯Datadef®/L¯
+  ®L¯Helpdef®/L¯
+  ®L¯Video Output Commands®/L¯
+      ù ®L¯Creating View Port Windows®/L¯
+      ù ®L¯Manipulating the Video Output Position and the Visible Cursor®/L¯
+      ù ®L¯Writing to the Screen®/L¯
+      ù ®L¯Reading from the Screen®/L¯
+      ù ®L¯Clearing Portions of the Screen®/L¯
+      ù ®L¯Buffering Screen Output®/L¯
+  ®L¯Event Macros®/L¯
+      ù ®L¯Event Macros with Predefined Names®/L¯
+      ù ®L¯Event Macros Defined by the User®/L¯
+
+®L¯EDITOR COMMANDS®/L¯
+  ®L¯Index of Editor Commands®/L¯
+
+®L¯EDITOR VARIABLES®/L¯
+  ®L¯Index of Editor Variables®/L¯
+  ®L¯COLOR Set®/L¯
+  ®L¯MONO Set®/L¯
+
+®L¯APPENDIX B:  COMMAND IMPLEMENTATION®/L¯
+®L¯APPENDIX C:  COMMANDS BY CATEGORY®/L¯
+®L¯APPENDIX D:  VARIABLES BY CATEGORY®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Index of Editor Commands
+
+®B¯--- A ---®/B¯
+
+®L¯AbandonEditor®/L¯®B¯()®/B¯
+®L¯AbandonFile®/L¯®B¯()®/B¯
+®L¯Abs®/L¯®B¯()®/B¯
+®L¯AddAutoLoadMacro®/L¯®B¯()®/B¯
+®L¯AddFFInfoToBuffer®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯AddFileToRing®/L¯®B¯()®/B¯
+®L¯AddHistoryStr®/L¯®B¯()®/B¯
+®L¯AddLine®/L¯®B¯()®/B¯
+®L¯Addr®/L¯®B¯()®/B¯
+®L¯AddTrailingSlash®/L¯®B¯()®/B¯
+®L¯AdjPtr®/L¯®B¯()®/B¯
+®L¯Alarm®/L¯®B¯()®/B¯
+®L¯Asc®/L¯®B¯()®/B¯
+®L¯Ask®/L¯®B¯()®/B¯
+®L¯AskFilename®/L¯®B¯()®/B¯
+®L¯AskNumeric®/L¯®B¯()®/B¯
+
+®B¯--- B ---®/B¯
+
+®L¯BackSpace®/L¯®B¯()®/B¯
+®L¯BegFile®/L¯®B¯()®/B¯
+®L¯BegLine®/L¯®B¯()®/B¯
+®L¯BegWindow®/L¯®B¯()®/B¯
+®L¯BegWord®/L¯®B¯()®/B¯
+®L¯BinaryMode®/L¯®B¯()®/B¯
+®L¯BreakHookChain®/L¯®B¯()®/B¯
+®L¯BrowseMode®/L¯®B¯()®/B¯                ®I¯3.0®/I¯
+®L¯BufferType®/L¯®B¯()®/B¯
+®L¯BufferVideo®/L¯®B¯()®/B¯
+®L¯BuildPickBuffer®/L¯®B¯()®/B¯
+®L¯BuildPickBufferEx®/L¯®B¯()®/B¯
+
+®B¯--- C ---®/B¯
+
+®L¯ChainCmd®/L¯®B¯()®/B¯
+®L¯ChangeCurrFilename®/L¯®B¯()®/B¯
+®L¯ChangedFilesExist®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯ChDir®/L¯®B¯()®/B¯
+®L¯CheckDefaultExt®/L¯®B¯()®/B¯
+®L¯Chr®/L¯®B¯()®/B¯
+®L¯ChrSet®/L¯®B¯()®/B¯
+®L¯ClearBit®/L¯®B¯()®/B¯
+®L¯ClearBufferDaTmAttr®/L¯®B¯()®/B¯       ®I¯3.0®/I¯
+®L¯ClearEditWindows®/L¯®B¯()®/B¯
+®L¯ClearPhysicalScreen®/L¯®B¯()®/B¯
+®L¯ClearUndoRedoList®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯ClosePrint®/L¯®B¯()®/B¯
+®L¯CloseWindow®/L¯®B¯()®/B¯
+®L¯ClrEol®/L¯®B¯()®/B¯
+®L¯ClrScr®/L¯®B¯()®/B¯
+®L¯Color®/L¯®B¯()®/B¯
+®L¯Copy®/L¯®B¯()®/B¯
+®L¯CopyAppend®/L¯®B¯()®/B¯
+®L¯CopyBlock®/L¯®B¯()®/B¯
+®L¯CopyToWinClip®/L¯®B¯()®/B¯
+®L¯CreateBuffer®/L¯®B¯()®/B¯
+®L¯CreateTempBuffer®/L¯®B¯()®/B¯
+®L¯CReturn®/L¯®B¯()®/B¯
+®L¯CurrChar®/L¯®B¯()®/B¯
+®L¯CurrCol®/L¯®B¯()®/B¯
+®L¯CurrDir®/L¯®B¯()®/B¯
+®L¯CurrExt®/L¯®B¯()®/B¯
+®L¯CurrFilename®/L¯®B¯()®/B¯
+®L¯CurrLineLen®/L¯®B¯()®/B¯
+®L¯CurrLinePtr®/L¯®B¯()®/B¯
+®L¯CurrLine®/L¯®B¯()®/B¯
+®L¯CurrMacroFilename®/L¯®B¯()®/B¯
+®L¯CurrPos®/L¯®B¯()®/B¯
+®L¯CurrRow®/L¯®B¯()®/B¯
+®L¯CurrXoffset®/L¯®B¯()®/B¯
+®L¯Cut®/L¯®B¯()®/B¯
+®L¯CutAppend®/L¯®B¯()®/B¯
+®L¯CutToWinClip®/L¯®B¯()®/B¯              ®I¯3.0®/I¯
+
+®B¯--- D ---®/B¯
+
+®L¯DecodeDTA®/L¯®B¯()®/B¯
+®L¯DecodePickBuffer®/L¯®B¯()®/B¯
+®L¯DelAllBookMarks®/L¯®B¯()®/B¯
+®L¯DelAutoLoadMacro®/L¯®B¯()®/B¯
+®L¯Delay®/L¯®B¯()®/B¯
+®L¯DelBlock®/L¯®B¯()®/B¯
+®L¯DelBookMark®/L¯®B¯()®/B¯
+®L¯DelChar®/L¯®B¯()®/B¯
+®L¯DelGlobalVar®/L¯®B¯()®/B¯
+®L¯DelHistory®/L¯®B¯()®/B¯
+®L¯DelHistoryStr®/L¯®B¯()®/B¯
+®L¯DelLeftWord®/L¯®B¯()®/B¯
+®L¯DelLine®/L¯®B¯()®/B¯
+®L¯DelRightWord®/L¯®B¯()®/B¯
+®L¯DelStr®/L¯®B¯()®/B¯
+®L¯DelToEol®/L¯®B¯()®/B¯
+®L¯DelWindow®/L¯®B¯()®/B¯
+®L¯Disable®/L¯®B¯()®/B¯
+®L¯DisplayMode®/L¯®B¯()®/B¯
+®L¯DistanceToTab®/L¯®B¯()®/B¯
+®L¯Dos®/L¯®B¯()®/B¯
+®L¯DosIOResult®/L¯®B¯()®/B¯
+®L¯Down®/L¯®B¯()®/B¯
+®L¯DrawBox®/L¯®B¯()®/B¯
+®L¯DupLine®/L¯®B¯()®/B¯
+
+®B¯--- E ---®/B¯
+
+®L¯EditAutoLoadList®/L¯®B¯()®/B¯
+®L¯EditBuffer®/L¯®B¯()®/B¯
+®L¯EditFile®/L¯®B¯()®/B¯
+®L¯EliminateSnow®/L¯®B¯()®/B¯
+®L¯EmptyBuffer®/L¯®B¯()®/B¯
+®L¯Enable®/L¯®B¯()®/B¯
+®L¯EndFile®/L¯®B¯()®/B¯
+®L¯EndLine®/L¯®B¯()®/B¯
+®L¯EndProcess®/L¯®B¯()®/B¯
+®L¯EndWindow®/L¯®B¯()®/B¯
+®L¯EndWord®/L¯®B¯()®/B¯
+®L¯EraseDiskFile®/L¯®B¯()®/B¯
+®L¯Escape®/L¯®B¯()®/B¯
+®L¯ExecHook®/L¯®B¯()®/B¯
+®L¯ExecLoadedMacro®/L¯®B¯()®/B¯
+®L¯ExecMacro®/L¯®B¯()®/B¯
+®L¯ExecScrapMacro®/L¯®B¯()®/B¯
+®L¯ExistGlobalVar®/L¯®B¯()®/B¯
+®L¯Exit®/L¯®B¯()®/B¯
+®L¯ExpandPath®/L¯®B¯()®/B¯
+®L¯ExpandTabsToSpaces®/L¯®B¯()®/B¯
+
+®B¯--- F ---®/B¯
+
+®L¯fClose®/L¯®B¯()®/B¯
+®L¯fCreate®/L¯®B¯()®/B¯
+®L¯fDup®/L¯®B¯()®/B¯
+®L¯fDup2®/L¯®B¯()®/B¯
+®L¯FFAttribute®/L¯®B¯()®/B¯
+®L¯FFDate®/L¯®B¯()®/B¯
+®L¯FFDateStr®/L¯®B¯()®/B¯
+®L¯FFName®/L¯®B¯()®/B¯
+®L¯FFSize®/L¯®B¯()®/B¯
+®L¯FFTime®/L¯®B¯()®/B¯
+®L¯FFTimeStr®/L¯®B¯()®/B¯
+®L¯FileChanged®/L¯®B¯()®/B¯
+®L¯FileExists®/L¯®B¯()®/B¯
+®L¯FillBlock®/L¯®B¯()®/B¯
+®L¯Find®/L¯®B¯()®/B¯
+®L¯FindFileClose®/L¯®B¯()®/B¯
+®L¯FindFirst®/L¯®B¯()®/B¯
+®L¯FindFirstFile®/L¯®B¯()®/B¯
+®L¯FindHistoryStr®/L¯®B¯()®/B¯
+®L¯FindNext®/L¯®B¯()®/B¯
+®L¯FindNextFile®/L¯®B¯()®/B¯
+®L¯FindThisFile®/L¯®B¯()®/B¯
+®L¯FinishEditWindows®/L¯®B¯()®/B¯
+®L¯Flip®/L¯®B¯()®/B¯
+®L¯FlushProfile®/L¯®B¯()®/B¯
+®L¯fOpen®/L¯®B¯()®/B¯
+®L¯Format®/L¯®B¯()®/B¯
+®L¯fRead®/L¯®B¯()®/B¯
+®L¯fReadFile®/L¯®B¯()®/B¯
+®L¯fSeek®/L¯®B¯()®/B¯
+®L¯FullWindow®/L¯®B¯()®/B¯
+®L¯fWrite®/L¯®B¯()®/B¯
+®L¯fWriteFile®/L¯®B¯()®/B¯
+
+®B¯--- G ---®/B¯
+
+®L¯GetBit®/L¯®B¯()®/B¯
+®L¯GetBookMarkInfo®/L¯®B¯()®/B¯
+®L¯GetBufferId®/L¯®B¯()®/B¯
+®L¯GetClipBoardBlockType®/L¯®B¯()®/B¯
+®L¯GetClockTicks®/L¯®B¯()®/B¯
+®L¯GetDateStr®/L¯®B¯()®/B¯
+®L¯GetDate®/L¯®B¯()®/B¯
+®L¯GetDir®/L¯®B¯()®/B¯
+®L¯GetDrive®/L¯®B¯()®/B¯
+®L¯GetEnvStr®/L¯®B¯()®/B¯
+®L¯GetFoundText®/L¯®B¯()®/B¯
+®L¯GetFreeHistory®/L¯®B¯()®/B¯
+®L¯GetGlobalInt®/L¯®B¯()®/B¯
+®L¯GetGlobalStr®/L¯®B¯()®/B¯
+®L¯GetHistoryStr®/L¯®B¯()®/B¯
+®L¯GetHookState®/L¯®B¯()®/B¯
+®L¯GetKeyFlags®/L¯®B¯()®/B¯
+®L¯GetKey®/L¯®B¯()®/B¯
+®L¯GetMarkedText®/L¯®B¯()®/B¯
+®L¯GetMaxRowsCols®/L¯®B¯()®/B¯
+®L¯GetNextConnection®/L¯®B¯()®/B¯
+®L¯GetNextProfileItem®/L¯®B¯()®/B¯
+®L¯GetNextProfileSectionName®/L¯®B¯()®/B¯
+®L¯GetPositionInfo®®B¯/L®/B¯¯()
+®L¯GetProfileInt®/L¯®B¯()®/B¯
+®L¯GetProfileStr®/L¯®B¯()®/B¯
+®L¯GetStr®/L¯®B¯()®/B¯
+®L¯GetStrAttr®/L¯®B¯()®/B¯
+®L¯GetStrAttrXY®/L¯®B¯()®/B¯
+®L¯GetStrXY®/L¯®B¯()®/B¯
+®L¯GetSynFilename®/L¯®B¯()®/B¯
+®L¯GetText®/L¯®B¯()®/B¯
+®L¯GetTime®/L¯®B¯()®/B¯
+®L¯GetTimeStr®/L¯®B¯()®/B¯
+®L¯GetToken®/L¯®B¯()®/B¯
+®L¯GetVideoInfo®/L¯®B¯()®/B¯
+®L¯GetWindowTitle®/L¯®B¯()®/B¯
+®L¯GetWinHandle®/L¯®B¯()®/B¯
+®L¯GetWord®/L¯®B¯()®/B¯
+®L¯GlobalUnDelete®/L¯®B¯()®/B¯
+®L¯GotoBlockBegin®/L¯®B¯()®/B¯
+®L¯GotoBlockBeginCol®/L¯®B¯()®/B¯
+®L¯GotoBlockEnd®/L¯®B¯()®/B¯
+®L¯GotoBlockEndCol®/L¯®B¯()®/B¯
+®L¯GotoBufferId®/L¯®B¯()®/B¯
+®L¯GotoColumn®/L¯®B¯()®/B¯
+®L¯GotoLine®/L¯®B¯()®/B¯
+®L¯GotoMark®/L¯®B¯()®/B¯
+®L¯GotoMouseCursor®/L¯®B¯()®/B¯
+®L¯GotoPos®/L¯®B¯()®/B¯
+®L¯GotoRow®/L¯®B¯()®/B¯
+®L¯GotoWindow®/L¯®B¯()®/B¯
+®L¯GotoXoffset®/L¯®B¯()®/B¯
+®L¯GotoXY®/L¯®B¯()®/B¯
+
+®B¯--- H ---®/B¯
+
+®L¯Help®/L¯®B¯()®/B¯
+®L¯HexEdit®/L¯®B¯()®/B¯
+®L¯HiByte®/L¯®B¯()®/B¯
+®L¯HideMouse®/L¯®B¯()®/B¯
+®L¯HiLiteFoundText®/L¯®B¯()®/B¯
+®L¯HiWord®/L¯®B¯()®/B¯
+®L¯Hook®/L¯®B¯()®/B¯
+®L¯HWindow®/L¯®B¯()®/B¯
+
+®B¯--- I ---®/B¯
+
+®L¯InByte®/L¯®B¯()®/B¯
+®L¯InitSynhiCurrFile®/L¯®B¯()®/B¯
+®L¯InsertData®/L¯®B¯()®/B¯
+®L¯InsertFile®/L¯®B¯()®/B¯
+®L¯InsertLine®/L¯®B¯()®/B¯
+®L¯InsertText®/L¯®B¯()®/B¯
+®L¯InsStr®/L¯®B¯()®/B¯
+®L¯Intr®/L¯®B¯()®/B¯
+®L¯InWord®/L¯®B¯()®/B¯
+®L¯isAlphaNum®/L¯®B¯()®/B¯                ®I¯3.0®/I¯
+®L¯isAlpha®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯isBlockInCurrFile®/L¯®B¯()®/B¯
+®L¯isBlockMarked®/L¯®B¯()®/B¯
+®L¯isBookMarkSet®/L¯®B¯()®/B¯
+®L¯isCharDevice®/L¯®B¯()®/B¯
+®L¯isCurrLineInBlock®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯isCursorInBlock®/L¯®B¯()®/B¯
+®L¯isDigit®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯isHexDigit®/L¯®B¯()®/B¯                ®I¯3.0®/I¯
+®L¯isLower®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯isMacroLoaded®/L¯®B¯()®/B¯
+®L¯isTrailingSlash®/L¯®B¯()®/B¯
+®L¯isTypeableKey®/L¯®B¯()®/B¯
+®L¯isUpper®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯isWhite®/L¯®B¯()®/B¯
+®L¯isWhite®®B¯/L®/B¯¯()
+®L¯isWildPath®/L¯®B¯()®/B¯
+®L¯isWinClipAvailable®/L¯®B¯()®/B¯        ®I¯3.0®/I¯
+®L¯isWord®/L¯®B¯()®/B¯
+®L¯isZoomed®/L¯®B¯()®/B¯
+
+®B¯--- J ---®/B¯
+
+®L¯JoinLine®/L¯®B¯()®/B¯
+
+®B¯--- K ---®/B¯
+
+®L¯KeyCode®/L¯®B¯()®/B¯
+®L¯KeyName®/L¯®B¯()®/B¯
+®L¯KeyPressed®/L¯®B¯()®/B¯
+®L¯KillBlock®/L¯®B¯()®/B¯
+®L¯KillFile®/L¯®B¯()®/B¯
+®L¯KillLine®/L¯®B¯()®/B¯
+®L¯KillPosition®/L¯®B¯()®/B¯
+®L¯KillToEol®/L¯®B¯()®/B¯
+
+®B¯--- L ---®/B¯
+
+®L¯lDos®/L¯®B¯()®/B¯
+®L¯Left®/L¯®B¯()®/B¯
+®L¯Length®/L¯®B¯()®/B¯
+®L¯lFind®/L¯®B¯()®/B¯
+®L¯LineDraw®/L¯®B¯()®/B¯
+®L¯LineTypeMenu®/L¯®B¯()®/B¯
+®L¯LinkSynFile®/L¯®B¯()®/B¯
+®L¯ListFooter®/L¯®B¯()®/B¯
+®L¯ListHeader®/L¯®B¯()®/B¯
+®L¯List®/L¯®B¯()®/B¯
+®L¯Literal®/L¯®B¯()®/B¯
+®L¯lList®/L¯®B¯()®/B¯
+®L¯LoadBuffer®/L¯®B¯()®/B¯
+®L¯LoadDir®/L¯®B¯()®/B¯
+®L¯LoadHistory®/L¯®B¯()®/B¯               ®I¯3.0®/I¯
+®L¯LoadKeyMacro®/L¯®B¯()®/B¯
+®L¯LoadMacro®/L¯®B¯()®/B¯
+®L¯LoadProfileSection®/L¯®B¯()®/B¯
+®L¯LoadProfileSectionNames®/L¯®B¯()®/B¯
+®L¯LoadStartupMacros®/L¯®B¯()®/B¯
+®L¯LoadSynhiAssoc®/L¯®B¯()®/B¯
+®L¯LoByte®/L¯®B¯()®/B¯
+®L¯LockCurrentFile®/L¯®B¯()®/B¯           ®I¯3.0®/I¯
+®L¯LogDrive®/L¯®B¯()®/B¯
+®L¯LongestLineInBuffer®/L¯®B¯()®/B¯
+®L¯Lower®/L¯®B¯()®/B¯
+®L¯LoWord®/L¯®B¯()®/B¯
+®L¯lRead®/L¯®B¯()®/B¯
+®L¯lReadNumeric®/L¯®B¯()®/B¯
+®L¯lRepeatFind®/L¯®B¯()®/B¯
+®L¯lReplace®/L¯®B¯()®/B¯
+®L¯lShowEntryScreen®/L¯®B¯()®/B¯
+®L¯LTrim®/L¯®B¯()®/B¯
+®L¯lVersion®/L¯®B¯()®/B¯
+
+®B¯--- M ---®/B¯
+
+®L¯MacroStackAvail®/L¯®B¯()®/B¯
+®L¯MakeEditWindow®/L¯®B¯()®/B¯
+®L¯MakeTempName®/L¯®B¯()®/B¯
+®L¯Mark®/L¯®B¯()®/B¯
+®L¯MarkChar®/L¯®B¯()®/B¯
+®L¯MarkColumn®/L¯®B¯()®/B¯
+®L¯MarkFoundText®/L¯®B¯()®/B¯
+®L¯MarkLine®/L¯®B¯()®/B¯
+®L¯MarkStream®/L¯®B¯()®/B¯
+®L¯MarkToEOL®/L¯®B¯()®/B¯
+®L¯MarkWord®/L¯®B¯()®/B¯
+®L¯MatchFilename®/L¯®B¯()®/B¯
+®L¯Max®/L¯®B¯()®/B¯
+®L¯MaxEMS®/L¯®B¯()®/B¯
+®L¯MaxXMS®/L¯®B¯()®/B¯
+®L¯MenuKey®/L¯®B¯()®/B¯
+®L¯MenuOption®/L¯®B¯()®/B¯
+®L¯MenuStr®/L¯®B¯()®/B¯
+®L¯Message®/L¯®B¯()®/B¯
+®L¯Min®/L¯®B¯()®/B¯
+®L¯MouseHotSpot®/L¯®B¯()®/B¯
+®L¯MouseKeyHeld®/L¯®B¯()®/B¯
+®L¯MouseMarking®/L¯®B¯()®/B¯
+®L¯MouseStatus®/L¯®B¯()®/B¯
+®L¯MouseWindowId®/L¯®B¯()®/B¯
+®L¯MoveBlock®/L¯®B¯()®/B¯
+®L¯MsgBox®/L¯®B¯()®/B¯
+®L¯MsgBoxBuff®/L¯®B¯()®/B¯
+®L¯MsgBoxEx®/L¯®B¯()®/B¯                  ®I¯3.0®/I¯
+
+®B¯--- N ---®/B¯
+
+®L¯NewFile®/L¯®B¯()®/B¯
+®L¯NextChar®/L¯®B¯()®/B¯
+®L¯NextFile®/L¯®B¯()®/B¯
+®L¯NextWindow®/L¯®B¯()®/B¯
+®L¯NoOp®/L¯®B¯()®/B¯
+®L¯NoSound®/L¯®B¯()®/B¯
+®L¯NumFiles®/L¯®B¯()®/B¯
+®L¯NumHistoryItems®/L¯®B¯()®/B¯
+®L¯NumLines®/L¯®B¯()®/B¯
+®L¯NumTokens®/L¯®B¯()®/B¯
+®L¯NumWindows®/L¯®B¯()®/B¯
+
+®B¯--- O ---®/B¯
+
+®L¯Ofs®/L¯®B¯()®/B¯
+®L¯OneWindow®/L¯®B¯()®/B¯
+®L¯OutByte®/L¯®B¯()®/B¯
+®L¯OutWord®/L¯®B¯()®/B¯
+
+®B¯--- P ---®/B¯
+
+®L¯PageDown®/L¯®B¯()®/B¯
+®L¯PageUp®/L¯®B¯()®/B¯
+®L¯Paste®/L¯®B¯()®/B¯
+®L¯PasteFromWinClip®/L¯®B¯()®/B¯
+®L¯PasteUnDelete®/L¯®B¯()®/B¯
+®L¯PBAttribute®/L¯®B¯()®/B¯
+®L¯PBDateStr®/L¯®B¯()®/B¯
+®L¯PBDate®/L¯®B¯()®/B¯
+®L¯PBName®/L¯®B¯()®/B¯
+®L¯PBSize®/L¯®B¯()®/B¯
+®L¯PBTimeStr®/L¯®B¯()®/B¯
+®L¯PBTime®/L¯®B¯()®/B¯
+®L¯PeekByte®/L¯®B¯()®/B¯
+®L¯PeekLong®/L¯®B¯()®/B¯
+®L¯PeekWord®/L¯®B¯()®/B¯
+®L¯PickDrive®/L¯®B¯()®/B¯                 ®I¯3.0®/I¯
+®L¯PickFile®/L¯®B¯()®/B¯
+®L¯PickFile®/L¯®B¯()®/B¯                  ®I¯3.0®/I¯
+®L¯PlaceMark®/L¯®B¯()®/B¯
+®L¯PokeByte®/L¯®B¯()®/B¯
+®L¯PokeLong®/L¯®B¯()®/B¯
+®L¯PokeWord®/L¯®B¯()®/B¯
+®L¯PopBlock®/L¯®B¯()®/B¯
+®L¯PopPosition®/L¯®B¯()®/B¯
+®L¯PopWinClose®/L¯®B¯()®/B¯
+®L¯PopWinOpen®/L¯®B¯()®/B¯
+®L¯Pos®/L¯®B¯()®/B¯
+®L¯PosFirstNonWhite®/L¯®B¯()®/B¯
+®L¯PosLastNonWhite®/L¯®B¯()®/B¯
+®L¯PressKey®/L¯®B¯()®/B¯
+®L¯PrevChar®/L¯®B¯()®/B¯
+®L¯PrevFile®/L¯®B¯()®/B¯
+®L¯PrevHelp®/L¯®B¯()®/B¯
+®L¯PrevPosition®/L¯®B¯()®/B¯
+®L¯PrevWindow®/L¯®B¯()®/B¯
+®L¯PrintBlock®/L¯®B¯()®/B¯
+®L¯PrintChar®/L¯®B¯()®/B¯
+®L¯PrintFile®/L¯®B¯()®/B¯
+®L¯Process®/L¯®B¯()®/B¯
+®L¯ProcessHotSpot®/L¯®B¯()®/B¯
+®L¯Ptr®/L¯®B¯()®/B¯
+®L¯PurgeKeyMacro®/L¯®B¯()®/B¯
+®L¯PurgeMacro®/L¯®B¯()®/B¯
+®L¯PurgeSynhi®/L¯®B¯()®/B¯
+®L¯PushBlock®/L¯®B¯()®/B¯
+®L¯PushKey®/L¯®B¯()®/B¯
+®L¯PushKeyStr®/L¯®B¯()®/B¯
+®L¯PushPosition®/L¯®B¯()®/B¯
+®L¯PutAttr®/L¯®B¯()®/B¯
+®L¯PutAttrXY®/L¯®B¯()®/B¯
+®L¯PutChar®/L¯®B¯()®/B¯
+®L¯PutCharHXY®/L¯®B¯()®/B¯
+®L¯PutCharH®/L¯®B¯()®/B¯
+®L¯PutCharV®/L¯®B¯()®/B¯
+®L¯PutCharXY®/L¯®B¯()®/B¯
+®L¯PutCtrStr®/L¯®B¯()®/B¯
+®L¯PutHelpLine®/L¯®B¯()®/B¯
+®L¯PutLine®/L¯®B¯()®/B¯
+®L¯PutLineXY®/L¯®B¯()®/B¯
+®L¯PutNCharAttr®/L¯®B¯()®/B¯
+®L¯PutStr®/L¯®B¯()®/B¯
+®L¯PutStrAttr®/L¯®B¯()®/B¯
+®L¯PutStrAttrXY®/L¯®B¯()®/B¯
+®L¯PutStrEOL®/L¯®B¯()®/B¯
+®L¯PutStrEOLXY®/L¯®B¯()®/B¯
+®L¯PutStrXY®/L¯®B¯()®/B¯
+
+®B¯--- Q ---®/B¯
+
+®L¯Query®/L¯®B¯()®/B¯
+®L¯QueryEditState®/L¯®B¯()®/B¯
+®L¯QuickHelp®/L¯®B¯()®/B¯
+®L¯QuitFile®/L¯®B¯()®/B¯
+®L¯QuotePath®/L¯®B¯()®/B¯
+
+®B¯--- R ---®/B¯
+
+®L¯Read®/L¯®B¯()®/B¯
+®L¯ReadNumeric®/L¯®B¯()®/B¯
+®L¯RealToVirtualScreen®/L¯®B¯()®/B¯
+®L¯RecordKeyMacro®/L¯®B¯()®/B¯
+®L¯Redo®/L¯®B¯()®/B¯                      ®I¯3.0®/I¯
+®L¯RedoCount®/L¯®B¯()®/B¯                 ®I¯3.0®/I¯
+®L¯RemoveProfileItem®/L¯®B¯()®/B¯
+®L¯RemoveProfileSection®/L¯®B¯()®/B¯
+®L¯RemoveTrailingSlash®/L¯®B¯()®/B¯
+®L¯RemoveUnloadedFiles®/L¯®B¯()®/B¯
+®L¯RenameDiskFile®/L¯®B¯()®/B¯
+®L¯RepeatCmd®/L¯®B¯()®/B¯
+®L¯RepeatFind®/L¯®B¯()®/B¯
+®L¯Replace®/L¯®B¯()®/B¯
+®L¯ReplaceFile®/L¯®B¯()®/B¯
+®L¯ReplaceSynFile®/L¯®B¯()®/B¯
+®L¯ResizeWindow®/L¯®B¯()®/B¯
+®L¯RestoreCursorLine®/L¯®B¯()®/B¯
+®L¯Right®/L¯®B¯()®/B¯
+®L¯RightStr®/L¯®B¯()®/B¯                  ®I¯3.0®/I¯
+®L¯RollDown®/L¯®B¯()®/B¯
+®L¯RollLeft®/L¯®B¯()®/B¯
+®L¯RollRight®/L¯®B¯()®/B¯
+®L¯RollUp®/L¯®B¯()®/B¯
+®L¯RTrim®/L¯®B¯()®/B¯
+
+®B¯--- S ---®/B¯
+
+®L¯SaveAllAndExit®/L¯®B¯()®/B¯
+®L¯SaveAllFiles®/L¯®B¯()®/B¯
+®L¯SaveAndQuitFile®/L¯®B¯()®/B¯
+®L¯SaveAs®/L¯®B¯()®/B¯
+®L¯SaveBlock®/L¯®B¯()®/B¯
+®L¯SaveFile®/L¯®B¯()®/B¯
+®L¯SaveKeyMacro®/L¯®B¯()®/B¯
+®L¯SaveSettings®/L¯®B¯()®/B¯
+®L¯ScrollDown®/L¯®B¯()®/B¯
+®L¯ScrollLeft®/L¯®B¯()®/B¯
+®L¯ScrollRight®/L¯®B¯()®/B¯
+®L¯ScrollToCenter®/L¯®B¯()®/B¯
+®L¯ScrollToRow®/L¯®B¯()®/B¯
+®L¯ScrollToTop®/L¯®B¯()®/B¯
+®L¯ScrollUp®/L¯®B¯()®/B¯
+®L¯SearchHelp®/L¯®B¯()®/B¯
+®L¯SearchPath®/L¯®B¯()®/B¯
+®L¯Seg®/L¯®B¯()®/B¯
+®L¯SelfInsert®/L¯®B¯()®/B¯
+®L¯Set®/L¯®B¯()®/B¯
+®L¯SetBit®/L¯®B¯()®/B¯
+®L¯SetCursorOff®/L¯®B¯()®/B¯
+®L¯SetCursorOn®/L¯®B¯()®/B¯
+®L¯SetDTA®/L¯®B¯()®/B¯
+®L¯SetFileAttr®/L¯®B¯()®/B¯
+®L¯SetGlobalInt®/L¯®B¯()®/B¯
+®L¯SetGlobalStr®/L¯®B¯()®/B¯
+®L¯SetHookState®/L¯®B¯()®/B¯
+®L¯SetMenuBar®/L¯®B¯()®/B¯                ®I¯3.0®/I¯
+®L¯SetVideoRowsCols®/L¯®B¯()®/B¯
+®L¯SetWindowTitle®/L¯®B¯()®/B¯
+®L¯Shell®/L¯®B¯()®/B¯
+®L¯ShiftText®/L¯®B¯()®/B¯
+®L¯ShowEntryScreen®/L¯®B¯()®/B¯
+®L¯ShowMouse®/L¯®B¯()®/B¯
+®L¯SignOn®/L¯®B¯()®/B¯
+®L¯SizeOf®/L¯®B¯()®/B¯
+®L¯Sort®/L¯®B¯()®/B¯
+®L¯Sound®/L¯®B¯()®/B¯
+®L¯SplitLine®/L¯®B¯()®/B¯
+®L¯SplitPath®/L¯®B¯()®/B¯
+®L¯SqueezePath®/L¯®B¯()®/B¯               ®I¯3.0®/I¯
+®L¯StartedFromDosPrompt®/L¯®B¯()®/B¯      ®I¯3.0®/I¯
+®L¯Str®/L¯®B¯()®/B¯
+®L¯SubStr®/L¯®B¯()®/B¯
+®L¯SwapPath®/L¯®B¯()®/B¯
+®L¯SwapPosition®/L¯®B¯()®/B¯              ®I¯3.0®/I¯
+
+®B¯--- T ---®/B¯
+
+®L¯TabLeft®/L¯®B¯()®/B¯
+®L¯TabRight®/L¯®B¯()®/B¯
+®L¯TabSet®/L¯®B¯()®/B¯
+®L¯TerminateEvent®/L¯®B¯()®/B¯            ®I¯3.0®/I¯
+®L¯Toggle®/L¯®B¯()®/B¯
+®L¯ToggleInsert®/L¯®B¯()®/B¯
+®L¯TrackMouseCursor®/L¯®B¯()®/B¯
+®L¯Trim®/L¯®B¯()®/B¯
+
+®B¯--- U ---®/B¯
+
+®L¯UnBufferVideo®/L¯®B¯()®/B¯
+®L¯UnDelete®/L¯®B¯()®/B¯
+®L¯Undo®/L¯®B¯()®/B¯                      ®I¯3.0®/I¯
+®L¯UndoCount®/L¯®B¯()®/B¯                 ®I¯3.0®/I¯
+®L¯UnHook®/L¯®B¯()®/B¯
+®L¯UnLockCurrentFile®/L¯®B¯()®/B¯         ®I¯3.0®/I¯
+®L¯UnMarkBlock®/L¯®B¯()®/B¯
+®L¯UpdateBufferDaTmAttr®/L¯®B¯()®/B¯      ®I¯3.0®/I¯
+®L¯UpdateDisplay®/L¯®B¯()®/B¯
+®L¯Up®/L¯®B¯()®/B¯
+®L¯Upper®/L¯®B¯()®/B¯
+®L¯UseEnhancedKbd®/L¯®B¯()®/B¯
+®L¯UseExtendedKbdDriver®/L¯®B¯()®/B¯
+®L¯UseMouse®/L¯®B¯()®/B¯
+
+®B¯--- V ---®/B¯
+
+®L¯Val®/L¯®B¯()®/B¯
+®L¯Version®/L¯®B¯()®/B¯
+®L¯VGotoXY®/L¯®B¯()®/B¯
+®L¯VGotoXYAbs®/L¯®B¯()®/B¯
+®L¯VHomeCursor®/L¯®B¯()®/B¯
+®L¯ViewFinds®/L¯®B¯()®/B¯
+®L¯VirtualToRealScreen®/L¯®B¯()®/B¯
+®L¯VWhereX®/L¯®B¯()®/B¯
+®L¯VWhereY®/L¯®B¯()®/B¯
+®L¯VWindow®/L¯®B¯()®/B¯
+
+®B¯--- W ---®/B¯
+
+®L¯WaitForMouseEvent®/L¯®B¯()®/B¯
+®L¯Warn®/L¯®B¯()®/B¯
+®L¯WhereX®/L¯®B¯()®/B¯
+®L¯WhereXAbs®/L¯®B¯()®/B¯
+®L¯WhereY®/L¯®B¯()®/B¯
+®L¯WhereYAbs®/L¯®B¯()®/B¯
+®L¯WhichOS®/L¯®B¯()®/B¯                   ®I¯3.0®/I¯
+®L¯Window®/L¯®B¯()®/B¯
+®L¯WindowFooter®/L¯®B¯()®/B¯
+®L¯WindowId®/L¯®B¯()®/B¯
+®L¯WordLeft®/L¯®B¯()®/B¯
+®L¯WordRight®/L¯®B¯()®/B¯
+®L¯WrapLine®/L¯®B¯()®/B¯
+®L¯WrapPara®/L¯®B¯()®/B¯
+®L¯Write®/L¯®B¯()®/B¯
+®L¯WriteLine®/L¯®B¯()®/B¯
+®L¯WriteProfileInt®/L¯®B¯()®/B¯
+®L¯WriteProfileStr®/L¯®B¯()®/B¯
+
+®B¯--- Y ---®/B¯
+
+®L¯YesNo®/L¯®B¯()®/B¯
+
+®B¯--- Z ---®/B¯
+
+®L¯ZoomWindow®/L¯®B¯()®/B¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ù Index of Editor Variables
+
+®B¯--- A ---®/B¯
+
+®L¯AltBlockAttr®/L¯
+®L¯AltCurrWinBorderAttr®/L¯
+®L¯AltCursorAttr®/L¯
+®L¯AltCursorInBlockAttr®/L¯
+®L¯AltEOFMarkerAttr®/L¯
+®L¯AltHelpBoldAttr®/L¯
+®L¯AltHelpInfoAttr®/L¯
+®L¯AltHelpItalicsAttr®/L¯
+®L¯AltHelpLinkAttr®/L¯
+®L¯AltHelpSelectAttr®/L¯
+®L¯AltHelpTextAttr®/L¯
+®L¯AltHiLiteAttr®/L¯
+®L¯AltMenuBorderAttr®/L¯
+®L¯AltMenuSelectAttr®/L¯
+®L¯AltMenuSelectLtrAttr®/L¯
+®L¯AltMenuTextAttr®/L¯
+®L¯AltMenuTextLtrAttr®/L¯
+®L¯AltMsgAttr®/L¯
+®L¯AltOtherWinBorderAttr®/L¯
+®L¯AltStatusLineAttr®/L¯
+®L¯AltTextAttr®/L¯
+®L¯Attr®/L¯
+®L¯AttrSet®/L¯
+®L¯AutoIndent®/L¯
+
+®B¯--- B ---®/B¯
+
+®L¯BackupExt®/L¯
+®L¯Beep®/L¯
+®L¯Binary®/L¯
+®L¯BlockAttr®/L¯
+®L¯BlockBegCol®/L¯
+®L¯BlockBegLine®/L¯
+®L¯BlockEndCol®/L¯
+®L¯BlockEndLine®/L¯
+®L¯BlockId®/L¯
+®L¯Break®/L¯
+®L¯BufferFlags®/L¯
+
+®B¯--- C ---®/B¯
+
+®L¯CenterFinds®/L¯
+®L¯ChangeShellPrompt®/L¯
+®L¯ClipBoardId®/L¯
+®L¯CurrHistoryList®/L¯
+®L¯CurrVideoMode®/L¯
+®L¯CurrWinBorderAttr®/L¯
+®L¯CurrWinBorderType®/L¯
+®L¯Cursor®/L¯
+®L¯CursorAttr®/L¯
+®L¯CursorInBlockAttr®/L¯
+
+®B¯--- D ---®/B¯
+
+®L¯DateFormat®/L¯
+®L¯DateSeparator®/L¯
+®L¯DefaultExt®/L¯
+®L¯Directive1Attr®/L¯
+®L¯Directive2Attr®/L¯
+®L¯Directive3Attr®/L¯
+®L¯DisplayBoxed®/L¯
+®L¯DosCmdLine®/L¯
+
+®B¯--- E ---®/B¯
+
+®L¯EOFMarkerAttr®/L¯
+®L¯EOFType®/L¯
+®L¯EOLType®/L¯
+®L¯EquateEnhancedKbd®/L¯
+®L¯ExpandTabs®/L¯
+
+®B¯--- F ---®/B¯
+
+®L¯FileLocking®/L¯
+®L¯FindOptions®/L¯
+
+®B¯--- H ---®/B¯
+
+®L¯HelpBoldAttr®/L¯
+®L¯HelpInfoAttr®/L¯
+®L¯HelpItalicsAttr®/L¯
+®L¯HelpLineDelay®/L¯
+®L¯HelpLinkAttr®/L¯
+®L¯HelpSelectAttr®/L¯
+®L¯HelpTextAttr®/L¯
+®L¯HiLiteAttr®/L¯
+
+®B¯--- I ---®/B¯
+
+®L¯IdleTime®/L¯
+®L¯IncompleteQuoteAttr®/L¯
+®L¯Insert®/L¯
+®L¯InsertCursorSize®/L¯
+®L¯InsertLineBlocksAbove®/L¯
+
+®B¯--- K ---®/B¯
+
+®L¯KbdMacroRecording®/L¯
+®L¯KbdMacroRunning®/L¯
+®L¯KbdPath®/L¯
+®L¯KeepUndoBeyondSave®/L¯          ®I¯3.0®/I¯
+®L¯Key®/L¯
+®L¯KeyWords1Attr®/L¯
+®L¯KeyWords2Attr®/L¯
+®L¯KeyWords3Attr®/L¯
+®L¯KeyWords4Attr®/L¯
+®L¯KeyWords5Attr®/L¯
+®L¯KeyWords6Attr®/L¯
+®L¯KeyWords7Attr®/L¯
+®L¯KeyWords8Attr®/L¯
+®L¯KeyWords9Attr®/L¯
+®L¯KillMax®/L¯
+
+®B¯--- L ---®/B¯
+
+®L¯LastKey®/L¯
+®L¯LastMouseKey®/L¯
+®L¯LastMouseX®/L¯
+®L¯LastMouseY®/L¯
+®L¯LeftHandedMouse®/L¯
+®L¯LeftMargin®/L¯
+®L¯LineDrawChar®/L¯
+®L¯LineDrawing®/L¯
+®L¯LineDrawType®/L¯
+®L¯LoadWildFromDOS®/L¯
+®L¯LoadWildFromInside®/L¯
+
+®B¯--- M ---®/B¯
+
+®L¯MacroCmdLine®/L¯
+®L¯MakeBackups®/L¯
+®L¯Marking®/L¯
+®L¯MaxHistoryPerList®/L¯
+®L¯MaxHistorySize®/L¯
+®L¯MaxRecentFiles®/L¯
+®L¯MenuBorderAttr®/L¯
+®L¯MenuSelectAttr®/L¯
+®L¯MenuSelectLtrAttr®/L¯
+®L¯MenuTextAttr®/L¯
+®L¯MenuTextLtrAttr®/L¯
+®L¯MouseEnabled®/L¯
+®L¯MouseHoldTime®/L¯
+®L¯MouseKey®/L¯
+®L¯MouseRepeatDelay®/L¯
+®L¯MouseX®/L¯
+®L¯MouseY®/L¯
+®L¯MsgAttr®/L¯
+®L¯MsgLevel®/L¯
+®L¯MultiLnDlmt1Attr®/L¯
+®L¯MultiLnDlmt2Attr®/L¯
+®L¯MultiLnDlmt3Attr®/L¯
+
+®B¯--- N ---®/B¯
+
+®L¯NumberAttr®/L¯
+
+®B¯--- O ---®/B¯
+
+®L¯OtherWinBorderAttr®/L¯
+®L¯OtherWinBorderType®/L¯
+®L¯OverwriteCursorSize®/L¯
+
+®B¯--- P ---®/B¯
+
+®L¯ParaEndStyle®/L¯
+®L¯PersistentHistory®/L¯
+®L¯PersistentRecentFiles®/L¯
+®L¯PickFileChangesDir®/L¯
+®L¯PickFileFlags®/L¯
+®L¯PickFilePath®/L¯
+®L¯PickFileSortOrder®/L¯
+®L¯PopWinCols®/L¯
+®L¯PopWinRows®/L¯
+®L¯PopWinX1®/L¯
+®L¯PopWinY1®/L¯
+®L¯PrintAddFF®/L¯
+®L¯PrintBotMargin®/L¯
+®L¯PrintCopies®/L¯
+®L¯PrintDevice®/L¯
+®L¯PrintFirstPage®/L¯
+®L¯PrintFooter®/L¯
+®L¯PrintHeader®/L¯
+®L¯PrintInit®/L¯
+®L¯PrintLastPage®/L¯
+®L¯PrintLeftMargin®/L¯
+®L¯PrintLineNumbers®/L¯
+®L¯PrintLineSpacing®/L¯
+®L¯PrintLinesPerPage®/L¯
+®L¯PrintPause®/L¯
+®L¯PrintRightMargin®/L¯
+®L¯PrintTopMargin®/L¯
+®L¯PrintUseFF®/L¯
+®L¯ProtectedSaves®/L¯
+
+®B¯--- Q ---®/B¯
+
+®L¯QuitToPrompt®/L¯
+®L¯Quote1Attr®/L¯
+®L¯Quote2Attr®/L¯
+®L¯Quote3Attr®/L¯
+
+®B¯--- R ---®/B¯
+
+®L¯Redrawn®/L¯
+®L¯RemoveTrailingWhite®/L¯
+®L¯ReplaceOptions®/L¯
+®L¯RestoreDirOnExit®/L¯
+®L¯ReturnEqNextLine®/L¯
+®L¯RightMargin®/L¯
+
+®B¯--- S ---®/B¯
+
+®L¯SaveState®/L¯
+®L¯ScreenCols®/L¯
+®L¯ScreenRows®/L¯
+®L¯ShowEOFMarker®/L¯
+®L¯ShowHelpLine®/L¯
+®L¯ShowMainMenu®/L¯
+®L¯ShowStatusLine®/L¯
+®L¯SingleLnDlmt1Attr®/L¯
+®L¯SingleLnDlmt2Attr®/L¯
+®L¯SingleLnDlmt3Attr®/L¯
+®L¯StartupAttrSet®/L¯
+®L¯StartupFlags®/L¯
+®L¯StartupVideoMode®/L¯
+®L¯StatusLineAtTop®/L¯
+®L¯StatusLineAttr®/L¯
+®L¯StatusLineFillChar®/L¯
+®L¯StatusLineRow®/L¯
+®L¯StatusLineUpdating®/L¯
+®L¯ShowSyntaxHilite®/L¯
+
+®B¯--- T ---®/B¯
+
+®L¯TabType®/L¯
+®L¯TabWidth®/L¯
+®L¯TemplateExpansion®/L¯
+®L¯TextAttr®/L¯
+®L¯TimeFormat®/L¯
+®L¯TimeSeparator®/L¯
+®L¯ToEOL1Attr®/L¯
+®L¯ToEOL2Attr®/L¯
+®L¯ToEOL3Attr®/L¯
+®L¯TSEPath®/L¯
+
+®B¯--- U ---®/B¯
+
+®L¯UnMarkAfterPaste®/L¯
+®L¯UpdateDisplayFlags®/L¯
+®L¯UseCommonDialogs®/L¯            ®I¯3.0®/I¯
+®L¯UseCurrLineIfNoBlock®/L¯
+
+®B¯--- V ---®/B¯
+
+®L¯VarTabs®/L¯
+®L¯ViewFindsId®/L¯
+
+®B¯--- W ---®/B¯
+
+®L¯WindowCols®/L¯
+®L¯WindowRows®/L¯
+®L¯WindowX1®/L¯
+®L¯WindowY1®/L¯
+®L¯WordSet®/L¯
+®L¯WordWrap®/L¯
+
+®B¯--- X ---®/B¯
+
+®L¯X1®/L¯
+
+®B¯--- Y ---®/B¯
+
+®L¯Y1®/L¯
+
+®B¯--- Z ---®/B¯
+
+®L¯ZeroBasedTab®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ

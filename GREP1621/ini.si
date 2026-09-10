@@ -1,0 +1,64 @@
+// INI.SI ù IniFile macro include file
+// Chris Antos ù chrisant@microsoft.com
+
+// This include file contains the declarations for the functions necessary
+// to use INI.MAC with your macros. Please see INI.TXT for more information.
+
+// If you get compilation warnings about "GetProfileInt declared but never
+// used" (or SetProfileInt) you can #define INI_NOINT 1 to turn them off.
+
+// If you want to *FORCE* an immediate save of the .INI file, you must
+// #define INI_FORCESAVE, and call FlushProfile() in your macro.
+
+
+
+// totally ignore this file in TSE 2.6 (Win32)!
+#ifndef WIN32
+
+
+proc IniExec(string exec, string section, string keynm, string value)
+	ExecMacro("ini -"+exec+Chr(10)+section+Chr(10)+keynm+Chr(10)+value)
+end
+
+
+string proc GetProfileStr(string section, string keynm, string default)
+	string s[255] = Query(MacroCmdLine)
+	string value[255]
+
+	IniExec("g", section, keynm, default)
+	value = Query(MacroCmdLine)
+	Set(MacroCmdLine, s)
+	return(value)
+end
+
+proc WriteProfileStr(string section, string keynm, string value)
+	string s[255] = Query(MacroCmdLine)
+
+	IniExec("s", section, keynm, value)
+	Set(MacroCmdLine, s)
+end
+
+
+#ifdef INI_NOINT
+#else
+integer proc GetProfileInt(string section, string keynm, integer default)
+	return(Val(GetProfileStr(section, keynm, Str(default))))
+end
+
+proc WriteProfileInt(string section, string keynm, integer value)
+	WriteProfileStr(section, keynm, Str(value))
+end
+#endif
+
+#ifdef INI_FORCESAVE
+proc FlushProfile()
+	string s[255] = Query(MacroCmdLine)
+
+	ExecMacro("ini -x")
+	Set(MacroCmdLine, s)
+end
+#endif
+
+
+#endif	//WIN32
+
