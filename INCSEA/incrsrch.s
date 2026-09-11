@@ -225,3 +225,7 @@ proc mIncrementalSearch()
     endloop
     UpdateDisplay()			    // to restore the status line
 end
+
+PROC Main()
+ mIncrementalSearch()
+END
