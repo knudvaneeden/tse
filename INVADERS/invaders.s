@@ -1,11 +1,13 @@
 
-#include ["ss.h"]
+#include ["ss32.h"]
 
 constant    GunWidth        = 5,
             GunHeight       = 2,
-            BulletChar      = 219,
-            InvaderChar     = 157,
-            InvadersPerLine = 15
+            BulletChar      = 124,
+            InvaderChar     = 87,
+            InvadersPerLine = 15,
+            FireKeyUpper    = 70,
+            FireKeyLower    = 102
 
 integer GunPos = 37,
         gameID,
@@ -18,9 +20,9 @@ integer GunPos = 37,
         Score,
         BombsLeft
 
-string  GunStr1[]   = ' ÜÛÜ',
-        GunStr2[]   = 'ßßßßß',
-        GroundStr[] = 'ÄÄÄÄÄ'
+string  GunStr1[]   = '  ^  ',
+        GunStr2[]   = '/___\',
+        GroundStr[] = '====='
 
 proc mDelay(integer hs)
     integer i = hs * DelayFactor
@@ -82,11 +84,11 @@ proc Initialize()
     Set(Attr, Color(Bright Cyan on Black))
     ClrScr()
     VGotoXYAbs(1,2)
-    PutCharH('Ä',Query(ScreenCols))
+    PutCharH('=',Query(ScreenCols))
     Window(1,3,Query(ScreenCols),Query(ScreenRows)-GunHeight)
     VGotoXYAbs(1, Query(ScreenRows))
     Set(Attr, Color(Bright Green on Black))
-    PutCharH('Ä', Query(ScreenCols))
+    PutCharH('=', Query(ScreenCols))
     Set(Attr, Color(Bright Yellow on Black))
     DrawGun(0)
 
@@ -136,7 +138,7 @@ proc DestroyInvader(integer x, integer y)
     repeat
         VGotoXYAbs(x, y)
         Set(Attr, i)
-        PutChar('')
+        PutChar('*')
         mDelay(1)
         i = i - 1
     until i < 0
@@ -152,7 +154,6 @@ proc CheckFire()
     if Firing
         FireY = FireY - 1
         if FireY > 2
-            Fire_It:
             if InvaderAt(x, FireY)
                 DestroyInvader(x, FireY)
                 Firing = FALSE
@@ -264,13 +265,18 @@ end
 
 proc main()
     integer cursor = Set(Cursor, Off), eek = Set(EquateEnhancedKbd, On),
-            lasttime = 0
+            lasttime = 0,
+            moveDelayI
 
     HideMouse()
 
     Initialize()
     loop
-        if (InvadersLeft == 0) or ((GetHSecs() - lasttime) > (205 - (Level * 5)))
+        moveDelayI = 50 - (Level * 2)
+        if moveDelayI < 10
+            moveDelayI = 10
+        endif
+        if (InvadersLeft == 0) or ((GetHSecs() - lasttime) > moveDelayI)
             UpdateInvaders()
             lasttime = GetHSecs()
         endif
@@ -287,14 +293,12 @@ proc main()
         VGotoXYAbs(1,1)
         Set(Attr, Color(Bright White on Black))
         PutStr(Format(' Bombs = ',BombsLeft:3,'Score = ':26,Score:9,'Level = ':28,Level:2))
-        if BIOSShiftState() & sSHIFT
-            Firing = TRUE
-        endif
         CheckFire()
         if KeyPressed()
             case GetKey()
                 when <CursorLeft>,  <Shift CursorLeft>      MoveGun(mLEFT)
                 when <CursorRight>, <Shift CursorRight>     MoveGun(mRIGHT)
+                when FireKeyUpper, FireKeyLower             Firing = TRUE
                 when <Spacebar>                             Bomb()
                 when <Escape>                               break
             endcase

@@ -1,0 +1,6 @@
+LIBRARY INVADERS32
+
+EXPORTS
+    EnhancedShiftState
+    NormalShiftState
+    BIOSShiftState
