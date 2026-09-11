@@ -15,7 +15,9 @@
                                 I_CMMT.S
 
              The "Intelligent Commenting" TSE Macro Package
-                              Version 1.0
+                       Updated Version 1.0.0.0.4
+
+Update: OpenAI GPT-5 Codex, 2026-09-11
 
 
 Author:  John D. Goodman
@@ -86,6 +88,19 @@ Acknowledgements:
    without proper attribution, please let me know.
 
 Revision History:
+
+   ver. 1.0.0.0.4 09/11/26
+      -- replaced unsupported Toggle(WordWrap) with explicit Set()
+
+   ver. 1.0.0.0.3 09/11/26
+      -- added required names to the four GetFreeHistory calls
+      -- restored separate histories and initial comment choices
+
+   ver. 1.0.0.0.2 09/11/26
+      -- replaced obsolete private histories with _EDIT_HISTORY_
+
+   ver. 1.0.0.0.1 09/11/26
+      -- updated zero-parameter GetFreeHistory syntax for TSE 4.50
 
    ver. 1.0 05/31/94
       -- original issue; written for TSE Pre-Release Ver. 1.0
@@ -175,20 +190,20 @@ proc WhenLoaded()
    // This proc is executed whenever the macro package is loaded by TSE.
    // Initialize history lists for menu options and user prompts.
 
-   iILCmmtHist   = GetFreeHistory()
+   iILCmmtHist = GetFreeHistory( "I_CMMT:inline_comment" )
 
-      AddHistoryStr( "REM ", iILCmmtHist )  // common in-line comment
-      AddHistoryStr( "; ",   iILCmmtHist )  // strings
-      AddHistoryStr( "&& ",  iILCmmtHist )
-      AddHistoryStr( "* ",   iILCmmtHist )
-      AddHistoryStr( "// ",  iILCmmtHist )
+   AddHistoryStr( "REM ", iILCmmtHist )  // common in-line comment
+   AddHistoryStr( "; ",   iILCmmtHist )  // strings
+   AddHistoryStr( "&& ",  iILCmmtHist )
+   AddHistoryStr( "* ",   iILCmmtHist )
+   AddHistoryStr( "// ",  iILCmmtHist )
 
-   iBlkCmmtHist  = GetFreeHistory()
+   iBlkCmmtHist = GetFreeHistory( "I_CMMT:block_comment" )
 
-      AddHistoryStr( "/*|*/", iBlkCmmtHist )
+   AddHistoryStr( "/*|*/", iBlkCmmtHist )
 
-   iILPromptHist = GetFreeHistory()
-   iFLPromptHist = GetFreeHistory()
+   iILPromptHist = GetFreeHistory( "I_CMMT:inline_prompt" )
+   iFLPromptHist = GetFreeHistory( "I_CMMT:full_line_prompt" )
 
 end
 
@@ -1040,9 +1055,13 @@ menu CmmtOptsMenu()
       DontClose
 
    "&Normal Wordwrap Mode" [ DispOnOff( Query( WordWrap ) ) : 3 ],
-      Toggle( WordWrap ),
+      Set( WordWrap, iif( Query( WordWrap ), OFF, ON ) ),
       DontClose
 end
+
+PROC Main()
+ CmmtOptsMenu()
+END
 
 // =====================================================================
 // Key bindings...
