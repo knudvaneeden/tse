@@ -2,6 +2,11 @@
    Macro.         Joinfils.
    Author.        Carlo Hogeveen (hyphen@xs4all.nl).
    Date-written.  20 august 1998.
+   Version.       1.0.0.0.2.
+   Modified.      2026-09-11 23:36:06 UTC by OpenAI GPT-5.
+
+   1.0.0.0.2      Stay in TSE when a file prompt is cancelled.
+   1.0.0.0.1      Warn before closing TSE when a file prompt is cancelled.
 
    The macro should be started from the command-line with:
 
@@ -69,9 +74,11 @@ proc get_file(     string  file_number,
                var integer file_id,
                var integer column_from,
                var integer column_thru)
+   integer answeredB = false
    string filename[255] = ""
    string answer[255] = ""
-   if  ask("File " + file_number + " to join:", filename)
+   answeredB = ask("File " + file_number + " to join:", filename)
+   if  answeredB
    and fileexists(filename)
    and editfile(filename)
       file_id = getbufferid()
@@ -108,8 +115,12 @@ proc get_file(     string  file_number,
          abandoneditor()
       endif
    else
-      warn("Error reading file: ", filename )
-      abandoneditor()
+      if answeredB
+         warn("Error reading file: ", filename )
+         abandoneditor()
+      else
+         warn("JOINFILS cancelled. TSE will remain open.")
+      endif
    endif
 end
 
@@ -228,21 +239,27 @@ end
 
 proc main()
    get_file("1", file1_id, file1_column_from, file1_column_thru)
-   get_file("2", file2_id, file2_column_from, file2_column_thru)
-   if yesno("Proceed with these choices?")
-      new_id = createbuffer("c:\*read\only*\joined.fil")
-      if new_id == 0
-         warn("Cannot create c:\*read\only*\joined.fil")
-         abandoneditor()
+   if file1_id
+      get_file("2", file2_id, file2_column_from, file2_column_thru)
+      if file2_id
+         if yesno("Proceed with these choices?")
+            new_id = createbuffer("c:\*read\only*\joined.fil")
+            if new_id == 0
+               warn("Cannot create c:\*read\only*\joined.fil")
+               abandoneditor()
+            else
+               emptybuffer()
+               balance_lines()
+               gotobufferid(new_id)
+               filechanged(false)
+               abandonfile(file1_id)
+               abandonfile(file2_id)
+            endif
+         else
+            abandoneditor()
+         endif
       else
-         emptybuffer()
-         balance_lines()
-         gotobufferid(new_id)
-         filechanged(false)
          abandonfile(file1_id)
-         abandonfile(file2_id)
       endif
-   else
-      abandoneditor()
    endif
 end
