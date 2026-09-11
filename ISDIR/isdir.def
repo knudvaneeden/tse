@@ -1,0 +1,4 @@
+LIBRARY ISDIR
+DESCRIPTION 'TSE directory test DLL 1.0.0.0.2'
+EXPORTS
+    IsDir
