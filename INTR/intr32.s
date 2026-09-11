@@ -48,5 +48,17 @@ PROC PROCSetLargeCursor()
     ENDIF
 END
 
+PROC Main()
+ //
+ IF YesNo( "Run this? For demonstration purposes: This will insert a listing of the current directory. Remove it after running this program.") == 1
+  //
+  PROCBuildDirectory()
+  //
+  PROCSetLargeCursor()
+  //
+ ENDIF
+ //
+END
+
 <F1> PROCBuildDirectory()
 <F2> PROCSetLargeCursor()
