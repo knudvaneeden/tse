@@ -1,5 +1,12 @@
 /*****************************************************************************
 
+Version 1.0.0.0.3 - 2026-09-12
+- Made block saving/restoring conditional to prevent a blank File not found
+  warning when no block is marked in the current file.
+- Added Main() as the entry point for current TSE SAL versions.
+- Repaired the unterminated German-vowel string in Vocal().
+- Kept the source ASCII-safe for TSE SAL Compiler V4.50.
+
 JustiWS justifies (almost) like WordStar's Ctrl-B:
 --------------------------------------------------
 1. - deletes multiple SPACEs
@@ -79,8 +86,7 @@ integer proc FindSpace(integer anzleer)     // anzleer: wanted number
     endif
     return(0)                                           // NOT FOUND!
 end
- 
- 
+
 // ##########################################################################
 //
 // Justify fills a line with SPACEs until it fits the margins.
@@ -267,8 +273,7 @@ integer proc Vocal()            // Checks if a character is a vocal
     ret = 1                     // Return 1 if the character is a vocal
  
     case upc
-        when "A","E","I","O","U"        // Usual vocals
-        when "  // German vocals
+        when "A","E","I","O","U"        // Usual vowels
     otherwise
         ret = 0                 // Return 0 if the character is no vocal
     endcase
@@ -331,13 +336,17 @@ proc JustiWS()          // This is the Main Macro!
             tflag,      // Hyphenating flag
             ky,         // Key input
             insmod,     // Insert mode
-            cursiz      // Cursor size
+            cursiz,     // Cursor size
+            blockB      // TRUE if a block is marked in the current file
  
     // This help text appears when the macro wants to hyphenate:
     string msg[78] = " HYPHEN:   " + chr(27) + " left    " + chr(26)
            msg = msg + " right    - hyphen    ESC break    other key: wrap "
  
-    PushBlock()                             // Save extant block
+    blockB = isBlockInCurrFile()
+    if blockB
+        PushBlock()                         // Save extant block
+    endif
     UnMarkBlock()                           // Revove extant block
     cursiz = Query(InsertCursorSize)        // Save cursor size
     insmod = Query(Insert)                  // Save old insert mode
@@ -526,7 +535,14 @@ exithyph:
     set(Insert,insmod)                      // Reset insert mode
     set(InsertCursorSize,cursiz)            // Reset cursor size
  
-    PopBlock()                              // Reset block
+    if blockB
+        PopBlock()                          // Reset block
+    endif
 
+end
+
+// Entry point for current TSE SAL versions.
+proc Main()
+    JustiWS()
 end
 
