@@ -1,8 +1,9 @@
 /*****************************************************************************
 
-Version 1.0.0.0.3 - 2026-09-12
-- Made block saving/restoring conditional to prevent a blank File not found
-  warning when no block is marked in the current file.
+Version 1.0.0.0.5 - 2026-09-12
+- Main() now requires a block marked in the current file.
+- Main() moves the cursor to the beginning of that block before justification.
+- Restored unconditional PushBlock() and PopBlock() in JustiWS().
 - Added Main() as the entry point for current TSE SAL versions.
 - Repaired the unterminated German-vowel string in Vocal().
 - Kept the source ASCII-safe for TSE SAL Compiler V4.50.
@@ -336,17 +337,13 @@ proc JustiWS()          // This is the Main Macro!
             tflag,      // Hyphenating flag
             ky,         // Key input
             insmod,     // Insert mode
-            cursiz,     // Cursor size
-            blockB      // TRUE if a block is marked in the current file
+            cursiz      // Cursor size
 
     // This help text appears when the macro wants to hyphenate:
     string msg[78] = " HYPHEN:   " + chr(27) + " left    " + chr(26)
            msg = msg + " right    - hyphen    ESC break    other key: wrap "
 
-    blockB = isBlockInCurrFile()
-    if blockB
-        PushBlock()                         // Save extant block
-    endif
+    PushBlock()                             // Save extant block
     UnMarkBlock()                           // Revove extant block
     cursiz = Query(InsertCursorSize)        // Save cursor size
     insmod = Query(Insert)                  // Save old insert mode
@@ -535,15 +532,15 @@ exithyph:
     set(Insert,insmod)                      // Reset insert mode
     set(InsertCursorSize,cursiz)            // Reset cursor size
 
-    if blockB
-        PopBlock()                          // Reset block
-    endif
+    PopBlock()                              // Reset block
 
 end
 
 // Entry point for current TSE SAL versions.
 proc Main()
- IF YesNo( "Run justify.s? Note: Advised is to run justify.s only in your TSE beta test environment sandbox, as it will act on the current file out of the box and is difficult to stop." ) == 1
+ IF YesNo("Run JUSTIWS on the current file? First save and back up all your work before continuing.") == 1
+  IF ( NOT ( IsBlockInCurrFile() ) ) Warn( "Please mark a block" ) RETURN() ENDIF
+  GotoBlockBegin()
   JustiWS()
  ENDIF
 end
