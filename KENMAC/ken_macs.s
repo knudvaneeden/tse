@@ -22,6 +22,13 @@ PS: TSE is the greatest editor!  My compliments to SEMWARE personnel.
 
 **************************************************************************/
 
+ integer proc ListIt(string title, integer width)
+    width = width + 4
+    if width > Query(ScreenCols)
+        width = Query(ScreenCols)
+    endif
+    return (List(title, width))
+end
 
 /**************************************************************************
 mEndWordLeft()
@@ -200,5 +207,7 @@ proc mColorChart()
 
 end mColorChart
 
-
+PROC Main()
+ mEndWordRight()
+END
 
