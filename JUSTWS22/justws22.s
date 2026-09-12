@@ -1,6 +1,13 @@
 /****   JustiWS Version 2.2     WordStar-like full justification macro
         09.09.1995              Deutsche Beschreibung siehe unten!
 
+        Updated version: 1.0.0.0.3
+        Updated: 2026-09-12
+        Updated by: OpenAI GPT-5 Codex
+        Added Main() with a save-and-backup confirmation so the macro can be
+        run directly on the current file. Only save and restore a block when
+        the current file has one.
+
 
 Macro written  31.7.1993 by: Paul Lenz                proppi@sampo.han.de
                              Friesenstrasse 22
@@ -642,7 +649,8 @@ end
 proc JustiWS()          // This is the Main Macro!
 
     integer insmod,     // Insert mode
-            cursiz      // Cursor size
+            cursiz,     // Cursor size
+            blockB      // TRUE if current file has a marked block
 
 
     if PosFirstNonWhite() == 0              // Don't justify empty lines
@@ -651,7 +659,10 @@ proc JustiWS()          // This is the Main Macro!
         Return()
     endif
 
-    PushBlock()                             // Save extant block
+    blockB = isBlockInCurrFile()
+    if blockB
+        PushBlock()                         // Save extant block
+    endif
     UnMarkBlock()                           // Revove extant block
     cursiz = Query(InsertCursorSize)        // Save cursor size
     insmod = Query(Insert)                  // Save old insert mode
@@ -740,6 +751,19 @@ exithyph:
     set(Insert, insmod)                     // Reset insert mode
     set(InsertCursorSize, cursiz)           // Reset cursor size
     Set(Cursor,ON)
-    PopBlock()                              // Reset block
+    if blockB
+        PopBlock()                          // Reset block
+    endif
 
+end
+
+
+// ##########################################################################
+// Stand-alone entry point.
+// Ask for confirmation before JUSTWS22 changes the current document.
+
+proc Main()
+    IF YesNo("Run JUSTWS22 on the current file? First save and back up all your work before continuing.") == 1
+        JustiWS()
+    ENDIF
 end
