@@ -1,9 +1,9 @@
 # JUSTWS22 - WordStar-style full justification for TSE
 
 **Session:** Create JUSTWS22 MarkDown Readme  
-**README version:** 1.0.0.0.3  
+**README version:** 1.0.0.0.5  
 **Date:** 2026-09-12  
-**Time:** 14:17:27 UTC  
+**Time:** 14:47:32 UTC  
 **Original macro version:** JustiWS 2.2 (1995-09-09)
 
 ## Description
@@ -67,7 +67,7 @@ Be careful with `DELHYPHEN`: the original author notes that it can remove a mean
 
 ## How to install and invoke it
 
-Updated version `1.0.0.0.3` contains a `Main()` entry point, so it can be compiled and run as a stand-alone TSE macro on the current active file. It does not ask for or open another filename.
+Updated version `1.0.0.0.5` contains a `Main()` entry point, so it can be compiled and run as a stand-alone TSE macro on the current active file. It does not ask for or open another filename. A block must be marked in the current file before the macro is run.
 
 When the macro starts, `Main()` displays this confirmation before calling `JustiWS()`:
 
@@ -75,21 +75,21 @@ When the macro starts, `Main()` displays this confirmation before calling `Justi
 Run JUSTWS22 on the current file? First save and back up all your work before continuing.
 ```
 
-Choose **Yes** to run `JustiWS()` on the current file. Choose **No** or press **Escape** to cancel without starting the formatter.
+Choose **Yes** to continue. `Main()` then verifies that a block is marked in the current file. If not, it displays `Please mark a block` and returns without formatting. If a block exists, the cursor moves to its beginning and `JustiWS()` runs from that position. Choose **No** or press **Escape** at the first prompt to cancel.
 
 ## Steps to justify text
 
 1. Open a text document in TSE.
 2. Ensure that every paragraph is separated from the next paragraph by at least one blank line.
 3. Set TSE's left and right margins to the desired text width.
-4. Place the cursor anywhere in the first paragraph to process.
+4. Mark a block whose beginning is the position where formatting should start.
 5. Save the current document and make a backup copy of all important work.
 6. Run `JUSTWS22.MAC` through TSE's Execute Macro command.
 7. Read the save-and-backup confirmation displayed by `Main()`.
-8. Choose **Yes**. The macro calls `JustiWS()` and begins formatting the current file at the current paragraph.
+8. Choose **Yes**. The macro verifies the block, moves the cursor to `GotoBlockBegin()`, and calls `JustiWS()`.
 9. Review the reformatted text and save it when satisfied.
 
-The macro begins with the paragraph containing the cursor and continues through subsequent paragraphs. To limit its effect, work on a copy of the text or place only the paragraphs to be processed in a temporary buffer.
+The block determines the starting position. The original `JustiWS()` routine does not use the end of the marked block as a stopping boundary; it continues through subsequent paragraphs. To limit its effect, work on a copy of the text or place only the paragraphs to be processed in a temporary buffer.
 
 ## Interactive hyphenation
 
@@ -118,11 +118,11 @@ The exact result depends on the current TSE left and right margins, the selected
 
 ### The compiled macro appears to do nothing
 
-Confirm that you compiled the updated `JUSTWS22.S` version `1.0.0.0.3`, which contains `Main()`. Also verify that the cursor is on a non-empty paragraph before execution.
+Confirm that you compiled the updated `JUSTWS22.S` version `1.0.0.0.5`, which contains `Main()`. Also verify that a block is marked in the current file and begins on non-empty text.
 
-### A blank `File not found:` warning appears
+### `Please mark a block` appears
 
-Use version `1.0.0.0.2` or later. The old code called `PushBlock()` and `PopBlock()` unconditionally. With no marked block in the current file, this could produce the empty warning. The corrected macro first calls `isBlockInCurrFile()` and preserves/restores the block only when one exists.
+Mark a block in the current file and run the macro again. `Main()` requires a block so it can move to the intended starting position with `GotoBlockBegin()`.
 
 ### Several paragraphs are merged
 
@@ -145,6 +145,20 @@ Set `DELHYPHEN` to `FALSE` and recompile. The supplied `TRUE` setting tries to r
 Check that `NOJUSTIFY` is `FALSE`, then recompile the source.
 
 ## Version history
+
+### 1.0.0.0.5 - 2026-09-12 14:47:32 UTC
+
+- Added a check in `Main()` requiring a marked block in the current file.
+- Added the `Please mark a block` warning and immediate `RETURN()` when no block exists.
+- Added `GotoBlockBegin()` before `JustiWS()` so formatting starts at the beginning of the marked block.
+- Clarified that the block supplies the starting position but does not limit processing at its end.
+
+### 1.0.0.0.4 - 2026-09-12 14:40:54 UTC
+
+- Restored the original unconditional `PushBlock()` and `PopBlock()` calls.
+- Removed the incorrect conclusion that those calls caused the blank `File not found:` warning.
+- Recorded that the warning was related to the `g32.exe` session/version being run.
+- Retained the working `YesNo()` entry point that operates on the current file.
 
 ### 1.0.0.0.3 - 2026-09-12 14:17:27 UTC
 
