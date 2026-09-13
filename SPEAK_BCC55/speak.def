@@ -1,0 +1,14 @@
+LIBRARY SPEAK
+
+EXPORTS
+    speak_initialize=_speak_initialize@0
+    speak_text=_speak_text@8
+    speak_text_file=_speak_text_file@4
+    speak_text_async=_speak_text_async@12
+    speak_text_async_file=_speak_text_async_file@8
+    speak_text_async_pause=_speak_text_async_pause@4
+    speak_text_async_resume=_speak_text_async_resume@4
+    speak_text_async_stop=_speak_text_async_stop@4
+    speak_set_volume=_speak_set_volume@4
+    speak_set_voice=_speak_set_voice@4
+    speak_get_voice_info=_speak_get_voice_info@8
