@@ -1,0 +1,18 @@
+LIBRARY	"speak"
+
+EXPORTS
+
+	speak_initialize
+	speak_get_voice_info
+
+	speak_text
+	speak_text_file
+
+	speak_text_async
+	speak_text_async_file
+	speak_text_async_pause
+	speak_text_async_resume
+	speak_text_async_stop
+
+	speak_set_voice
+	speak_set_volume
