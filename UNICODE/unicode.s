@@ -2,9 +2,9 @@
   Macro           Unicode
   Author          Carlo Hogeveen
   Website         eCarlo.nl/tse
-  Compatibility   Windows GUI TSE v4       upwards with an ANSI compatible font,
+  Compatibility   Windows GUI TSE v4.4     upwards with an ANSI compatible font,
                   Linux       TSE v4.41.35 upwards
-  Version         v2.6   24 Sep 2022
+  Version         v2.8.3   13 Sep 2026
 
 
 
@@ -636,87 +636,201 @@
 
 
   HISTORY
-  1.0.0    4 Nov 2013
-    Initial version that lets you view UTF-8 files.
-  1.0.1 - 21 Jan 2014
-    Solves an incorrect codepoint being shown for characters that can't be
-    converted to ANSI. Thanks to John Kopp for the report and the solution.
-  1.0.2   12 Apr 2015
-    The viewing mode for UTF-8 has been removed, anticipating that
-    saving back in UTF-8 format will be soon be added.
-    Rewritten the UTF-8 loading to be a tiny bit faster, and a lot more
-    robust and aware of errors. Aware does not mean it fixes them, it
-    means that the places where "garbage in [then] garbage out" applies
-    are more explicit.
-  1.0.3   13 Apr 2015
-    Disable saving of loaded UTF-8 file, because it was converted to ANSI.
-  1.0.4   19 Apr 2015
-    Added saving a loaded UTF-8 file.
-    So effectively we can now edit an existing UTF-8 file.
-  1.0.5   20 Apr 2015
-    Now handles a UTF-8 byte order mark (BOM).
-  1.0.6    9 May 2015
-    Three bugs solved thanks to John Kopp:
-    - Character 127 was not correctly converted back to UTF-8 when it
-      already occurred in the original UTF-8 file.
-    - UTF-8 character "LATIN CAPITAL LETTER A WITH TILDE" was not
-      correctly converted to ANSI.
-    - There were two erroneous comments after the BOM definitions.
-    Now hexadecimal instead of decimal codepoints are shown for UTF-8
-    characters that cannot be converted to ANSI.
-  1.1 beta versions   April 2018
-    - Show current file's character encoding as a status.
-    - Facilitate upgrading an ASCII file when it becomes a non-ASCII file.
-    - Show character descriptions as a status.
-    - Explicitly change the current file's character encoding.
-  1.2   9 May 2018
-    Release.
-  1.2.2   12 May 2018
-    Bug mitigated for gigabyte files:
-      Opening a gigabyte file was extremely slow, which made the editor
-      appear to hang. The culprit is my programming choice, that determining
-      the character encoding of a file is allowed to be slow in favour of
-      small memory usage. In hindsight I would have made the other choice
-      since gigabyte files should not be the norm, and I might still do so in
-      the future, but that would just shift the problem for gigabyte files.
-      For now the bug is mitigated in three ways:
-      - A new configuration option default says that a Unicode file with a byte
-        order mark (BOM) will no longer be checked: The BOM is assumed to be
-        correct.
-      - Another new configuration option default says that only the first 25 MB
-        of a file will be checked to determine its character encoding.
-        Formerly the whole file was checked. There is a downside to this speed
-        increase that is specific to BOM-less UTF-8 files: They will not be
-        recognized if the first non-ANSI character occurs past the 25th MB.
-        You can set this option ("Max bytes to check") from 1 MB to about 2 GB
-        to choose between speed and the chance of not detecting a very large
-        UTF-8 file with a far occurring first non-ANSI character.
-      - If you check more than 25 MB, then a counter will be shown,
-        so that the editor does not appear to hang any more.
-  1.2.4   16 May 2018
-    Bug fixed:
-      When the user changed the current file's character encoding, then the
-      file's status did not change to "changed" (get an asterisk before the
-      name), so when quitting the file the user got no question to save it.
-    Problem mitigated:
-      When opening and saving a UTF-8 file it is converted from UTF-8 to ANSI
-      and from ANSI to UTF-8. For very large files these conversions can be so
-      slow, that you might think the editor is frozen. To mitigate that now a
-      progress indicator of the conversions is shown per 1 MB of converted
-      characters.
-    Bug fixed:
-      A programming error caused the conversion from ANSI to UTF-8 to be about
-      10 times slower than it needed to be, which made saving a UTF-8 file
-      about 10 times slower too, and the error wasted a lot of memory on
-      unnecessary undo/redo history.
-  1.2.6   6 Nov 2018
-    Bug fixed:
-      Some UTF-8 files were not recognized as such,
-      but were recognized and loaded as ANSI files.
-    Bug fixed:
-      Corrected and improved some menu's helplines' texts.
-  1.2.8   19 Nov 2018
-    Only documentation updated: Versioned the isAutoLoaded procedure.
+
+  2.8.3   13 Sep 2026
+    Fixed that the Unicode extension made TSE v4.50.27 crash .
+
+    For Windows TSE formally reduced Unicode's backward compatibility
+    from TSE v4 to TSE v4.4. In practice this had already happened without
+    anyone noticing it, including me.
+
+  2.8.2   27 Oct 2025
+    Updated the data files to Unicode 17, which was released 9 Sep 2025:
+      https://blog.unicode.org/2025/09/unicode-170-release-announcement.html
+
+  2.8.1   29 Oct 2024
+    Added extra error-checks to make the extension more fool-proof.
+
+  2.8     21 Sep 2024
+    Updated the data files to Unicode 16, which was released 10 Sep 2024:
+      https://blog.unicode.org/2024/09/announcing-unicode-standard-version-160.html
+
+    Partial fix that makes macros less case-sensitive to each other's names.
+    ExecMacro()'s call is not fixed, awaiting whether Semware will provide a
+    low-level fix as discussed from 19 Sep 2024 onwards.
+
+  2.7     26 Sep 2023
+    Updated the data files to Unicode 15.1, which was released 12 Sep 2023:
+      https://blog.unicode.org/2023/09/announcing-unicode-standard-version-151.html
+    For TSE this means in practice, that no new characters were added and that
+    their formal Unicode descriptions remained the same, but that some of their
+    alternative descriptions were updated.
+    The Unicode extension shows these alternative descriptions
+    in the "Insert a Unicode character" list.
+
+  2.6     24 Sep 2022
+    Updated the data files to Unicode 15, which was released 13 Sep 2022.
+      https://home.unicode.org/announcing-the-unicode-standard-version-15-0/
+
+    Fixed, that text copied to the Windows clipboard could not be pasted
+    in VirtualBox guest systems.
+
+  2.5.1   17 Sep 2022
+    Fixed incompatibility with TSE's '-i' command line option
+    and the TSELOADDIR environment variable.
+
+  2.5     26 Jan 2022
+    Implements copy, cut and paste of Unicode encoded files.
+
+  2.4.1   21 Nov 2021
+    Bug fix:
+      When opening one specific binary file as a normal file (that is, without
+      the -b option), the Unicode extension thought it was a UTF-32LE file,
+      which in turn revealed an infinite program loop in the Unicode extension,
+      causing TSE to hang.
+      The infinite loop has been fixed.
+      That specific binary file now loads as a corrupted UTF-32LE file.
+      That is acceptable to me for now, because binary files should typically
+      be opened with the -b option anyway, in which case they are ignored by
+      the Unicode extension.
+
+  2.4     10 Oct 2021
+    - Updated the data files UnicodeData.txt and NamesList.txt
+      to Unicode standard 14.0.0.
+
+  2.3.2   29 Nov 2020
+    Fixed:
+    Opening a "Unicode" file not ending with a newline caused the
+    conversion and thereby TSE to hang.
+    "Unicode" between quotes, because in practice this typically happened
+    when a file
+    - AND was opened in normal mode (without the "-b" prefix),
+    - AND was a binary file (not readable text),
+    - AND was misidentified as a Unicode file.
+
+  2.3.1   15 Sep 2020
+    Fixed: The progress percentage was only partially displayed when loading
+    and saving a Unicode file with a byte order mark (BOM).
+
+  2.3     14 Sep 2020
+    When loading or saving any Unicode file, show the filename as a statusline
+    message and the conversion progress indicator in a pop-up window below it.
+    Loading a UTF-16 or UTF-32 file is 3 times faster and saving one is 4½
+    times faster.
+    Fixed: Opening a UTF-16 or UTF-32 file added an empty line at the end.
+
+  2.2     24 Jul 2020
+    Now allows disabling the warning if this macro is started in the Console
+    version of TSE. This is useful for users who use both the GUI and Console
+    versions of TSE from the same installation folder.
+
+  2.1     30 Apr 2020
+    - Added Linux TSE Beta v4.41.35 upwards compatibility.
+      Unicode now needs at least version 1.2 of the Status macro installed.
+    - Updated UnicodeData.txt and NamesList.txt to Unicode standard 13.0.0.
+    - Bug fix: An initial installation of Unicode did set two of its
+      configuration variables to "Default" instead of "Enabled" or "Disabled"
+      with confusing results. It could be remedied by configuring them to
+      "Enabled" or "Disabled", but a user should not have to, and now does not.
+    - Bug fix:
+        Context:
+          In a loaded Unicode file codepoints are quoted with character 127,
+          and if character 127 itself occurs in the text then it is represented
+          as quoted codepoint 7F.
+        Problem:
+          You could not convert a loaded text with any quoted codepoints
+          to ANSI or ASCII, but an exception should be made for if the only
+          quoted codepoints are for character 127 itself.
+        Fixed.
+    - Bug fix: When opening a Unicode file in some cases the conversion progress
+      line remained shown after the conversion, which might be mistaken for the
+      conversion not finishing.
+
+  2.0.6   5 Oct 2019
+    Significant bug in reading UTF-16BE and UTF-32BE files > 8k.
+    To give a very rough guesstimate: For every multiple of 8k in size,
+    there was a 15% chance of garbage and loss of characters when reading
+    UTF-16BE and UTF-32BE files.
+    I found specific references that Windows and JavaScript use UTF-16LE, and
+    guestimate thereby that UTF-16BE must be less common.
+    UTF-32 is rare in any form.
+    This might explain why nobody found and reported this bug.
+
+  2.0.5   8 Jun 2019
+    Only updated the supplemental files from Unicode 11 to Unicode 12.1.
+
+  2.0.4   30 Apr 2019
+    Improved the documentation a bit.
+    Minor bug fixed:
+      The macro was no longer backwards compatible with TSE Pro v4.0.
+
+  2.0.3   26 Feb 2019
+    Minor bug fixed:
+      When inserting a non-ANSI character in an ASCII file, the automatic
+      upgrade menu allowed us to select ASCII as the new character encoding.
+
+  2.0.2   22 Feb 2019
+    Major bug fixed:
+      Some non-ASCII ANSI characters were no longer converted to/from UTF-8.
+      This bug was introduced :-( 20 days ago together with the speed
+      optimizations in v1.5.
+      For example "é" ("latin small letter e with acute") was no longer
+      converted from ANSI to UTF-8.
+      Incorrect UTF-8 files created this way will automatically get corrected
+      once they are opened and saved again with this version of the macro.
+
+  2.0.1   10 Feb 2019
+    Work around the TSE bug of processing the _on_first_edit_ hook again
+    when the user only changes an already being edited file's name.
+
+  2       8 Feb 2019
+    Added all standard UTF-16 and UTF-32 character encodings.
+
+  1.5     2 Feb 2019
+    Opening files and saving UTF-8 files is dramatically faster.
+      By far the biggest performance improvement comes from the assumption that
+      non-ASCII characters are still sparse in Unicode files and by using
+      low-level TSE commands to specifically find only those characters.
+    "Max bytes to check" can be much lower.
+      The latter configuration option says, that when you open a file, how
+      many bytes should be pre-read to determine the file's character
+      encoding format. The default was 25 MB, and is now 4 kB, while 255 B
+      would probably work well too. I made the default 4 kB, because that is
+      extremely likely to be already cached after reading the file's first
+      byte, so performance-wise pre-reading and checking a whole 4 kB is as
+      good as free.
+    Limit for saving extremely large UTF-8 files is a bit lower.
+      This was a choice for save speed in favour of editable file size, and a
+      judgement that it is better to optimize for common than for extreme use
+      cases.
+      In my tests I can still edit and save a 500 MB UTF-8 file.
+      I could open and edit a 1 GB UTF-8 file, but not save it as UTF-8.
+      When TSE runs out of memory when saving an extremely large UTF-8 file,
+      then you now get the option to NOT save it (the default) or to save it
+      in ANSI format.
+    KeepUndoBeyondSave no longer works for Unicode files.
+      This was also a choice for save speed in favour of editable file size,
+      and a solution to avoid the horrible possibility that the user could
+      in steps "undo" a to ANSI converted UTF-8 file.
+      You can still undo editing-changes in a Unicode file, but no longer to
+      before the last save.
+
+  1.4     27 Jan 2019
+    Added displaying a Unicode character.
+      Also display the current character on some fixed position on the screen
+      where we are able to display a Unicode character without messing up the
+      text.
+      NOTA BENE:
+      This works badly, so it has a configuration option that is default OFF.
+    GUI check reenabled.
+      As documented the Unicode macro only works for the GUI version of TSE.
+      Its check whether it runs in the console version and giving the user a
+      warning was disabled. No idea why, so I turned it back on again.
+    Some internal variable names standardized at some places.
+      This was needed to keep better track of data types.
+      Especially strings can hold all kinds of data types.
+      See the "macro programmer information".
+
   1.3     16 Jan 2019
     Bug fixed:
       No data file was distributed with v1.2.8.
@@ -748,157 +862,103 @@
         https://www.unicode.org/Public/UCD/latest/ucd/
       No garantee, but future Unicode versions of these files downloaded from
       there will have a reasonable chance of working with this macro too.
-  1.4     27 Jan 2019
-    Added displaying a Unicode character.
-      Also display the current character on some fixed position on the screen
-      where we are able to display a Unicode character without messing up the
-      text.
-      NOTA BENE:
-      This works badly, so it has a configuration option that is default OFF.
-    GUI check reenabled.
-      As documented the Unicode macro only works for the GUI version of TSE.
-      Its check whether it runs in the console version and giving the user a
-      warning was disabled. No idea why, so I turned it back on again.
-    Some internal variable names standardized at some places.
-      This was needed to keep better track of data types.
-      Especially strings can hold all kinds of data types.
-      See the "macro programmer information".
-  1.5     2 Feb 2019
-    Opening files and saving UTF-8 files is dramatically faster.
-      By far the biggest performance improvement comes from the assumption that
-      non-ASCII characters are still sparse in Unicode files and by using
-      low-level TSE commands to specifically find only those characters.
-    "Max bytes to check" can be much lower.
-      The latter configuration option says, that when you open a file, how
-      many bytes should be pre-read to determine the file's character
-      encoding format. The default was 25 MB, and is now 4 kB, while 255 B
-      would probably work well too. I made the default 4 kB, because that is
-      extremely likely to be already cached after reading the file's first
-      byte, so performance-wise pre-reading and checking a whole 4 kB is as
-      good as free.
-    Limit for saving extremely large UTF-8 files is a bit lower.
-      This was a choice for save speed in favour of editable file size, and a
-      judgement that it is better to optimize for common than for extreme use
-      cases.
-      In my tests I can still edit and save a 500 MB UTF-8 file.
-      I could open and edit a 1 GB UTF-8 file, but not save it as UTF-8.
-      When TSE runs out of memory when saving an extremely large UTF-8 file,
-      then you now get the option to NOT save it (the default) or to save it
-      in ANSI format.
-    KeepUndoBeyondSave no longer works for Unicode files.
-      This was also a choice for save speed in favour of editable file size,
-      and a solution to avoid the horrible possibility that the user could
-      in steps "undo" a to ANSI converted UTF-8 file.
-      You can still undo editing-changes in a Unicode file, but no longer to
-      before the last save.
-  2       8 Feb 2019
-    Added all standard UTF-16 and UTF-32 character encodings.
-  2.0.1   10 Feb 2019
-    Work around the TSE bug of processing the _on_first_edit_ hook again
-    when the user only changes an already being edited file's name.
-  2.0.2   22 Feb 2019
-    Major bug fixed:
-      Some non-ASCII ANSI characters were no longer converted to/from UTF-8.
-      This bug was introduced :-( 20 days ago together with the speed
-      optimizations in v1.5.
-      For example "é" ("latin small letter e with acute") was no longer
-      converted from ANSI to UTF-8.
-      Incorrect UTF-8 files created this way will automatically get corrected
-      once they are opened and saved again with this version of the macro.
-  2.0.3   26 Feb 2019
-    Minor bug fixed:
-      When inserting a non-ANSI character in an ASCII file, the automatic
-      upgrade menu allowed us to select ASCII as the new character encoding.
-  2.0.4   30 Apr 2019
-    Improved the documentation a bit.
-    Minor bug fixed:
-      The macro was no longer backwards compatible with TSE Pro v4.0.
-  2.0.5   8 Jun 2019
-    Only updated the supplemental files from Unicode 11 to Unicode 12.1.
-  2.0.6   5 Oct 2019
-    Significant bug in reading UTF-16BE and UTF-32BE files > 8k.
-    To give a very rough guesstimate: For every multiple of 8k in size,
-    there was a 15% chance of garbage and loss of characters when reading
-    UTF-16BE and UTF-32BE files.
-    I found specific references that Windows and JavaScript use UTF-16LE, and
-    guestimate thereby that UTF-16BE must be less common.
-    UTF-32 is rare in any form.
-    This might explain why nobody found and reported this bug.
-  2.1     30 Apr 2020
-    - Added Linux TSE Beta v4.41.35 upwards compatibility.
-      Unicode now needs at least version 1.2 of the Status macro installed.
-    - Updated UnicodeData.txt and NamesList.txt to Unicode standard 13.0.0.
-    - Bug fix: An initial installation of Unicode did set two of its
-      configuration variables to "Default" instead of "Enabled" or "Disabled"
-      with confusing results. It could be remedied by configuring them to
-      "Enabled" or "Disabled", but a user should not have to, and now does not.
-    - Bug fix:
-        Context:
-          In a loaded Unicode file codepoints are quoted with character 127,
-          and if character 127 itself occurs in the text then it is represented
-          as quoted codepoint 7F.
-        Problem:
-          You could not convert a loaded text with any quoted codepoints
-          to ANSI or ASCII, but an exception should be made for if the only
-          quoted codepoints are for character 127 itself.
-        Fixed.
-    - Bug fix: When opening a Unicode file in some cases the conversion progress
-      line remained shown after the conversion, which might be mistaken for the
-      conversion not finishing.
-  2.2     24 Jul 2020
-    Now allows disabling the warning if this macro is started in the Console
-    version of TSE. This is useful for users who use both the GUI and Console
-    versions of TSE from the same installation folder.
-  2.3     14 Sep 2020
-    When loading or saving any Unicode file, show the filename as a statusline
-    message and the conversion progress indicator in a pop-up window below it.
-    Loading a UTF-16 or UTF-32 file is 3 times faster and saving one is 4½
-    times faster.
-    Fixed: Opening a UTF-16 or UTF-32 file added an empty line at the end.
-  2.3.1   15 Sep 2020
-    Fixed: The progress percentage was only partially displayed when loading
-    and saving a Unicode file with a byte order mark (BOM).
-  2.3.2   29 Nov 2020
-    Fixed:
-    Opening a "Unicode" file not ending with a newline caused the
-    conversion and thereby TSE to hang.
-    "Unicode" between quotes, because in practice this typically happened
-    when a file
-    - AND was opened in normal mode (without the "-b" prefix),
-    - AND was a binary file (not readable text),
-    - AND was misidentified as a Unicode file.
 
-  2.4     10 Oct 2021
-    - Updated the data files UnicodeData.txt and NamesList.txt
-      to Unicode standard 14.0.0.
+  1.2.8   19 Nov 2018
+    Only documentation updated: Versioned the isAutoLoaded procedure.
 
-  2.4.1   21 Nov 2021
-    Bug fix:
-      When opening one specific binary file as a normal file (that is, without
-      the -b option), the Unicode extension thought it was a UTF-32LE file,
-      which in turn revealed an infinite program loop in the Unicode extension,
-      causing TSE to hang.
-      The infinite loop has been fixed.
-      That specific binary file now loads as a corrupted UTF-32LE file.
-      That is acceptable to me for now, because binary files should typically
-      be opened with the -b option anyway, in which case they are ignored by
-      the Unicode extension.
+  1.2.6   6 Nov 2018
+    Bug fixed:
+      Some UTF-8 files were not recognized as such,
+      but were recognized and loaded as ANSI files.
+    Bug fixed:
+      Corrected and improved some menu's helplines' texts.
 
-  2.5     26 Jan 2022
-    Implements copy, cut and paste of Unicode encoded files.
+  1.2.4   16 May 2018
+    Bug fixed:
+      When the user changed the current file's character encoding, then the
+      file's status did not change to "changed" (get an asterisk before the
+      name), so when quitting the file the user got no question to save it.
+    Problem mitigated:
+      When opening and saving a UTF-8 file it is converted from UTF-8 to ANSI
+      and from ANSI to UTF-8. For very large files these conversions can be so
+      slow, that you might think the editor is frozen. To mitigate that now a
+      progress indicator of the conversions is shown per 1 MB of converted
+      characters.
+    Bug fixed:
+      A programming error caused the conversion from ANSI to UTF-8 to be about
+      10 times slower than it needed to be, which made saving a UTF-8 file
+      about 10 times slower too, and the error wasted a lot of memory on
+      unnecessary undo/redo history.
 
-  2.5.1   17 Sep 2022
-    Fixed incompatibility with TSE's '-i' command line option
-    and the TSELOADDIR environment variable.
+  1.2.2   12 May 2018
+    Bug mitigated for gigabyte files:
+      Opening a gigabyte file was extremely slow, which made the editor
+      appear to hang. The culprit is my programming choice, that determining
+      the character encoding of a file is allowed to be slow in favour of
+      small memory usage. In hindsight I would have made the other choice
+      since gigabyte files should not be the norm, and I might still do so in
+      the future, but that would just shift the problem for gigabyte files.
+      For now the bug is mitigated in three ways:
+      - A new configuration option default says that a Unicode file with a byte
+        order mark (BOM) will no longer be checked: The BOM is assumed to be
+        correct.
+      - Another new configuration option default says that only the first 25 MB
+        of a file will be checked to determine its character encoding.
+        Formerly the whole file was checked. There is a downside to this speed
+        increase that is specific to BOM-less UTF-8 files: They will not be
+        recognized if the first non-ANSI character occurs past the 25th MB.
+        You can set this option ("Max bytes to check") from 1 MB to about 2 GB
+        to choose between speed and the chance of not detecting a very large
+        UTF-8 file with a far occurring first non-ANSI character.
+      - If you check more than 25 MB, then a counter will be shown,
+        so that the editor does not appear to hang any more.
 
-  2.6     24 Sep 2022
-    Updated the data files to Unicode 15, which was released 13 Sep 2022.
-      https://home.unicode.org/announcing-the-unicode-standard-version-15-0/
+  1.2   9 May 2018
+    Release.
 
-    Fixed, that text copied to the Windows clipboard could not be pasted
-    in VirtualBox guest systems.
+  1.1 beta versions   April 2018
+    - Show current file's character encoding as a status.
+    - Facilitate upgrading an ASCII file when it becomes a non-ASCII file.
+    - Show character descriptions as a status.
+    - Explicitly change the current file's character encoding.
+
+  1.0.6    9 May 2015
+    Three bugs solved thanks to John Kopp:
+    - Character 127 was not correctly converted back to UTF-8 when it
+      already occurred in the original UTF-8 file.
+    - UTF-8 character "LATIN CAPITAL LETTER A WITH TILDE" was not
+      correctly converted to ANSI.
+    - There were two erroneous comments after the BOM definitions.
+    Now hexadecimal instead of decimal codepoints are shown for UTF-8
+    characters that cannot be converted to ANSI.
+
+  1.0.5   20 Apr 2015
+    Now handles a UTF-8 byte order mark (BOM).
+
+  1.0.4   19 Apr 2015
+    Added saving a loaded UTF-8 file.
+    So effectively we can now edit an existing UTF-8 file.
+
+  1.0.3   13 Apr 2015
+    Disable saving of loaded UTF-8 file, because it was converted to ANSI.
+
+  1.0.2   12 Apr 2015
+    The viewing mode for UTF-8 has been removed, anticipating that
+    saving back in UTF-8 format will be soon be added.
+    Rewritten the UTF-8 loading to be a tiny bit faster, and a lot more
+    robust and aware of errors. Aware does not mean it fixes them, it
+    means that the places where "garbage in [then] garbage out" applies
+    are more explicit.
+
+  1.0.1 - 21 Jan 2014
+    Solves an incorrect codepoint being shown for characters that can't be
+    converted to ANSI. Thanks to John Kopp for the report and the solution.
+
+  1.0.0    4 Nov 2013
+    Initial version that lets you view UTF-8 files.
 
 */
+
 
 
 
@@ -912,16 +972,16 @@
 
 #ifdef WIN32
 #else
-   16-bit versions of TSE are not supported. You need at least TSE 4.0.
+   16-bit versions of TSE are not supported. You need at least TSE 4.4.
 #endif
 
 #ifdef EDITOR_VERSION
 #else
-   Editor Version is older than TSE 3.0. You need at least TSE 4.0.
+   Editor Version is older than TSE 3.0. You need at least TSE 4.4.
 #endif
 
-#if EDITOR_VERSION < 4000h
-   Editor Version is older than TSE 4.0. You need at least TSE 4.0.
+#if EDITOR_VERSION < 4400h
+   Editor Version is older than TSE 4.4. You need at least TSE 4.4.
 #endif
 
 #ifndef INTERNAL_VERSION
@@ -1234,7 +1294,7 @@ integer proc compare_versions(string version1, string version2)
   return(result)
 end compare_versions
 
-// End of compatibility restrictions and mitigations
+// End of compatibility restrictions and mitigations.
 
 
 
@@ -1319,11 +1379,11 @@ end compare_versions
   end get_process_id
 #else
   dll "<Kernel32.dll>"
-    integer proc GetCurrentProcessId(integer void)
+    integer proc GetCurrentProcessId()
   end
 
   integer proc get_process_id()
-    return(GetCurrentProcessId(0))
+    return(GetCurrentProcessId())
   end get_process_id
 #endif
 
@@ -1784,7 +1844,7 @@ end eList
 
 
 
-// GLOBAL CONSTANTS
+// GLOBAL CONSTANTS AND PSEUDO-CONSTANTS
 
 // Numbers are left-justified (!) on position n * 5, 1 <= n <= 27.
 // The four leading spaces are vital. This odd format facilitates a simple
@@ -1856,7 +1916,8 @@ string FIND_UNICODE_IN_ANSI          [13] = '[\d127-\d255]'
 #define MAXLINELEN_MINUS_2      MAXLINELEN - 2
 #define MAXLINELEN_MINUS_4      MAXLINELEN - 4
 
-string MY_MACRO_VERSION [5] = '2.6'
+string MY_MACRO_NAME [MAXSTRINGLEN] = ''
+string MY_MACRO_VERSION [5] = '2.7'
 
 #ifdef LINUX
   string SLASH [1] = '/'
@@ -1866,8 +1927,8 @@ string MY_MACRO_VERSION [5] = '2.6'
 
 string QUOTED_DELETE_CODEPOINT [4] = Chr(127) + '7F' + Chr(127)
 
-string status_macro_name             [6] = 'Status'
-string status_macro_required_version [3] = '1.2'
+string STATUS_MACRO_NAME             [6] = 'Status'
+string STATUS_MACRO_REQUIRED_VERSION [3] = '1.2'
 
 #define THAT_THE_CURSOR_IS_ON_ANYWHERE TRUE
 #define THAT_STARTS_AT_THE_CURSOR      FALSE
@@ -1879,7 +1940,7 @@ string THREE_NULL_BYTES [3] = Chr(0) + Chr(0) + Chr(0)
 #define UTF32BE 3
 #define UTF32LE 4
 
-string utf8_first_byte_filters [33] = '1111111b 11111b 1111b 111b 11b 1b'
+string UTF8_FIRST_BYTE_FILTERS [33] = '1111111b 11111b 1111b 111b 11b 1b'
 
 string UPGRADE_URL [40] = 'https://ecarlo.nl/tse/index.html#Unicode'
 
@@ -1918,7 +1979,6 @@ integer g_org_undomode                            = FALSE
 integer g_org_xoffset                             = 0
 integer menu_history_number                       = 0
 integer msg_window_is_open                        = FALSE
-string  my_macro_name              [MAXSTRINGLEN] = ''
 integer nameslist_id                              = 0
 integer profile_error                             = FALSE
 integer selection_list_id                         = 0
@@ -1959,7 +2019,7 @@ proc write_profile_error()
     Warn('ERROR writing Unicode configuration to file "tse.ini": Unicode will stop ASAP.')
     profile_error = TRUE
   endif
-  PurgeMacro(my_macro_name)
+  PurgeMacro(MY_MACRO_NAME)
   abort = TRUE
 end write_profile_error
 
@@ -1967,7 +2027,9 @@ end write_profile_error
 integer proc write_profile_int(string  section_name,
                                string  item_name,
                                integer item_value)
-  integer result = WriteProfileInt(section_name, item_name, item_value, ".\unicode.ini" )
+  integer result = WriteProfileInt(section_name,
+                                   item_name,
+                                   item_value)
   if not result
     write_profile_error()
   endif
@@ -1978,7 +2040,9 @@ end write_profile_int
 integer proc write_profile_str(string section_name,
                                string item_name,
                                string item_value)
-  integer result = WriteProfileStr(section_name, item_name, item_value, ".\unicode.ini" )
+  integer result = WriteProfileStr(section_name,
+                                   item_name,
+                                   item_value)
   if not result
     write_profile_error()
   endif
@@ -1992,7 +2056,7 @@ proc programming_error(integer error_no)
        'Your Unicode file might be corrupted: Do not save it!',
        Chr(13), Chr(13),
        'The Unicode macro now stops for the duration of this TSE session.')
-  PurgeMacro(my_macro_name)
+  PurgeMacro(MY_MACRO_NAME)
   abort = TRUE
 end programming_error
 
@@ -2156,18 +2220,24 @@ proc config_the_autoload()
   #ifdef LINUX
     string cfg_char_previews [4] = 'None'
   #endif
-  if cfg_char_descriptions <> 'None'
-  or cfg_char_previews     <> 'None'
-  or cfg_convert_unicode_files
-  or cfg_show_char_code_format
-    if not isAutoLoaded()
-      AddAutoLoadMacro(my_macro_name)
-    endif
-  else
-    if isAutoLoaded()
-      DelAutoLoadMacro(my_macro_name)
-    endif
-  endif
+//if cfg_char_descriptions <> 'None'
+//or cfg_char_previews     <> 'None'
+//or cfg_convert_unicode_files
+//or cfg_show_char_code_format
+//  if not isAutoLoaded()
+//    if not AddAutoLoadMacro(MY_MACRO_NAME)
+//      Alarm()
+//      Warn('ERROR: Could not add macro "', MY_MACRO_NAME, '" to file "tseload.dat".')
+//    endif
+//  endif
+//else
+//  if isAutoLoaded()
+//    if not DelAutoLoadMacro(MY_MACRO_NAME)
+//      Alarm()
+//      Warn('ERROR: Could not delete macro "', MY_MACRO_NAME, '" from file "tseload.dat".')
+//    endif
+//  endif
+//endif
 end config_the_autoload
 
 
@@ -2180,27 +2250,46 @@ proc exec_macro(string macro_cmd_line)
   string  status_macro_current_version [MAXSTRINGLEN] = ''
   string  extra_version_text           [MAXSTRINGLEN] = ''
   integer ok                                          = TRUE
+
   ok = ExecMacro(macro_cmd_line)
   if ok
-    status_macro_current_version = GetGlobalStr(status_macro_name + ':Version')
-    if compare_versions(status_macro_current_version,
-                        status_macro_required_version)
+    // New way: Lower-case macro name in global variable name.
+    status_macro_current_version = GetGlobalStr(Lower(STATUS_MACRO_NAME) + ':Version')
+    if status_macro_current_version == ''
+      // Old way: Cased macro name in global variable name.
+      status_macro_current_version = GetGlobalStr(STATUS_MACRO_NAME + ':Version')
+    endif
+    if status_macro_current_version == ''
+      ok                 = FALSE
+    elseif compare_versions(status_macro_current_version,
+                        STATUS_MACRO_REQUIRED_VERSION)
                         == FIRST_OLDER_THAN_SECOND
       ok                 = FALSE
       extra_version_text = 'at least version ' +
-                           status_macro_required_version + ' of '
+                           STATUS_MACRO_REQUIRED_VERSION + ' of '
     endif
   endif
   if not ok
     Alarm()
-    Warn(my_macro_name, ' macro stops: It needs ', extra_version_text,
-         'the "', status_macro_name, '" macro to be installed!')
-    PurgeMacro(my_macro_name)
+    Warn(MY_MACRO_NAME, ' macro stops: It needs ', extra_version_text,
+         'the "', STATUS_MACRO_NAME, '" macro to be installed!')
+    PurgeMacro(MY_MACRO_NAME)
     abort = TRUE
   endif
+
 end exec_macro
 
 integer proc is_normal_file()
+
+  // For debugging debug.si:
+  /*
+  if BufferType() == _NORMAL_ and not BinaryMode()
+    Warn('Unicode acts on normal file in buffer';
+         GetBufferId(), Chr(13),
+         '"', CurrFilename(), '"')
+  endif
+  */
+
   return(BufferType() == _NORMAL_ and not BinaryMode())
 end is_normal_file
 
@@ -2517,7 +2606,7 @@ integer proc utf8_to_codepoint(var integer utf8_length)
       utf8_length = 1
       codepoint   = CurrChar()
     else
-      codepoint = CurrChar() & Val(GetToken(utf8_first_byte_filters,
+      codepoint = CurrChar() & Val(GetToken(UTF8_FIRST_BYTE_FILTERS,
                                             ' ', utf8_length))
       offset = 1
       while offset < utf8_length
@@ -2777,12 +2866,15 @@ proc binary_lines_to_text_lines(string  character_encoding,
           concatenated_line_length = concatenated_line_length + CurrLineLen()
           Up()
         endif
-        if  concatenated_line_length > MAXLINELEN
-          Alarm()
+        if concatenated_line_length > MAXLINELEN
           UpdateDisplay(_ALL_WINDOWS_REFRESH_)
-          Warn('Unicode conversion had to split lines too long for TSE.'
-               + Chr(13)
-               + 'The created buffer will be a corrupted version of the file.')
+          beeper()
+          // xx 12 May 2025: Added querying MsgLevel.
+          if (Query(MsgLevel) in _ALL_MESSAGES_, _WARNINGS_ONLY_)
+            Warn('Unicode conversion had to split lines too long for TSE.'
+                 + Chr(13)
+                 + 'The created buffer will be a corrupted version of the file.')
+          endif
           split_warned = TRUE
         endif
       endif
@@ -3097,16 +3189,16 @@ proc binary_utf1632_to_normal_ansi()
 
     #if DEBUG_LOG
       t3 = GetTime()
-      ExecMacro('Log open D:\Zest\Log_Unicode3.txt')
-      ExecMacro('Log write Loading ' + QuotePath(CurrFilename()))
-      ExecMacro('Log write ' + character_encoding + ' to ANSI by ' + my_macro_name)
-      ExecMacro('Log write Converted characters: ' + Str(t1 - t0))
-      ExecMacro('Log write Each '
+      ExecMacro('log open D:\Zest\Log_Unicode3.txt')
+      ExecMacro('log write Loading ' + QuotePath(CurrFilename()))
+      ExecMacro('log write ' + character_encoding + ' to ANSI by ' + MY_MACRO_NAME)
+      ExecMacro('log write Converted characters: ' + Str(t1 - t0))
+      ExecMacro('log write Each '
                 + iif(character_encoding[1:6] == 'UTF-16', '2', '4')
                 + ' bytes to 1 byte: ' + Str(t2 - t1))
-      ExecMacro('Log write Binary lines to text lines: ' + Str(t3 - t2))
-      ExecMacro('Log write Total: '                      + Str(t3 - t0))
-      ExecMacro('Log close')
+      ExecMacro('log write Binary lines to text lines: ' + Str(t3 - t2))
+      ExecMacro('log write Total: '                      + Str(t3 - t0))
+      ExecMacro('log close')
     #endif
 
     BegFile()
@@ -3128,6 +3220,7 @@ end binary_utf1632_to_normal_ansi
 
 proc on_file_load()
   string character_encoding [13] = ''
+
   if is_normal_file()
     character_encoding = get_character_code_format()
     if (SubStr(character_encoding, 1, 6) in 'UTF-16', 'UTF-32')
@@ -3135,6 +3228,7 @@ proc on_file_load()
       SetBufferInt(varname_conversion_flag, TRUE)
     endif
   endif
+
 end on_file_load
 
 proc on_first_edit()
@@ -3149,7 +3243,10 @@ proc on_first_edit()
       Here in _on_first_edit_ we have the advantage that we already have the
       whole file in memory, and can do a fast complete check.
   */
-  string character_encoding [13] = ''
+  string  character_encoding [13] = ''
+  integer start_time              = GetTime()
+
+
   if not GetBufferInt(varname_first_edited)
     SetBufferInt(varname_first_edited, TRUE)
     afterwards_restore_status_line = FALSE
@@ -3188,6 +3285,12 @@ proc on_first_edit()
       UpdateDisplay(_STATUSLINE_REFRESH_|_REFRESH_THIS_ONLY_)
     endif
   endif
+
+  if GetTime() - start_time > 6000  // 1 minute.
+    Alarm()
+    Delay(18)
+  endif
+
 end on_first_edit
 
 proc codepoint_to_utf8(integer codepoint, var string utf8_bytes)
@@ -3585,6 +3688,7 @@ proc normal_ansi_to_binary_utf1632()
         percentage_range_to = 91
     endcase
 
+
     repeat
       msg(Format('ANSI to'; character_encoding; '…';
                  percentage_to_range(line_from / (CurrLine() / 100),
@@ -3610,6 +3714,7 @@ proc normal_ansi_to_binary_utf1632()
                        line_from + line_block_size - 1)
     until line_from > NumLines()
 
+
     msg('')
 
     #if DEBUG_LOG
@@ -3625,6 +3730,7 @@ proc normal_ansi_to_binary_utf1632()
     #endif
 
   endif
+
 
   if  ok
   and Pos('BOM', character_encoding)
@@ -3661,16 +3767,16 @@ proc normal_ansi_to_binary_utf1632()
 
   #if DEBUG_LOG
     t5 = GetTime()
-    ExecMacro('Log open D:\Zest\Log_Unicode3.txt')
-    ExecMacro('Log write Saving ' + QuotePath(CurrFilename()))
-    ExecMacro('Log write ANSI to ' + character_encoding + ' by ' + my_macro_name)
-    ExecMacro('Log write Text lines to binary lines: ' + Str(t2 - t1))
-    ExecMacro('Log write Each 1 byte to '
+    ExecMacro('log open D:\Zest\Log_Unicode3.txt')
+    ExecMacro('log write Saving ' + QuotePath(CurrFilename()))
+    ExecMacro('log write ANSI to ' + character_encoding + ' by ' + MY_MACRO_NAME)
+    ExecMacro('log write Text lines to binary lines: ' + Str(t2 - t1))
+    ExecMacro('log write Each 1 byte to '
               + iif(character_encoding[1:6] == 'UTF-16', '2', '4')
               + ' bytes: ' + Str(t3 - t2))
-    ExecMacro('Log write Characters to characters: ' + Str(t4 - t3))
-    ExecMacro('Log write Total: '                    + Str(t5 - t0))
-    ExecMacro('Log close')
+    ExecMacro('log write Characters to characters: ' + Str(t4 - t3))
+    ExecMacro('log write Total: '                    + Str(t5 - t0))
+    ExecMacro('log close')
   #endif
 
   PopBlock()
@@ -3777,7 +3883,9 @@ proc restore_current_buffer()
 end restore_current_buffer
 
 proc on_file_save()
-  string character_encoding [13] = GetBufferStr(varname_character_encoding)
+  string  character_encoding [13] = GetBufferStr(varname_character_encoding)
+  integer start_time              = GetTime()
+
   if is_normal_file()
     if SubStr(character_encoding, 1, 3) == 'UTF'
       if backup_current_buffer()
@@ -3790,16 +3898,28 @@ proc on_file_save()
       endif
     endif
   endif
+
+  if GetTime() - start_time > 6000  // 1 minute.
+    Alarm()
+    Delay(18)
+  endif
 end on_file_save
 
 proc after_file_save()
-  string character_encoding [13] = GetBufferStr(varname_character_encoding)
+  integer start_time              = GetTime()
+  string  character_encoding [13] = GetBufferStr(varname_character_encoding)
+
   if GetBufferInt(varname_conversion_flag)
     DelBufferVar(varname_conversion_flag)
     if (SubStr(character_encoding, 1, 6) in 'UTF-16', 'UTF-32')
       BinaryMode(0)
     endif
     restore_current_buffer()
+  endif
+
+  if GetTime() - start_time > 6000  // 1 minute.
+    Alarm()
+    Delay(18)
   endif
 end after_file_save
 
@@ -4033,12 +4153,12 @@ proc show_char_description(string character_encoding)
       if char_description == '<control>'
         char_description = 'CHR ' + Str(Asc(curr_char))
       endif
-      exec_macro(status_macro_name + ' ' + my_macro_name +
+      exec_macro(STATUS_MACRO_NAME + ' ' + MY_MACRO_NAME +
                  ':CharacterDescription,callback ' + char_description)
     endif
     GotoBufferId(org_id)
   else
-    exec_macro(status_macro_name + ' ' + my_macro_name +
+    exec_macro(STATUS_MACRO_NAME + ' ' + MY_MACRO_NAME +
                ':CharacterDescription')
   endif
 end show_char_description
@@ -4137,7 +4257,7 @@ proc idle()
       #endif
       if cfg_show_char_code_format
         if character_encoding <> ''
-          exec_macro(status_macro_name + ' ' + my_macro_name
+          exec_macro(STATUS_MACRO_NAME + ' ' + MY_MACRO_NAME
                      + ':CharacterCodeFormat,callback ' + character_encoding)
         endif
       endif
@@ -4150,7 +4270,7 @@ end idle
 
 proc show_help()
   string  full_macro_source_name [MAXSTRINGLEN] = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_|_NAME_) + '.s'
-  string  help_file_name         [MAXSTRINGLEN] = '*** ' + my_macro_name + ' Help ***'
+  string  help_file_name         [MAXSTRINGLEN] = '*** ' + MY_MACRO_NAME + ' Help ***'
   integer hlp_id                                = GetBufferId(help_file_name)
   integer org_id                                = GetBufferId()
   integer tmp_id                                = 0
@@ -4201,7 +4321,7 @@ proc select_new_char_code_format()
   if MenuOption()
     new_character_code_format = menu_option_2_char_code_format(MenuOption())
     SetBufferStr(varname_character_encoding, new_character_code_format)
-    exec_macro(status_macro_name + ' ' + my_macro_name +
+    exec_macro(STATUS_MACRO_NAME + ' ' + MY_MACRO_NAME +
                ':CharacterCodeFormat,callback ' + new_character_code_format)
     if new_character_code_format <> old_character_code_format
       FileChanged(TRUE)
@@ -4491,7 +4611,7 @@ end paste_replace_from_win_clip
 
 string proc profile_get(string item)
   string new_value [13] = ''
-  string old_value [13] = GetProfileStr(varname_cfg_section, item, 'Default', ".\unicode.ini" )
+  string old_value [13] = GetProfileStr(varname_cfg_section, item, 'Default')
   case item
     when 'AnsiUpgradeAction'
       new_value = iif((old_value in 'Ask', 'UTF-8', 'UTF-8+BOM',
@@ -4555,7 +4675,7 @@ string proc profile_get(string item)
 end profile_get
 
 proc change_status_color()
-  exec_macro(status_macro_name + ' ConfigureStatusColor')
+  exec_macro(STATUS_MACRO_NAME + ' ConfigureStatusColor')
 end change_status_color
 
 proc browse_website()
@@ -4597,7 +4717,7 @@ end char_description_menu
 proc profile_set(string item)
   string new_value           [13] = ''
   string new_value_formatted [13] = ''
-  string old_value           [13] = GetProfileStr(varname_cfg_section, item, 'NoValue', ".\unicode.ini" )
+  string old_value           [13] = GetProfileStr(varname_cfg_section, item, 'NoValue')
   case item
     when 'ConvertUnicodeFiles'
       new_value = iif(old_value == 'Enabled', 'Disabled', 'Enabled')
@@ -4655,7 +4775,7 @@ proc profile_set(string item)
         cfg_ansi_upgrade_action = new_value
       endif
     when 'MaxBytesToCheck'
-      new_value = GetProfileStr(varname_cfg_section, 'MaxBytesToCheck', Str(MAXINT - 1000), ".\unicode.ini" )
+      new_value = GetProfileStr(varname_cfg_section, 'MaxBytesToCheck', Str(MAXINT - 1000))
       new_value_formatted = format_integer(new_value)
       if Ask('Max bytes to check to determine character encoding [255 - '
              + format_integer(Str(MAXINT - 1000)) + ']:',
@@ -4676,7 +4796,7 @@ proc profile_set(string item)
   if not (new_value in old_value, '')
     write_profile_str(varname_cfg_section, item, new_value)
   endif
-  // config_the_autoload() // new [kn, ri, su, 11-12-2022 15:35:50]
+  config_the_autoload()
 end profile_set
 
 integer proc get_windows_or_linux_menu_flag()
@@ -4757,32 +4877,32 @@ end main_menu
 proc upgrade_old_configuration()
   string cfg_value [MAXSTRINGLEN] = ''
   if compare_versions(cfg_version, '1.6') == FIRST_OLDER_THAN_SECOND
-    if GetProfileStr(varname_cfg_section, 'ShowUTFwarnings', '', ".\unicode.ini" ) <> ''
+    if GetProfileStr(varname_cfg_section, 'ShowUTFwarnings', '') <> ''
       RemoveProfileItem(varname_cfg_section, 'ShowUTFwarnings')
     endif
-    cfg_value = GetProfileStr(varname_cfg_section, 'WhichCharDisplays', '', ".\unicode.ini" )
+    cfg_value = GetProfileStr(varname_cfg_section, 'WhichCharDisplays', '')
     if cfg_value <> ''
       write_profile_str(varname_cfg_section, 'WhichCharPreviews', cfg_value)
       RemoveProfileItem(varname_cfg_section, 'WhichCharDisplays')
     endif
-    cfg_value = GetProfileStr(varname_cfg_section, 'CharDisplayX', '', ".\unicode.ini" )
+    cfg_value = GetProfileStr(varname_cfg_section, 'CharDisplayX', '')
     if cfg_value <> ''
       write_profile_str(varname_cfg_section, 'CharPreviewX', cfg_value)
       RemoveProfileItem(varname_cfg_section, 'CharDisplayX')
     endif
-    cfg_value = GetProfileStr(varname_cfg_section, 'CharDisplayY', '', ".\unicode.ini" )
+    cfg_value = GetProfileStr(varname_cfg_section, 'CharDisplayY', '')
     if cfg_value <> ''
       write_profile_str(varname_cfg_section, 'CharPreviewY', cfg_value)
       RemoveProfileItem(varname_cfg_section, 'CharDisplayY')
     endif
-    cfg_value = GetProfileStr(varname_cfg_section, 'MaxBytesToCheck', '', ".\unicode.ini" )
+    cfg_value = GetProfileStr(varname_cfg_section, 'MaxBytesToCheck', '')
     write_profile_str(varname_cfg_section, 'MaxBytesToCheck', '4000')
     beeper()
     Warn("Unicode's configuration of ",
          '"Max bytes to check" can be set much lower than in previous ',
          'versions of this macro. It has been set to the new advised value: ',
          '4,000.')
-    cfg_value = GetProfileStr(varname_cfg_section, 'AsciiUpgradeAction', '', ".\unicode.ini" )
+    cfg_value = GetProfileStr(varname_cfg_section, 'AsciiUpgradeAction', '')
     if cfg_value == 'Ask'
       write_profile_str(varname_cfg_section, 'AsciiUpgradeAction', 'ANSI')
       Warn('Unicode configuration change: When using a non-ASCII character ',
@@ -4795,14 +4915,14 @@ proc upgrade_old_configuration()
          'format.')
   endif
   if compare_versions(cfg_version, '2.1') == FIRST_OLDER_THAN_SECOND
-    cfg_value =  GetProfileStr(varname_cfg_section, 'ConvertUnicodeFiles', '', ".\unicode.ini" )
+    cfg_value =  GetProfileStr(varname_cfg_section, 'ConvertUnicodeFiles', '')
     if cfg_value == 'Default'
       write_profile_str(varname_cfg_section, 'ConvertUnicodeFiles', 'Disabled')
       Warn('Unicode configuration change: Whether or not to convert Unicode';
            'files was changed from "Default" to the less ambiguous';
            'but equivalent value "Disabled".')
     endif
-    cfg_value = GetProfileStr(varname_cfg_section, 'ShowCharCodeFormat', '', ".\unicode.ini" )
+    cfg_value = GetProfileStr(varname_cfg_section, 'ShowCharCodeFormat', '')
     if cfg_value == 'Default'
       write_profile_str(varname_cfg_section, 'ShowCharCodeFormat', 'Disabled')
       Warn("Unicode configuration change: Whether or not to show a file's";
@@ -4843,34 +4963,32 @@ end WhenPurged
 proc WhenLoaded()
   integer org_id = GetBufferId()
 
-  my_macro_name = SplitPath(CurrMacroFilename(), _NAME_)
-
-  // ExecMacro('log open C:\users\carlo\log\tse\Unicode_' + Str(GetTime()) + '.txt')
+  MY_MACRO_NAME = SplitPath(CurrMacroFilename(), _NAME_)
 
   #ifdef LINUX
     if compare_versions(VersionStr(), '4.41.35') == FIRST_OLDER_THAN_SECOND
       Alarm()
       Warn('ERROR: In Linux the Unicode extension needs at least TSE v4.41.35.')
-      PurgeMacro(my_macro_name)
+      PurgeMacro(MY_MACRO_NAME)
       abort = TRUE
     endif
   #endif
 
   if not abort
-    varname_cfg_section           = my_macro_name + ':Config'
-    varname_character_encoding = my_macro_name + ':CharacterCodeFormat'
-    varname_conversion_flag       = my_macro_name + ':ToBeConverted'
-    varname_first_edited          = my_macro_name + ':FirstEdited'
-    varname_loaded_eoltype        = my_macro_name + ':LoadedEolType'
+    varname_cfg_section        = MY_MACRO_NAME + ':Config'
+    varname_character_encoding = MY_MACRO_NAME + ':CharacterCodeFormat'
+    varname_conversion_flag    = MY_MACRO_NAME + ':ToBeConverted'
+    varname_first_edited       = MY_MACRO_NAME + ':FirstEdited'
+    varname_loaded_eoltype     = MY_MACRO_NAME + ':LoadedEolType'
 
     backup_id         = CreateTempBuffer()
-    ChangeCurrFilename(my_macro_name + ':file_backup'  , CCF_OPTIONS)
+    ChangeCurrFilename(MY_MACRO_NAME + ':file_backup'  , CCF_OPTIONS)
     unicodedata_id    = CreateTempBuffer()
-    ChangeCurrFilename(my_macro_name + ':UnicodeData'  , CCF_OPTIONS)
+    ChangeCurrFilename(MY_MACRO_NAME + ':UnicodeData'  , CCF_OPTIONS)
     nameslist_id      = CreateTempBuffer()
-    ChangeCurrFilename(my_macro_name + ':NamesList'    , CCF_OPTIONS)
+    ChangeCurrFilename(MY_MACRO_NAME + ':NamesList'    , CCF_OPTIONS)
     selection_list_id = CreateTempBuffer()
-    ChangeCurrFilename(my_macro_name + ':SelectionList', CCF_OPTIONS)
+    ChangeCurrFilename(MY_MACRO_NAME + ':SelectionList', CCF_OPTIONS)
     GotoBufferId(org_id)
 
     tmp_fqn = GetEnvStr('TMP')
@@ -4889,12 +5007,12 @@ proc WhenLoaded()
     endif
     if tmp_fqn == ''
       Alarm()
-      Warn(my_macro_name, ' macro stops: No valid folder in TMP or TEMP environment variable.')
-      PurgeMacro(my_macro_name)
+      Warn(MY_MACRO_NAME, ' macro stops: No valid folder in TMP or TEMP environment variable.')
+      PurgeMacro(MY_MACRO_NAME)
       abort = TRUE
     else
       tmp_fqn = RemoveTrailingSlash(tmp_fqn)
-      tmp_fqn = tmp_fqn + SLASH + 'Tse_' + my_macro_name + '_'
+      tmp_fqn = tmp_fqn + SLASH + 'Tse_' + MY_MACRO_NAME + '_'
                 + Str(get_process_id()) + '.tmp'
     endif
 
@@ -4924,27 +5042,27 @@ proc WhenLoaded()
     cfg_show_char_code_format =    (profile_get('ShowCharCodeFormat'   ) == 'Enabled')
     cfg_version               =     profile_get('Version')
 
-    // config_the_autoload() // new [kn, ri, su, 11-12-2022 15:35:59]
+    config_the_autoload()
 
     if WhichOS() == _WINDOWS_
       Alarm()
-      Warn(my_macro_name,
+      Warn(MY_MACRO_NAME,
            ' macro stops: It does not support your operating system.')
-      PurgeMacro(my_macro_name)
+      PurgeMacro(MY_MACRO_NAME)
       abort = TRUE
     elseif WIN32
     and    not isGUI()
-      if GetProfileStr(varname_cfg_section, 'GiveConsoleWarning', 'n', ".\unicode.ini" ) <> 'y'
+      if GetProfileStr(varname_cfg_section, 'GiveConsoleWarning', 'n') <> 'y'
         Alarm()
         PushKey(<CursorRight>)
         if MsgBox('Skip this warning the next time?',
-                 my_macro_name +
+                 MY_MACRO_NAME +
                  ' macro stops: It does not support the Console version of TSE.',
                  _YES_NO_) == 1
           write_profile_str(varname_cfg_section, 'GiveConsoleWarning', 'y')
         endif
       endif
-      PurgeMacro(my_macro_name)
+      PurgeMacro(MY_MACRO_NAME)
       abort = TRUE
     elseif WIN32
     and    (    get_font('type') == 'OEM'
@@ -4953,10 +5071,10 @@ proc WhenLoaded()
                                     'System',
                                     'Terminal'))
       Alarm()
-      Warn(my_macro_name, ' macro stops: Font "', get_font('name'),
+      Warn(MY_MACRO_NAME, ' macro stops: Font "', get_font('name'),
            '" with type "', get_font('type'),
            '" is not ANSI compatible.')
-      PurgeMacro(my_macro_name)
+      PurgeMacro(MY_MACRO_NAME)
       abort = TRUE
     else
       Hook(_AFTER_FILE_SAVE_  , after_file_save)

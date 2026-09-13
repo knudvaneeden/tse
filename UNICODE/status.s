@@ -3,7 +3,7 @@
   Author            Carlo.Hogeveen@xs4all.nl
   Compatibility     Windows TSE PRo 4.0 upwards
                     Linux TSE Beta v4.41.35 upwards
-  Version           1.2.1   17 Sep 2022
+  Version           1.2 - 30 Apr 2020
 
 
   === INFORMATION FOR END USERS ===
@@ -109,9 +109,7 @@
       Bug fix: Pressing <Escape> in the colour menu now allows you to leave it
       if the old colour was a valid one.
       Various tiny tweaks and improvements to the code and documentation.
-    1.2.1   17 Sep 2022
-      Fixed incompatibility with TSE's '-i' command line option
-      and the TSELOADDIR environment variable.
+
 
 
 
@@ -667,7 +665,7 @@ integer response_time   = RESPONSE_TIME_DEFAULT
 
 // Global string constants
 
-string MY_MACRO_VERSION [5] = '1.2.1'
+string MY_MACRO_VERSION [5] = '1.2'
 string COLORS          [46] = 'Black Blue Green Cyan Red Magenta Yellow White'
 
 
@@ -1461,15 +1459,22 @@ proc WhenLoaded()
     ChangeCurrFilename(my_macro_name + ':statuses',
                        _DONT_PROMPT_|_DONT_EXPAND_|_OVERWRITE_)
     GotoBufferId(org_id)
-    response_time = Val(GetProfileStr(my_macro_name + ':config', 'response_time', Str(RESPONSE_TIME_DEFAULT ), ".\unicode.ini" ) )
+    response_time = Val(GetProfileStr(my_macro_name + ':config',
+                                      'response_time',
+                                      Str(RESPONSE_TIME_DEFAULT)))
     response_time = iif(response_time > 0,
                         response_time,
                         RESPONSE_TIME_DEFAULT)
-    reposition_time = Val(GetProfileStr(my_macro_name + ':config', 'reposition_time', Str(REPOSITION_TIME_DEFAULT), ".\unicode.ini" ))
+    reposition_time = Val(GetProfileStr(my_macro_name + ':config',
+                                        'reposition_time',
+                                        Str(REPOSITION_TIME_DEFAULT)))
     reposition_time = iif(reposition_time > 0,
                           reposition_time,
                           REPOSITION_TIME_DEFAULT)
-    status_attr = Val(GetProfileStr(my_macro_name + ':config', 'status_color', '00', ".\unicode.ini" ), 16)
+    status_attr = Val(GetProfileStr(my_macro_name + ':config',
+                                    'status_color',
+                                    '00'),
+                      16)
     if not is_valid_status_color(status_attr)
       status_attr = Query(MenuTextAttr)
       while not is_valid_status_color(status_attr)
@@ -1486,7 +1491,9 @@ proc WhenLoaded()
         status_attr = select_color(status_attr,
                                    'Pick a valid status text colour')
       endwhile
-      WriteProfileStr(my_macro_name + ':config', 'status_color', Str(status_attr, 16 ), ".\unicode.ini" )
+      WriteProfileStr(my_macro_name + ':config',
+                      'status_color',
+                      Str(status_attr, 16))
     endif
     status_attr_chr = Chr(status_attr)
     Hook(_IDLE_          , idle         )
@@ -1501,7 +1508,7 @@ proc WhenPurged()
 end WhenPurged
 
 proc show_help()
-  string  full_macro_source_name [MAXSTRINGLEN] = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_|_NAME_) + '.s'
+  string  full_macro_source_name [MAXSTRINGLEN] = LoadDir() + 'mac\' + my_macro_name + '.s'
   string  help_file_name         [MAXSTRINGLEN] = '*** ' + my_macro_name + ' Help ***'
   integer hlp_id                                = GetBufferId(help_file_name)
   integer org_id                                = GetBufferId()
@@ -1569,7 +1576,9 @@ proc config_set(string item_name)
         item_integer_value = Val(item_string_value)
         if (item_integer_value in 1 .. MAXINT)
           response_time = item_integer_value
-          WriteProfileStr(my_macro_name + ':config', 'response_time', Str(response_time), ".\unicode.ini" )
+          WriteProfileStr(my_macro_name + ':config',
+                          'response_time',
+                          Str(response_time))
         else
           Warn('"', item_string_value, '" is an illegal response time.')
         endif
@@ -1581,7 +1590,9 @@ proc config_set(string item_name)
         item_integer_value = Val(item_string_value)
         if (item_integer_value in 1 .. MAXINT)
           reposition_time = item_integer_value
-          WriteProfileStr(my_macro_name + ':config', 'reposition_time', Str(reposition_time), ".\unicode.ini" )
+          WriteProfileStr(my_macro_name + ':config',
+                          'reposition_time',
+                          Str(reposition_time))
         else
           Warn('"', item_string_value, '" is an illegal reposition time.')
         endif
@@ -1605,7 +1616,9 @@ proc config_set(string item_name)
         status_attr = select_color(status_attr,
                                    'Pick a valid status text colour')
       until is_valid_status_color(status_attr)
-      WriteProfileStr(my_macro_name + ':config', 'status_color', Format(status_attr:2:'0':16), ".\unicode.ini" )
+      WriteProfileStr(my_macro_name + ':config',
+                      'status_color',
+                      Format(status_attr:2:'0':16))
       status_attr_chr  = Chr(status_attr)
       restart_the_menu = TRUE
   endcase
