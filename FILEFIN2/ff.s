@@ -1,12 +1,13 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.17
-// Date    : 2026-09-08
+// Version : 1.0.0.0.18
+// Date    : 2026-09-13
 // LLM     : OpenAI Codex
 //
 // TSE 4.50 / Windows 11 port using ff.dll and zip.dll.
 
 string cTmpLine[255]
-string searchInput[255]
+string fileInput[80]
+string directoryInput[255]
 string startPath[255]
 string fileToFind[80]
 string file_date[8]
@@ -50,45 +51,44 @@ menu ZipSearch()
     "&No",  PROCSetZip(FALSE)
 end
 
-proc PROCParseSearchInput(string inputS)
+proc PROCSetFileMask(string inputS)
     string normalizedS[255] = ""
     integer indexI = 1
     integer lengthI = Length(inputS)
-    integer lastSeparatorI = 0
 
     repeat
         if (Asc(inputS[indexI]) <> 34)
-            case inputS[indexI]
-                when "/"
-                    normalizedS = normalizedS + "\"
-                    lastSeparatorI = Length(normalizedS)
-                when "\"
-                    normalizedS = normalizedS + "\"
-                    lastSeparatorI = Length(normalizedS)
-                when ":"
-                    normalizedS = normalizedS + ":"
-                    if (Length(normalizedS) == 2)
-                        lastSeparatorI = Length(normalizedS)
-                    endif
-                otherwise
-                    normalizedS = normalizedS + inputS[indexI]
-            endcase
+            normalizedS = normalizedS + inputS[indexI]
         endif
         indexI = indexI + 1
     until (indexI > lengthI)
 
-    if (lastSeparatorI)
-        startPath = SubStr(normalizedS, 1, lastSeparatorI)
-        fileToFind = SubStr(normalizedS, lastSeparatorI + 1,
-                            Length(normalizedS) - lastSeparatorI)
-    else
-        startPath = "\"
-        fileToFind = normalizedS
+    fileToFind = normalizedS
+end
+
+proc PROCSetStartPath(string inputS)
+    string normalizedS[255] = ""
+    integer indexI = 1
+    integer lengthI = Length(inputS)
+
+    repeat
+        if (Asc(inputS[indexI]) <> 34)
+            if (inputS[indexI] == "/")
+                normalizedS = normalizedS + "\"
+            else
+                normalizedS = normalizedS + inputS[indexI]
+            endif
+        endif
+        indexI = indexI + 1
+    until (indexI > lengthI)
+
+    if (Length(normalizedS))
+        if (normalizedS[Length(normalizedS)] <> "\")
+            normalizedS = normalizedS + "\"
+        endif
     endif
 
-    if (not Length(fileToFind))
-        fileToFind = "*.*"
-    endif
+    startPath = normalizedS
 end
 
 proc PROCZipLook(string pathS)
@@ -149,29 +149,35 @@ proc PROCSearchTree()
 end
 
 proc Main()
-    if (Ask("Enter path and file mask (*, .*, ?):", searchInput, _EDIT_HISTORY_) and Length(searchInput))
-        PROCParseSearchInput(searchInput)
-        fileToFind = Upper(fileToFind)
-        ZipSearch()
+    if (Ask("Enter filename or file mask (*, .*, ?):", fileInput, _EDIT_HISTORY_) and Length(fileInput))
+        if (Ask("Enter top directory:", directoryInput, _EDIT_HISTORY_) and Length(directoryInput))
+            PROCSetFileMask(fileInput)
+            PROCSetStartPath(directoryInput)
 
-        origId = CreateTempBuffer()
-        GotoBufferId(origId)
-        EmptyBuffer()
-        AddLine(Format("FILEFIN2 results for: ", searchInput), origId)
-        AddLine(Format("Starting directory: ", startPath), origId)
-        AddLine(Format("File mask: ", fileToFind), origId)
-        AddLine("", origId)
-        resultCount = 0
+            if (Length(fileToFind) and Length(startPath))
+                fileToFind = Upper(fileToFind)
+                ZipSearch()
 
-        PROCSearchTree()
-        UpdateDisplay(_DEFAULT_)
+                origId = CreateTempBuffer()
+                GotoBufferId(origId)
+                EmptyBuffer()
+                AddLine(Format("FILEFIN2 results for filename: ", fileToFind), origId)
+                AddLine(Format("Starting directory: ", startPath), origId)
+                AddLine(Format("File mask: ", fileToFind), origId)
+                AddLine("", origId)
+                resultCount = 0
 
-        if (not resultCount)
-            AddLine("No matching files were found.", origId)
+                PROCSearchTree()
+                UpdateDisplay(_DEFAULT_)
+
+                if (not resultCount)
+                    AddLine("No matching files were found.", origId)
+                endif
+                GotoBufferId(origId)
+                GotoLine(1)
+                GotoColumn(1)
+            endif
         endif
-        GotoBufferId(origId)
-        GotoLine(1)
-        GotoColumn(1)
     endif
 end
 

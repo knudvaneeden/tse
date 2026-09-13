@@ -1,8 +1,8 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.17  
-**Date:** 2026-09-08  
-**Time:** 15:20 CEST (UTC+02:00)  
+**Version:** 1.0.0.0.18  
+**Date:** 2026-09-13  
+**Time:** 16:34 CEST (UTC+02:00)  
 **LLM:** OpenAI Codex  
 
 ## Description
@@ -18,12 +18,12 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 - The DLL sources use Win32 functions only and do not require unresolved Borland C runtime functions such as `strlen`, `memcpy`, `atol`, or `sprintf`.
 - The reserved SAL names `FindFirst` and `FindNext` are replaced by `FNFindFirstI` and `FNFindNextI`.
 - Separate DLL search contexts preserve recursive searches.
-- The search prompt uses TSE's `_EDIT_HISTORY_`, so earlier path/mask entries can be recalled.
+- The search input is split into two prompts: first the filename or wildcard mask, then the top directory. Both prompts use TSE's `_EDIT_HISTORY_`, so earlier entries can be recalled independently.
 - `FF.S` is standalone: its DLL declarations and ZIP helper are embedded directly, so compiling it does not open or retain `FF.INC` or `ZIP.INC` editor buffers.
 - Double quotes are ignored while parsing search input. Both `C:\TEMP\FF.S` and `"C:\TEMP\FF.S"` therefore search the same valid Windows path; an unmatched quote recalled from input history is also harmless.
 - Pressing **Ctrl+Alt+Shift+F** runs the FILEFIN2 search prompt directly while the compiled macro is loaded.
 - Filename masks accept `*` or `.*` anywhere for zero or more characters and `?` anywhere for exactly one character. This applies identically to ordinary filenames and member names inside ZIP files.
-- ZIP masks are matched against the final member filename, not the ZIP's internal directory prefix. Thus `FF.S` finds `filefin2_portable_1.0.0.0.17/FF.S`, while the full internal member path remains visible in the results.
+- ZIP masks are matched against the final member filename, not the ZIP's internal directory prefix. Thus `FF.S` finds `filefin2_portable_1.0.0.0.18/FF.S`, while the full internal member path remains visible in the results.
 - Result columns use a right-aligned ten-character size field and explicit two-space separators between size, date, time, and filename. Full-width values can no longer run into the following date.
 - ZIP searching descends into ZIP members that are themselves ZIP archives. Nested entries use a `::` separator, such as `inner.zip::folder/FF.S  <-  outer.zip`.
 - Nested decompression uses the included `zip_nested.ps1` helper and Windows PowerShell only when a ZIP member is detected.
@@ -80,11 +80,13 @@ No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly
 2. Put `ff.dll`, `zip.dll`, and `zip_nested.ps1` together in a directory from which Windows can load the DLLs. The simplest choice is the directory containing the TSE executable.
 3. Restart TSE after replacing either DLL, because Windows/TSE may retain a loaded DLL in memory.
 4. Execute the `FF` macro, or press **Ctrl+Alt+Shift+F** while it is loaded. The macro creates and displays a dedicated results buffer.
-5. Enter either a wildcard mask or a full starting path and mask, such as `*.S`, `e.*list`, `elist.?`, `FILE?.TXT`, or `C:\TEMP\*.TXT`.
-6. When only a wildcard is entered, searching starts at the root of the current drive. When a path is included, searching starts in that directory.
+5. At the first prompt, enter the filename or wildcard mask only, such as `FF.S`, `*.S`, `e.*list`, `elist.?`, or `FILE?.TXT`.
+6. At the second prompt, enter the top directory only, such as `C:\TEMP` or `F:\WORDPROC\tse32_v45024\MACDOWNLO`.
 7. Choose whether member names inside ZIP files, including nested ZIP files, should also be searched.
 
-The macro recursively appends matching filenames, sizes, dates, and times to its dedicated results buffer. Searching starts at the supplied directory, or at the root of the current drive when only a mask is entered.
+Both prompts retain their own TSE edit history. Cancelling either prompt stops the operation without starting a search.
+
+The macro recursively appends matching filenames, sizes, dates, and times to its dedicated results buffer. Searching starts at the separately supplied top directory.
 
 ## Wildcard examples
 
@@ -145,3 +147,4 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 | 1.0.0.0.15 | 2026-09-08 | Added recursive filename searching inside ZIP files nested in other ZIP files, with `::` archive-chain display and safety limits |
 | 1.0.0.0.16 | 2026-09-08 | Added an `INVALID_FILE_ATTRIBUTES` compatibility definition for the older Windows headers supplied with Borland C++ 5.5.1 |
 | 1.0.0.0.17 | 2026-09-08 | Removed the Borland `_llmul` linker dependency by parsing the already-capped nested member size with bounded 32-bit arithmetic |
+| 1.0.0.0.18 | 2026-09-13 | Split search input into two `_EDIT_HISTORY_` prompts: filename or mask first, then the top directory; cancelling either prompt stops cleanly |

@@ -1,7 +1,7 @@
 /* FILEFIN2 ZIP central-directory reader for TSE 4.50.
    Supports classic ZIP, data descriptors, UTF-8 names and ZIP64 metadata.
    Uses Win32 only: no Borland C runtime library is required.
-   Version 1.0.0.0.17 - 2026-09-08 - OpenAI Codex */
+   Version 1.0.0.0.18 - 2026-09-13 - OpenAI Codex */
 
 #include <windows.h>
 
