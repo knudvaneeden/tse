@@ -1,0 +1,52 @@
+
+#include ["pushpar.si"]
+#include ["procpar.si"]
+
+string proc poppar()
+   // See par.doc.
+   string  mcl       [128] = Query(MacroCmdLine)
+   string  par       [255] = ""
+   integer counter         = 0
+   integer par_queue_head  = 0
+   integer par_queue_tail  = 0
+
+   // Push macro command line parameters that are in new extended format
+   // onto the macro parameter queue.
+   if mcl[1] == ":"
+      mcl = procpar(mcl)
+      if mcl <> ""
+         Warn("Macro parameters unrecognized: ", mcl)
+         mcl = ""
+      endif
+   endif
+
+   // Push macro command line parameters that are in old-fashioned format
+   // onto the macro parameter queue.
+   if mcl <> ""
+      repeat
+         counter = counter + 1
+         par = GetToken(mcl, " ", counter)
+         if par <> ""
+            pushpar(par)
+         endif
+      until par == ""
+   endif
+
+   Set(MacroCmdLine, "")
+
+   // Now let's pop one off our macro parameter queue.
+   par_queue_head = get_global_int("par_queue_head")
+   par_queue_tail = get_global_int("par_queue_tail")
+   if par_queue_head == 0
+      par_queue_head = 1
+   endif
+   if par_queue_head > par_queue_tail
+      par = ""
+   else
+      par = get_global_str("par_queue_" + Str(par_queue_head))
+      del_global_var("par_queue_" + Str(par_queue_head))
+      set_global_int("par_queue_head", par_queue_head + 1)
+   endif
+   return(par)
+end
+
