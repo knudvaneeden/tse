@@ -9,12 +9,16 @@
     currently loaded macros are searched for the translated key
     code.  The corresponding command and comment are displayed.
 
-    Package version 1.0.0.0.28/14.09.2026
+    Package version 1.0.0.0.30/14.09.2026
     Based on        v3.01/18.04.97
     Modified with   OpenAI Codex
     Copyright       (c) 1993-96 by DiK
 
     History
+    1.0.0.0.30/14.09.2026
+                    widen output popup to the available screen width
+    1.0.0.0.29/14.09.2026
+                    add Windows, WSL Linux, and native Linux support
     1.0.0.0.28/14.09.2026
                     restore UI fallback and key-assignment popup
     1.0.0.0.27/14.09.2026
@@ -83,20 +87,12 @@
 
 \****************************************************************************/
 
-#ifndef WIN32
-#include ["keytable.si"]
-#endif
-
 /****************************************************************************\
     global variables and constants
 \****************************************************************************/
 
 constant  KEYWIDTH = 32,
           CMDWIDTH = 192
-
-#ifndef WIN32
-integer keyfile
-#endif
 
 integer cmdfile
 integer tmpfile
@@ -166,6 +162,11 @@ string proc FindMacroSource(string macroNameS)
     string sourceFileS[_MAXPATH_] = ""
 
     macroBaseS = SplitPath(macroNameS, _NAME_)
+    if WhichOS() == _LINUX_
+        // Loaded names are normally uppercase, while Linux source and
+        // compiled-macro filenames are commonly lowercase.
+        macroBaseS = Lower(macroBaseS)
+    endif
 
     // The current working directory has explicit first priority.
     sourceFileS = SearchPath(macroBaseS + ".s", ".")
@@ -200,10 +201,7 @@ string proc FindMacroSource(string macroNameS)
     endif
 
     // Then find the loaded .MAC directly through TSEPath and look beside it.
-    macroFileS = macroNameS
-    if Lower(SplitPath(macroFileS, _EXT_)) <> ".mac"
-        macroFileS = macroFileS + ".mac"
-    endif
+    macroFileS = macroBaseS + ".mac"
     macroFileS = SearchPath(macroFileS, Query(TSEPath))
     if Length(macroFileS)
         sourceFileS = SplitPath(macroFileS, _DRIVE_|_PATH_|_NAME_) + ".s"
@@ -319,59 +317,8 @@ proc LoadLoadedMacroSources()
 end
 
 /****************************************************************************\
-    translate key codes
+    translate key codes on supported 32-bit Windows and Linux editions
 \****************************************************************************/
-
-#ifndef WIN32
-
-integer proc FindCode( integer key, integer width, integer col )
-    string hex_name[4]
-
-    hex_name = format(key:width:'0':16)
-    if lFind(hex_name,"g")
-        repeat
-            if col == 0
-                if (CurrPos() - 1) mod 4 == 0
-                    return (TRUE)
-                endif
-            else
-                if CurrPos() == col
-                    return (TRUE)
-                endif
-            endif
-        until not lRepeatFind()
-    endif
-    return (FALSE)
-end
-
-string proc FindKey( integer key )
-    integer n
-    string key_name[KEYWIDTH]
-    string cols[4] = Chr(9) + Chr(9) + Chr(5) + Chr(1)
-
-    GotoBufferId(keyfile)
-    if FindCode(key,4,0)
-        key_name = SubStr(
-            "Shift Ctrl  Alt ",
-            ((CurrPos() - 1)/4) * 6 + 1, 6 - CurrPos() /4)
-        key_name = key_name + GetText(17,KEYWIDTH)
-        return (key_name)
-    else
-        n = (key & 0xFF) - 0xFA
-        if 0 <= n and n <= 3
-            if FindCode(key shr 8, 2, Asc(cols[n+1]))
-                key_name = SubStr(
-                    "CtrlAlt    AltShift   CtrlShift  ShiftShift ",
-                    n * 11 + 1, n + 8)
-                key_name = key_name + GetText(17,KEYWIDTH)
-                return (key_name)
-            endif
-        endif
-    endif
-    return (str(key))
-end
-
-#else
 
 string proc FindKey( integer key )
     integer n
@@ -386,8 +333,6 @@ string proc FindKey( integer key )
     endfor
     return (key_name)
 end
-
-#endif
 
 /****************************************************************************\
     find key binding
@@ -475,10 +420,17 @@ end
 \****************************************************************************/
 
 proc WhenLoaded()
+    string defaultUiS[_MAXPATH_] = ""
+
     PushPosition()
     originalFileI = GetBufferId()
 
-    uiFile = LoadDir() + "ui\tse.ui"
+    defaultUiS = SearchPath("tse.ui", Query(TSEPath), "ui")
+    if Length(defaultUiS)
+        uiFile = defaultUiS
+    else
+        uiFile = ExpandPath("tse.ui")
+    endif
     if not Ask("Location of the .UI source file:", uiFile, _EDIT_HISTORY_)
         PurgeMacro(CurrMacroFileName())
         return()
@@ -506,15 +458,7 @@ proc WhenLoaded()
         PurgeMacro(CurrMacroFileName())
         return()
     endif
-    AddTraceLine("KEYASSGN 1.0.0.0.28 LOAD TRACE")
-#ifndef WIN32
-    keyfile = CreateTempBuffer()
-    if not ( keyfile and  InsertData(keytable) )
-        Warn("Cannot allocate key table")
-        PurgeMacro(CurrMacroFileName())
-        return()
-    endif
-#endif
+    AddTraceLine("KEYASSGN 1.0.0.0.30 LOAD TRACE")
 
     cmdfile = CreateTempBuffer()
     if not cmdfile
@@ -542,12 +486,6 @@ proc WhenPurged()
     integer parsedMacrosToShowI = 0
     integer resolvedMacroToShowI = 0
     integer loadedSourceToShowI = 0
-
-#ifndef WIN32
-    if keyfile
-        AbandonFile(keyfile)
-    endif
-#endif
 
     if cmdfile and showCombinedSourcesB
         combinedSourcesToShowI = cmdfile
@@ -630,6 +568,7 @@ proc main()
     string  cmd_name[CMDWIDTH] = ""
     string  cmd_desc[CMDWIDTH] = ""
     string  definitionFileS[_MAXPATH_] = ""
+    string  additionalPromptS[80] = ""
 
     // Use the supplied working pattern exactly: NewFile, hook list startup,
     // queue Escape, invoke PurgeMacro, then remove the hook.
@@ -648,7 +587,12 @@ proc main()
     // source that can be resolved before appending the UI fallback.
     ParseLoadedMacroNames()
     SaveParsedMacroNames()
-    if not Ask("Additional macro directories (; separated):",
+    if WhichOS() == _LINUX_
+        additionalPromptS = "Additional macro directories (Linux path list):"
+    else
+        additionalPromptS = "Additional macro directories (; separated):"
+    endif
+    if not Ask(additionalPromptS,
                macroSearchPathS, _EDIT_HISTORY_)
         showParsedMacrosB = TRUE
         PurgeMacro(CurrMacroFileName())
@@ -666,7 +610,7 @@ proc main()
     endif
     SaveDebugPaths()
 
-    if PopWinOpen(5,5,76,18,4,"",112)
+    if PopWinOpen(2,5,Query(ScreenCols) - 1,18,4,"",112)
         Set(Cursor,OFF)
         Set(Attr,112)
         ClrScr()

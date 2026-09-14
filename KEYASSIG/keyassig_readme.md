@@ -1,7 +1,7 @@
 # KEYASSIG — Keyboard Assignment Help for TSE
 
-**README version:** 1.0.0.0.28  
-**Updated:** 2026-09-14 01:13:10 UTC  
+**README version:** 1.0.0.0.30  
+**Updated:** 2026-09-14 01:25:10 UTC  
 **Session:** Create KEYASSIG MarkDown Readme
 
 ## Description
@@ -17,7 +17,9 @@ For debugging, every source file actually added to the search is recorded by ful
 
 Before collecting the macro sources, KEYASSGN makes TSE rebuild its live Purge Macro list. Version `1.0.0.0.12` introduced the user-supplied working pattern directly: `NewFile()`, a plain `list_startup()` procedure, `Hook(_LIST_STARTUP_, list_startup)`, queued `Escape`, `PurgeMacro()`, and `UnHook(list_startup)`. The captured list is processed only after `PurgeMacro()` returns.
 
-Testing with the standalone capture confirmed that the resulting buffer contains one visible macro name per line starting at column 1, for example `DDD3`, `COMPILE`, and `SETWIYDE`. Version `1.0.0.0.15` reads only that leading printable token character by character. It stops at whitespace, a control byte, or a non-ASCII byte and never copies a complete internal record into a pathname string.
+Testing confirmed that the captured fixed-width records contain a leading space, the visible macro name, padding, and an internal flag. The current parser reads the bounded record, trims its leading space, and extracts only its first space-delimited field.
+
+Version `1.0.0.0.30` supports 32-bit TSE on Windows, TSE Linux under WSL, and TSE on native Linux. It uses `WhichOS()` for runtime platform decisions and widens the output popup to the available screen width.
 
 The package was originally written by Dieter Koessl and donated to the public domain. The included source history identifies `KEYASSGN.S` and `KEYFIND.S` as version 3.01 dated 1997-04-18.
 
@@ -27,7 +29,7 @@ The package was originally written by Dieter Koessl and donated to the public do
 |---|---|
 | `KEYASSGN.S` | Shows the command and description assigned to a pressed key |
 | `KEYFIND.S` | Searches and lists matching key assignments |
-| `KEYTABLE.SI` | Key-code table used by the non-Win32 build |
+| `KEYTABLE.SI` | Legacy key-code table retained from the original package; version 29 uses `KeyName()` |
 | `READ.ME` | Original documentation |
 | `FILE_ID.DIZ` | Short package description |
 
@@ -35,10 +37,10 @@ The package was originally written by Dieter Koessl and donated to the public do
 
 - The SemWare Editor (TSE) with its SAL compiler.
 - Access to the UI source file containing the active key definitions.
-- `KEYASSGN` initially suggests `ui\tse.ui` below the TSE installation directory, but lets you enter any `.UI` source filename.
+- `KEYASSGN` searches TSEPath's `ui` locations for `tse.ui` as its initial suggestion, but lets you enter any `.UI` source filename.
 - The `.S` source of a loaded macro can be in the current directory, beside its `.MAC` file, or somewhere on TSE's normal macro search path.
 
-For a current 32-bit TSE installation, compile the two `.S` files with the corresponding `sc32.exe` compiler.
+Compile `KEYASSGN.S` with the SAL compiler supplied with the target 32-bit TSE installation. Use the Windows compiler for Windows TSE and the Linux compiler for TSE Linux. Compile separately on each target rather than copying a Windows `.MAC` to Linux.
 
 ## Installation
 
@@ -52,6 +54,17 @@ For a current 32-bit TSE installation, compile the two `.S` files with the corre
 
 3. Copy the resulting `KEYASSGN.MAC` and `KEYFIND.MAC` files to a directory from which TSE can load macros.
 4. You may keep the `.S` source files in the current working directory. This location is searched first. Otherwise, keep each source beside its corresponding loaded `.MAC` file or on TSE's macro search path.
+
+### Linux and WSL Paths
+
+Use Linux pathnames when running TSE Linux:
+
+- WSL example: `/mnt/c/temp`
+- Native Linux example: `/home/knud/tse/macros`
+
+Do not enter Windows syntax such as `C:\TEMP` into TSE Linux. For multiple additional directories, use the path-list syntax accepted by the Linux TSE `SearchPath()` implementation and configuration.
+
+On Linux, loaded macro names are normally reported in uppercase while source files commonly use lowercase. Version 29 lowercases the derived macro basename before looking for its `.s` and `.mac` files. Therefore, lowercase filenames such as `template.s` are recommended on case-sensitive Linux filesystems.
 
 ## How to Run KEYASSGN
 
@@ -160,9 +173,9 @@ Check the filename entered at the new UI-file prompt. Enter an existing `.UI` so
 
 `KEYFIND` could not open the configured UI source. Correct the path declarations and recompile the macro.
 
-### Cannot allocate key table or work buffer
+### Cannot allocate a work buffer
 
-TSE could not create a temporary buffer or load the key table. Close unnecessary files or applications and try again.
+TSE could not create a temporary buffer. Close unnecessary files or applications and try again.
 
 ### Results do not match the active keys
 
@@ -173,6 +186,24 @@ Make sure the macros read the same UI source from which the currently installed 
 The key may genuinely be unassigned. A definition in another macro can only be found when that macro is currently loaded and its same-name `.S` source can be found in the current directory, beside the `.MAC` file, or through TSE's macro search path.
 
 ## Version History
+
+### 1.0.0.0.30 — 2026-09-14 11:52:45 UTC
+
+- Widens the key-assignment output popup from fixed columns 5–76 to columns 2 through `Query(ScreenCols) - 1`.
+- Gains six text columns on an 80-column display and automatically uses additional width on wider TSE displays.
+- Keeps a one-column margin so the popup remains visibly bounded.
+- Retains the Windows, WSL Linux, and native Linux support introduced in version 29.
+
+### 1.0.0.0.29 — 2026-09-14 01:25:10 UTC
+
+- Adds support for 32-bit TSE on Windows, TSE Linux under WSL, and native Linux.
+- Uses `WhichOS() == _LINUX_` for runtime platform distinctions.
+- Finds the default `tse.ui` through TSEPath's `ui` locations instead of constructing a Windows backslash path from `LoadDir()`.
+- Uses lowercase derived `.s` and `.mac` basenames on Linux for case-sensitive filesystems.
+- Uses `KeyName()` for both supported 32-bit platforms and removes the legacy DOS-style key-table runtime branch.
+- Provides a Linux-specific additional-directory prompt.
+- Documents WSL `/mnt/c/...` and native Linux `/home/...` pathname forms.
+- Preserves the confirmed Windows version 28 search and popup behavior.
 
 ### 1.0.0.0.28 — 2026-09-14 01:13:10 UTC
 
@@ -428,7 +459,7 @@ If this buffer still contains `DDD`, capture and name parsing are both correct. 
 - Documented both `KEYASSGN` and `KEYFIND`.
 - Added UI configuration, optional Help menu entries, keyboard controls, and troubleshooting information.
 
-Future documentation revisions can continue as `1.0.0.0.29`, `1.0.0.0.30`, and so on.
+Future documentation revisions can continue as `1.0.0.0.30`, `1.0.0.0.31`, and so on.
 
 ## Copyright and Disclaimer
 
