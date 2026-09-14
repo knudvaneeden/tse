@@ -26,6 +26,14 @@ proc MAIN()
         cline = 1                      // this saves our position on line 1
         totline=numlines()             // count all the lines in the file
         sfilename = CurrFileName()     // save the current list file name
+        //
+        IF YesNo( Format( "All individual lines of current file are seen as filenames. Continue?" ) )
+         Warn( "starting loading the files from the lines in this file" )
+        ELSE
+         Warn( "Quitting the program." )
+         RETURN()
+        ENDIF
+        //
         loop
                 GotoLine(cline)        // jump to line
                 GotoPos(1)
