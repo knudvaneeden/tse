@@ -431,6 +431,15 @@ proc WhenLoaded()
     else
         uiFile = ExpandPath("tse.ui")
     endif
+
+    // change this
+    // [kn, ri, mo, 14-09-2026 15:13:29]
+    IF ( ( WhichOS() == _WINDOWS_ ) OR ( WhichOS() == _WINDOWS_NT_ ) )
+     uiFile = "f:\bbc\taal\qedincke.ui"
+    ELSEIF ( WhichOS() == _LINUX_ )
+     uiFile = "/mnt/c/temp/tse_linux/tse45014working/ui/keyassignmentreplacementtseforlinuxbegin.ui"
+    ENDIF
+
     if not Ask("Location of the .UI source file:", uiFile, _EDIT_HISTORY_)
         PurgeMacro(CurrMacroFileName())
         return()
@@ -592,6 +601,15 @@ proc main()
     else
         additionalPromptS = "Additional macro directories (; separated):"
     endif
+
+    // change this
+    // [kn, ri, mo, 14-09-2026 15:13:29]
+    IF ( ( WhichOS() == _WINDOWS_ ) OR ( WhichOS() == _WINDOWS_NT_ ) )
+     macroSearchPathS = "c:\temp\"
+    ELSEIF ( WhichOS() == _LINUX_ )
+     macroSearchPathS = "/mnt/c/temp/"
+    ENDIF
+
     if not Ask(additionalPromptS,
                macroSearchPathS, _EDIT_HISTORY_)
         showParsedMacrosB = TRUE
