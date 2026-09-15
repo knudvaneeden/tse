@@ -1,6 +1,6 @@
 # KEYASSIG — Keyboard Assignment Help for TSE
 
-**README version:** 1.0.0.0.37  
+**README version:** 1.0.0.0.38  
 **Updated:** 2026-09-15 08:30:00 UTC  
 **Session:** Create KEYASSIG MarkDown Readme
 
@@ -157,7 +157,43 @@ F:\BBC\TAAL\template.s
    - `Enter` to search within the displayed list;
    - `Escape` to close the list.
 
-The search is case-insensitive and uses the TSE regular-expression search supported by the macro.
+### KEYFIND Regular-Expression Input
+
+The KEYFIND search-string input already accepts TSE regular expressions. The macro performs a case-insensitive search and enables TSE regular-expression interpretation with the `x` search option.
+
+Examples:
+
+```text
+Shift.*Escape
+```
+
+Finds a key-definition line containing `Shift`, followed later on the same line by `Escape`.
+
+```text
+Warn|Message
+```
+
+Finds definitions containing either `Warn` or `Message`.
+
+```text
+<Ctrl
+```
+
+Finds key definitions beginning with `<Ctrl`.
+
+```text
+Warn,Message
+```
+
+The existing comma notation supplies multiple alternatives and therefore also finds `Warn` or `Message`.
+
+Special behavior:
+
+- `all` is a KEYFIND command rather than a literal regular expression; it lists all key-definition lines.
+- A search beginning with `<` is anchored at the beginning of a key-definition line.
+- Other input is searched within key-definition lines that begin with `<`.
+- Regular-expression metacharacters are interpreted by TSE. Precede a metacharacter with `\` when it must be matched literally.
+- Normal searches return every matching definition; they do not stop after the first match.
 
 ## Optional Help Menu Entries
 
@@ -193,6 +229,13 @@ Make sure the macros read the same UI source from which the currently installed 
 The key may genuinely be unassigned. A definition in another macro can only be found when that macro is currently loaded and its same-name `.S` source can be found in the current directory, beside the `.MAC` file, or through TSE's macro search path.
 
 ## Version History
+
+### 1.0.0.0.38 — 2026-09-15 14:00:00 UTC
+
+- Documents that KEYFIND search-string input already supports TSE regular expressions through the `x` search option.
+- Adds examples for sequencing, alternatives, definitions beginning with `<Ctrl`, and comma-separated alternatives.
+- Clarifies the special `all` behavior, case-insensitive matching, anchoring, escaping, and multiple-result behavior.
+- Makes no change to `keyfind.s` or its established search behavior.
 
 ### 1.0.0.0.37 — 2026-09-15 10:35:00 UTC
 
@@ -524,7 +567,7 @@ If this buffer still contains `DDD`, capture and name parsing are both correct. 
 - Documented both `KEYASSGN` and `KEYFIND`.
 - Added UI configuration, optional Help menu entries, keyboard controls, and troubleshooting information.
 
-Future documentation revisions can continue as `1.0.0.0.38`, `1.0.0.0.39`, and so on.
+Future documentation revisions can continue as `1.0.0.0.39`, `1.0.0.0.40`, and so on.
 
 ## Copyright and Disclaimer
 
