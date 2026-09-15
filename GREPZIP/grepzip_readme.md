@@ -1,10 +1,10 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.10  
+**Version:** 1.0.0.0.11  
 **Date:** 2026-09-15  
 **Authoring model:** OpenAI Codex
 
-GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts a directory, one file, or a file specification and also searches files stored in ZIP, JAR, TAR and TGZ archives. Supported archives stored inside other supported archives are expanded and searched recursively.
+GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts a directory, one file, or a file specification and also searches files stored in ZIP, JAR, TAR, TGZ, 7Z and RAR archives. Supported archives stored inside other supported archives are expanded and searched recursively.
 
 ## Package contents
 
@@ -13,7 +13,7 @@ GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents 
 - `build.bat` - SAL build command.
 - `grepzip_readme.md` - this documentation.
 
-No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and the built-in .NET ZIP classes. TAR and TGZ support uses Windows `tar.exe`. All text matching remains in TSE's own search engine.
+No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and the built-in .NET ZIP classes. TAR and TGZ support uses Windows `tar.exe`. RAR and 7Z support uses an installed `7z.exe`. All text matching remains in TSE's own search engine.
 
 ## Requirements
 
@@ -21,6 +21,7 @@ No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and 
 - The `sc32` SAL compiler.
 - Windows PowerShell 5.1 or another Windows PowerShell version providing `System.IO.Compression`.
 - Windows `tar.exe` for TAR, TGZ and TAR.GZ archives. It is included with current Windows 10 and Windows 11 installations.
+- 7-Zip command-line program `7z.exe` for RAR and 7Z archives. GREPZIP searches `PATH`, `%ProgramFiles%\7-Zip`, and `%ProgramFiles(x86)%\7-Zip`.
 
 ## Build
 
@@ -58,6 +59,8 @@ C:\SOURCE\*.S
 C:\SOURCE\README.MD
 C:\ARCHIVES\*.ZIP
 C:\ARCHIVES\*.TAR
+C:\ARCHIVES\*.7Z
+C:\ARCHIVES\*.RAR
 ```
 
 The file specification is applied recursively below its parent directory. A directory searches all files below it. A literal filename searches only that file.
@@ -138,7 +141,7 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 
 ## Archive behavior
 
-- ZIP, JAR, TAR, TGZ and TAR.GZ archives are searched.
+- ZIP, JAR, TAR, TGZ, TAR.GZ, 7Z and RAR archives are searched.
 - Any supported archive may be nested inside any other supported archive.
 - Nested archives are searched to a maximum depth of 32.
 - Archive directory entries are ignored.
@@ -155,8 +158,15 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Binary files may not be meaningful to TSE's text search.
 - Password-protected archives are not searched.
 - TAR/TGZ searching requires `tar.exe`; those formats are skipped if it is unavailable.
+- 7Z/RAR searching requires `7z.exe`; those formats are skipped if it is unavailable.
 
 ## Version history
+
+### 1.0.0.0.11 - 2026-09-15
+
+- Adds recursive 7Z and RAR searching through `7z.exe`.
+- Locates `7z.exe` through `PATH` or the standard 32-bit and 64-bit 7-Zip installation directories.
+- Allows 7Z and RAR archives to participate in mixed nested-archive chains with ZIP, JAR, TAR and TGZ.
 
 ### 1.0.0.0.10 - 2026-09-15
 

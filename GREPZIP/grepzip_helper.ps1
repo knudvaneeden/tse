@@ -37,6 +37,22 @@ function Get-ArchiveKind([string]$name) {
     if ($lower.EndsWith('.zip') -or $lower.EndsWith('.jar')) { return 'zip' }
     if ($lower.EndsWith('.tgz') -or $lower.EndsWith('.tar.gz')) { return 'tgz' }
     if ($lower.EndsWith('.tar')) { return 'tar' }
+    if ($lower.EndsWith('.7z') -or $lower.EndsWith('.rar')) { return '7z' }
+    return ''
+}
+
+function Get-SevenZipCommand() {
+    $command = Get-Command 7z.exe -ErrorAction SilentlyContinue
+    if ($command) { return $command.Source }
+    if ($env:ProgramFiles) {
+        $candidate = Join-Path $env:ProgramFiles '7-Zip\7z.exe'
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
+    }
+    $programFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+    if ($programFilesX86) {
+        $candidate = Join-Path $programFilesX86 '7-Zip\7z.exe'
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
+    }
     return ''
 }
 
@@ -90,6 +106,25 @@ function Expand-TarArchive([string]$archivePath, [string]$display,
     }
 }
 
+function Expand-SevenZipArchive([string]$archivePath, [string]$display,
+                                [string]$mask, [int]$depth) {
+    $sevenZip = Get-SevenZipCommand
+    if ([string]::IsNullOrEmpty($sevenZip)) { return }
+    $extractRoot = Join-Path $work ([Guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $extractRoot | Out-Null
+    $outputOption = '-o' + $extractRoot
+    & $sevenZip x -y $outputOption -- $archivePath *> $null
+    if ($LASTEXITCODE -ne 0) { return }
+    $members = Get-ChildItem -LiteralPath $extractRoot -File -Recurse -Force `
+                             -ErrorAction SilentlyContinue
+    foreach ($member in $members) {
+        $relative = $member.FullName.Substring($extractRoot.Length).TrimStart('\')
+        $relative = $relative.Replace('\', '/')
+        Process-File $member.FullName ($display + '::' + $relative) `
+                     $mask ($depth + 1) $false
+    }
+}
+
 function Process-File([string]$disk, [string]$display, [string]$mask,
                       [int]$depth, [bool]$forceSearch) {
     if ($depth -gt 32) { return }
@@ -99,6 +134,8 @@ function Process-File([string]$disk, [string]$display, [string]$mask,
             Expand-ZipArchive $disk $display $mask $depth
         } elseif ($kind -eq 'tar' -or $kind -eq 'tgz') {
             Expand-TarArchive $disk $display $mask $depth
+        } elseif ($kind -eq '7z') {
+            Expand-SevenZipArchive $disk $display $mask $depth
         } elseif ($forceSearch -or (Test-Mask ([IO.Path]::GetFileName($display)) $mask)) {
             Add-SearchFile $disk $display
         }
