@@ -78,6 +78,14 @@ PROC Main()
             liListFileID        = GetBufferID(),
             liSearchFileID
 
+    IF YesNo( "Advised is not to run this TSE SAL loadlist program, because it loads a lot of programs unsolicited. Still run?" ) == 1
+     IF YesNo( "Are you sure you want to run it?" ) == 1
+     ENDIF
+    ELSE
+     Warn( "Quitting the program." )
+     RETURN()
+    ENDIF
+
     Set(MsgLevel, _NONE_)
     Set(Cursor, OFF)
 
@@ -148,4 +156,3 @@ PROC Main()
     PurgeMacro(CurrMacroFileName())
 END Main
 
-
