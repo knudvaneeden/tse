@@ -1,6 +1,6 @@
 /****************************************************************************\
  KeyFind.S - search loaded macro sources, then selected UI source.
- Package version 1.0.0.0.37/15.09.2026
+ Package version 1.0.0.0.39/15.09.2026
  Based on v3.01/18.04.97 by DiK. Modified with OpenAI Codex.
 \****************************************************************************/
 
@@ -9,7 +9,7 @@ integer parsedMacrosGI = 0
 integer sourceBufferGI = 0
 integer searchBufferGI = 0
 integer pathBufferGI = 0
-integer showSearchPathsGB = TRUE
+integer showSearchPathsGB = FALSE
 string macroSearchPathGS[255] = ""
 string uiFileGS[_MAXPATH_] = ""
 
@@ -209,11 +209,18 @@ proc PROCAnnotateMatches(string findS)
  BegFile()
 end
 
-proc PROCMakeFindString(var string findS)
+proc PROCMakeFindString(var string findS, integer regexB)
  integer oldSettingI = Set(RemoveTrailingWhite, OFF)
  if Lower(findS) == "all"
   InsertText("^<")
  else
+  if not regexB
+   InsertText(findS)
+   BegLine()
+   lReplace("{[\\\[\]{}?.*+#@~|^$]}", "\\\1", "gnx")
+   findS = GetText(1, CurrLineLen())
+   EmptyBuffer()
+  endif
   InsertText("{" + findS + "}")
   lReplace(",#", "}|{", "gnx")
   BegLine()
@@ -266,7 +273,9 @@ proc Main()
  integer originalBufferI = GetBufferId()
  integer pathsToShowI = 0
  string findS[80] = ""
- string promptS[80] = "Enter search string(s) separated by commas ('all' for entire file)"
+ string promptS[80] = "Enter text or TSE regex (comma=OR, 'all'=all keys)"
+ string optionPromptS[80] = "Search options: i=ignore case, x=regular expression (i or ix)"
+ string optionsS[8] = "ix"
  string additionalPromptS[80] = ""
 
  IF ( ( WhichOS() == _WINDOWS_ ) OR ( WhichOS() == _WINDOWS_NT_ ) )
@@ -349,16 +358,25 @@ proc Main()
   if not Ask(promptS, findS, _EDIT_HISTORY_)
    break
   endif
-  PROCMakeFindString(findS)
-  EmptyBuffer()
-  PROCCopySourcesToSearchBuffer()
-  GotoBufferId(searchBufferGI)
-  PROCAnnotateMatches(findS)
-  PROCCompress(findS)
-  if NumLines()
-   resultI = FNBrowse()
+  optionsS = "ix"
+  if not Ask(optionPromptS, optionsS, _EDIT_HISTORY_)
+   break
+  endif
+  optionsS = Lower(Trim(optionsS))
+  if optionsS == "i" or optionsS == "ix"
+   PROCMakeFindString(findS, optionsS == "ix")
+   EmptyBuffer()
+   PROCCopySourcesToSearchBuffer()
+   GotoBufferId(searchBufferGI)
+   PROCAnnotateMatches(findS)
+   PROCCompress(findS)
+   if NumLines()
+    resultI = FNBrowse()
+   else
+    Warn("No matching key assignments found")
+   endif
   else
-   Warn("No matching key assignments found")
+   Warn("Search options must be i or ix")
   endif
  until resultI == 0
 

@@ -9,12 +9,14 @@
     currently loaded macros are searched for the translated key
     code.  The corresponding command and comment are displayed.
 
-    Package version 1.0.0.0.36/15.09.2026
+    Package version 1.0.0.0.39/15.09.2026
     Based on        v3.01/18.04.97
     Modified with   OpenAI Codex
     Copyright       (c) 1993-96 by DiK
 
     History
+    1.0.0.0.39/15.09.2026
+                    do not show searched source paths by default
     1.0.0.0.36/15.09.2026
                     add preferred Windows and Linux editable path defaults
                     optionally show source paths in a temporary buffer only
@@ -111,7 +113,7 @@ integer showParsedMacrosB = FALSE
 integer showResolvedMacroB = FALSE
 integer showLoadedSourceB = FALSE
 integer showCombinedSourcesB = FALSE
-integer showSearchPathsGB = TRUE
+integer showSearchPathsGB = FALSE
 integer originalFileI = 0
 
 string uiFile[_MAXPATH_] = ""

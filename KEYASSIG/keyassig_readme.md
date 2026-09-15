@@ -1,6 +1,6 @@
 # KEYASSIG — Keyboard Assignment Help for TSE
 
-**README version:** 1.0.0.0.38  
+**README version:** 1.0.0.0.39  
 **Updated:** 2026-09-15 08:30:00 UTC  
 **Session:** Create KEYASSIG MarkDown Readme
 
@@ -19,7 +19,7 @@ Before collecting the macro sources, KEYASSGN makes TSE rebuild its live Purge M
 
 Testing confirmed that the captured fixed-width records contain a leading space, the visible macro name, padding, and an internal flag. The current parser reads the bounded record, trims its leading space, and extracts only its first space-delimited field.
 
-Version `1.0.0.0.37` uses TSE's standard edit history for the KEYFIND search-string prompt. Both macros search loaded macro sources first and the selected UI source last.
+Version `1.0.0.0.39` keeps the searched-source list hidden by default in both macros. KEYFIND provides a separate search-options prompt: enter `i` for case-insensitive literal text or `ix` for case-insensitive TSE regular expressions. Both macros search loaded macro sources first and the selected UI source last.
 
 The package was originally written by Dieter Koessl and donated to the public domain. The included source history identifies `KEYASSGN.S` and `KEYFIND.S` as version 3.01 dated 1997-04-18.
 
@@ -101,7 +101,7 @@ On Linux, loaded macro names are normally reported in uppercase while source fil
 Both sources declare this global setting:
 
 ```sal
-integer showSearchPathsGB = TRUE
+integer showSearchPathsGB = FALSE
 ```
 
 - `TRUE` preserves and displays the searched-source list in an unnamed temporary buffer after the macro finishes.
@@ -146,11 +146,16 @@ F:\BBC\TAAL\template.s
 2. Execute the macro `KEYFIND`.
 3. Select the `.UI` source file used by the current TSE configuration.
 4. Enter any additional macro-source directories. On Windows, separate multiple directories with semicolons. On Linux, use Linux path-list syntax.
-5. Enter a command, key name, comment, or other search text. Enter `all` to list every key-definition line.
-6. `KEYFIND` searches the resolvable `.S` sources of all currently loaded macros first, followed by the selected `.UI` source.
-7. Matching definitions appear in the existing sortable browsing list. Each line displays `File:` at column 65, followed by the full pathname of the source containing that definition. Use horizontal scrolling to inspect a long pathname and any remaining definition text. Use `Alt-K` to sort by key and `Alt-C` to sort by command.
-8. When `showSearchPathsGB` is `TRUE`, the ordered full pathnames of all files actually searched are displayed afterward in an unnamed temporary buffer. No list is saved to disk.
-9. In the results list, use:
+5. Enter a command, key name, comment, literal string, or TSE regular expression. The prompt explicitly shows `comma=OR` and `'all'=all keys`.
+6. Enter the search options. The default is `ix`:
+
+   - `i` performs a case-insensitive literal search and escapes regular-expression operators in the entered string.
+   - `ix` performs a case-insensitive TSE regular-expression search and leaves operators active.
+
+7. `KEYFIND` searches the resolvable `.S` sources of all currently loaded macros first, followed by the selected `.UI` source.
+8. Matching definitions appear in the existing sortable browsing list. Each line displays `File:` at column 65, followed by the full pathname of the source containing that definition. Use horizontal scrolling to inspect a long pathname and any remaining definition text. Use `Alt-K` to sort by key and `Alt-C` to sort by command.
+9. When `showSearchPathsGB` is `TRUE`, the ordered full pathnames of all files actually searched are displayed afterward in an unnamed temporary buffer. No list is saved to disk.
+10. In the results list, use:
 
    - `Alt-K` to sort by key;
    - `Alt-C` to sort by command;
@@ -159,7 +164,11 @@ F:\BBC\TAAL\template.s
 
 ### KEYFIND Regular-Expression Input
 
-The KEYFIND search-string input already accepts TSE regular expressions. The macro performs a case-insensitive search and enables TSE regular-expression interpretation with the `x` search option.
+KEYFIND asks for search options immediately after the search string. The default is `ix`.
+
+- With `i`, input is treated as literal text. TSE regular-expression metacharacters are escaped internally.
+- With `ix`, input is interpreted as a TSE regular expression.
+- Both supported modes use case-insensitive matching.
 
 Examples:
 
@@ -192,7 +201,7 @@ Special behavior:
 - `all` is a KEYFIND command rather than a literal regular expression; it lists all key-definition lines.
 - A search beginning with `<` is anchored at the beginning of a key-definition line.
 - Other input is searched within key-definition lines that begin with `<`.
-- Regular-expression metacharacters are interpreted by TSE. Precede a metacharacter with `\` when it must be matched literally.
+- With `ix`, regular-expression metacharacters are interpreted by TSE. Precede a metacharacter with `\` when it must be matched literally, or select `i` for a literal search.
 - Normal searches return every matching definition; they do not stop after the first match.
 
 ## Optional Help Menu Entries
@@ -230,12 +239,19 @@ The key may genuinely be unassigned. A definition in another macro can only be f
 
 ## Version History
 
+### 1.0.0.0.39 — 2026-09-15 17:45:00 UTC
+
+- Changes `showSearchPathsGB` from `TRUE` to `FALSE` in both `KEYFIND.S` and `KEYASSGN.S`.
+- Consequently, neither macro displays the temporary searched-source list by default.
+- The list remains available for diagnostics by changing `showSearchPathsGB` to `TRUE` before compiling.
+
 ### 1.0.0.0.38 — 2026-09-15 14:00:00 UTC
 
-- Documents that KEYFIND search-string input already supports TSE regular expressions through the `x` search option.
-- Adds examples for sequencing, alternatives, definitions beginning with `<Ctrl`, and comma-separated alternatives.
-- Clarifies the special `all` behavior, case-insensitive matching, anchoring, escaping, and multiple-result behavior.
-- Makes no change to `keyfind.s` or its established search behavior.
+- Makes regular-expression support evident in the search-string prompt.
+- Adds a second prompt for search options, defaulting to `ix`.
+- Supports `i` for case-insensitive literal searches and `ix` for case-insensitive TSE regular-expression searches.
+- Escapes TSE regular-expression operators internally when only `i` is selected.
+- Retains comma-separated alternatives, the special `all` behavior, and multiple-result searching.
 
 ### 1.0.0.0.37 — 2026-09-15 10:35:00 UTC
 
