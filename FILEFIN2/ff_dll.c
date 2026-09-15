@@ -1,6 +1,6 @@
 /* FILEFIN2 Win32 file finder DLL.
    Borland C++ 5.5 compatible C source.
-   Version 1.0.0.0.18 - 2026-09-13 - OpenAI Codex */
+   Version 1.0.0.0.23 - 2026-09-15 - OpenAI Codex */
 
 #include <windows.h>
 
@@ -116,14 +116,22 @@ static int is_dot_directory(const char *name)
            (name[1] == '\0' || (name[1] == '.' && name[2] == '\0'));
 }
 
-static int is_zip_name(const char *name)
+static int has_extension(const char *name, const char *extension)
 {
-    int length = text_length(name);
-    if (length < 4) return 0;
-    return name[length - 4] == '.' &&
-           upper_char(name[length - 3]) == 'Z' &&
-           upper_char(name[length - 2]) == 'I' &&
-           upper_char(name[length - 1]) == 'P';
+    int nameLength = text_length(name);
+    int extensionLength = text_length(extension);
+    int index;
+    if (nameLength < extensionLength) return 0;
+    for (index = 0; index < extensionLength; index++)
+        if (upper_char(name[nameLength - extensionLength + index]) !=
+            upper_char(extension[index])) return 0;
+    return 1;
+}
+
+static int is_archive_name(const char *name)
+{
+    return has_extension(name, ".zip") || has_extension(name, ".jar") ||
+           has_extension(name, ".tar") || has_extension(name, ".tgz");
 }
 
 static void sal_to_c(const SAL_STRING *source, char *target, int targetSize)
@@ -439,7 +447,7 @@ __declspec(dllexport) int PASCAL FF_TreeNext(SAL_STRING *stateS)
         copy_text(tree->currentName, data->cFileName, 255);
         copy_text(tree->currentPath, fullPath, TREE_PATH_MAX - 1);
         tree->currentMatches = wildcard_match(tree->mask, tree->currentName);
-        tree->currentIsZip = is_zip_name(tree->currentName);
+        tree->currentIsZip = is_archive_name(tree->currentName);
         if (tree->currentMatches || (tree->includeZip && tree->currentIsZip)) return 1;
     }
     return 0;

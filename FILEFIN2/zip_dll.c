@@ -1,7 +1,7 @@
-/* FILEFIN2 ZIP central-directory reader for TSE 4.50.
-   Supports classic ZIP, data descriptors, UTF-8 names and ZIP64 metadata.
+/* FILEFIN2 archive reader for TSE 4.50.
+   Supports ZIP/JAR directly and nested ZIP/JAR/TAR/TGZ through PowerShell.
    Uses Win32 only: no Borland C runtime library is required.
-   Version 1.0.0.0.18 - 2026-09-13 - OpenAI Codex */
+   Version 1.0.0.0.23 - 2026-09-15 - OpenAI Codex */
 
 #include <windows.h>
 
@@ -121,14 +121,27 @@ static const char *member_base_name(const char *name)
     return base;
 }
 
-static int is_zip_name(const char *name)
+static int has_extension(const char *name, const char *extension)
 {
-    int length = text_length(name);
-    if (length < 4) return 0;
-    return name[length - 4] == '.' &&
-           upper_char(name[length - 3]) == 'Z' &&
-           upper_char(name[length - 2]) == 'I' &&
-           upper_char(name[length - 1]) == 'P';
+    int nameLength = text_length(name);
+    int extensionLength = text_length(extension);
+    int index;
+    if (nameLength < extensionLength) return 0;
+    for (index = 0; index < extensionLength; index++)
+        if (upper_char(name[nameLength - extensionLength + index]) !=
+            upper_char(extension[index])) return 0;
+    return 1;
+}
+
+static int is_archive_name(const char *name)
+{
+    return has_extension(name, ".zip") || has_extension(name, ".jar") ||
+           has_extension(name, ".tar") || has_extension(name, ".tgz");
+}
+
+static int is_tar_name(const char *name)
+{
+    return has_extension(name, ".tar") || has_extension(name, ".tgz");
 }
 
 static void copy_text(char *target, const char *source, int maximum)
@@ -306,6 +319,27 @@ static void store_name(ZIP_CONTEXT *context, const unsigned char *name,
     context->name[count] = '\0';
 }
 
+static int wait_for_process_with_paint(HANDLE processHandle)
+{
+    HANDLE handles[1];
+    DWORD waitResult;
+    MSG message;
+
+    handles[0] = processHandle;
+    for (;;) {
+        waitResult = MsgWaitForMultipleObjects(
+            1, handles, FALSE, 100, QS_PAINT | QS_SENDMESSAGE);
+        if (waitResult == WAIT_OBJECT_0) return 1;
+        if (waitResult == WAIT_FAILED) return 0;
+        if (waitResult == WAIT_OBJECT_0 + 1) {
+            while (PeekMessageA(&message, NULL, WM_PAINT, WM_PAINT, PM_REMOVE)) {
+                TranslateMessage(&message);
+                DispatchMessageA(&message);
+            }
+        }
+    }
+}
+
 static int run_nested_scanner(ZIP_CONTEXT *context)
 {
     char modulePath[PATH_TEXT_MAX];
@@ -356,7 +390,8 @@ static int run_nested_scanner(ZIP_CONTEXT *context)
         context->nestedPath[0] = '\0';
         return 0;
     }
-    WaitForSingleObject(process.hProcess, INFINITE);
+    if (!wait_for_process_with_paint(process.hProcess))
+        WaitForSingleObject(process.hProcess, INFINITE);
     GetExitCodeProcess(process.hProcess, &exitCode);
     CloseHandle(process.hThread);
     CloseHandle(process.hProcess);
@@ -461,18 +496,20 @@ __declspec(dllexport) int PASCAL ZIP_Open(SAL_STRING *pathS, SAL_STRING *stateS)
     size = file_size(file);
     if (!find_central_directory(file, size, &offset, &entries) || !seek64(file, offset)) {
         CloseHandle(file);
-        return 0;
+        file = INVALID_HANDLE_VALUE;
+        if (!is_tar_name(path)) return 0;
+        entries = 0;
     }
     for (slot = 0; slot < MAX_ZIPS; slot++) if (!contexts[slot].used) break;
     if (slot == MAX_ZIPS) {
-        CloseHandle(file);
+        if (file != INVALID_HANDLE_VALUE) CloseHandle(file);
         return 0;
     }
     contexts[slot].used = 1;
     contexts[slot].file = file;
     contexts[slot].nestedFile = INVALID_HANDLE_VALUE;
     contexts[slot].remaining = entries;
-    contexts[slot].hasNested = 0;
+    contexts[slot].hasNested = is_tar_name(path);
     contexts[slot].nestedPrepared = 0;
     contexts[slot].nestedPath[0] = '\0';
     copy_text(contexts[slot].archivePath, path, PATH_TEXT_MAX - 1);
@@ -526,7 +563,7 @@ __declspec(dllexport) int PASCAL ZIP_Next(SAL_STRING *stateS)
     }
 
     store_name(context, name, nameLength, flags);
-    if (is_zip_name(member_base_name(context->name))) context->hasNested = 1;
+    if (is_archive_name(member_base_name(context->name))) context->hasNested = 1;
     if (size32 == 0xffffffffUL) {
         position = 0;
         while (position + 4UL <= (unsigned long)extraLength) {

@@ -13,6 +13,7 @@ if errorlevel 1 goto build_error
 echo.
 echo Build completed: ff.dll and zip.dll
 echo Copy both DLL files and zip_nested.ps1 to the same directory.
+echo Archive searching supports ZIP, JAR, TAR, TGZ, and mixed nesting.
 echo Make sure TSE Pro can load the DLL files from that directory.
 goto end
 

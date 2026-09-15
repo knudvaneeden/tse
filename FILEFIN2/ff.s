@@ -1,6 +1,6 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.18
-// Date    : 2026-09-13
+// Version : 1.0.0.0.23
+// Date    : 2026-09-15
 // LLM     : OpenAI Codex
 //
 // TSE 4.50 / Windows 11 port using ff.dll and zip.dll.
@@ -46,7 +46,7 @@ end
 
 menu ZipSearch()
     history
-    "Search Zip Files?", , Divide
+    "Search Archive Files?", , Divide
     "&Yes", PROCSetZip(TRUE)
     "&No",  PROCSetZip(FALSE)
 end
@@ -126,7 +126,13 @@ proc PROCSearchTree()
         while (FF_TreeNext(stateS))
             pathS = ""
             FF_TreeGetPath(stateS, pathS)
-            Message(pathS)
+
+            if (lLookInZip and FF_TreeIsZip(stateS))
+                Message(Format("Scanning archive: ", pathS))
+            else
+                Message(pathS)
+            endif
+            UpdateDisplay(_DEFAULT_)
 
             if (FF_TreeMatches(stateS))
                 file_date = ""
