@@ -14,25 +14,103 @@ $script:CopyBuffer = New-Object byte[] 65536
 $writer = New-Object System.IO.StreamWriter(
     $OutputPath, $false, [System.Text.Encoding]::Default)
 $script:SevenZipPath = ''
+$script:RarPath = ''
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
+$iniPath = Join-Path $scriptDirectory 'filefin2.ini'
+
+function Get-IniValue {
+    param([string]$Path, [string]$Section, [string]$Key)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return '' }
+    $currentSection = ''
+    foreach ($line in [System.IO.File]::ReadAllLines($Path)) {
+        $text = $line.Trim()
+        if ($text -eq '' -or $text.StartsWith(';') -or
+            $text.StartsWith('#')) { continue }
+        if ($text.StartsWith('[') -and $text.EndsWith(']')) {
+            $currentSection = $text.Substring(1, $text.Length - 2).Trim()
+            continue
+        }
+        if ($currentSection -ieq $Section) {
+            $equals = $text.IndexOf('=')
+            if ($equals -gt 0 -and
+                $text.Substring(0, $equals).Trim() -ieq $Key) {
+                return $text.Substring($equals + 1).Trim().Trim('"')
+            }
+        }
+    }
+    return ''
+}
+
+$configuredSevenZip = Get-IniValue $iniPath 'ArchiveTools' 'SevenZipExe'
+if ($configuredSevenZip -ne '') {
+    $configuredSevenZip =
+        [Environment]::ExpandEnvironmentVariables($configuredSevenZip)
+    if (Test-Path -LiteralPath $configuredSevenZip -PathType Leaf) {
+        $script:SevenZipPath = $configuredSevenZip
+    }
+}
+$configuredRar = Get-IniValue $iniPath 'ArchiveTools' 'RarExe'
+if ($configuredRar -ne '') {
+    $configuredRar = [Environment]::ExpandEnvironmentVariables($configuredRar)
+    if (Test-Path -LiteralPath $configuredRar -PathType Leaf) {
+        $script:RarPath = $configuredRar
+    }
+}
+
 $localSevenZip = Join-Path $scriptDirectory '7z.exe'
-if (Test-Path -LiteralPath $localSevenZip) {
+$programFilesSevenZip = ''
+$programFilesX86SevenZip = ''
+$programFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+if ($env:ProgramFiles) {
+    $programFilesSevenZip = Join-Path $env:ProgramFiles '7-Zip\7z.exe'
+}
+if ($programFilesX86) {
+    $programFilesX86SevenZip = Join-Path $programFilesX86 '7-Zip\7z.exe'
+}
+if ($script:SevenZipPath -eq '' -and
+    (Test-Path -LiteralPath $localSevenZip -PathType Leaf)) {
     $script:SevenZipPath = $localSevenZip
 }
-else {
+elseif ($script:SevenZipPath -eq '') {
     $sevenZipCommand = Get-Command '7z.exe' -ErrorAction SilentlyContinue
     if ($sevenZipCommand -ne $null) {
         $script:SevenZipPath = $sevenZipCommand.Source
     }
-    elseif ($env:ProgramFiles -and
-            (Test-Path -LiteralPath (Join-Path $env:ProgramFiles '7-Zip\7z.exe'))) {
-        $script:SevenZipPath = Join-Path $env:ProgramFiles '7-Zip\7z.exe'
+    elseif ($programFilesSevenZip -ne '' -and
+            (Test-Path -LiteralPath $programFilesSevenZip -PathType Leaf)) {
+        $script:SevenZipPath = $programFilesSevenZip
     }
-    elseif (${env:ProgramFiles(x86)} -and
-            (Test-Path -LiteralPath
-                (Join-Path ${env:ProgramFiles(x86)} '7-Zip\7z.exe'))) {
-        $script:SevenZipPath =
-            Join-Path ${env:ProgramFiles(x86)} '7-Zip\7z.exe'
+    elseif ($programFilesX86SevenZip -ne '' -and
+            (Test-Path -LiteralPath $programFilesX86SevenZip -PathType Leaf)) {
+        $script:SevenZipPath = $programFilesX86SevenZip
+    }
+}
+
+$localRar = Join-Path $scriptDirectory 'rar.exe'
+$programFilesRar = ''
+$programFilesX86Rar = ''
+if ($env:ProgramFiles) {
+    $programFilesRar = Join-Path $env:ProgramFiles 'WinRAR\rar.exe'
+}
+if ($programFilesX86) {
+    $programFilesX86Rar = Join-Path $programFilesX86 'WinRAR\rar.exe'
+}
+if ($script:RarPath -eq '' -and
+    (Test-Path -LiteralPath $localRar -PathType Leaf)) {
+    $script:RarPath = $localRar
+}
+elseif ($script:RarPath -eq '') {
+    $rarCommand = Get-Command 'rar.exe' -ErrorAction SilentlyContinue
+    if ($rarCommand -ne $null) {
+        $script:RarPath = $rarCommand.Source
+    }
+    elseif ($programFilesRar -ne '' -and
+            (Test-Path -LiteralPath $programFilesRar -PathType Leaf)) {
+        $script:RarPath = $programFilesRar
+    }
+    elseif ($programFilesX86Rar -ne '' -and
+            (Test-Path -LiteralPath $programFilesX86Rar -PathType Leaf)) {
+        $script:RarPath = $programFilesX86Rar
     }
 }
 
@@ -43,7 +121,7 @@ function Get-ArchiveKind {
     if ($lower.EndsWith('.jar')) { return 'zip' }
     if ($lower.EndsWith('.tar')) { return 'tar' }
     if ($lower.EndsWith('.tgz')) { return 'tgz' }
-    if ($lower.EndsWith('.rar')) { return 'sevenzip' }
+    if ($lower.EndsWith('.rar')) { return 'rar' }
     if ($lower.EndsWith('.7z')) { return 'sevenzip' }
     return ''
 }
@@ -326,6 +404,85 @@ function Read-SevenZipStream {
     }
 }
 
+function Read-RarFile {
+    param([string]$ArchiveFile, [string]$Prefix,
+          [int]$Depth, [bool]$EmitEntries)
+
+    if ($script:SevenZipPath -ne '') {
+        Read-SevenZipFile $ArchiveFile $Prefix $Depth $EmitEntries
+        return
+    }
+    if ($script:RarPath -eq '') {
+        return
+    }
+
+    $names = & $script:RarPath lb -c- -idq -p- $ArchiveFile 2>$null
+    if ($LASTEXITCODE -gt 1) { return }
+    foreach ($item in $names) {
+        $name = ([string]$item).Trim()
+        if ($name -eq '') { continue }
+        $displayName = $Prefix + $name
+        if ($EmitEntries) {
+            Write-ArchiveEntry 0 ([DateTime]'1980-01-01 00:00:00') $displayName
+        }
+
+        $kind = Get-ArchiveKind $name
+        if ($kind -eq '' -or $Depth -ge $script:MaximumDepth) { continue }
+
+        $tempDirectory = Join-Path ([System.IO.Path]::GetTempPath()) `
+            ('FFR' + [Guid]::NewGuid().ToString('N'))
+        [void][System.IO.Directory]::CreateDirectory($tempDirectory)
+        try {
+            & $script:RarPath e -y -inul -p- $ArchiveFile $name `
+                ($tempDirectory + '\') | Out-Null
+            if ($LASTEXITCODE -ne 0) { continue }
+            $extractedFile = Get-ChildItem -LiteralPath $tempDirectory -Force |
+                Where-Object { -not $_.PSIsContainer } | Select-Object -First 1
+            if ($extractedFile -eq $null) { continue }
+            [Int64]$size = $extractedFile.Length
+            if ($size -gt $script:MaximumMemberBytes -or
+                ($script:ExpandedBytes + $size) -gt
+                    $script:MaximumExpandedBytes) { continue }
+
+            $script:ExpandedBytes += $size
+            $nestedStream = $null
+            try {
+                $nestedStream = [System.IO.File]::OpenRead($extractedFile.FullName)
+                Read-Archive $nestedStream $name ($displayName + '::') `
+                    ($Depth + 1) $true
+            }
+            finally {
+                if ($nestedStream -ne $null) { $nestedStream.Dispose() }
+            }
+        }
+        catch { }
+        finally {
+            Remove-Item -LiteralPath $tempDirectory -Recurse -Force `
+                -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Read-RarStream {
+    param([System.IO.Stream]$Stream, [string]$Prefix,
+          [int]$Depth, [bool]$EmitEntries)
+
+    if ($script:RarPath -eq '' -and $script:SevenZipPath -eq '') { return }
+    $tempArchive = [System.IO.Path]::GetTempFileName()
+    $tempStream = $null
+    try {
+        $tempStream = [System.IO.File]::Create($tempArchive)
+        $Stream.CopyTo($tempStream)
+        $tempStream.Dispose()
+        $tempStream = $null
+        Read-RarFile $tempArchive $Prefix $Depth $EmitEntries
+    }
+    finally {
+        if ($tempStream -ne $null) { $tempStream.Dispose() }
+        Remove-Item -LiteralPath $tempArchive -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Read-Archive {
     param([System.IO.Stream]$Stream, [string]$Name, [string]$Prefix,
           [int]$Depth, [bool]$EmitEntries)
@@ -346,6 +503,9 @@ function Read-Archive {
     elseif ($kind -eq 'sevenzip') {
         Read-SevenZipStream $Stream $Prefix $Depth $EmitEntries
     }
+    elseif ($kind -eq 'rar') {
+        Read-RarStream $Stream $Prefix $Depth $EmitEntries
+    }
 }
 
 $fileStream = $null
@@ -353,6 +513,9 @@ try {
     $rootKind = Get-ArchiveKind $ArchivePath
     if ($rootKind -eq 'sevenzip') {
         Read-SevenZipFile $ArchivePath '' 0 $true
+    }
+    elseif ($rootKind -eq 'rar') {
+        Read-RarFile $ArchivePath '' 0 $true
     }
     else {
         $fileStream = [System.IO.File]::OpenRead($ArchivePath)

@@ -1,15 +1,15 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.24
+// Version : 1.0.0.0.27
 // Date    : 2026-09-15
 // LLM     : OpenAI Codex
 //
 // TSE 4.50 / Windows 11 port using ff.dll and zip.dll.
 
 string cTmpLine[255]
-string fileInput[80]
+string fileInput[255]
 string directoryInput[255]
 string startPath[255]
-string fileToFind[80]
+string fileToFind[255]
 string file_date[8]
 string file_time[8]
 integer lLookInZip = TRUE

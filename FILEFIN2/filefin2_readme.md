@@ -1,6 +1,6 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.24  
+**Version:** 1.0.0.0.27  
 **Date:** 2026-09-15  
 **Time:** 18:27 CEST (UTC+02:00)  
 **LLM:** OpenAI Codex  
@@ -124,11 +124,25 @@ For ZIP and JAR files, the DLL searches the central directory, so compression me
 
 TAR/TGZ and nested archive searching require `zip_nested.ps1` beside `zip.dll` and Windows PowerShell 5.1 or later. Standard TAR/USTAR names and GZip-compressed TAR archives are supported. Encrypted, corrupted, unsupported, or incorrectly named archive members are skipped.
 
-RAR and 7z searching additionally requires `7z.exe`. The helper searches for it in this order:
+RAR and 7z searching uses the optional paths in `filefin2.ini`, which must be
+kept beside `FF.S` and `zip_nested.ps1`:
+
+```ini
+[ArchiveTools]
+SevenZipExe=C:\Program Files\7-Zip\7z.exe
+RarExe=C:\Program Files\WinRAR\rar.exe
+```
+
+Quotes around a path are optional. A blank or invalid setting causes automatic
+discovery. `7z.exe` handles both 7z and RAR files. When `7z.exe` is unavailable,
+`rar.exe` can search RAR files, but not 7z files.
+
+The helper searches automatically in this order when an INI setting is blank
+or invalid:
 
 1. Beside `zip_nested.ps1`.
 2. On the Windows `PATH`.
-3. In the standard `Program Files\7-Zip` installation directories.
+3. In the standard 7-Zip or WinRAR installation directories.
 
 For a portable installation, copy `7z.exe` and its required companion files, such as `7z.dll`, beside `zip_nested.ps1`. Password-protected archives are skipped when they cannot be opened non-interactively.
 
@@ -142,6 +156,9 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.27 | 2026-09-15 | Corrected PowerShell 5.1 parsing errors in the automatic 7-Zip and WinRAR installation-path detection code |
+| 1.0.0.0.26 | 2026-09-15 | Added editable `filefin2.ini` settings for complete `7z.exe` and `rar.exe` paths, automatic-discovery fallback, and direct RAR searching through `rar.exe` when 7-Zip is unavailable |
+| 1.0.0.0.25 | 2026-09-15 | Increased the filename or file-mask input capacity from 80 to 255 characters so long pasted names are not truncated |
 | 1.0.0.0.0 | 2026-09-07 | Documentation of the original DOS `.BIN` package |
 | 1.0.0.0.1 | 2026-09-07 | Replaced both `.BIN` interfaces with Borland C++ 5.5-compatible Win32 DLL sources and updated SAL code |
 | 1.0.0.0.2 | 2026-09-07 | Removed Borland C runtime dependencies, added TSE 4.50/Windows 11 compatibility updates, and replaced the ZIP reader with central-directory, UTF-8, data-descriptor, and ZIP64 support |
