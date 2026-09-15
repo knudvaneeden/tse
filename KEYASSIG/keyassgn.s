@@ -9,12 +9,15 @@
     currently loaded macros are searched for the translated key
     code.  The corresponding command and comment are displayed.
 
-    Package version 1.0.0.0.30/14.09.2026
+    Package version 1.0.0.0.36/15.09.2026
     Based on        v3.01/18.04.97
     Modified with   OpenAI Codex
     Copyright       (c) 1993-96 by DiK
 
     History
+    1.0.0.0.36/15.09.2026
+                    add preferred Windows and Linux editable path defaults
+                    optionally show source paths in a temporary buffer only
     1.0.0.0.30/14.09.2026
                     widen output popup to the available screen width
     1.0.0.0.29/14.09.2026
@@ -108,12 +111,10 @@ integer showParsedMacrosB = FALSE
 integer showResolvedMacroB = FALSE
 integer showLoadedSourceB = FALSE
 integer showCombinedSourcesB = FALSE
+integer showSearchPathsGB = TRUE
 integer originalFileI = 0
 
 string uiFile[_MAXPATH_] = ""
-string debugPath[_MAXPATH_] = ""
-string tracePath[_MAXPATH_] = ""
-string parsedPath[_MAXPATH_] = ""
 string macroSearchPathS[255] = ""
 
 /****************************************************************************\
@@ -138,21 +139,11 @@ proc AddDebugPath(string sourceFileS)
     GotoBufferId(oldBufferI)
 end
 
-proc SaveDebugPaths()
-    integer oldBufferI
-
-    oldBufferI = GotoBufferId(debugFile)
-    BegFile()
-    SaveAs(debugPath, _OVERWRITE_)
-    GotoBufferId(oldBufferI)
-end
-
 proc AddTraceLine(string traceLineS)
     integer oldBufferI
 
     oldBufferI = GotoBufferId(traceFile)
     AddLine(traceLineS)
-    SaveAs(tracePath, _OVERWRITE_)
     GotoBufferId(oldBufferI)
 end
 
@@ -271,15 +262,6 @@ proc ParseLoadedMacroNames()
             GotoBufferId(oldBufferI)
         endif
     until not Down()
-end
-
-proc SaveParsedMacroNames()
-    integer oldBufferI
-
-    oldBufferI = GotoBufferId(parsed_macros_id)
-    BegFile()
-    SaveAs(parsedPath, _OVERWRITE_)
-    GotoBufferId(oldBufferI)
 end
 
 proc LoadLoadedMacroSources()
@@ -431,15 +413,11 @@ proc WhenLoaded()
     else
         uiFile = ExpandPath("tse.ui")
     endif
-
-    // change this
-    // [kn, ri, mo, 14-09-2026 15:13:29]
     IF ( ( WhichOS() == _WINDOWS_ ) OR ( WhichOS() == _WINDOWS_NT_ ) )
-     uiFile = "f:\bbc\taal\qedincke.ui"
+        uiFile = "f:\bbc\taal\qedincke.ui"
     ELSEIF ( WhichOS() == _LINUX_ )
-     uiFile = "/mnt/c/temp/tse_linux/tse45014working/ui/keyassignmentreplacementtseforlinuxbegin.ui"
+        uiFile = "/mnt/c/temp/tse_linux/tse45014working/ui/keyassignmentreplacementtseforlinuxbegin.ui"
     ENDIF
-
     if not Ask("Location of the .UI source file:", uiFile, _EDIT_HISTORY_)
         PurgeMacro(CurrMacroFileName())
         return()
@@ -452,9 +430,6 @@ proc WhenLoaded()
     endif
     uiFile = ExpandPath(uiFile)
 
-    debugPath = ExpandPath("keyassgn_search_paths.txt")
-    tracePath = ExpandPath("keyassgn_load_trace.txt")
-    parsedPath = ExpandPath("keyassgn_parsed_macros.txt")
     debugFile = CreateTempBuffer()
     if not debugFile
         Warn("Cannot allocate debug-path buffer")
@@ -467,7 +442,7 @@ proc WhenLoaded()
         PurgeMacro(CurrMacroFileName())
         return()
     endif
-    AddTraceLine("KEYASSGN 1.0.0.0.30 LOAD TRACE")
+    AddTraceLine("KEYASSGN 1.0.0.0.36 LOAD TRACE")
 
     cmdfile = CreateTempBuffer()
     if not cmdfile
@@ -595,21 +570,16 @@ proc main()
     // Normalize the captured fixed-width records, then load every macro
     // source that can be resolved before appending the UI fallback.
     ParseLoadedMacroNames()
-    SaveParsedMacroNames()
     if WhichOS() == _LINUX_
         additionalPromptS = "Additional macro directories (Linux path list):"
     else
         additionalPromptS = "Additional macro directories (; separated):"
     endif
-
-    // change this
-    // [kn, ri, mo, 14-09-2026 15:13:29]
     IF ( ( WhichOS() == _WINDOWS_ ) OR ( WhichOS() == _WINDOWS_NT_ ) )
-     macroSearchPathS = "c:\temp\"
+        macroSearchPathS = "c:\temp\"
     ELSEIF ( WhichOS() == _LINUX_ )
-     macroSearchPathS = "/mnt/c/temp/"
+        macroSearchPathS = "/mnt/c/temp/"
     ENDIF
-
     if not Ask(additionalPromptS,
                macroSearchPathS, _EDIT_HISTORY_)
         showParsedMacrosB = TRUE
@@ -626,8 +596,6 @@ proc main()
         PurgeMacro(CurrMacroFileName())
         return()
     endif
-    SaveDebugPaths()
-
     if PopWinOpen(2,5,Query(ScreenCols) - 1,18,4,"",112)
         Set(Cursor,OFF)
         Set(Attr,112)
@@ -661,7 +629,7 @@ proc main()
         Delay(9)
         PopWinClose()
         Set(Cursor,ON)
-        showDebugFileB = TRUE
+        showDebugFileB = showSearchPathsGB
     endif
     PurgeMacro(CurrMacroFileName())
 end

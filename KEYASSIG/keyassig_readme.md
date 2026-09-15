@@ -1,7 +1,7 @@
 # KEYASSIG — Keyboard Assignment Help for TSE
 
-**README version:** 1.0.0.0.30  
-**Updated:** 2026-09-14 01:25:10 UTC  
+**README version:** 1.0.0.0.37  
+**Updated:** 2026-09-15 08:30:00 UTC  
 **Session:** Create KEYASSIG MarkDown Readme
 
 ## Description
@@ -9,17 +9,17 @@
 KEYASSIG is a package of two TSE SAL macros that inspect the keyboard assignments defined in the TSE user-interface file:
 
 - `KEYASSGN.S` displays the command assigned to a key that you press.
-- `KEYFIND.S` searches the keyboard definitions for keys, commands, comments, or other text.
+- `KEYFIND.S` searches the selected UI source and the on-disk sources of all currently loaded macros for keys, commands, comments, or other text.
 
 The updated `KEYASSGN.S` asks for the `.UI` source file whenever it is loaded. It also searches the `.S` source files found on disk for all macros that are currently loaded in TSE. The current working directory has first priority.
 
-For debugging, every source file actually added to the search is recorded by full pathname in `keyassgn_search_paths.txt`. The entries occur in the exact order in which their contents are searched.
+Every source file actually added to a search is collected by full pathname in an internal temporary buffer. The global `showSearchPathsGB` determines whether this list is displayed afterward. No search-path or diagnostic list is saved to disk.
 
 Before collecting the macro sources, KEYASSGN makes TSE rebuild its live Purge Macro list. Version `1.0.0.0.12` introduced the user-supplied working pattern directly: `NewFile()`, a plain `list_startup()` procedure, `Hook(_LIST_STARTUP_, list_startup)`, queued `Escape`, `PurgeMacro()`, and `UnHook(list_startup)`. The captured list is processed only after `PurgeMacro()` returns.
 
 Testing confirmed that the captured fixed-width records contain a leading space, the visible macro name, padding, and an internal flag. The current parser reads the bounded record, trims its leading space, and extracts only its first space-delimited field.
 
-Version `1.0.0.0.30` supports 32-bit TSE on Windows, TSE Linux under WSL, and TSE on native Linux. It uses `WhichOS()` for runtime platform decisions and widens the output popup to the available screen width.
+Version `1.0.0.0.37` uses TSE's standard edit history for the KEYFIND search-string prompt. Both macros search loaded macro sources first and the selected UI source last.
 
 The package was originally written by Dieter Koessl and donated to the public domain. The included source history identifies `KEYASSGN.S` and `KEYFIND.S` as version 3.01 dated 1997-04-18.
 
@@ -28,7 +28,7 @@ The package was originally written by Dieter Koessl and donated to the public do
 | File | Purpose |
 |---|---|
 | `KEYASSGN.S` | Shows the command and description assigned to a pressed key |
-| `KEYFIND.S` | Searches and lists matching key assignments |
+| `KEYFIND.S` | Searches loaded macro and UI sources and lists matching key assignments |
 | `KEYTABLE.SI` | Legacy key-code table retained from the original package; version 29 uses `KeyName()` |
 | `READ.ME` | Original documentation |
 | `FILE_ID.DIZ` | Short package description |
@@ -94,15 +94,19 @@ On Linux, loaded macro names are normally reported in uppercase while source fil
    - `File:` followed by the full pathname of the source file containing the resolved key assignment.
 
 8. For a two-key assignment, press the first key and then the second key when prompted.
-9. Press `Escape` to close the popup and unload the macro. TSE then goes directly to the `keyassgn_search_paths.txt` buffer, positioned at its first line.
+9. Press `Escape` to close the popup and unload the macro. When `showSearchPathsGB` is `TRUE`, TSE then displays the searched-source paths in an unnamed temporary buffer.
 
-## Debug Search-Path File
+## Optional Temporary Search-Path List
 
-Each run creates or overwrites this file in TSE's current working directory—the directory reported by the TSE `CurrDir()` command:
+Both sources declare this global setting:
 
-```text
-keyassgn_search_paths.txt
+```sal
+integer showSearchPathsGB = TRUE
 ```
+
+- `TRUE` preserves and displays the searched-source list in an unnamed temporary buffer after the macro finishes.
+- `FALSE` discards the list and returns without showing it.
+- No `keyassgn_search_paths.txt`, `keyfind_search_paths.txt`, load trace, or parsed-macro list is written to disk.
 
 Its contents are ordered exactly like the combined search data:
 
@@ -114,7 +118,7 @@ Only files whose contents were actually loaded into the search buffer are listed
 
 The loaded-macro list is refreshed on every KEYASSGN run. It is not copied from a potentially stale internal list buffer.
 
-When you press `Escape` to leave the KEYASSGN popup, the macro preserves this buffer and makes it the current TSE buffer. You can therefore inspect the ordered paths immediately without locating the file manually. The buffer represents the saved `keyassgn_search_paths.txt` file and can be closed normally when no longer needed.
+When enabled, the temporary list can be inspected immediately and closed normally when no longer needed.
 
 If no definition is found, the macro reports `not assigned`. If the matching line does not have a valid key-definition format, it reports `invalid keydefinition`.
 
@@ -140,10 +144,13 @@ F:\BBC\TAAL\template.s
 
 1. Start TSE.
 2. Execute the macro `KEYFIND`.
-3. Enter one or more search strings. Separate multiple strings with commas.
-4. Enter `all` to list the entire key-assignment file.
-5. Press `Enter` to display the matching assignments.
-6. In the results list, use:
+3. Select the `.UI` source file used by the current TSE configuration.
+4. Enter any additional macro-source directories. On Windows, separate multiple directories with semicolons. On Linux, use Linux path-list syntax.
+5. Enter a command, key name, comment, or other search text. Enter `all` to list every key-definition line.
+6. `KEYFIND` searches the resolvable `.S` sources of all currently loaded macros first, followed by the selected `.UI` source.
+7. Matching definitions appear in the existing sortable browsing list. Each line displays `File:` at column 65, followed by the full pathname of the source containing that definition. Use horizontal scrolling to inspect a long pathname and any remaining definition text. Use `Alt-K` to sort by key and `Alt-C` to sort by command.
+8. When `showSearchPathsGB` is `TRUE`, the ordered full pathnames of all files actually searched are displayed afterward in an unnamed temporary buffer. No list is saved to disk.
+9. In the results list, use:
 
    - `Alt-K` to sort by key;
    - `Alt-C` to sort by command;
@@ -171,7 +178,7 @@ Check the filename entered at the new UI-file prompt. Enter an existing `.UI` so
 
 ### Cannot find UI file
 
-`KEYFIND` could not open the configured UI source. Correct the path declarations and recompile the macro.
+`KEYFIND` could not open the selected UI source. Enter the full pathname of an existing `.UI` source file.
 
 ### Cannot allocate a work buffer
 
@@ -186,6 +193,64 @@ Make sure the macros read the same UI source from which the currently installed 
 The key may genuinely be unassigned. A definition in another macro can only be found when that macro is currently loaded and its same-name `.S` source can be found in the current directory, beside the `.MAC` file, or through TSE's macro search path.
 
 ## Version History
+
+### 1.0.0.0.37 — 2026-09-15 10:35:00 UTC
+
+- Replaces `GetFreeHistory("KeyFind:find")` with `_EDIT_HISTORY_` for the KEYFIND search-string prompt.
+- Makes the search prompt use the same working persistent edit history as the UI-source and additional-directory prompts.
+- Leaves the existing `all` and normal multi-result search behavior unchanged.
+
+### 1.0.0.0.36 — 2026-09-15 10:15:00 UTC
+
+- Applies the preferred platform-specific editable defaults to `KEYASSGN.S`.
+- Uses `f:\bbc\taal\qedincke.ui` as the Windows UI-source default.
+- Uses `/mnt/c/temp/tse_linux/tse45014working/ui/keyassignmentreplacementtseforlinuxbegin.ui` as the Linux/WSL UI-source default.
+- Uses `c:\temp\` as the Windows additional macro-directory default.
+- Uses `/mnt/c/temp/` as the Linux/WSL additional macro-directory default.
+- Retains both `Ask()` prompts so every suggested pathname remains editable.
+- Adds `showSearchPathsGB` to both macros; `TRUE` displays the ordered searched-source paths in a temporary buffer and `FALSE` discards them.
+- Stops creating `keyassgn_search_paths.txt` and `keyfind_search_paths.txt`.
+- Stops the obsolete KEYASSGN load-trace and parsed-macro diagnostic disk writes, so no searched pathname is persisted indirectly.
+
+### 1.0.0.0.35 — 2026-09-15 10:00:00 UTC
+
+- Uses `WhichOS()` to provide `f:\bbc\taal\qedincke.ui` as the Windows UI-source default.
+- Provides `/mnt/c/temp/tse_linux/tse45014working/ui/keyassignmentreplacementtseforlinuxbegin.ui` as the Linux/WSL UI-source default.
+- Provides `c:\temp\` as the Windows additional macro-directory default.
+- Provides `/mnt/c/temp/` as the Linux/WSL additional macro-directory default.
+- Keeps both defaults editable through the existing `Ask()` prompts.
+- Corrects the proposed Linux variable-name typo from `uiFileSG` to the declared `uiFileGS`.
+
+### 1.0.0.0.34 — 2026-09-15 09:40:00 UTC
+
+- Corrects the per-line regular-expression searches in `PROCAnnotateMatches()` from `lix` to `cgix`.
+- Uses `c` for the current line, `g` for the complete line, `i` for case-insensitive matching, and `x` for regular-expression syntax.
+- Applies the corrected flags both when reading a `KEYFIND_SOURCE` marker and when recognizing a matching definition line.
+- Allows the captured pathname to be inserted into the displayed result at column 65.
+
+### 1.0.0.0.33 — 2026-09-15 09:10:00 UTC
+
+- Moves each result's `File:` field from the physical end of the source line to fixed column 65.
+- Makes the filename immediately visible even when the original definition contains a long comment.
+- Inserts the pathname at column 65 without deleting the remaining definition text.
+- Retains horizontal scrolling and the original key and command sorting columns.
+
+### 1.0.0.0.32 — 2026-09-15 08:55:00 UTC
+
+- Preserves the source boundary of every inserted macro and UI source.
+- Appends `// File: <full pathname>` to each matching definition before nonmatching lines are removed.
+- Keeps the key and command at the beginning of each result so existing sorting continues to work.
+- Uses the existing horizontal-scroll support for long source pathnames.
+
+### 1.0.0.0.31 — 2026-09-15 08:30:00 UTC
+
+- Extends the proven `KEYASSGN` loaded-macro capture and source-resolution logic to `KEYFIND`.
+- Searches loaded macro `.S` sources first and the selected `.UI` source last.
+- Prompts for additional macro directories, including unusual source locations.
+- Uses `WhichOS() == _LINUX_` and lowercase derived macro basenames on Linux.
+- Supports Windows, TSE Linux under WSL, and native Linux.
+- Writes every source file actually searched, in order, to `keyfind_search_paths.txt`.
+- Retains the original search-string handling, result compression, browsing list, and `Alt-K`/`Alt-C` sorting.
 
 ### 1.0.0.0.30 — 2026-09-14 11:52:45 UTC
 
@@ -459,7 +524,7 @@ If this buffer still contains `DDD`, capture and name parsing are both correct. 
 - Documented both `KEYASSGN` and `KEYFIND`.
 - Added UI configuration, optional Help menu entries, keyboard controls, and troubleshooting information.
 
-Future documentation revisions can continue as `1.0.0.0.30`, `1.0.0.0.31`, and so on.
+Future documentation revisions can continue as `1.0.0.0.38`, `1.0.0.0.39`, and so on.
 
 ## Copyright and Disclaimer
 
