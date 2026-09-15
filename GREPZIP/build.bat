@@ -1,6 +1,6 @@
 @echo off
 setlocal
-rem GREPZIP 1.0.0.0.11 - compile the TSE SAL macro.
+rem GREPZIP 1.0.0.0.12 - compile the TSE SAL macro.
 sc32 grepzip.s
 if errorlevel 1 goto build_error
 echo.

@@ -8,6 +8,22 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+$sevenZipConfigured = ''
+$rarConfigured = ''
+$iniPath = Join-Path $PSScriptRoot 'grepzip.ini'
+if (Test-Path -LiteralPath $iniPath -PathType Leaf) {
+    foreach ($iniLine in [IO.File]::ReadAllLines($iniPath)) {
+        $trimmed = $iniLine.Trim()
+        if ($trimmed -match '^SevenZipExecutable\s*=\s*(.*)$') {
+            $sevenZipConfigured = [Environment]::ExpandEnvironmentVariables(
+                $Matches[1].Trim().Trim('"'))
+        } elseif ($trimmed -match '^RarExecutable\s*=\s*(.*)$') {
+            $rarConfigured = [Environment]::ExpandEnvironmentVariables(
+                $Matches[1].Trim().Trim('"'))
+        }
+    }
+}
+
 if ($Cleanup) {
     if (Test-Path -LiteralPath $Manifest) {
         $first = [IO.File]::ReadLines($Manifest) | Select-Object -First 1
@@ -37,11 +53,16 @@ function Get-ArchiveKind([string]$name) {
     if ($lower.EndsWith('.zip') -or $lower.EndsWith('.jar')) { return 'zip' }
     if ($lower.EndsWith('.tgz') -or $lower.EndsWith('.tar.gz')) { return 'tgz' }
     if ($lower.EndsWith('.tar')) { return 'tar' }
-    if ($lower.EndsWith('.7z') -or $lower.EndsWith('.rar')) { return '7z' }
+    if ($lower.EndsWith('.7z')) { return '7z' }
+    if ($lower.EndsWith('.rar')) { return 'rar' }
     return ''
 }
 
 function Get-SevenZipCommand() {
+    if ($sevenZipConfigured -and
+        (Test-Path -LiteralPath $sevenZipConfigured -PathType Leaf)) {
+        return $sevenZipConfigured
+    }
     $command = Get-Command 7z.exe -ErrorAction SilentlyContinue
     if ($command) { return $command.Source }
     if ($env:ProgramFiles) {
@@ -51,6 +72,25 @@ function Get-SevenZipCommand() {
     $programFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
     if ($programFilesX86) {
         $candidate = Join-Path $programFilesX86 '7-Zip\7z.exe'
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
+    }
+    return ''
+}
+
+function Get-RarCommand() {
+    if ($rarConfigured -and
+        (Test-Path -LiteralPath $rarConfigured -PathType Leaf)) {
+        return $rarConfigured
+    }
+    $command = Get-Command rar.exe -ErrorAction SilentlyContinue
+    if ($command) { return $command.Source }
+    if ($env:ProgramFiles) {
+        $candidate = Join-Path $env:ProgramFiles 'WinRAR\Rar.exe'
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
+    }
+    $programFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+    if ($programFilesX86) {
+        $candidate = Join-Path $programFilesX86 'WinRAR\Rar.exe'
         if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
     }
     return ''
@@ -125,6 +165,28 @@ function Expand-SevenZipArchive([string]$archivePath, [string]$display,
     }
 }
 
+function Expand-RarArchive([string]$archivePath, [string]$display,
+                           [string]$mask, [int]$depth) {
+    $rarCommand = Get-RarCommand
+    if ([string]::IsNullOrEmpty($rarCommand)) {
+        Expand-SevenZipArchive $archivePath $display $mask $depth
+        return
+    }
+    $extractRoot = Join-Path $work ([Guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $extractRoot | Out-Null
+    $destination = $extractRoot + '\'
+    & $rarCommand x -o+ -inul $archivePath $destination *> $null
+    if ($LASTEXITCODE -ne 0) { return }
+    $members = Get-ChildItem -LiteralPath $extractRoot -File -Recurse -Force `
+                             -ErrorAction SilentlyContinue
+    foreach ($member in $members) {
+        $relative = $member.FullName.Substring($extractRoot.Length).TrimStart('\')
+        $relative = $relative.Replace('\', '/')
+        Process-File $member.FullName ($display + '::' + $relative) `
+                     $mask ($depth + 1) $false
+    }
+}
+
 function Process-File([string]$disk, [string]$display, [string]$mask,
                       [int]$depth, [bool]$forceSearch) {
     if ($depth -gt 32) { return }
@@ -136,6 +198,8 @@ function Process-File([string]$disk, [string]$display, [string]$mask,
             Expand-TarArchive $disk $display $mask $depth
         } elseif ($kind -eq '7z') {
             Expand-SevenZipArchive $disk $display $mask $depth
+        } elseif ($kind -eq 'rar') {
+            Expand-RarArchive $disk $display $mask $depth
         } elseif ($forceSearch -or (Test-Mask ([IO.Path]::GetFileName($display)) $mask)) {
             Add-SearchFile $disk $display
         }

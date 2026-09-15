@@ -1,6 +1,6 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.11  
+**Version:** 1.0.0.0.12  
 **Date:** 2026-09-15  
 **Authoring model:** OpenAI Codex
 
@@ -10,10 +10,11 @@ GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents 
 
 - `grepzip.s` - TSE SAL source.
 - `grepzip_helper.ps1` - portable Windows file and archive enumerator.
+- `grepzip.ini` - configurable full paths to `7z.exe` and `rar.exe`.
 - `build.bat` - SAL build command.
 - `grepzip_readme.md` - this documentation.
 
-No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and the built-in .NET ZIP classes. TAR and TGZ support uses Windows `tar.exe`. RAR and 7Z support uses an installed `7z.exe`. All text matching remains in TSE's own search engine.
+No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and the built-in .NET ZIP classes. TAR and TGZ support uses Windows `tar.exe`. RAR support uses configured `rar.exe`, with `7z.exe` as a fallback. 7Z support uses `7z.exe`. All text matching remains in TSE's own search engine.
 
 ## Requirements
 
@@ -21,7 +22,8 @@ No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and 
 - The `sc32` SAL compiler.
 - Windows PowerShell 5.1 or another Windows PowerShell version providing `System.IO.Compression`.
 - Windows `tar.exe` for TAR, TGZ and TAR.GZ archives. It is included with current Windows 10 and Windows 11 installations.
-- 7-Zip command-line program `7z.exe` for RAR and 7Z archives. GREPZIP searches `PATH`, `%ProgramFiles%\7-Zip`, and `%ProgramFiles(x86)%\7-Zip`.
+- 7-Zip command-line program `7z.exe` for 7Z archives and as a fallback for RAR archives.
+- Optionally, WinRAR command-line program `rar.exe` for RAR archives.
 
 ## Build
 
@@ -33,13 +35,26 @@ No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and 
 
 ## Install
 
-Keep these three files together in a directory from which TSE loads macros:
+Keep these four files together in a directory from which TSE loads macros:
 
 - `GREPZIP.MAC`
 - `grepzip.s`
 - `grepzip_helper.ps1`
+- `grepzip.ini`
 
 The macro obtains its own location with `CurrMacroFilename()`, so it does not depend on TSE's current working directory and does not use `LoadDir()`.
+
+## Configuration
+
+Edit `grepzip.ini` and enter the complete executable paths:
+
+```ini
+[ArchiveTools]
+SevenZipExecutable=C:\Program Files\7-Zip\7z.exe
+RarExecutable=C:\Program Files\WinRAR\Rar.exe
+```
+
+Paths may contain spaces and may optionally be enclosed in double quotes. Environment variables such as `%ProgramFiles%` are expanded. A configured path is used when it exists. If it is blank or invalid, GREPZIP searches `PATH` and the standard 7-Zip or WinRAR installation directories. If `rar.exe` cannot be found, GREPZIP tries `7z.exe` for RAR archives.
 
 ## Run
 
@@ -158,9 +173,19 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Binary files may not be meaningful to TSE's text search.
 - Password-protected archives are not searched.
 - TAR/TGZ searching requires `tar.exe`; those formats are skipped if it is unavailable.
-- 7Z/RAR searching requires `7z.exe`; those formats are skipped if it is unavailable.
+- 7Z searching requires `7z.exe`.
+- RAR searching requires either `rar.exe` or `7z.exe`.
+- Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.12 - 2026-09-15
+
+- Adds `grepzip.ini` beside the macro and PowerShell helper.
+- Stores separate full paths for `7z.exe` and `rar.exe` under `[ArchiveTools]`.
+- Prefers configured executable paths and retains automatic discovery as a fallback.
+- Uses `rar.exe` for RAR archives when available and otherwise tries `7z.exe`.
+- Keeps all other searches operational if either optional executable is missing.
 
 ### 1.0.0.0.11 - 2026-09-15
 
