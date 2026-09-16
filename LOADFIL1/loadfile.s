@@ -2,6 +2,9 @@
 
   LoadFile.S
 
+  Win32 package  1.0.0.0.5/16.09.2026
+                 Clean custom footers; English is now the default
+
   TSE file entry extensions.
 
   Version         0.8/01.07.96  hook balance corrected
@@ -39,11 +42,12 @@
     the current file resides, or the current directory for the
     drive, if no file is given.
     Compilation may specify an optional language for prompts, where
-    _GER (default) will produce german prompts, and
-    _ENG will produce english ones. Other languages may be added...
-    (For a specific language, call SC with a command line definition, like
-         SC LOADFILE D_ENG
-     for the english language version.)
+    _ENG (default) will produce English prompts, and
+    _GER will produce German prompts. Other languages may be added...
+    (For the optional German language, call SC with a command line definition,
+     like
+         SC LOADFILE D_GER
+    .)
 
 \****************************************************************************/
 // Defines
@@ -55,8 +59,8 @@
 #ifdef _ENG
 // english version
 #else
-// no version? Use german!
-#define _GER    1
+// no version? Use English!
+#define _ENG    1
 #endif
 #endif
 
@@ -64,12 +68,19 @@
 // Declarations
 /****************************************************************************/
 
+dll "loadfil1.dll"
+    integer proc LFResetDriveScan ()
+    integer proc LFNextDrive ()
+    integer proc LFNextLabelChar ()
+end
+
 constant
     SpecialKey =    <F2>,
     SelectKey =     <F10>,
     ChangeDirKey =  <Shift F10>,
     LoadFileKey =   <Alt E>,
-    InsertFileKey = <Alt R>
+    InsertFileKey = <Alt R>,
+    FooterKey =     <CtrlAltShift F12>
 
 
 integer SetDirSelectHook = 0, ResetDirSelectHook = 0,
@@ -81,62 +92,45 @@ integer SetDirSelectHook = 0, ResetDirSelectHook = 0,
 integer Top
 
 integer Changed =     FALSE
+integer Installed =   FALSE
 string  NewDir [128] =   ''
 
 #ifdef _GER
-string  AskHelp [] =    " {Enter}-akzeptieren  {}/{}-letzte Eingaben "+
-                        " {Esc}-Abbruch "
-string  PickHelp [] =   " {Enter}-laden  {}/{}-letzte Eingaben "+
-                        " {F2}-Auswahlliste  {Esc}-Abbruch "
-string  SelectHelp [] = "{Enter}-Datei {F10}-Datei & Dir {Sh F10}-Dir "+
-                        "{Esc}-Abbruch"
+string  AskHelp [] =    " Enter-Annehmen  Up/Down-Verlauf  Esc-Abbruch "
+string  PickHelp [] =   " Enter-Laden  Up/Down-Verlauf  F2-Auswahl  Esc-Abbruch "
+string  SelectHelp [] = " Enter-Datei  F10-Datei+Verz  ShF10-Verz  "+
+                        "F2-Laufwerke  Esc-Abbruch "
 #else
-string  AskHelp [] =    " {Enter}-accept  {}/{}-previous entries "+
-                        " {Esc}-abort "
-string  PickHelp [] =   " {Enter}-load  {}/{}-previous entries "+
-                        " {F2}-pick list  {Esc}-abort "
-string  SelectHelp [] = "{Enter}-file {F10}-file & dir {Sh F10}-dir "+
-                        "{Esc}-abort"
+string  AskHelp [] =    " Enter-Accept  Up/Down-History  Esc-Cancel "
+string  PickHelp [] =   " Enter-Load  Up/Down-History  F2-Pick  Esc-Cancel "
+string  SelectHelp [] = " Enter-File  F10-File+Dir  ShF10-Dir  "+
+                        "F2-Drives  Esc-Cancel "
 #endif
 string  Drives [255] = ""
 
 
-proc GetDriveLetters ()     // converted from Turbo Pascal
-    integer i, n
-    register R
-    string DTA [43] = '',
-           Label [44]
+proc GetDriveLetters ()
+    integer DriveNumber,
+            Character
+    string  Label [255]
 
     Drives= ''
-    setDTA (DTA)
+    LFResetDriveScan ()
+    DriveNumber= LFNextDrive ()
 
+    while DriveNumber
+        Label= ''
+        Character= LFNextLabelChar ()
 
-    for i= 1 to 26
-        R.ax= 440Eh
-        R.bx= i
-        intr (21h, R)
+        while Character
+            Label= Label+ Chr (Character)
+            Character= LFNextLabelChar ()
+        endwhile
 
-        if ((R.flags & _flCARRY_) == 0) or ((R.ax & 0FFh) <> 15)
-            Drives= Drives+ chr (i+ Asc ('@'))+ ': '
-
-            if i > 2
-                if FindFirst (chr (i+ Asc ('@'))+ ':\*.*', _VOLUME_)
-                    EndLine ()
-                    Label= DTA [31:11]
-                    Label= Label [1: 8]+ Label [10: 3]
-                    n= Pos (chr (0), Label)
-                    if n == 0
-                        n= Length (Label)
-                    endif
-                    Drives= Drives+ Format (Label [1: n]: -11)
-                else
-                    Drives= Drives+ Format ('': 11)
-                endif
-            else
-                Drives= Drives+ Format ('': 11)
-            endif
-        endif
-    endfor
+        Drives= Drives+ Chr (DriveNumber+ Asc ('@'))+ ': '+
+                Format (Label [1: 11]: -11)
+        DriveNumber= LFNextDrive ()
+    endwhile
 end GetDriveLetters
 
 
@@ -205,8 +199,26 @@ proc GetPickedDir (integer ExitKey)
     endif
 end
 
+proc ClearFooter ()
+    integer FooterWidth = Query (PopWinCols)- 2
+
+    if FooterWidth > 255
+        FooterWidth= 255
+    endif
+
+    if FooterWidth > 0
+        WindowFooter (Format ('': FooterWidth))
+    endif
+end
+
+proc ShowPickFooter ()
+    ClearFooter ()
+    WindowFooter (SelectHelp)
+end
+
 KeyDef DirSelect
 
+    <FooterKey>         ShowPickFooter ()
     <SelectKey>         GetPickedDir (<Enter>)
     <ChangeDirKey>      GetPickedDir (0)
     <SpecialKey>        ChangeDrive ()
@@ -245,6 +257,7 @@ proc mChangeDir ()
     Set (Y1, 2)
     WindowFooter (SelectHelp)
     Enable (DirSelect)
+    PushKey (<FooterKey>)
 end
 
 
@@ -256,6 +269,7 @@ proc ResetDirSelect ()
     UnHook (SetDirSelect)
     Hook (_PICKFILE_CLEANUP_, SetDirSelect)
     Enable (DirSelect)
+    PushKey (<FooterKey>)
 end
 
 proc SetDirSelect ()
@@ -267,6 +281,7 @@ proc SetDirSelect ()
     ResetDirSelectHook= ResetDirSelectHook+ 1
     Set (Y1, 3)
     UpdateDisplay (_WINDOW_REFRESH_)
+    PushKey (<FooterKey>)
 end
 
 
@@ -286,8 +301,14 @@ proc ForcePick ()
     endif
 end
 
+proc ShowPromptFooter ()
+    ClearFooter ()
+    WindowFooter (PickHelp)
+end
+
 KeyDef ForceSelect
 
+    <FooterKey>         ShowPromptFooter ()
     <SpecialKey>        ForcePick ()
     <Ctrl F1>           ExecMacro ("ASCII")     // mAsciiChart()
     <Ctrl Backspace>    DelLeftWord ()
@@ -305,14 +326,13 @@ proc mLoadFile ()
         Changed= FALSE
         Top= Set (Y1, 2)
         Enable (ForceSelect)
+        PushKey (<FooterKey>)
         UnHook (mLoadFile)
         mLoadFileHook= mLoadFileHook- 1
         Hook (_PROMPT_CLEANUP_, LoadCleanup)
         LoadCleanupHook= LoadCleanupHook+ 1
 
-        if Query (PopWinCols) > Length (PickHelp)
-            WindowFooter (PickHelp)
-        endif
+        WindowFooter (PickHelp)
     elseif Query (CurrHistoryList) <> 0 // if history available, show hint
         if Query (PopWinCols) > Length (AskHelp)
             WindowFooter (AskHelp)
@@ -352,11 +372,14 @@ end
 
 
 proc WhenLoaded ()
-    GetDriveLetters ()
-    Hook (_PICKFILE_STARTUP_, mChangeDir)
-    mChangeDirHook= mChangeDirHook+ 1
-    Hook (_PROMPT_STARTUP_, mLoadFile)
-    mLoadFileHook= mLoadFileHook+ 1
+    if not Installed
+        GetDriveLetters ()
+        Hook (_PICKFILE_STARTUP_, mChangeDir)
+        mChangeDirHook= mChangeDirHook+ 1
+        Hook (_PROMPT_STARTUP_, mLoadFile)
+        mLoadFileHook= mLoadFileHook+ 1
+        Installed= TRUE
+    endif
 end
 
 
@@ -370,5 +393,5 @@ end
 
 
 proc main ()
-//    WhenLoaded ()
+    WhenLoaded ()
 end
