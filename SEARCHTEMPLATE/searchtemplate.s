@@ -1,8 +1,8 @@
 /*****************************************************************************
   Filename: searchtemplate.s
-  Version:  1.0.0.0.3
+  Version:  1.0.0.0.4
   Date:     2026-09-17
-  Time:     20:05:20 UTC
+  Time:     22:54:54 UTC
   LLM:      OpenAI GPT-5 Codex
 
   Searches a SemWare template.dat file by abbreviation and file extension.
@@ -11,7 +11,7 @@
   template with a blank extension is valid for all extensions.
 *****************************************************************************/
 
-string GSVersionText[10] = "1.0.0.0.3"
+string GSVersionText[10] = "1.0.0.0.4"
 #define HEADER_COUNT_COL 1
 #define HEADER_COUNT_LEN 4
 #define HEADER_EXT_COL 5
@@ -107,6 +107,9 @@ proc Main()
     macroDirS = SplitPath(CurrMacroFileName(), _DRIVE_|_PATH_)
     iniFilenameS = macroDirS + "searchtemplate.ini"
     templateFilenameS = PROCReadIniValue(iniFilenameS, "template")
+    if templateFilenameS == ""
+        templateFilenameS = LoadDir() + "template.dat"
+    endif
     searchTextS = PROCReadIniValue(iniFilenameS, "searchstring")
     userOptionsS = PROCReadIniValue(iniFilenameS, "searchoption")
     wantedExtS = PROCReadIniValue(iniFilenameS, "searchfileextension")

@@ -3,9 +3,9 @@
 **Session:** Create SEARCHTEMPLATE Readme  
 **Program:** `searchtemplate.s`  
 **Configuration:** `searchtemplate.ini`  
-**Version:** 1.0.0.0.3  
+**Version:** 1.0.0.0.4  
 **Date:** 2026-09-17  
-**Time:** 20:05:20 UTC  
+**Time:** 22:54:54 UTC  
 **LLM:** OpenAI GPT-5 Codex
 
 ## Description
@@ -46,21 +46,29 @@ The supplied reference files `template.s` and `template.dat` are intentionally n
 
 ## Configuration
 
-Edit `searchtemplate.ini` and enter the full path to the template data file:
+By default, the `template` value in `searchtemplate.ini` is empty:
 
 ```ini
 [searchtemplate]
-template=f:\bbc\taal\template.dat
+template=
 searchstring=sh
 searchfileextension=.java
 searchoption=ix
 ```
 
+When `template=` is empty, the program proposes this path:
+
+```text
+LoadDir() + "template.dat"
+```
+
+In practice, this means `template.dat` in TSE's current load directory. If the user enters a full path after `template=` in the INI file, that configured path takes priority over the `LoadDir()` default.
+
 The INI file must be in the same directory as `searchtemplate.mac`. Its four values are offered as the initial values of the corresponding input fields. Each proposed value can be edited for an individual search without modifying the INI file.
 
 The keys are:
 
-- `template` - full path to the template data file.
+- `template` - optional full path to the template data file; when empty, `LoadDir() + "template.dat"` is used.
 - `searchstring` - proposed abbreviation search string.
 - `searchfileextension` - proposed file extension.
 - `searchoption` - proposed combination of search options.
@@ -97,7 +105,7 @@ Example:
 f:\bbc\taal\template.dat
 ```
 
-If a path is stored in `searchtemplate.ini`, that path is offered first.
+If a path is stored in `searchtemplate.ini`, that path is offered first. Otherwise, `LoadDir() + "template.dat"` is offered.
 
 ### 2. Abbreviation search string
 
@@ -176,6 +184,12 @@ This searches the abbreviation names with a case-insensitive TSE regular express
 - The source and configuration files use plain ASCII text for compatibility with TSE SAL.
 
 ## Version history
+
+### 1.0.0.0.4 - 2026-09-17 22:54:54 UTC
+
+- Changed the initial INI value to an empty `template=` setting.
+- Added `LoadDir() + "template.dat"` as the default template-file path.
+- A non-empty `template=` INI value takes priority over the `LoadDir()` default.
 
 ### 1.0.0.0.3 - 2026-09-17 20:05:20 UTC
 
