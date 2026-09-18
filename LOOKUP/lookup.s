@@ -1,3 +1,6 @@
+// LOOKUP 1.0.0.0.3
+// Updated 2026-09-18 23:31:56 UTC by OpenAI Codex
+
 proc local_look_up()
     integer procs_id
            ,current_id = GetBufferId()
@@ -71,33 +74,20 @@ proc local_look_up()
 //  Set(ShowHelpLine,save_help_msg_sw)
 end
 
-menu local_look_up_menu()
-    "", local_look_up() ,CloseAfter,
-    "Search mode active. Pick a command and press <ENTER> to insert it into the text."
-end
-
-proc local_lookup()
-    Set(X1,25)
-    Set(Y1,2)
-    PushKey(<Enter>)
-    local_look_up_menu()
-end
-
 keydef help_msg
     <helpline> "Search mode active. Pick a command and press {<ENTER>} to insert it into the text."
 end
 
 proc look_up()
-    integer procs_id
-           ,libry_id
-           ,current_id = GetBufferId()
+    integer current_id = GetBufferId()
+           ,library_was_loaded
            ,str_size
 //         ,save_help_msg_sw
            ,save_msg_lvl
            ,zoom_stat
 
-    string  proc_str[32]       = ""
-           ,procs_buff_name[7] = "[procs]"
+    string  proc_str[32] = ""
+           ,library_name[255] = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) + "tse.260"
 
     zoom_stat = isZoomed()
 
@@ -109,46 +99,44 @@ proc look_up()
 //  Set(ShowHelpLine,on)
 //  Enable(help_msg)
 //  UpdateDisplay(_REFRESH_THIS_ONLY_|_HELPLINE_REFRESH_)
-    procs_id = CreateBuffer(procs_buff_name,_HIDDEN_)
-
-    if procs_id
-        save_msg_lvl = Query(MsgLevel)
-        Set(MsgLevel,_WARNINGS_ONLY_)
-
-        if not Editfile(LoadDir() + "tse.260")
-            Set(MsgLevel,save_msg_lvl)
-//          Set(ShowHelpLine,save_help_msg_sw)
-//          Disable(help_msg)
-            Warn("LAN not available; Aborting...")
-            PurgeMacro("LookUp")
-            return()
+    if not FileExists(library_name)
+        GotoBufferId(current_id)
+        if not zoom_stat
+            ZoomWindow()
         endif
-
-        Set(MsgLevel,save_msg_lvl)
-        libry_id = GetBufferId(CurrFilename())
-        BegFile()
-
-        repeat
-            proc_str = GetText(1, SizeOf(proc_str))
-            GotoBufferId(procs_id)
-            AddLine(proc_str)
-            GotoBufferId(libry_id)
-        until not Down()
-
-        AbandonFile()
-        GotoBufferId(procs_id)
-        BegFile()
-    else
-        procs_id = GetBufferId(procs_buff_name)
+        Warn("Cannot find tse.260 in the lookup macro directory.")
+        return()
     endif
 
-    GotoBufferId(procs_id)
+    library_was_loaded = GetBufferId(library_name)
+    save_msg_lvl = Query(MsgLevel)
+    Set(MsgLevel,_WARNINGS_ONLY_)
+
+    if not Editfile(library_name)
+        Set(MsgLevel,save_msg_lvl)
+//          Set(ShowHelpLine,save_help_msg_sw)
+//          Disable(help_msg)
+        GotoBufferId(current_id)
+        if not zoom_stat
+            ZoomWindow()
+        endif
+        Warn("Cannot open " + library_name + "; aborting.")
+        return()
+    endif
+
+    Set(MsgLevel,save_msg_lvl)
+    BegFile()
 
     Set(Y1,2)
 
     if lList("TSE Commands", SizeOf(proc_str), Query(ScreenRows) - 4
              ,_ENABLE_SEARCH_)
         proc_str = GetText(1, SizeOf(proc_str))
+
+        if not library_was_loaded
+            AbandonFile()
+        endif
+
         GotoBufferId(current_id)
         str_size = SizeOf(proc_str)
 
@@ -158,6 +146,10 @@ proc look_up()
 
         InsertText(Substr(proc_str,1,str_size),_INSERT_)
     else
+        if not library_was_loaded
+            AbandonFile()
+        endif
+
         GotoBufferId(current_id)
     endif
 
@@ -170,20 +162,13 @@ proc look_up()
 //  Set(ShowHelpLine,save_help_msg_sw)
 end
 
-menu look_up_menu()
-    "", look_up() ,CloseAfter,
-    "Search mode active. Pick a command and press <ENTER> to insert it into the text."
-end
-
 proc main()
     Set(X1,25)
     Set(Y1,2)
-    PushKey(<Enter>)
-    look_up_menu()
-    //local_look_up_menu()
+    look_up()
 end
 
-<shift f12> local_lookup()
+<shift f12> local_look_up()
 <f12> main()
 
 
