@@ -132,3 +132,7 @@ proc mScanCommandLine()
         Set( DosCmdLine, "untitled" )
     endif
 end
+
+PROC Main()
+ Warn( "Loadlist.mac is executed." )
+END
