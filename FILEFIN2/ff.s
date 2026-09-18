@@ -1,6 +1,6 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.27
-// Date    : 2026-09-15
+// Version : 1.0.0.0.30
+// Date    : 2026-09-18
 // LLM     : OpenAI Codex
 //
 // TSE 4.50 / Windows 11 port using ff.dll and zip.dll.
@@ -10,6 +10,7 @@ string fileInput[255]
 string directoryInput[255]
 string startPath[255]
 string fileToFind[255]
+string searchArchiveInput[15]
 string file_date[8]
 string file_time[8]
 integer lLookInZip = TRUE
@@ -27,6 +28,39 @@ dll "ff.dll"
     integer proc FF_TreeGetDate(string stateS, var string dateS)
     integer proc FF_TreeGetTime(string stateS, var string timeS)
     integer proc FF_TreeClose(var string stateS)
+end
+
+string proc PROCReadIniValue(string iniFilenameS, string keyNameS)
+    integer oldBufferI = GetBufferId()
+    integer iniBufferI = 0
+    integer equalsI = 0
+    string lineS[255] = ""
+    string resultS[255] = ""
+
+    iniBufferI = CreateTempBuffer()
+    if iniBufferI
+        GotoBufferId(iniBufferI)
+        if InsertFile(iniFilenameS, _DONT_PROMPT_)
+            BegFile()
+            loop
+                lineS = Trim(GetText(1, 255))
+                equalsI = Pos("=", lineS)
+                if equalsI > 0
+                    if Upper(Trim(SubStr(lineS, 1, equalsI - 1))) ==
+                       Upper(keyNameS)
+                        resultS = Trim(SubStr(lineS, equalsI + 1, 255))
+                        break
+                    endif
+                endif
+                if not Down()
+                    break
+                endif
+            endloop
+        endif
+        AbandonFile(iniBufferI)
+    endif
+    GotoBufferId(oldBufferI)
+    return (resultS)
 end
 
 dll "zip.dll"
@@ -155,6 +189,28 @@ proc PROCSearchTree()
 end
 
 proc Main()
+    string iniFilenameS[255] = ""
+    string iniValueS[255] = ""
+
+    // Built-in FF.S defaults. Blank INI values do not replace them.
+    fileInput = ""
+    directoryInput = ""
+    searchArchiveInput = ""
+    iniFilenameS = SplitPath(CurrMacroFileName(), _DRIVE_|_PATH_) +
+                   "filefin2.ini"
+    iniValueS = PROCReadIniValue(iniFilenameS, "filename")
+    if Length(iniValueS)
+        fileInput = iniValueS
+    endif
+    iniValueS = PROCReadIniValue(iniFilenameS, "topdirectory")
+    if Length(iniValueS)
+        directoryInput = iniValueS
+    endif
+    iniValueS = PROCReadIniValue(iniFilenameS, "searcharchive")
+    if Length(iniValueS)
+        searchArchiveInput = iniValueS
+    endif
+
     if (Ask("Enter filename or file mask (*, .*, ?):", fileInput, _EDIT_HISTORY_) and Length(fileInput))
         if (Ask("Enter top directory:", directoryInput, _EDIT_HISTORY_) and Length(directoryInput))
             PROCSetFileMask(fileInput)
@@ -162,6 +218,9 @@ proc Main()
 
             if (Length(fileToFind) and Length(startPath))
                 fileToFind = Upper(fileToFind)
+                if (Length(searchArchiveInput))
+                    PushKey(Asc(searchArchiveInput[1]))
+                endif
                 ZipSearch()
 
                 origId = CreateTempBuffer()

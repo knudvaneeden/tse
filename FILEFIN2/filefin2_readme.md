@@ -1,8 +1,8 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.27  
-**Date:** 2026-09-15  
-**Time:** 18:27 CEST (UTC+02:00)  
+**Version:** 1.0.0.0.30  
+**Date:** 2026-09-18  
+**Time:** 11:42 CEST (UTC+02:00)  
 **LLM:** OpenAI Codex  
 
 ## Description
@@ -19,7 +19,7 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 - The reserved SAL names `FindFirst` and `FindNext` are replaced by `FNFindFirstI` and `FNFindNextI`.
 - Separate DLL search contexts preserve recursive searches.
 - The search input is split into two prompts: first the filename or wildcard mask, then the top directory. Both prompts use TSE's `_EDIT_HISTORY_`, so earlier entries can be recalled independently.
-- The archive-search menu uses the original plain `history` behavior. TSE remembers the last **Yes** or **No** selection; no variable or queued key forces a default choice.
+- Search defaults come from `filefin2.ini`. When `searcharchive` is nonempty, its first character is queued with `PushKey()` and acts as the menu accelerator, automatically choosing **Yes** or **No**.
 - `FF.S` is standalone: its DLL declarations and ZIP helper are embedded directly, so compiling it does not open or retain `FF.INC` or `ZIP.INC` editor buffers.
 - Double quotes are ignored in both inputs. For example, `FF.S` and `"FF.S"`, or `C:\TEMP` and `"C:\TEMP"`, produce the same search.
 - Pressing **Ctrl+Alt+Shift+F** runs the FILEFIN2 search prompt directly while the compiled macro is loaded.
@@ -39,6 +39,7 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 | `ff_dll.c` | Borland C source for `ff.dll` |
 | `zip_dll.c` | Borland C source for `zip.dll`, including ZIP/JAR central-directory support and archive-helper integration |
 | `zip_nested.ps1` | PowerShell helper for recursively reading ZIP, JAR, TAR, TGZ, RAR, and 7z members |
+| `filefin2.ini` | Editable defaults for the two search prompts, archive-menu choice, and external archive-tool paths |
 | `build.bat` | Builds both 32-bit DLLs |
 
 ## Build the DLLs
@@ -80,16 +81,41 @@ No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly
 ## Install and run
 
 1. Put the compiled `FF.MAC` where TSE loads macros.
-2. Put `ff.dll`, `zip.dll`, and `zip_nested.ps1` together in a directory from which Windows can load the DLLs. The simplest choice is the directory containing the TSE executable.
+2. Keep `ff.dll`, `zip.dll`, `zip_nested.ps1`, and `filefin2.ini` together with the FILEFIN2 macro package in a directory from which Windows can load the DLLs.
 3. Restart TSE after replacing either DLL, because Windows/TSE may retain a loaded DLL in memory.
 4. Execute the `FF` macro, or press **Ctrl+Alt+Shift+F** while it is loaded. The macro creates and displays a dedicated results buffer.
 5. At the first prompt, enter the filename or wildcard mask only, such as `FF.S`, `*.S`, `e.*list`, `elist.?`, or `FILE?.TXT`.
 6. At the second prompt, enter the top directory only, such as `C:\TEMP` or `F:\WORDPROC\tse32_v45024\MACDOWNLO`.
-7. Choose whether member names inside ZIP, JAR, TAR, TGZ, RAR, and 7z files, including nested and mixed archives, should also be searched. TSE remembers the most recently selected **Yes** or **No** choice.
+7. Choose whether member names inside ZIP, JAR, TAR, TGZ, RAR, and 7z files, including nested and mixed archives, should also be searched. With the distributed blank `searcharchive=` setting, the menu remains visible for this choice.
 
 Both prompts retain their own TSE edit history. Cancelling either prompt stops the operation without starting a search.
 
 The macro recursively appends matching filenames, sizes, dates, and times to its dedicated results buffer. Searching starts at the separately supplied top directory.
+
+## Search defaults in `filefin2.ini`
+
+The `[Search]` section supplies the editable initial values displayed by the
+two `Ask()` prompts and the archive menu:
+
+```ini
+[Search]
+filename=*foobar*
+topdirectory=c:\temp\
+searcharchive=
+```
+
+- `filename` may contain the supported `*`, `.*`, and `?` wildcards.
+- `topdirectory` is the initial recursive-search directory.
+- The distributed default is `searcharchive=` so no key is queued and the user
+  can choose normally. Setting `searcharchive=yes` queues the `y` accelerator,
+  while `searcharchive=no` queues `n`. TSE immediately activates the matching
+  entry; no separate `<Enter>` is queued or required, and the menu might not be
+  visibly displayed.
+
+`FF.S` first establishes its built-in defaults. Only nonempty INI values
+override those initial values. Blank keys preserve the original empty/history-
+driven prompts and archive-menu history. The user can still edit either
+`Ask()` value or choose another menu entry, so interactive input is final.
 
 ## Wildcard examples
 
@@ -156,6 +182,9 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.30 | 2026-09-18 | Left the distributed `searcharchive=` value blank so the archive menu remains visible and user-controlled; documented that nonempty `yes` or `no` automatically activates the matching menu entry |
+| 1.0.0.0.29 | 2026-09-18 | Moved `[Search]` INI reading entirely into `FF.S`; blank values now preserve the macro's original empty/history-driven prompts and unforced archive-menu history |
+| 1.0.0.0.28 | 2026-09-18 | Added `[Search]` INI defaults for the filename mask, top directory, and archive-menu selection; the first character of `searcharchive` positions the menu through `PushKey()` |
 | 1.0.0.0.27 | 2026-09-15 | Corrected PowerShell 5.1 parsing errors in the automatic 7-Zip and WinRAR installation-path detection code |
 | 1.0.0.0.26 | 2026-09-15 | Added editable `filefin2.ini` settings for complete `7z.exe` and `rar.exe` paths, automatic-discovery fallback, and direct RAR searching through `rar.exe` when 7-Zip is unavailable |
 | 1.0.0.0.25 | 2026-09-15 | Increased the filename or file-mask input capacity from 80 to 255 characters so long pasted names are not truncated |
