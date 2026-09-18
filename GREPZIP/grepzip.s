@@ -1,6 +1,6 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.12
-// Date    : 2026-09-15
+// Version : 1.0.0.0.14
+// Date    : 2026-09-18
 // LLM     : OpenAI Codex
 
 string searchSpecS[255] = ""
@@ -9,11 +9,13 @@ string searchOptionsS[20] = "ix"
 string findOptionsS[24] = ""
 string helperS[255] = ""
 string manifestS[255] = ""
+string iniS[255] = ""
 string commandS[255] = ""
 integer resultBufferI = 0
 integer manifestBufferI = 0
 integer matchCountI = 0
 integer fileCountI = 0
+integer showFileNamesB = FALSE
 
 proc PROCAddResult(string displayNameS, integer lineI, integer columnI,
                    string textS)
@@ -61,8 +63,10 @@ proc PROCSearchManifest()
                 diskNameS = SubStr(manifestLineS, 1, separatorI - 1)
                 displayNameS = SubStr(manifestLineS, separatorI + 1,
                                       Length(manifestLineS) - separatorI)
-                Message(displayNameS)
-                UpdateDisplay(_DEFAULT_)
+                if (showFileNamesB)
+                    Message(displayNameS)
+                    UpdateDisplay(_DEFAULT_)
+                endif
                 fileCountI = fileCountI + 1
                 PROCSearchOneFile(diskNameS, displayNameS)
             endif
@@ -78,7 +82,58 @@ proc PROCBuildNames()
 
     macroNameS = CurrMacroFilename()
     helperS = SplitPath(macroNameS, _DRIVE_|_PATH_) + "grepzip_helper.ps1"
+    iniS = SplitPath(macroNameS, _DRIVE_|_PATH_) + "grepzip.ini"
     manifestS = GetEnvStr("TEMP") + "\\grepzip_manifest.txt"
+end
+
+proc PROCLoadIniDefaults()
+    integer iniBufferI = 0
+    integer lineI = 1
+    integer linesI = 0
+    integer separatorI = 0
+    string lineS[255] = ""
+    string keyS[40] = ""
+    string valueS[255] = ""
+
+    if (not FileExists(iniS))
+        return()
+    endif
+
+    iniBufferI = EditBuffer(iniS, _SYSTEM_)
+    if (not iniBufferI)
+        return()
+    endif
+
+    linesI = NumLines()
+    while (lineI <= linesI)
+        GotoBufferId(iniBufferI)
+        GotoLine(lineI)
+        lineS = GetText(1, CurrLineLen())
+        separatorI = Pos("=", lineS)
+        if ((separatorI > 1) and (separatorI < Length(lineS)))
+            keyS = Lower(SubStr(lineS, 1, separatorI - 1))
+            valueS = SubStr(lineS, separatorI + 1,
+                             Length(lineS) - separatorI)
+            if (Length(valueS))
+                if (keyS == "searchstring")
+                    expressionS = valueS
+                elseif (keyS == "searchoptions")
+                    searchOptionsS = valueS
+                elseif (keyS == "topdirectory")
+                    searchSpecS = valueS
+                elseif (keyS == "showfilenames")
+                    valueS = Lower(valueS)
+                    showFileNamesB = ((valueS == "true") or
+                                      (valueS == "yes") or
+                                      (valueS == "1") or
+                                      (valueS == "on"))
+                endif
+            endif
+        endif
+        lineI = lineI + 1
+    endwhile
+    GotoBufferId(iniBufferI)
+    AbandonFile(iniBufferI)
 end
 
 proc PROCNormalizeSpecification()
@@ -109,6 +164,9 @@ proc PROCRegexHelp()
 end
 
 proc Main()
+    PROCBuildNames()
+    PROCLoadIniDefaults()
+
     if (not Ask(Format("Search string (TSE regex: . ^ $ | ? [] [~] * + @ # {} ",
                       Chr(92), "):"),
                 expressionS, _EDIT_HISTORY_))
@@ -130,7 +188,6 @@ proc Main()
 
     PROCNormalizeSpecification()
     findOptionsS = Lower(searchOptionsS)
-    PROCBuildNames()
     commandS = Format('powershell.exe -NoP -NonI -W Hidden -ExecutionPolicy Bypass -File "',
                       helperS, '" -Specification "', searchSpecS, '"')
     Dos(commandS, _DONT_PROMPT_)

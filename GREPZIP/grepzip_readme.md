@@ -1,7 +1,7 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.12  
-**Date:** 2026-09-15  
+**Version:** 1.0.0.0.14  
+**Date:** 2026-09-18  
 **Authoring model:** OpenAI Codex
 
 GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts a directory, one file, or a file specification and also searches files stored in ZIP, JAR, TAR, TGZ, 7Z and RAR archives. Supported archives stored inside other supported archives are expanded and searched recursively.
@@ -10,7 +10,7 @@ GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents 
 
 - `grepzip.s` - TSE SAL source.
 - `grepzip_helper.ps1` - portable Windows file and archive enumerator.
-- `grepzip.ini` - configurable full paths to `7z.exe` and `rar.exe`.
+- `grepzip.ini` - configurable archive-tool paths and initial search values.
 - `build.bat` - SAL build command.
 - `grepzip_readme.md` - this documentation.
 
@@ -52,9 +52,26 @@ Edit `grepzip.ini` and enter the complete executable paths:
 [ArchiveTools]
 SevenZipExecutable=C:\Program Files\7-Zip\7z.exe
 RarExecutable=C:\Program Files\WinRAR\Rar.exe
+
+[SearchDefaults]
+searchstring=foobar
+searchoptions=ix
+topdirectory=c:\temp\
+showfilenames=false
 ```
 
 Paths may contain spaces and may optionally be enclosed in double quotes. Environment variables such as `%ProgramFiles%` are expanded. A configured path is used when it exists. If it is blank or invalid, GREPZIP searches `PATH` and the standard 7-Zip or WinRAR installation directories. If `rar.exe` cannot be found, GREPZIP tries `7z.exe` for RAR archives.
+
+The three values under `[SearchDefaults]` provide the initial text displayed by the corresponding TSE `Ask()` prompts:
+
+- `searchstring` initializes the search-string prompt.
+- `searchoptions` initializes the options prompt, for example `i` or `ix`.
+- `topdirectory` initializes the directory or file-specification prompt.
+- `showfilenames` controls whether each tested filename is displayed on TSE's message bar.
+
+The user can edit each of the first three values in its prompt before starting the search. An empty INI value does not override GREPZIP's built-in value.
+
+`showfilenames=false` is the default and prevents filenames from flying by on the message bar. Set it to `true`, `yes`, `1`, or `on` to show each filename and refresh the display while searching. Any other non-empty value disables filename display.
 
 ## Run
 
@@ -178,6 +195,20 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.14 - 2026-09-18
+
+- Adds `showfilenames=false` to `grepzip.ini`.
+- Hides the per-file message-bar filename display by default.
+- Accepts `true`, `yes`, `1`, or `on` to enable filename display and per-file screen refreshes.
+- Avoids the display-refresh overhead when filename display is disabled.
+
+### 1.0.0.0.13 - 2026-09-18
+
+- Adds `searchstring`, `searchoptions`, and `topdirectory` to `grepzip.ini`.
+- Initializes the three existing TSE input prompts from the non-empty INI values.
+- Keeps every prompt editable, so the INI entries are initial values rather than forced search parameters.
+- Falls back to the built-in GREPZIP defaults when an INI value is empty.
 
 ### 1.0.0.0.12 - 2026-09-15
 
