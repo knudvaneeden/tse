@@ -2,7 +2,7 @@
    lowlevel_demo.s
    Minimal TSE SAL demonstration of the Windows LOWLEVEL DLL.
 
-   Version : 1.0.0.0.4
+   Version : 1.0.0.0.5
    Date    : 2026-09-19 23:36 CEST
    LLM     : GPT-5.6 Sol
 */
@@ -33,7 +33,7 @@ PROC Main()
                 if bytesReadI < 0
                     resultS = "LOWLEVEL demo: _read() failed.  handle=" + Str(handleI) + "  position=" + Str(positionI)
                 else
-                    resultS = "LOWLEVEL 1.0.0.0.4  handle=" + Str(handleI) + "  position=" + Str(positionI) + "  bytes=" + Str(bytesReadI) + "  data=[" + dataS + "]"
+                    resultS = "LOWLEVEL 1.0.0.0.5  handle=" + Str(handleI) + "  position=" + Str(positionI) + "  bytes=" + Str(bytesReadI) + "  data=[" + dataS + "]"
                 endif
             endif
             closeResultI = _close(handleI)

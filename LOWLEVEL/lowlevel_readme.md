@@ -1,7 +1,7 @@
 # LOWLEVEL for TSE on Microsoft Windows
 
-**Version:** 1.0.0.0.4  
-**Date and time:** 2026-09-19 23:36 CEST  
+**Version:** 1.0.0.0.5  
+**Date and time:** 2026-09-20 00:08 CEST  
 **LLM:** GPT-5.6 Sol
 
 ## Description
@@ -16,7 +16,7 @@ The original package contained:
 
 The old `LOWLEVEL.BIN` is 16-bit DOS machine code. It calls DOS interrupt `21h` for opening, seeking, reading and closing a file. That binary mechanism is not appropriate for the 32-bit Microsoft Windows version of TSE.
 
-Version **1.0.0.0.4** replaces that DOS binary with a **32-bit Microsoft Windows DLL** written in C++ and intended to be compiled with **Borland C++ 5.5.1**. The public SAL interface deliberately keeps the familiar routines:
+Version **1.0.0.0.4** established the working Windows conversion. Version **1.0.0.0.5** keeps that working implementation and cleans up the package by removing the duplicate historical `LOWLEVEL.INC`. The DOS binary is replaced by a **32-bit Microsoft Windows DLL** written in C++ and intended to be compiled with **Borland C++ 5.5.1**. The public SAL interface deliberately keeps the familiar routines:
 
 ```text
 _open(path)
@@ -27,11 +27,13 @@ _close(handle)
 
 This means old SAL code that used the four LOWLEVEL operations can usually be converted simply by including the new `lowlevel.inc` and placing `lowlevel.dll` with the macro files.
 
-### Version 1.0.0.0.4 calling-convention correction
+### Working calling convention
 
-Runtime testing of version 1.0.0.0.1 showed that `_open()` and `_close()` worked, while the three-argument `_seek()` failed. A one-argument call does not reveal argument-order differences, but a multi-argument call does. Version 1.0.0.0.4 therefore changes the Borland DLL exports from `__pascal` to Win32 `__pascal`. The SAL declarations remain unchanged.
+Runtime testing established the correct interface in version **1.0.0.0.4**: the Borland DLL uses `__pascal`, and every matching SAL declaration explicitly uses the `PASCAL` modifier. With that combination, `_open()`, `_seek()`, `_read()`, and `_close()` all work correctly from TSE.
 
-Both SAL source files now include the local interface with TSE's current-directory syntax:
+Version **1.0.0.0.5** does not change that working ABI. It only removes the duplicate historical include file from the ZIP and updates the package/version documentation.
+
+Both SAL source files include the local interface with TSE's current-directory syntax:
 
 ```text
 #include ["lowlevel.inc"]
@@ -70,11 +72,12 @@ The DLL uses the **Win32 `__pascal` calling convention**. TSE's 32-bit DLL inter
 
 ### Original historical files
 
-The package also keeps the original files for reference:
+The package keeps these original files for reference:
 
 - `LOWLEVEL.ASM`
 - `LOWLEVEL.BIN`
-- `LOWLEVEL.INC`
+
+The historical `LOWLEVEL.INC` is intentionally **not** included, because Windows ZIP tools treat `LOWLEVEL.INC` and `lowlevel.inc` as the same filename and rename one of them to `LOWLEVEL(1).INC`. The package therefore contains only the working Windows include file: `lowlevel.inc`.
 
 Do **not** use the original `LOWLEVEL.BIN` with the Windows conversion.
 
@@ -186,7 +189,7 @@ lowlevel_demo.mac
 A successful result should show values similar to:
 
 ```text
-LOWLEVEL 1.0.0.0.4  position=0  bytes=80  data=[...]  close=0
+LOWLEVEL 1.0.0.0.5  handle=1  position=0  bytes=80  data=[...]  close=0
 ```
 
 A `close=0` result means `_close()` succeeded.
@@ -352,14 +355,20 @@ A typical use is examining a file header, archive signature, executable header, 
 
 ## Version 1.0.0.0.4 ABI correction
 
-Runtime testing showed that `LOWOPEN` and `LOWCLOSE` worked, while the three-argument `LOWSEEK` returned `-1`. This indicated that the handle itself was valid but the arguments of multi-parameter DLL calls were reaching the Borland Win32 entry point in the opposite order.
+Runtime testing showed that `LOWOPEN` and `LOWCLOSE` worked while the three-argument `LOWSEEK` returned `-1`. The cause was that the SAL DLL declarations did not explicitly specify the Pascal calling convention.
 
-Version 1.0.0.0.4 therefore keeps the SAL declarations unchanged but reverses the C parameter declarations for the multi-argument exports:
+Version 1.0.0.0.4 fixed this by keeping the Borland exports as `__pascal` and adding `PASCAL` to all four SAL DLL declarations in `lowlevel.inc`. With this correction, runtime testing succeeded for all four functions: `_open()`, `_seek()`, `_read()`, and `_close()`.
 
-- SAL `_seek(handle, offset, method)` maps to C `LOWSEEK(method, offset, handle)`.
-- SAL `_read(handle, buffer, bytes)` maps to C `LOWREAD(bytes, maxLen, buffer, handle)`, including the hidden TSE string maximum-length argument.
+The working interface is:
 
-This preserves the original SAL-facing API while compensating inside the DLL for the stack order used by the TSE DLL interface. The final test warning also shows the numeric handle to make runtime verification easier.
+```text
+dll "lowlevel.dll"
+    integer proc PASCAL _open(string path : cstrval) : "LOWOPEN"
+    integer proc PASCAL _seek(integer handle, integer offset, integer method) : "LOWSEEK"
+    integer proc PASCAL _read(integer handle, var string buffer, integer bytes) : "LOWREAD"
+    integer proc PASCAL _close(integer handle) : "LOWCLOSE"
+end
+```
 
 ## Version history
 
@@ -367,7 +376,7 @@ This preserves the original SAL-facing API while compensating inside the DLL for
 
 - Converted the original DOS interrupt `21h` implementation to a 32-bit Microsoft Windows DLL design.
 - Added `lowlevel.cpp` for Borland C++ 5.5.1.
-- Initially used `__pascal` exports; runtime testing later showed that multi-argument DLL calls require the Win32 `__pascal` convention used in version 1.0.0.0.4.
+- Used Borland `__pascal` exports. Runtime testing later showed that the SAL declarations also needed the explicit `PASCAL` modifier.
 - Added `lowlevel.def` with stable export names.
 - Added `build.bat`.
 - Configured `TDUMP=G:\LANGUAGE\COMPUTER\CPP\EMBARCADERO\BORLAND\BCC102\bin\tdump.exe`.
@@ -386,30 +395,31 @@ This preserves the original SAL-facing API while compensating inside the DLL for
 - Added `lowlevel_demo.s`.
 - Verified that the DLL builds and exports `LOWOPEN`, `LOWSEEK`, `LOWREAD`, and `LOWCLOSE`.
 
-### 1.0.0.0.4 - 2026-09-19 23:36 CEST
+### 1.0.0.0.2 - 2026-09-19 23:01 CEST
 
-- Changed all DLL exports from Borland `__pascal` to Win32 `__pascal` after runtime testing showed `_seek()` receiving multi-argument calls incorrectly.
 - Changed local SAL includes to `#include ["lowlevel.inc"]`.
-- Removed `EXIT /B` from the successful end of `build.bat` to avoid the extra JPSoft TCC `exit:` help line.
-- Updated `lowlevel.s`, `lowlevel_demo.s`, `lowlevel.cpp`, `lowlevel.def`, `lowlevel.inc`, and this README to version 1.0.0.0.4.
-- No precompiled `lowlevel.dll` is shipped in this iteration because the previous DLL was built from the 1.0.0.0.1 `__pascal` source. Run `build.bat` to create the corrected DLL.
+- Continued runtime testing of the DLL interface.
+
+### 1.0.0.0.3 - 2026-09-19 23:27 CEST
+
+- Added more runtime diagnostics, including the numeric LOWLEVEL handle.
+- Continued investigation of the multi-argument calling convention.
+
+### 1.0.0.0.4 - 2026-09-19 23:41 CEST
+
+- Established the working ABI.
+- Kept the DLL exports as Borland `__pascal`.
+- Added `PASCAL` explicitly to all four SAL DLL declarations in `lowlevel.inc`.
+- Verified at runtime that `_open()`, `_seek()`, `_read()`, and `_close()` all succeed.
+
+### 1.0.0.0.5 - 2026-09-20 00:08 CEST
+
+- Removed the duplicate historical `LOWLEVEL.INC` from the ZIP.
+- The package now contains exactly one include file: `lowlevel.inc`.
+- Kept `LOWLEVEL.ASM` and `LOWLEVEL.BIN` as historical reference files.
+- Kept the fully working 1.0.0.0.4 DLL/SAL calling convention unchanged.
+- Updated version numbers and this README.
 
 ## Important build note
 
 This package contains the complete C++ DLL source and Borland build script. The DLL binary itself must be produced by running `build.bat` on Windows with Borland C++ 5.5.1 available. The current packaging environment does not contain the Borland compiler, so it cannot truthfully include a Borland-built `lowlevel.dll` binary yet.
-
-
-## Version 1.0.0.0.4 correction
-
-The Windows DLL is compiled with Borland `__pascal`, and every corresponding SAL DLL declaration now explicitly includes the `PASCAL` modifier. This is required by TSE for Pascal-calling-convention DLL functions. Earlier versions omitted `PASCAL` in `lowlevel.inc`, so one-argument calls could appear to work while multi-argument calls such as `_seek()` received arguments incorrectly.
-
-The interface is now:
-
-```text
-dll "lowlevel.dll"
-    integer proc PASCAL _open(string path : cstrval) : "LOWOPEN"
-    integer proc PASCAL _seek(integer handle, integer offset, integer method) : "LOWSEEK"
-    integer proc PASCAL _read(integer handle, var string buffer, integer bytes) : "LOWREAD"
-    integer proc PASCAL _close(integer handle) : "LOWCLOSE"
-end
-```

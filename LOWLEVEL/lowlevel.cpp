@@ -2,7 +2,7 @@
    lowlevel.cpp
    Windows replacement for the original LOWLEVEL.BIN DOS helper.
 
-   Version : 1.0.0.0.4
+   Version : 1.0.0.0.5
    Date    : 2026-09-19 23:36 CEST
    LLM     : GPT-5.6 Sol
 

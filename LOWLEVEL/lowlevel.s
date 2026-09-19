@@ -2,7 +2,7 @@
    lowlevel.s
    Test/demo macro for the Windows LOWLEVEL DLL replacement.
 
-   Version : 1.0.0.0.4
+   Version : 1.0.0.0.5
    Date    : 2026-09-19 23:36 CEST
    LLM     : GPT-5.6 Sol
 */
@@ -43,5 +43,5 @@ PROC Main()
         endif
     endif
 
-    Warn("LOWLEVEL 1.0.0.0.4  file=" + testFileS + "  handle=" + Str(handleI) + "  position=" + Str(positionI) + "  bytes=" + Str(bytesReadI) + "  close=" + Str(closeResultI) + "  data=[" + dataS + "]")
+    Warn("LOWLEVEL 1.0.0.0.5  file=" + testFileS + "  handle=" + Str(handleI) + "  position=" + Str(positionI) + "  bytes=" + Str(bytesReadI) + "  close=" + Str(closeResultI) + "  data=[" + dataS + "]")
 END
