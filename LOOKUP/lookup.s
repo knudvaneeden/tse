@@ -1,5 +1,44 @@
-// LOOKUP 1.0.0.0.3
-// Updated 2026-09-18 23:31:56 UTC by OpenAI Codex
+// LOOKUP 1.0.0.0.4
+// Updated 2026-09-19 11:01:53 UTC by OpenAI Codex
+
+string proc FNReadCommandList()
+    integer current_id = GetBufferId()
+           ,ini_was_loaded
+           ,equals_pos
+
+    string  command_list[255] = "tse.260"
+           ,ini_line[255] = ""
+           ,ini_name[255] = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) + "lookup.ini"
+
+    if FileExists(ini_name)
+        ini_was_loaded = GetBufferId(ini_name)
+
+        if EditFile(ini_name)
+            BegFile()
+
+            if lFind("^commandlist=", "ix")
+                ini_line = GetText(1, 255)
+                equals_pos = Pos("=", ini_line)
+
+                if equals_pos
+                    ini_line = Trim(SubStr(ini_line, equals_pos + 1, 255))
+
+                    if ini_line <> ""
+                        command_list = ini_line
+                    endif
+                endif
+            endif
+
+            if not ini_was_loaded
+                AbandonFile()
+            endif
+        endif
+
+        GotoBufferId(current_id)
+    endif
+
+    return(command_list)
+end
 
 proc local_look_up()
     integer procs_id
@@ -87,7 +126,7 @@ proc look_up()
            ,zoom_stat
 
     string  proc_str[32] = ""
-           ,library_name[255] = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) + "tse.260"
+           ,library_name[255] = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) + FNReadCommandList()
 
     zoom_stat = isZoomed()
 
@@ -104,7 +143,7 @@ proc look_up()
         if not zoom_stat
             ZoomWindow()
         endif
-        Warn("Cannot find tse.260 in the lookup macro directory.")
+        Warn("Cannot find command list: " + library_name)
         return()
     endif
 
