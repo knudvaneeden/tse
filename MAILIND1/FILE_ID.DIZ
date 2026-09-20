@@ -1,7 +1,0 @@
-Mail indexing proc prepares index of saved
-mail at the top of a file providing a one-
-line index of the message subject, date,
-from/to, conference, and number. Based on Tom
-Hogshead's TSE Jr. mail indexing macro.
-Also one-key access to message from index.
-Preliminary, but working code.
