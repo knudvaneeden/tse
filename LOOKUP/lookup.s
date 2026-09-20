@@ -168,7 +168,8 @@ proc look_up()
 
     Set(Y1,2)
 
-    if lList("TSE Commands", SizeOf(proc_str), Query(ScreenRows) - 4
+    // if lList("TSE Commands", SizeOf(proc_str), Query(ScreenRows) - 4 // old [kn, ri, su, 20-09-2026 22:07:39]
+    if lList("TSE Commands", Query( ScreenCols ) / 2, Query(ScreenRows) - 4 // new [kn, ri, su, 20-09-2026 22:07:33]
              ,_ENABLE_SEARCH_)
         proc_str = GetText(1, SizeOf(proc_str))
 
