@@ -1,0 +1,121 @@
+ AltBlockAttr          (Alternate Block Attribute)                            R    AltBlockAttr, INTEGER (0-255)*
+ AltCurrWinBorderAttr  (Alternate Current Window Border Attribute)            R    AltCurrWinBorderAttr, INTEGER (0-255)*
+ AltCursorAttr         (Alternate Cursor Attribute)                           R    AltCursorAttr, INTEGER (0-255)*
+ AltEOFMarkerAttr      (Alternate EOF Marker Attribute)                       R    AltEOFMarkerAttr, INTEGER (0-255)*
+ AltHiLiteAttr         (Alternate HiLite Attribute)                           R    AltHiLiteAttr, INTEGER (0-255)*
+ AltMenuBorderAttr     (Alternate Menu Border Attribute)                      R    AltMenuBorderAttr, INTEGER (0-255)*
+ AltMenuSelectAttr     (Alternate Menu Select Attribute)                      R    AltMenuSelectAttr, INTEGER (0-255)*
+ AltMenuSelectLtrAttr  (Alternate Menu Select Letter Attribute)               R    AltMenuSelectLtrAttr, INTEGER (0-255)*
+ AltMenuTextAttr       (Alternate Menu Text Attribute)                        R    AltMenuTextAttr, INTEGER (0-255)*
+ AltMenuTextLtrAttr    (Alternate Menu Text Letter Attribute)                 R    AltMenuTextLtrAttr, INTEGER (0-255)*
+ AltMsgAttr            (Alternate Message Attribute)                          R    AltMsgAttr, INTEGER (0-255)*
+ AltOtherWinBorderAttr (Alternate Other Window Border Attribute)              R    AltOtherWinBorderAttr, INTEGER (0-255)*
+ AltStatusLineAttr     (Alternate Status Line Attribute)                      R    AltStatusLineAttr, INTEGER (0-255)*
+ AltTextAttr           (Alternate Text Attribute)                             R    AltTextAttr, INTEGER (0-255)*
+ Attr                  (Subsequent Video Output Display Attribute)            R    Attr, INTEGER (0-255)*
+ AttrSet               (Determines Which Screen Attribute Set to Use)         A1   AttrSet, INTEGER (_Color_/_Mono_)*
+ AutoIndent            (Determines Placement of Cursor After CReturn())       A2   AutoIndent, INTEGER (0=OFF 1=ON 2=Sticky)*
+ BackupExt             (Backup Extension Name)                                R    BackupExt, STRING (4 character max)*
+ BlockAttr             (Block Attribute)                                      R    BlockAttr, INTEGER (0-255)*
+ Break                 (Allows Pressing <Ctrl Break> to Terminate Macro)      B    Break, ON/OFF*
+ BufferType            (Current Editing Buffer Type)                          B1   BufferType, INTEGER (_Normal_/_System_/_Hidden_)*
+ CenterFinds           (Centers Found Text Vertically in Current Window)      B    CenterFinds, ON/OFF*
+ ChangeShellPrompt     (Appends DOS Prompt Whenever Shell to DOS)             B    ChangeShellPrompt, ON/OFF*
+ CurrVideoMode         (Current Video Mode)                                   C1   CurrVideoMode, INTEGER (_25_Lines_/_28_Lines_/_43_Lines_/_50_Lines_)*
+ CurrWinBorderAttr     (Current Window Border Attribute)                      C1   CurrWinBorderAttr, INTEGER (0-255)*
+ CurrWinBorderType     (Line Type for Outlining Current Window)               C2   CurrWinBorderType, INTEGER*
+ Cursor                (Determines if Hardware Cursor is Displayed)           B    Cursor, ON/OFF*
+ CursorAttr            (Cursor Attribute)                                     R    CursorAttr, INTEGER (0-255)*
+ CursorInBlockAttr     (Cursor In Block Attribute)                            R    CursorInBlockAttr, INTEGER (0-255)*
+ DateFormat            (Determines Format of Returned Date String)            D1   DateFormat, INTEGER (1=MM-DD-YY 2=DD-MM-YY 3=YY-MM-DD)*
+ DateSeparator         (Determines Date Separator of Returned Date String)    D2   DateSeparator, INTEGER ASCII value of character*
+ DefaultExt            (List of Default File Extensions)                      R    DefaultExt, STRING (38 characters max)*
+ DisplayBoxed          (Determines if Single Edit Window Should be Boxed)     D3   DisplayBoxed, INTEGER (0=never 1=only if mouse 2=always)*
+ DosCmdLine            (Changes "burned-in" WhenLoaded() macro DOS Cmd. Line) R    DosCmdLine, STRING (255 character max command line)*
+ EliminateSnow         (Reduces Interference on Old CGA Video Cards)          B    EliminateSnow, ON/OFF*
+ EOFMarkerAttr         (EOF Marker Attribute)                                 R    EOFMarkerAttr, INTEGER (0-255)*
+ EOFType               (Determines What EOF Characters for End of File)       E1   EOFType, INTEGER*
+ EOLType               (Determines What EOL Characters for End of Line)       E2   EOLType, INTEGER (1=CR 2=LF 3=CR/LF)*
+ EquateEnhancedKbd     (Equate Enhanced Keys to Standard Counterparts)        B    EquateEnhancedKbd, ON/OFF*
+ ExpandTabs            (Expands TABs to Spaces on Display Only)               B    ExpandTabs, ON/OFF*
+ FindOptions           (Defines Initial Find() Options)                       R    FindOptions, STRING (BGLIWX^$+)*
+ HiLiteAttr            (HiLite Attribute)                                     R    HiLiteAttr, INTEGER (0-255)*
+ Insert                (Determines Insert or Overwrite Mode)                  B    Insert, ON/OFF*
+ InsertCursorSize      (Sets Insert Mode Cursor Height)                       I1   InsertCursorSize, INTEGER*
+ InsertLineBlocksAbove (Place Line Blocks Above Cursor Line)                  B    InsertLineBlocksAbove, ON/OFF*
+ KbdPath               (Where Editor Loads and Stores Key Macros)             R    KbdPath, STRING (65characters max)*
+ KillMax               (Maximum Items Stored in Kill Buffer)                  R    KillMax, INTEGER (0..1000)*
+ LeftHandedMouse       (Interchanges Left and Right Mouse Keys)               B    LeftHandedMouse, ON/OFF*
+ LeftMargin            (Left Margin for New Lines)                            R    LeftMargin, INTEGER (0..1000)*
+ LineDraw              (Cursor Keys Input Line Draw Characters)               B    LineDraw, ON/OFF*
+ LineDrawChar          (ASCII Character for LineDraw())                       D2   LineDrawChar, INTEGER ASCII value of character*
+ LineDrawType          (Drawing Character for LineDraw())                     L1   LineDrawType, INTEGER*
+ LoadWildFromDOS       (Load Wildcarded File Specifications From DOS)         B    LoadWildFromDOS, ON/OFF*
+ LoadWildFromInside    (Load Wildcarded File Specifications From EditFile())  B    LoadWildFromInside, ON/OFF*
+ MacPath               (Search Path for Macro Files)                          R    MacPath, STRING 128 characters max)*
+ MakeBackups           (Create Backup Files)                                  B    MakeBackups, ON/OFF*
+ Marking               (Start/Stop Block Marking)                             B    Marking, ON/OFF*
+ MaxEMS                (Maximum 1K Blocks of EMS Memory)                      R    MaxEMS, INTEGER (0..32767)*
+ MaxHistorySize        (Maximum Items Stored in History Buffer)               R    MaxHistorySize, INTEGER (0..500)*
+ MaxXMS                (Maximum 1K Blocks of XMS Memory)                      R    MaxXMS, INTEGER (0..32767)*
+ MenuBorderAttr        (Menu Border Attribute)                                R    MenuBorderAttr, INTEGER (0-255)*
+ MenuSelectAttr        (Menu Select Attribute)                                R    MenuSelectAttr, INTEGER (0-255)*
+ MenuSelectLtrAttr     (Menu Select Letter Attribute)                         R    MenuSelectLtrAttr, INTEGER (0-255)*
+ MenuTextAttr          (Menu Text Attribute)                                  R    MenuTextAttr, INTEGER (0-255)*
+ MenuTextLtrAttr       (Menu Text Letter Attribute)                           R    MenuTextLtrAttr, INTEGER (0-255)*
+ MouseEnabled          (Determines if Mouse is Currently Enabled)             B    MouseEnabled, ON/OFF*
+ MouseHoldTime         (Time Delay for Mouse Key Hold)                        R    MouseHoldTime, INTEGER (1..36)*
+ MouseRepeatDelay      (Relative Delay Between Repetitions for Mouse Event)   R    MouseRepeatDelay, INTEGER relative number*
+ MsgAttr               (Message Attribute)                                    R    MsgAttr, INTEGER (0-255)*
+ MsgLevel              (Controls Which Internal Messages to Display)          M1   MsgLevel, INTEGER (_All_Messages_/_Warnings_Only_/_None_)*
+ OtherWinBorderAttr    (Other Window Border Attribute)                        R    OtherWinBorderAttr, INTEGER (0-255)*
+ OtherWinBorderType    (Line Type That Outlines Non-Current Windows)          O1   OtherWinBorderType, INTEGER*
+ OverwriteCursorSize   (Sets Cursor Height for Overwrite Mode)                O2   OverwriteCursorSize, INTEGER*
+ ParaEndStyle          (Determines Where WrapPara() Command Stops Executing)  P1   ParaEndStyle, INTEGER*
+ PrintAddFF            (Send Formfeed to Printer After PrintFile()/PrintBlock)B    PrintAddFF, ON/OFF*
+ PrintBotMargin        (Specifies Blank Lines at Bottom of Printed Page)      R    PrintBotMargin, INTEGER (0..255)*
+ PrintCopies           (Specifies Number of Copies to be Printed)             R    PrintCopies, INTEGER (0..32767)*
+ PrintDevice           (Sets Output Device to be Used When Printing)          R    PrintDevice, STRING (48 character max)*
+ PrintFirstPage        (Page Number Where Printing Will Begin)                R    PrintFirstPage, INTEGER (0..65535)*
+ PrintFooter           (Prints Footer Line at Bottom of Printed Page)         P2   PrintFooter, STRING (FDTP)*
+ PrintHeader           (Prints Header Line at Top of Printed Page)            P3   PrintHeader, STRING (FDTP)*
+ PrintInit             (Specifies Printer Initialization String)              R    PrintInit, STRING (60 characters max)*
+ PrintLastPage         (Page Number Where Printing Will End)                  R    PrintLastPage, INTEGER (0..65535)*
+ PrintLeftMargin       (Number of Spaces to Add to Beginning of Printed Line) R    PrintLeftMargin, INTEGER (0.255)*
+ PrintLineNumbers      (Prints Line Numbers at Beginning of Printed Line)     B    PrintLineNumbers, ON/OFF*
+ PrintLineSpacing      (Specifies Line Spacing for Printing)                  R    PrintLineSpacing, INTEGER (1..256)*
+ PrintLinesPerPage     (Sets Maximum Lines to Print on Page)                  R    PrintLinesPerPage, INTEGER (0..255)*
+ PrintPause            (Pause Between Printed Pages)                          B    PrintPause, ON/OFF*
+ PrintRightMargin      (Sets Maximum Characters Printed on Line)              R    PrintRightMargin, INTEGER (0..255)*
+ PrintTopMargin        (Specifies Blank Lines at Top of Printed Page)         R    PrintTopMargin, INTEGER (0..255)*
+ PrintUseFF            (Use Formfeeds or LineFeeds to Get to Top of Next Page)B    PrintUseFF, ON/OFF*
+ ProtectedSaves        (Specifies Overlaying or Temporary File Saves)         B    ProtectedSaves, ON/OFF*
+ QuitToPrompt          (Prompt for File to Edit After Last File is Quit)      B    QuitToPrompt, ON/OFF*
+ RemoveTrailingWhite   (Controls Stripping of White Space From Line End)      B    RemoveTrailingWhite, ON/OFF*
+ ReplaceOptions        (Defines Initial Replace() Options)                    R    ReplaceOptions, STRING (BGLIWNX^$+)*
+ ReturnEqNextLine      (Determines if CReturn() Should Split Line When Insert)B    ReturnEqNextLine, ON/OFF*
+ RightMargin           (Sets Right Margin for WordWrap()/WrapPara())          R    RightMargin, INTEGER (0..1000)*
+ ShowEOFMarker         (Determines if <*** End of File ***> Shows             B    ShowEOFMarker, ON/OFF*
+ ShowHelpLine          (Determines if HelpLine is Displayed)                  B    ShowHelpLine, ON/OFF*
+ ShowStatusLine        (Determines if StatusLine Updates During Macro Exec.)  B    ShowStatusLine, ON/OFF*
+ Sound                 (Determines if PC Speaker is On For Fine()/Replace())  B    Sound, ON/OFF*
+ StartupAttrSet        (Screen Attribute Set to Use When First Invoked)       S1   StartupAttrSet, INTEGER (_Auto_Detect_/_Color_/_Mono_)*
+ StartupVideoMode      (Video Mode to Use When First Invoked)                 S2   StartupVideoMode, INTEGER*
+ StatusLineAtTop       (Causes StatusLine to Display at Top or Bottom)        B    StatusLineAtTop, ON/OFF*
+ StatusLineAttr        (Status Line Attribute)                                R    StatusLineAttr, INTEGER (0-255)*
+ StatusLineFillChar    (Sets StatusLine Fill Character)                       R    StatusLineFillChar, INTEGER (0..255) ASCII value of character*
+ SwapPath              (Sets Drive/Path for Swap Files)                       R    SwapPath, STRING (65 characters max)*
+ TabType               (Determines Treatment of TabRight()/TabLeft())         T1   TabType, INTEGER (_Hard_/_Soft_/_Smart_/_Variable_)*
+ TabWidth              (Determines Where TabStops Should be Set)              R    TabWidth, INTEGER (1..16)*
+ TextAttr              (Text Attribute)                                       R    TextAttr, INTEGER (0-255)*
+ TimeFormat            (Determines Time String Format Returned)               T2   TimeFormat, INTEGER (1=24hr 2=12hr)*
+ TimeSeparator         (Character Used to Separate Hours, Minutes, Seconds)   D2   TimeSeparator, INTEGER ASCII value of character)*
+ UnMarkAfterPaste      (Will Cause Pasted Block to be Immediately Unmarked)   B    UnMarkAfterPaste, ON/OFF*
+ UseCurrLineIfNoBlock  (Use Current Cursor if no Block for Cut()/Copy())      B    UseCurrLineIfNoBlock, ON/OFF*
+ UseEnhancedKbd        (Recognize Additional Keys Used on Enhanced Keyboards) B    UseEnhancedKbd, ON/OFF*
+ UseMouse              (Enables Mouse Support)                                B    UseMouse, ON/OFF*
+ VarTabs               (Specifies Locations of Variable Tabs)                 R    VarTabs, STRING (255 tab stops max)*
+ WordSet               (Defines Characters That Make up a Word)               R    WordSet, STRING (32 character bit mapped)*
+ WordWrap              (Causes Line Wrap if Cursor Exceeds Right Margin)      B    WordWrap, ON/OFF*
+ X1                    (Top Left Column for Prompt/List()/Menu/Help)          R    X1, INTEGER*
+ Y1                    (Top Left Row for Prompt/List()/Menu/Help)             R    Y1, INTEGER*

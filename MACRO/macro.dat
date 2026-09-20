@@ -1,0 +1,291 @@
+ //                   (Single Line Comment)                                   /1   //comment*
+ /*                   (Multi Line Comment)                                    /2   *
+ AbandonEditor()      (Exit Editor--No Save)                                  N    *
+ AbandonFile()        (Exit File--No Save)                                    O    AbandonFile([INTEGER buffer_id])*
+ Abs()                (Absolute Value of Integer Expression)                  R    Abs(INTEGER i)*
+ AddHistoryStr()      (Add String to History List)                            R    AddHistoryStr(STRING s, INTEGER history_num)*
+ AddLine()            (Add Line After Current Line)                           O    AddLine([STRING text])*
+ Alarm()              (Beep PC's Speaker)                                     N    *
+ Asc()                (ASCII Integer Value of Single Character)               R    Asc(STRING s)*
+ Ask()                (Get String Input From User)                            R    Ask(STRING prompt, VAR STRING reply [, INTEGER history_number])*
+ BackSpace()          (Backspaces Cursor)                                     N    *
+ BegFile()            (Move Cursor to Row 1, Column 1)                        N    *
+ BegLine()            (Move Cursor to Column 1)                               N    *
+ BegWindow()          (Move Cursor to Top Line in Current Window)             N    *
+ BegWord()            (Move Cursor to Beginning of Current Word)              N    *
+ binary               (Binary Statement)                                      B2   binary binary_file*
+ break                (Break Statement)                                       B1   *
+ case                 (Case/When/Otherwise/Endcase Statements)                C1   case case_expression*
+ ChangeCurrFilename() (Change Name of Current File to a New Name)             O    ChangeCurrFilename([STRING new_name])*
+ Chr()                (Get Single Character Equivalent of an Integer)         R    Chr(INTEGER i)*
+ ChrSet()             (Get Encoded Set of Characters)                         R    ChrSet(STRING s)*
+ ClosePrint()         (Closes the Print Device if Opened as a File)           N    *
+ CloseWindow()        (Close the Current Editing Window)                      N    *
+ ClrEol()             (Clear From Cursor Position to End Of Line)             N    *
+ ClrScr()             (Clear Current Window)                                  N    *
+ Color()              (Get Integer Value of Requested Color Combination)      R    Color([BLINK] [BRIGHT] foreground [ON background])*
+ Copy()               (Copies the Marked Block to the ClipBoard)              O    Copy([INTEGER append])*
+ CopyBlock()          (Copy the Marked Block to Current Cursor Position)      O    CopyBlock([INTEGER overlay])*
+ CreateBuffer()       (Creates a New Buffer in Memory)                        R    CreateBuffer(STRING fn [, INTEGER type])*
+ CreateTempBuffer()   (Creates a Temporary System Buffer)                     N    *
+ CReturn()            (Performs a Carriage Return at Current Cursor Position) N    *
+ CurrChar()           (Get the Integer Value of Character at Cursor Position) N    *
+ CurrCol()            (Get the Number of Current Column Position)             N    *
+ CurrFilename()       (Get Full Name of Current Buffer)                       N    *
+ CurrLine()           (Get the Number of Current Line)                        N    *
+ CurrLineLen()        (Get the Length of Current Line)                        N    *
+ CurrMacroFilename()  (Get the Filename of Currently Executing Macro)         N    *
+ CurPos()             (Get the Current Position on the Current Line)          N    *
+ CurrRow()            (Get the Current Cursor Row Releative to Window)        N    *
+ CurrXoffset()        (Get the Number of Columns Current Window is Scrolled)  N    *
+ Cut()                (Cuts Marked Block to the ClipBoard)                    O    Cut([INTEGER append])*
+ data                 (Data Statement)                                        D1   data data_name*
+ Delay()              (Pauses for the Amount of Time Specified)               R    Delay(INTEGER duration 1/18 seconds)*
+ DelBlock()           (Deletes Marked Block if it Exists in the Current File) N    *
+ DelChar()            (Deletes the Character at the Cursor Position)          N    *
+ DelHistory()         (Deletes all History Associated with History Number)    R    DelHistory(INTEGER history_num)*
+ DelLeftWord()        (Deletes the Word to the Left of the Cursor)            N    *
+ DelLine()            (Deletes the Current Line)                              N    *
+ DelRightWord()       (Deletes the Word to the Right of the Cursor)           N    *
+ DelToEol()           (Deletes the Text From Current Position to End of Line) N    *
+ DelWindow()          (Deletes an Adjacent Editing Window)                    N    *
+ Disable()            (Disables a Previously Enabled Key Definition)          R    Disable(KEYDEF keydef_name)*
+ DistanceToTab()      (Get Distance to Next/Previous Tab)                     O    DistanceToTab([INTEGER right])*
+ Dos()                (Passes a Command to the Operating System)              O    Dos([STRING command [, INTEGER flag]])*
+ Down()               (Moves Cursor Down One Line in the Current File)        N    *
+ DrawBox()            (Draws a Box Around the Current Window)                 R    DrawBox(INTEGER boxtype, INTEGER attribute)*
+ DupLine()            (Makes a Copy of Current Line)                          N    *
+ EditFile()           (Loads a File Into the Editor and Makes it Current File)O    EditFile([STRING fn [STRING fn]...])*
+ elseif               (Elseif Statement)                                      E1   elseif numeric_expression*
+ EmptyBuffer()        (Deletes all the Text in the Current Buffer)            N    *
+ Enable()             (Activates the Specified Set of Key Definitions)        R    Enable(KEYDEF keydef_name [, INTEGER exclusive]*
+ EndFile()            (Moves to the End of the Last Line of Current File)     N    *
+ EndLine()            (Moves to the End of the Current Line)                  N    *
+ EndProcess()         (Terminates the Current Process)                        N    *
+ EndWindow()          (Moves to the Bottom Line of the Current Window)        N    *
+ EndWord()            (Moves to the End of the Current Word)                  N    *
+ EraseDiskFile()      (Erase the Specified File From Disk)                    R    EraseDiskFile(STRING file_to_erase)*
+ Escape()             (Terminates Editor Prompts-Closes Pop-up/Pull-down Menu)N    *
+ ExecHook()           (Executes All Hooks Associated with the Specified Event)R    ExecHook(INTEGER event)*
+ ExecMacro()          (Executes the Requested Macro)                          O    ExecMacro([STRING macroname])*
+ ExecScrapMacro()     (Executes the Scrap Keyboard Macro)                     N    *
+ Exit()               (Exits the Editor)                                      N    *
+ ExpandPath()         (Expands the Specified Ambiguous Path to Complete Path) R    ExpandPath(STRING partial_path)*
+ FileExists()         (Verifies File Exists on Disk)                          R    FileExists(STRING fn)*
+ FillBlock()          (Fills Marked Block With Character)                     O    FillBlock([STRING c])*
+ Find()               (Searches for Specified Text)                           O    Find([STRING search, STRING options])*
+ Flip()               (Toggles Between Upper and Lower Case)                  O    Flip([VAR STRING s])*
+ ForceChanged()       (Sets Modified Status of File)                          R    ForceChanged(INTEGER change_flag)*
+ Format()             (Formats String Expression)                             R    Format(expr [: INTEGER width [: STRING pad_char [INTEGER base]]] [, ...])*
+ FullWindow()         (Resets Video to Full Screen)                           N    *
+ GetBufferId()        (Returns the Unique Id of Requested or Current Buffer)  O    GetBufferId([STRING name])*
+ GetClipBoardId()     (Returns the Id of the ClipBoard)                       N    *
+ GetDate()            (Returns the System Date)                               R    GetDate(VAR INTEGER mon, VAR INTEGER day, VAR INTEGER year, VAR INTEGER day)*
+ GetDateStr()         (Returns the Current System Date as a String)           N    *
+ GetDrive()           (Determines the Current Drive)                          N    *
+ GetEnvStr()          (Searches for and Returns a Specified Environment Str)  R    GetEnvStr(STRING s)*
+ GetFreeHistory()     (Returns an Unused History Number)                      N    *
+ GetGlobalInt()       (Returns Value of Integer Previously Defined)           R    GetGlobalInt(STRING integer_name)*
+ GetGlobalStr()       (Returns Value of String Previously Defined)            R    GetGlobalStr(STRING string_name)*
+ GetKey()             (Waits for User to Press a Key and Returns Keycode)     N    *
+ GetMarkedText()      (Copies Marked Block into String)                       N    *
+ GetText()            (Retrieves Text from Current Line of Current File)      R    GetText(INTEGER pos, INTEGER len)*
+ GetTime()            (Returns the System Time)                               R    GetTime(VAR INTEGER hrs, VAR INTEGER min, VAR INTEGER sec, VAR INTEGER hun)*
+ GetTimeStr()         (Returns the Current System Time as String)             N    *
+ GlobalUnDelete()     (Un-deletes Deletions)                                  N    *
+ goto                 (Goto Statement)                                        G1   goto label*
+ GotoBlockBegin()     (Moves Cursor to Beginning of Marked Block)             N    *
+ GotoBlockEnd()       (Moves Cursor to End of Marked Block)                   N    *
+ GotoBufferId()       (Makes the Specified Buffer the New Current File)       R    GotoBufferId(INTEGER id)*
+ GotoColumn()         (Moves Cursor to Column Specified)                      O    GotoColumn([INTEGER column])*
+ GotoLine()           (Moves Cursor to Specified Line)                        O    GotoLine([INTEGER line_number])*
+ GotoMark()           (Moves to Specified Bookmark)                           O    GotoMark([STRING bookmark])*
+ GotoMouseCursor()    (Moves Cursor to the Mouse Cursor)                      N    *
+ GotoPos()            (Moves Cursor to Specified Position on Current Line)    R    GotoPos(INTEGER pos)*
+ GotoRow()            (Moves Cursor to Specified Row of Current Window)       R    GotoRow(INTEGER y)*
+ GotoWindow()         (Switches to Requested Window)                          O    GotoWindow([INTEGER window_id])*
+ GotoXoffset()        (Sets New Horizontal Scroll Amount)                     R    GotoXoffset(INTEGER new_Xoffset)*
+ GotoXY               (Positions Video Cursor at Coordinates Specified)       R    GotoXY(INTEGER x, INTEGER y)*
+ halt                 (Halt Statement)                                        H1   *
+ help                 (Help Statement)                                        H2   help help_name*
+ HideMouse()          (Hides the Mouse Cursor)                                N    *
+ HiLiteFoundText()    (Highlights Text Found by Most Recent Find Command)     N    *
+ Hook()               (Associates a Procedure With an Event)                  R    Hook(INTEGER event, PROCEDURE proc_name)*
+ HWindow()            (Creates New Editing Window by Spliting Horizontally)   N    *
+ if                   (If/Else/End Statements)                                I1   if numeric_expression*
+ iif                  (Inline If Statement)                                   R    iif(expression1, expression2, expression3)*
+ InsertData()         (Inserts Previously Defined Set of Data into Buffer)    R    InsertData(data_name)*
+ InsertFile()         (Inserts File From Disk at Current Cursor Position)     O    InsertFile([STRING filename])*
+ InsertLine()         (Inserts an Empty Line Before Current Line)             O    InsertLine([STRING text])*
+ InsertText()         (Inserts String Into Current Buffer)                    R    InsertText(STRING s [, INTEGER flag])*
+ IsBlockInCurrFile()  (Determines Whether a Block is Marked in Current File)  N    *
+ IsBlockMarked()      (Determines Whether a Block is Marked in any File)      N    *
+ IsChanged()          (Determines the Current File or Buffer's Changed Status)N    *
+ IsCursorInBlock()    (Determines Whether Cursor is Inside a Marked Block)    N    *
+ IsMacroLoaded()      (Used to Determine if a Particular Macro is Loaded)     R    IsMacroLoaded(STRING macro_file)*
+ IsWhite()            (Determines Whether Character at Current Pos. is White) N    *
+ IsWord()             (Determines Whether Char. is in the Defined Word Set)   N    *
+ IsZoomed()           (Determines if Current Window is Zoomed)                N    *
+ JoinLine()           (Joins the Next Line to the End of the Current Line)    N    *
+ keydef               (Keydef/End Statements                                  K1   keydef Keydef_name*
+ KeyPressed()         (Determines is a key or Mouse Button has been Pressed)  N    *
+ KillFile()           (Erases the Current File From Disk)                     N    *
+ KillPosition()       (Removes Last PushPosition() From Saved Position Stack) N    *
+ Left()               (Moves Cursor One Character to the Left)                N    *
+ Length()             (Returns the Length of the Passed String)               R    Length(STRING s)*
+ lFind()              (Performs a Low-Level Find())                           R    lFind(STRING find_str, STRING opt_str)*
+ LineDraw()           (Draws Appropriate Line Drawing Character at Cursor)    R    LineDraw(direction)*
+ LineTypeMenu()       (Presents Line Drawing Character Menu to User)          N    *
+ List()               (Displays Current File in Read-Only Browse Window)      R    List(STRING title, INTEGER width)*
+ Literal()            (Next Keypress Typed is Taken as Literal ASCII Char.)   N    *
+ lList()              (Displays Current File in Read-Only Browse Window)      R    lList(STRING title, INTEGER width, INTEGER height, INTEGER flag)*
+ LoadDir()            (Returns Directory From Which the Editor was Started)   N    *
+ LoadKeyMacro()       (Loads a Key-Macro From Disk Into Memory)               O    LoadKeyMacro([STRING keymac_filename])*
+ LoadMacro()          (Loads a Macro File From Disk Into Memory)              R    LoadMacro(STRING macro_filename)*
+ LoCase()             (Changes a Character to Lower Case)                     R    LoCase(STRING s)*
+ LogDrive()           (Changes to the Specified Drive)                        R    LogDrive(STRING s)*
+ loop                 (Loop/Endloop Statements)                               L1   *
+ Lower()              (Changes Alphabetic Characters to Lower Case)           O    Lower([VAR STRING s])*
+ lRead()              (Gets Keyboard Input From User)                         R    lRead(VAR STRING s, INTEGER maxlen [, INTEGER history_num])*
+ lRepeatFind()        (Repeats Previous lFind() or lReplace() Command)        N    *
+ lReplace()           (Performs Low-Level Replace() Command)                  R    lReplace(STRING find_str, STRING replace_str, STRING opt_str)*
+ MarkChar()           (Marks Character Block Whick Does Not Include Cursor)   N    *
+ MarkColumn()         (Marks a Cloumn Block)                                  N    *
+ MarkLine()           (Marks a Line Block)                                    N    *
+ MarkStream()         (Marks Character Block that Includes Cursor Position)   N    *
+ MarkWord()           (Marks Current Word as a Block)                         N    *
+ menu ()              (User Defined Menu()/End Statements)                    M1   menu menu_name()*
+ MenuKey()            (Returns Character Code and Scan Code of Key Pressed)   N    *
+ MenuOption()         (Returns Option Number of Last Menu Option Selected)    N    *
+ MenuStr()            (Returns Specified Menu Option String)                  R    MenuStr(MENU menu_name, INTEGER option_num)*
+ Message()            (Write Specified Expression(s) on Editor Status Line)   R    Message(expr [, expr2]...)*
+ MouseHotSpot()       (Gets Mouse Hot Spot Where Mouse Key is Clicked)        N    *
+ MouseKeyHold()       (Determines if Mouse Key is Pressed and Held)           N    *
+ MouseMarking()       (Moves Text Cursor to Mouse Cursor)                     R    MouseMarking(INTEGER block_type)*
+ MouseStatus()        (Updates MouseKey, MouseX and MouseY Variables)         N    *
+ MouseWindowId()      (Gets Window Id Where Mouse was Last Clicked)           N    *
+ MoveBlock()          (Moves Marked Block to Current Cursor Position)         O    MoveBlock([INTEGER overlay])*
+ NextChar()           (Moves Cursor to Next Character in the File)            N    *
+ NextFile()           (Switches to Next File in Editor's Buffer Ring)         O    NextFile([INTEGER flag])*
+ NextWindow()         (Makes Next Editing Window the Current Window)          N    *
+ NoSound()            (Turns off the PC's Speaker)                            N    *
+ NumFiles()           (Returns Number of Files in Editor's Buffer Ring)       N    *
+ NumLines()           (Returns Number of Lines in Current File)               N    *
+ NumWidows()          (Returns Number of Editor Windows That are Open)        N    *
+ OneWindow()          (Expands Current Editing Window to Full)                N    *
+ PageDown()           (Scrolls Text Toward End of File)                       N    *
+ PageUp()             (Scrolls Text Toward Beginning of File)                 N    *
+ Paste()              (Inserts Contents of ClipBoard at Cursor Position)      O    Paste([INTEGER overlay])*
+ PasteUnDelete()      (Pastes Last Deletion at Cursor Position)               N    *
+ PickFile()           (Allows User to Select File From a List)                R    PickFile(STRING fn)*
+ PlaceMark()          (Sets BookMark at Current Cursor Position)              O    PlaceMark([STRING mark])*
+ PopBlock()           (Unmarks Current Block and Marks Block From Stack)      N    *
+ PopPosition()        (Moves Cursor to Position Specified From Stack)         N    *
+ PopWinClose()        (Closes Pop-Up Video Window)                            N    *
+ PopWinOpen()         (Openes Pop-Up Video Window)                            R    PopWinOpen(INT x1,INT y1,INT x2,INT y2,INT boxtype,STR title,INT attrib)*
+ Pos()                (Returns Starting Position of One String Within Another)R    Pos(STRING needle, STRING haystack)*
+ PosFirstNonWhite()   (Returns Position of First Non-White Character in Line) N    *
+ PosLastNonWhite()    (Returns Position of Last Non-White Character in Line)  N    *
+ PrevChar()           (Move Cursor to Previous Characater in File)            N    *
+ PrevFile()           (Switches to Previous File in Editor's Buffer Ring)     O    PrevFile([INTEGER flag])*
+ PrevPosition()       (Positions Cursor at Last Line Which Cursor Was Moved)  N    *
+ PrevWindow()         (Makes Previous Editing Window the Current Window)      N    *
+ PrintBlock()         (Prints the Marked Block)                               N    *
+ PrintChar()          (Sends Single Character to Current Print Device)        R    PrintChar(STRING c)*
+ PrintFile()          (Prints the Current File)                               N    *
+ proc ()              (User Defined Proc()/End Statements)                    P3   proc macro_name()*
+ proc Main()          (proc Main()/End Statements)                            P1   *
+ proc WhenLoaded()    (proc WhenLoaded()/End Statements)                      P2   *
+ Process()            (Invokes Another Editor Process)                        N    *
+ ProcessHotSpot()     (Processes Internally Defined Mouse Hot-Spots)          N    *
+ PurgeKeyMacro()      (Purges any KeyBoard Macros that may Exist)             N    *
+ PurgeMacro()         (Purges a Macro File From Memory)                       R    PurgeMacro(STRING s)*
+ PushBlock()          (Saves Current Block Status on Marked Block Stack)      N    *
+ PushKey()            (Pushes Key Onto Editor's Internal KeyBoard Stack)      R    PushKey(INTEGER key)*
+ PushPosition()       (Saves Position on Position Stack)                      N    *
+ PutAttr()            (Re-Displays Existing Characters with New Attribute)    R    PutAttr(INTEGER attribute, INTEGER len)*
+ PutChar()            (Writes Character to Screen)                            R    PutChar(STRING s)*
+ PutCharH()           (Writes Character to Screen One or More Times--Horz.)   R    PutCharH(STRING s, INTEGER len)*
+ PutCharV()           (Writes Character to Screen One or More Times--Vert.)   R    PutCharV(STRING s, INTEGER len)*
+ PutLine()            (Writes String to Screen)                               R    PutLine(STRING s, INTEGER field_width)*
+ PutStr()             (Writes String to Screen)                               R    PutStr(STRING s)*
+ Query()              (Returns Current Value of Specified Editor Variable)    S2   Query(INTEGER_EDITOR_VARIABLE)*
+ QuitFile()           (Quits Current File)                                    N    *
+ Read()               (Gets KeyBoard Input From User)                         R    Read(VAR STRING s [, INTEGER history_num])*
+ RecordKeyMacro()     (Begins and Ends Recording of KeyBoard Macros)          N    *
+ RemoveUnloadedFiles()(Removes all Buffers Allocated for Files Not Yet Loaded)N    *
+ repeat               (Repeat/Until Statements)                               R1   until numeric_expression*
+ RepeatCmd()          (Repeats Last Command or KeyBoard Macro Specified Times)N    *
+ RepeatFind()         (Repeats Most Recent Find() or Replace() Command)       N    *
+ Replace()            (Finds and Replaces Specified Text)                     O    Replace([STRING search, STRING replace, STRING options])*
+ ResizeWindow()       (Resizes Current Editing Window)                        N    *
+ RestoreCursorLine()  (Restores Text on Current Line to Previous Contents)    N    *
+ Return()             (Retrurns From Procedure or Exists Loop)                O    Return(return_value)*
+ Right()              (Moves Cursor One Position to the Right)                N    *
+ RollDown()           (Scrolls Text One Line Toward End of File)              N    *
+ RollLeft()           (Shifts View of Text One Position Left)                 N    *
+ RollRight()          (Shifts View of Text One Position Right)                N    *
+ RollUp()             (Scrolls Text One Line Toward Beginning of File)        N    *
+ SaveAllAndExit()     (Saves All Modified Files and Exits Editor)             N    *
+ SaveAllFiles()       (Saves All Modified Files)                              N    *
+ SaveAndQuitFile()    (Saves Current File and Removes it From Editor)         N    *
+ SaveAs()             (Saves Current Buffer on Disk Under Specified Name)     O    SaveAs([STRING filename [, INTEGER option]])*
+ SaveBlock()          (Saves Block on Disk as File of Specified Name)         O    SaveBlock([STRING filename [, INTEGER option]])*
+ SaveFile()           (Saves Current File to Disk Under its Current Name)     N    *
+ SaveKeyMacro()       (Writes Current KeyBoard Macros to Disk)                N    *
+ SaveSettings()       (Saves Current Editor Variable Settings)                N    *
+ ScrollDown()         (Scrolls Screen One Line Towards End of File)           N    *
+ ScrollLeft()         (Scrolls Screen Left Keeping Cursor on Same Character)  N    *
+ ScrollRight()        (Scrolls Screen Right Keeping Cursor on Same Character) N    *
+ ScrollToRow()        (Moves Current Line to Indicated Window Row)            R    ScrollToRow(INTEGER y)*
+ ScrollUp()           (Scrolls Text One Line Toward Beginning of File)        N    *
+ SelfInsert()         (Inserts Normal Character Associated with Key)          N    *
+ Set()                (Returns Current Value and Sets Requested Editor Var.)  S1   Set(INTEGER_EDITOR_VARIABLE, INTEGER new_value)*
+ SetClipBoardId()     (Resets Buffer Used as ClipBoard to One Specified)      R    SetClipBoardId(INTEGER id)*
+ SetGlobalInt()       (Creates and/or Sets Value of Global Integer Variable)  R    SetGlobalInt(STRING integer_name, INTEGER value)*
+ SetGlobalStr()       (Creates and/or Sets Value of Global String Variable)   R    SetGlobalStr(STRING string_name, STRING value)*
+ Shell()              (Temporarily Gives User Access to DOS Prompt)           N    *
+ ShiftText()          (Shifts Text on Current Line Specified Positions)       R    ShiftText(INTEGER how_much [, INTEGER by_tab])*
+ ShowEntryScreen()    (Displays DOS Screen that was Present When Editor Began)N    *
+ ShowHelp()           (Displays Requested Help Screen)                        R    ShowHelp(help_identifier)*
+ ShowMouse()          (Shows Mouse Cursor)                                    N    *
+ SizeOf()             (Returns Compile-Time Size of String Variable or Menu)  R    SizeOf([STRING]|[MENU] ident)*
+ Sort()               (Sorts Lines Spanned By Marked Block)                   O    Sort([INTEGER flag])*
+ Sound()              (Turns On PC Speaker and Sounds Specified Frequency)    R    Sound(INTEGER frequency)*
+ SplitLine()          (Splits Current Line at Cursor Position)                N    *
+ SplitPath()          (Returns Specified Portion of Passed Filename String)   R    SplitPath(STRING fn, INTEGER flag)*
+ Str()                (Converts Integer Expression to String)                 R    Str(INTEGER n [, INTEGER base])*
+ SubStr()             (Returns Portion of String)                             R    SubStr(STRING s, INTEGER start, INTEGER len)*
+ TabLeft()            (Moves Cursor to Previous Tab Stop)                     N    *
+ TabRight()           (Moves Cursor to Next Tab Stop)                         N    *
+ TabSet()             (Returns Bit Encoded String that Specifies Tab Stops)   R    TabSet(STRING s)*
+ Toggle()             (Toggles Specified Editor Variable ON or OFF)           R    Toggle(CONFIG_VARIABLE)*
+ ToggleInsert()       (Toggles Insert Variable)                               N    *
+ TrackMouseCursor()   (Causes Text to Track Mouse Cursor While Mouse Key Held)N    *
+ UnDelete()           (Undeletes Deletions Made in Current File)              N    *
+ UnHook()             (Removes Association of Procedure with any Events)      R    Unhook(PROCEDURE proc_name)*
+ UnMarkBlock()        (Unmarks Marked Block)                                  N    *
+ Up()                 (Moves Cursor Up One Line in Current File)              N    *
+ UpCase()             (Changes Character to Upper Case)                       R    UpCase(STRING s)*
+ UpDateDisplay()      (Causes Editor to Update Portions of Current Display)   O    UpDateDisplay([INTEGER refresh_flag])*
+ Upper()              (Changes Alphabetic Characters to Upper Case)           O    Upper([VAR STRING s])*
+ Val()                (Converts String Expression to Integer)                 R    Val(STRING s [, INTEGER base])*
+ VGotoXY()            (Positions Video Cursor to Specified Coordinates)       R    VGotoXY(INTEGER x, INTEGER y)*
+ VGotoXYAbs()         (Similar to VGotoXY()--Ignores Video System Windows)    R    VGotoXYAbs(INTEGER x, INTEGER y)*
+ VHomeCursor()        (Positions Video Cursor at Upper Left Corner of Window) N    *
+ VWindow()            (Creates New Editing Window Splitting Current Horz.)    N    *
+ WaitForMouseEvent()  (Waits for Specified Mouse Event)                       R    WaitForMouseEvent(INTEGER event_type)*
+ Warn()               (Writes Specified Expression on Status Line and Prompts)R    Warn(format_expr [, format_expr2]...])*
+ when                 (When Statement)                                        W2   when nummeric_expression*
+ while                (While/Endwhile Statements)                             W1   while nummeric_expression*
+ WhereX()             (Returns Horizontal Coordinate of Cursor)               N    *
+ WhereY()             (Returns Vertical Coordinate of Cursor)                 N    *
+ Window()             (Creates New Video Window)                              R    Window(INTEGER x1, INTEGER y1, INTEGER x2, INTEGER y2)*
+ WindowId()           (Returns Id of Current Editing Window)                  N    *
+ WordLeft()           (Moves Cursor to Beginning of Previous Word)            N    *
+ WordRight()          (Moves Cursor to Beginning of Next Word)                N    *
+ WrapPara()           (Reformats Paragraph)                                   N    *
+ Write()              (Writes Specified Expression(s) to Screen)              O    Write([format_expr] [, format_expr2]...)*
+ WriteLine()          (Writes Specified Expression(s) to Screen with CReturn) O    WriteLine([format_expr] [, format_expr2]...)*
+ YesNo()              (Displays Pop-Up Menu on Screen and Prompts User)       R    YesNo(STRING title)*
+ ZoomWindow()         (Zooms Current Window to Full-Screen or Restores Curr)  N    *

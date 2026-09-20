@@ -1,0 +1,136 @@
+ AltBlockAttr          (Alternate Block Attribute)                            R    *
+ AltCurrWinBorderAttr  (Alternate Current Window Border Attribute)            R    *
+ AltCursorAttr         (Alternate Cursor Attribute)                           R    *
+ AltEOFMarkerAttr      (Alternate EOF Marker Attribute)                       R    *
+ AltHiLiteAttr         (Alternate HiLite Attribute)                           R    *
+ AltMenuBorderAttr     (Alternate Menu Border Attribute)                      R    *
+ AltMenuSelectAttr     (Alternate Menu Select Attribute)                      R    *
+ AltMenuSelectLtrAttr  (Alternate Menu Select Letter Attribute)               R    *
+ AltMenuTextAttr       (Alternate Menu Text Attribute)                        R    *
+ AltMenuTextLtrAttr    (Alternate Menu Text Letter Attribute)                 R    *
+ AltMsgAttr            (Alternate Message Attribute)                          R    *
+ AltOtherWinBorderAttr (Alternate Other Window Border Attribute)              R    *
+ AltStatusLineAttr     (Alternate Status Line Attribute)                      R    *
+ AltTextAttr           (Alternate Text Attribute)                             R    *
+ Attr                  (Subsequent Video Output Display Attribute)            R    *
+ AttrSet               (Determines Which Screen Attribute Set to Use)         A1   *
+ AutoIndent            (Determines Placement of Cursor After CReturn())       A2   *
+ BackupExt             (Backup Extension Name)                                R    *
+ BlockAttr             (Block Attribute)                                      R    *
+ BlockBegCol           (First Column of Marked Block)                         N    *
+ BlockBegLine          (First Line of Marked Block)                           N    *
+ BlockEndCol           (Ending Column of Marked Block)                        N    *
+ BlockEndLine          (Ending Line of Marked Block)                          N    *
+ BlockId               (Id of File Which Contains Marked Block)               N    *
+ Break                 (Allows Pressing <Ctrl Break> to Terminate Macro)      B    *
+ BufferType            (Current Editing Buffer Type)                          B1   *
+ CenterFinds           (Centers Found Text Vertically in Current Window)      B    *
+ ChangeShellPrompt     (Appends DOS Prompt Whenever Shell to DOS)             B    *
+ CurrVideoMode         (Current Video Mode)                                   C1   *
+ CurrWinBorderAttr     (Current Window Border Attribute)                      C1   *
+ CurrWinBorderType     (Line Type for Outlining Current Window)               C2   *
+ Cursor                (Determines if Hardware Cursor is Displayed)           B    *
+ CursorAttr            (Cursor Attribute)                                     R    *
+ CursorInBlockAttr     (Cursor In Block Attribute)                            R    *
+ DateFormat            (Determines Format of Returned Date String)            D1   *
+ DateSeparator         (Determines Date Separator of Returned Date String)    D2   *
+ DefaultExt            (List of Default File Extensions)                      R    *
+ DisplayBoxed          (Determines if Single Edit Window Should be Boxed)     D3   *
+ DosCmdLine            (Changes "burned-in" WhenLoaded() macro DOS Cmd. Line) R    *
+ EliminateSnow         (Reduces Interference on Old CGA Video Cards)          B    *
+ EOFMarkerAttr         (EOF Marker Attribute)                                 R    *
+ EOFType               (Determines What EOF Characters for End of File)       E1   *
+ EOLType               (Determines What EOL Characters for End of Line)       E2   *
+ EquateEnhancedKbd     (Equate Enhanced Keys to Standard Counterparts)        B    *
+ ExpandTabs            (Expands TABs to Spaces on Display Only)               B    *
+ FindOptions           (Defines Initial Find() Options)                       R    *
+ HiLiteAttr            (HiLite Attribute)                                     R    *
+ Insert                (Determines Insert or Overwrite Mode)                  B    *
+ InsertCursorSize      (Sets Insert Mode Cursor Height)                       I1   *
+ InsertLineBlocksAbove (Place Line Blocks Above Cursor Line)                  B    *
+ KbdPath               (Where Editor Loads and Stores Key Macros)             R    *
+ Key                   (Key or Mouse Key From Last GetKey())                  N    *
+ KillMax               (Maximum Items Stored in Kill Buffer)                  R    *
+ LeftHandedMouse       (Interchanges Left and Right Mouse Keys)               B    *
+ LeftMargin            (Left Margin for New Lines)                            R    *
+ LineDraw              (Cursor Keys Input Line Draw Characters)               B    *
+ LineDrawChar          (ASCII Character for LineDraw())                       D2   *
+ LineDrawType          (Drawing Character for LineDraw())                     L1   *
+ LoadWildFromDOS       (Load Wildcarded File Specifications From DOS)         B    *
+ LoadWildFromInside    (Load Wildcarded File Specifications From EditFile())  B    *
+ MacPath               (Search Path for Macro Files)                          R    *
+ MakeBackups           (Create Backup Files)                                  B    *
+ Marking               (Start/Stop Block Marking)                             B    *
+ MaxEMS                (Maximum 1K Blocks of EMS Memory)                      R    *
+ MaxHistorySize        (Maximum Items Stored in History Buffer)               R    *
+ MaxXMS                (Maximum 1K Blocks of XMS Memory)                      R    *
+ MenuBorderAttr        (Menu Border Attribute)                                R    *
+ MenuSelectAttr        (Menu Select Attribute)                                R    *
+ MenuSelectLtrAttr     (Menu Select Letter Attribute)                         R    *
+ MenuTextAttr          (Menu Text Attribute)                                  R    *
+ MenuTextLtrAttr       (Menu Text Letter Attribute)                           R    *
+ MouseEnabled          (Determines if Mouse is Currently Enabled)             B    *
+ MouseHoldTime         (Time Delay for Mouse Key Hold)                        R    *
+ MouseKey              (Mouse Key Pressed for Last GetKey())                  N    *
+ MouseRepeatDelay      (Relative Delay Between Repetitions for Mouse Event)   R    *
+ MouseX                (Column of Mouse Cursor for Last GetKey())             N    *
+ MouseY                (Row of Mouse Cursor for Last GetKey())                N    *
+ MsgAttr               (Message Attribute)                                    R    *
+ MsgLevel              (Controls Which Internal Messages to Display)          M1   *
+ OtherWinBorderAttr    (Other Window Border Attribute)                        R    *
+ OtherWinBorderType    (Line Type That Outlines Non-Current Windows)          O1   *
+ OverwriteCursorSize   (Sets Cursor Height for Overwrite Mode)                O2   *
+ ParaEndStyle          (Determines Where WrapPara() Command Stops Executing)  P1   *
+ PrintAddFF            (Send Formfeed to Printer After PrintFile()/PrintBlock)B    *
+ PrintBotMargin        (Specifies Blank Lines at Bottom of Printed Page)      R    *
+ PrintCopies           (Specifies Number of Copies to be Printed)             R    *
+ PrintDevice           (Sets Output Device to be Used When Printing)          R    *
+ PrintFirstPage        (Page Number Where Printing Will Begin)                R    *
+ PrintFooter           (Prints Footer Line at Bottom of Printed Page)         P2   *
+ PrintHeader           (Prints Header Line at Top of Printed Page)            P3   *
+ PrintInit             (Specifies Printer Initialization String)              R    *
+ PrintLastPage         (Page Number Where Printing Will End)                  R    *
+ PrintLeftMargin       (Number of Spaces to Add to Beginning of Printed Line) R    *
+ PrintLineNumbers      (Prints Line Numbers at Beginning of Printed Line)     B    *
+ PrintLineSpacing      (Specifies Line Spacing for Printing)                  R    *
+ PrintLinesPerPage     (Sets Maximum Lines to Print on Page)                  R    *
+ PrintPause            (Pause Between Printed Pages)                          B    *
+ PrintRightMargin      (Sets Maximum Characters Printed on Line)              R    *
+ PrintTopMargin        (Specifies Blank Lines at Top of Printed Page)         R    *
+ PrintUseFF            (Use Formfeeds or LineFeeds to Get to Top of Next Page)B    *
+ ProtectedSaves        (Specifies Overlaying or Temporary File Saves)         B    *
+ QuitToPrompt          (Prompt for File to Edit After Last File is Quit)      B    *
+ RemoveTrailingWhite   (Controls Stripping of White Space From Line End)      B    *
+ ReplaceOptions        (Defines Initial Replace() Options)                    R    *
+ ReturnEqNextLine      (Determines if CReturn() Should Split Line When Insert)B    *
+ RightMargin           (Sets Right Margin for WordWrap()/WrapPara())          R    *
+ ScreenCols            (Current Number of Columns on Screen)                  N    *
+ ScreenRows            (Current Number of Rows on Screen)                     N    *
+ ShowEOFMarker         (Determines if <*** End of File ***> Shows             B    *
+ ShowHelpLine          (Determines if HelpLine is Displayed)                  B    *
+ ShowStatusLine        (Determines if StatusLine Updates During Macro Exec.)  B    *
+ Sound                 (Determines if PC Speaker is On For Fine()/Replace())  B    *
+ StartupAttrSet        (Screen Attribute Set to Use When First Invoked)       S1   *
+ StartupVideoMode      (Video Mode to Use When First Invoked)                 S2   *
+ StatusLineAtTop       (Causes StatusLine to Display at Top or Bottom)        B    *
+ StatusLineAttr        (Status Line Attribute)                                R    *
+ StatusLineFillChar    (Sets StatusLine Fill Character)                       R    *
+ SwapPath              (Sets Drive/Path for Swap Files)                       R    *
+ TabType               (Determines Treatment of TabRight()/TabLeft())         T1   *
+ TabWidth              (Determines Where TabStops Should be Set)              R    *
+ TextAttr              (Text Attribute)                                       R    *
+ TimeFormat            (Determines Time String Format Returned)               T2   *
+ TimeSeparator         (Character Used to Separate Hours, Minutes, Seconds)   D2   *
+ UnMarkAfterPaste      (Will Cause Pasted Block to be Immediately Unmarked)   B    *
+ UseCurrLineIfNoBlock  (Use Current Cursor if no Block for Cut()/Copy())      B    *
+ UseEnhancedKbd        (Recognize Additional Keys Used on Enhanced Keyboards) B    *
+ UseMouse              (Enables Mouse Support)                                B    *
+ VarTabs               (Specifies Locations of Variable Tabs)                 R    *
+ WindowCols            (Number of Columns in Current Window)                  N    *
+ WindowRows            (Number of Rows in Current Window)                     N    *
+ WindowX1              (Top Left Column Coordinate of Current Window)         N    *
+ WindowY1              (Top Left Row Coordinate of Current Window)            N    *
+ WordSet               (Defines Characters That Make up a Word)               R    *
+ WordWrap              (Causes Line Wrap if Cursor Exceeds Right Margin)      B    *
+ X1                    (Top Left Column for Prompt/List()/Menu/Help)          R    *
+ Y1                    (Top Left Row for Prompt/List()/Menu/Help)             R    *

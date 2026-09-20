@@ -1,0 +1,7 @@
+Place Files MACRO.DAT; MACRO.QRY; MACRO.SET in same directory as the TSE
+program file.  Place File MACRO.MAC in the directory you specified for your
+compiled macroes during configuration (default lib = \tse\mac\).
+
+Execute Macro.
+
+Follow Message and Help Line Prompts to Use.
