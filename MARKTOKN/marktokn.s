@@ -3,6 +3,9 @@
    Author   Carlo.Hogeveen@xs4all.nl
    Date     24 May 2004
 
+   Package  1.0.0.0.1 - 21 September 2026
+   Updated  OpenAI GPT-5 Codex
+
    This macro marks and unmarks tokens in both directions,
    a token being a whole word or a single non-word character.
 
@@ -160,6 +163,13 @@ end
 
 proc Main()
    string parameter [255] = Lower(GetToken(Query(MacroCmdLine), " ", 1))
+   if parameter <> "forwards"
+   and parameter <> "backwards"
+      Warn("MARKTOKN marks whole words or single non-word characters.";
+           "Configure keys to run: MarkTokn forwards / MarkTokn backwards";
+           "Version 1.0.0.0.1 - OpenAI GPT-5 Codex")
+      return()
+   endif
    block_begin_line = 0
    block_begin_pos  = 0
    block_end_line   = 0
