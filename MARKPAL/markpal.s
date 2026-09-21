@@ -1,8 +1,8 @@
 /*
 
-ÚÄÄÄÄÄÄÄÄÄ¿
-³ MarkPal ³
-ÀÄÄÄÄÄÄÄÄÄÙ
++---------+
+| MarkPal |
++---------+
 
 Title:  TSE macro implements: NextMark, PrevMark, ListMarks
 Keywords: TSE 2.0 MACRO AUTOMATIC BOOKMARKS RING LIST
@@ -15,7 +15,7 @@ ListMarks function displays a picklist of current bookmarks beside the
 text of the corresponding lines.
 
 Usage
-ÄÄÄÄÄ
+-----
 
 Here is a description of available functions, compatible with the PlaceMark()
 and GotoMark() commands.
@@ -43,7 +43,7 @@ companion macro:  FILEPAL)
 
 
 Installation
-ÄÄÄÄÄÄÄÄÄÄÄÄ
+------------
 
 1) Copy MARKPAL.S to your macro directory (usually C:\TSE\MAC).
 
@@ -59,9 +59,11 @@ Installation
                                             CIS [73257,2074]
 */
 
-//ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+//-----------------------------------------------------------------------
 
 integer curr_mark_no = 96
+string GSVersion[20] = "1.0.0.0.1"
+string GSLLMName[20] = "OpenAI GPT-5"
 
 integer proc mMarkExists(integer mark_no)
     integer answer=FALSE, start_file = GetBufferId()
@@ -172,7 +174,16 @@ proc mListMarks()
     endif
 end
 
-//ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+//-----------------------------------------------------------------------
+proc Main()
+    Warn("MARKPAL " + GSVersion + " - " + GSLLMName;
+         "MARKPAL is loaded.";
+         "Ctrl-F9: place automatic mark";
+         "F9 / Shift-F9: next / previous mark";
+         "Alt-F9: list marks";
+         "Ctrl-0 / Alt-0: standard place / goto mark")
+end
+
 //   Key definitions
 
 <F9>                        mNextMark()
