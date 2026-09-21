@@ -103,7 +103,7 @@ proc Abort()
     EndProcess()
       GotoXY(2, 3)
       WriteLine(Format("":23," PROCESS ENDED -- MACRO ABORTED ","":23))
-      Sound(800) Delay(6) NoSound()
+      Sound(800, 1) Delay(6) NoSound()
     HLT = 1
 end
 
