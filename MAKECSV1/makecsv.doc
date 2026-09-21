@@ -1,0 +1,90 @@
+
+                            MakeCSV.S
+
+
+A Macro that converts a datafile with positionally oriented
+records to a Comma Separated Value (.CSV) file.
+
+    Features:
+
+        o   Can include a header line.
+        o   Use any part or all of of the source file.
+        o   Output fields in a different order than the source
+            file.
+        o   Does not change the source file.
+
+Useful in formatting many kinds of database output for import
+into a spreadsheet.
+
+A positionally oriented record is one where each field length the
+same as that field length in all other records.  Field data are
+padded with blanks. Blanks follow character fields and normally
+preceed numeric fields.  This is a common format in older
+databases.
+
+A Comma Separated Value record has each field separated by a
+comma.  Fields are only as long as the data in them.  Character
+fields are surrounded by double quotes. Numeric fields are not.
+.CSV fields are commonly used to exchange data between DOS and
+Macintosh databases and spreadsheets.
+
+    Examples:
+
+    Positionally oriented record file.
+
+    First_Name      Last_name      Age Salary
+    Joseph          Blow            23  13000.25
+    Maggie          Malone          21  93072.01
+
+    Comma Separated Value file.
+
+    "First_Name,"Last_name","Age","Salary",
+    "Joseph","Blow",23,13000.25,
+    "Maggie","Malone",21,93072.01,
+
+    Note:  Some applications may not allow you to include a
+    header with all string data with fields containing numeric
+    data.  In this case, omit the header data in the DEFINEcc.RCD
+    file (See following.)
+
+
+MakeCSV requires a file named DEFINEcc.RCD where cc can be any
+two characters.  The format of this file is one line for each
+field desired in the output file. Leave no blank lines.  Each
+line is formatted as follows:
+
+    [Field Name], Beginning Column, Field Length, Character Field (Y/N?),
+
+    Where:
+
+        Field Name is a single string less than 16 characters. It
+        is omisible if not desired in the output, however, if
+        omitted for one field, it must be omitted for all.  When
+        used, the field name will be entered into a header line
+        in the output file.
+
+        Beginning Column is the starting column of the field in
+        the source file.
+
+        Field Length is the width, maximum the number of
+        characters, in the source file field.
+
+        Character Field (Y/N?) indicates whether the field
+        contains characters other than numbers, a leading "-" or
+        a single decimal.
+
+    Example:
+
+        Last_Name,1,16,Y,
+        First_Name,17,16,Y,
+        Age,32,3,N,
+
+    Fields must be defined in the order they are to appear in the .CSV
+    file, but not every field in the input need be used nor do fields
+    need to be in the same order as in the source file.
+
+    Results are placed in file RESULTcc.CSV where "cc" is the same
+    characters as used in the suffix to DEFINEcc.RCD.
+
+                           M. W. Hulse
+                         October 16, 1994
