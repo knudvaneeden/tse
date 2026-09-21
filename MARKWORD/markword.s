@@ -106,3 +106,8 @@ proc mLMarkWord()
     PushKey(nextkey)    // Pass on the keystroke
 end
 
+
+proc Main()
+    Warn("MARKWORD 1.0.0.0.1 - OpenAI Codex. mMarkWord() extends a marked block forwards; mLMarkWord() extends it backwards. Assign these procedures to unused keys in your TSE .ui file, then press the same key repeatedly to extend the block.")
+end
+
