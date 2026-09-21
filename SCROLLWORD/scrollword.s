@@ -1,13 +1,13 @@
 /******************************************************************************
   Filename : scrollword.s
-  Version  : 1.0.0.0.0
+  Version  : 1.0.0.0.2
   Date     : 2026-09-21
   Purpose  : Horizontally scroll the current view so the cursor character,
              and therefore the word at the cursor, is centered.
   LLM      : OpenAI Codex (GPT-5)
 ******************************************************************************/
 
-STRING GSVersion[20] = "1.0.0.0.0"
+STRING GSVersion[20] = "1.0.0.0.2"
 
 PROC PROCScrollWordToCenter()
     INTEGER targetPercentI = 50
@@ -42,8 +42,16 @@ PROC PROCScrollWordToCenter()
 END
 
 PROC Main()
+    STRING iniFilenameS[255] = ""
+    STRING silentS[10] = ""
+
     PROCScrollWordToCenter()
-    Warn("SCROLLWORD ", GSVersion, ": the word at the cursor is now centered horizontally.")
+    iniFilenameS = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_) + "scrollword.ini"
+    silentS = GetProfileStr("scrollword", "silent", "false", iniFilenameS)
+
+    IF EquiStr(silentS, "true") == FALSE
+        Warn("SCROLLWORD ", GSVersion, ": the word at the cursor is now centered horizontally.")
+    ENDIF
 END
 
 <CtrlAltShift C> PROCScrollWordToCenter()

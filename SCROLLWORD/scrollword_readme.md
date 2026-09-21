@@ -1,6 +1,6 @@
 # SCROLLWORD
 
-Version: 1.0.0.0.0  
+Version: 1.0.0.0.2  
 Date: 2026-09-21  
 Created with: OpenAI Codex (GPT-5)
 
@@ -54,6 +54,7 @@ The supplied `scrollword.ini` contains:
 ```ini
 [scrollword]
 target=50
+silent=false
 ```
 
 `target` is the desired horizontal position expressed as a percentage of the current editing-window width:
@@ -63,6 +64,13 @@ target=50
 - `75` places it at the right quarter.
 
 Values below 1 are treated as 1. Values above 100 are treated as 100. If the INI file or setting cannot be found, the macro uses 50.
+
+`silent` controls the informative `Warn()` box when the macro is executed normally:
+
+- `silent=true` scrolls without showing a `Warn()` box.
+- `silent=false` shows the informative `Warn()` box after scrolling. This is the default.
+
+The value is compared without regard to uppercase or lowercase. The **Ctrl+Alt+Shift+C** shortcut always scrolls silently because it calls the scrolling procedure directly.
 
 The INI path is derived from `CurrMacroFilename()`, so the package is portable and does not depend on the TSE load directory.
 
@@ -85,6 +93,18 @@ the calculated offset places the cursor at the requested percentage of the visib
 - Running the macro does not mark, copy, insert, delete, or otherwise modify text.
 
 ## Version history
+
+### 1.0.0.0.2 - 2026-09-21
+
+- Changed the supplied `silent` value to `false`.
+- Changed the missing-setting fallback to `false`.
+- The informative `Warn()` box is now shown by default.
+
+### 1.0.0.0.1 - 2026-09-21
+
+- Added the `silent=true|false` INI setting.
+- `silent=true` suppresses the final `Warn()` box.
+- `silent=false` retains the informative final message.
 
 ### 1.0.0.0.0 - 2026-09-21
 
