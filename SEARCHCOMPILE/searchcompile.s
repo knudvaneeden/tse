@@ -3,9 +3,9 @@
 
   Search compiler definitions in a SemWare/TSE compile.dat file.
 
-  Version : 1.0.0.0.5
-  Date    : 2026-09-18
-  Time    : 00:29:39 CEST
+  Version : 1.0.0.0.6
+  Date    : 2026-09-21
+  Time    : 19:03:11 CEST
   LLM     : OpenAI GPT-5 Codex
 
   Keep searchcompile.s and searchcompile.ini in the same directory.
@@ -14,7 +14,7 @@
 #define RECORD_START 30
 #define RECORD_END   31
 
-string GSVersionText[]   = "1.0.0.0.5"
+string GSVersionText[]   = "1.0.0.0.6"
 string GSIniName[]       = "searchcompile.ini"
 string GSDataEye[]       = "Semware compile macro data file"
 string GSCompileDat[255] = ""
@@ -274,9 +274,6 @@ proc Main()
 
     PROCReadIni()
 
-    if not Ask("Full path to compile.dat", GSCompileDat, _EDIT_HISTORY_)
-        return()
-    endif
     if not Ask("Search string", GSSearch, _EDIT_HISTORY_)
         return()
     endif
@@ -284,6 +281,9 @@ proc Main()
         return()
     endif
     if not Ask("File extension (blank means all)", GSExtension, _EDIT_HISTORY_)
+        return()
+    endif
+    if not Ask("Full path to compile.dat", GSCompileDat, _EDIT_HISTORY_)
         return()
     endif
     SearchFieldMenu()

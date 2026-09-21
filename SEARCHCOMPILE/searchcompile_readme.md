@@ -1,8 +1,8 @@
 # SEARCHCOMPILE
 
-**Version:** 1.0.0.0.5  
-**Date:** 2026-09-18  
-**Time:** 00:29:39 CEST  
+**Version:** 1.0.0.0.6  
+**Date:** 2026-09-21  
+**Time:** 19:03:11 CEST  
 **LLM:** OpenAI GPT-5 Codex  
 **Session:** Create SEARCHCOMPILE Readme
 
@@ -24,10 +24,10 @@ The supplied `compile.s` and `compile.dat` reference files are intentionally not
 
 When run, the macro asks for the following information in this order:
 
-1. Full path to `compile.dat`.
-2. Search string, for example `Borland`.
-3. Search options, for example `i` or `ix`.
-4. File extension, initially `.c`; leave this blank to search every extension.
+1. Search string, for example `Borland`.
+2. Search options, for example `i` or `ix`.
+3. File extension, initially `.c`; leave this blank to search every extension.
+4. Full path to `compile.dat`.
 5. Compiler option field, selected from a menu.
 
 Every `Ask()` dialog uses `_EDIT_HISTORY_`, so previous entries can be recalled through TSE's edit history.
@@ -119,10 +119,10 @@ It can also be loaded from TSE's macro menu or assigned to a key in the usual wa
 
 After starting it:
 
-1. Confirm or change the proposed path to `compile.dat`.
-2. Enter the text or regular expression to find.
-3. Enter the required search options.
-4. Enter an extension or leave it blank for all extensions.
+1. Enter the text or regular expression to find.
+2. Enter the required search options.
+3. Enter an extension or leave it blank for all extensions.
+4. Confirm or change the proposed path to `compile.dat`.
 5. Select the field to search.
 6. Review the `*SEARCHCOMPILE RESULTS*` buffer.
 
@@ -138,10 +138,10 @@ Each match shows:
 ### Find Borland compiler descriptions for C
 
 ```text
-compile.dat:     f:\bbc\taal\compile.dat
 Search string:   Borland
 Search options:  i
 File extension:  .c
+compile.dat:     f:\bbc\taal\compile.dat
 Field:           Compiler Description
 ```
 
@@ -172,6 +172,11 @@ Field:           Message Tag
 - The macro is designed for TSE SAL and ASCII source compatibility.
 
 ## Version history
+
+### 1.0.0.0.6 — 2026-09-21 19:03:11 CEST
+
+- Moved the full `compile.dat` path question to the final `Ask()` position.
+- The compiler option field menu continues to appear after all text inputs.
 
 ### 1.0.0.0.5 — 2026-09-18 00:29:39 CEST
 
