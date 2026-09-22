@@ -4,6 +4,9 @@
    Date:        2 sep 2003
    Version 2:  31 jan 2004
 
+   Package version: 1.0.0.0.2
+   Updated:         22 Sep 2026 13:02:00 CEST
+
    This macro sets the two colors used as background colors in TSE menu's
    to the Windows menu background colors.
 
@@ -57,6 +60,41 @@
          Adapted the macro to also work with the GUI version
          of higher versions of TSE, like TSE 4.2.
 */
+
+string GSMenuColrVersion[20] = "1.0.0.0.2"
+
+integer proc SilentModeEnabled()
+   integer oldBufferI = GetBufferId()
+   integer iniBufferI = 0
+   integer silentB = FALSE
+   string iniPathS[255] = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) + "menucolr.ini"
+   string lineS[255] = ""
+
+   if FileExists(iniPathS)
+      iniBufferI = CreateTempBuffer()
+      if iniBufferI
+         InsertFile(iniPathS)
+         BegFile()
+         repeat
+            lineS = Lower(Trim(GetText(1, CurrLineLen())))
+            if lineS == "silent=true"
+               silentB = TRUE
+            elseif lineS == "silent=false"
+               silentB = FALSE
+            endif
+         until not Down()
+         GotoBufferId(oldBufferI)
+         AbandonFile(iniBufferI)
+      endif
+   endif
+   return(silentB)
+end
+
+proc Main()
+   if not SilentModeEnabled()
+      Warn("MENUCOLR ", GSMenuColrVersion, " applies the Windows menu and highlight background colors to TSE menus. Set silent=true in menucolr.ini to hide this message.")
+   endif
+end
 
 #ifdef EDITOR_VERSION
    #if EDITOR_VERSION - 3000h
@@ -143,6 +181,7 @@
          #endif
          UpdateDisplay(_ALL_WINDOWS_REFRESH_)
       endif
+      Main()
       PurgeMacro(SplitPath(CurrMacroFilename(), _NAME_))
    end
 #else
