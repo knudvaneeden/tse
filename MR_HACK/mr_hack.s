@@ -6,6 +6,8 @@
                Carlo Hogeveen
 
   Date:       2006/01/07
+  Package:    1.0.0.0.0 - 2026/09/22
+  Updated by: OpenAI Codex (GPT-5)
 
   Overview:
 
@@ -47,6 +49,7 @@ STRING    gsTooSmall[10] = "Too Small "
 STRING    gsDays2MthNormal[54] = "xxx000 031 059 090 120 151 181 212 243 273 304 334 999"
 STRING    gsDays2MthLeap[54]   = "xxx000 031 060 091 121 152 182 213 244 274 305 335 999"
 STRING    gsDOWStrings[22]     = "xxFr Sa Su Mn Tu We Th"
+STRING    GSVersion[20]        = "1.0.0.0.0"
 
 INTEGER   gByteLngth
 INTEGER   gSign32, gSign64, gInt8, gWrd16, gInt32, gDWord2
@@ -546,4 +549,16 @@ PROC WHENLOADED()
     HOOK(_PRE_UPDATE_ALL_WINDOWS_,  PopDialogHelper)
     HOOK(_POST_UPDATE_ALL_WINDOWS_, PopDialog)
 //    HOOK(_AFTER_UPDATE_STATUSLINE_, PopDialog)
+END
+
+PROC Main()
+  STRING iniFilenameS[255] = ""
+  STRING silentS[10] = ""
+
+  iniFilenameS = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_) + "mr_hack.ini"
+  silentS = GetProfileStr("mr_hack", "silent", "false", iniFilenameS)
+
+  IF EquiStr(silentS, "true") == FALSE
+    Warn("MR_HACK ", GSVersion, " is active. Move the cursor in a binary file to view the current bytes as offset, integer, binary, floating-point, time, and date values. Purge the macro to turn it off. Set silent=true in mr_hack.ini to hide this message.")
+  ENDIF
 END
