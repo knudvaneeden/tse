@@ -16,6 +16,10 @@
  *                                                                          *
  *  MODIFICATIONS:                                                          *
  *                                                                          *
+ *      09-22-26    OpenAI  Added a portable Main() startup message,        *
+ *                              controlled by move_1.ini. Version           *
+ *                              1.0.0.0.2.                                   *
+ *                                                                          *
  *      06-30-93    ERA     Changed argument types for mGotoLocation to     *
  *                              strings. The characters "-" & "+", when     *
  *                              immediately preceding or following a value  *
@@ -42,11 +46,27 @@ CONSTANT kROW = 1,
          kPLUS = 3
 
 /****************************************************************************
- *  The following variable is used to provide a history for when            *
- *  mGotoLocation() prompts for user specification of the desired location  *
+ *  FNMove1Silent() reads move_1.ini from the directory containing the      *
+ *  compiled macro. This keeps the package portable and avoids LoadDir().   *
  ****************************************************************************/
 
-INTEGER gGotoLocHist = 0
+INTEGER PROC FNMove1Silent()
+    INTEGER foundI = FALSE
+    STRING iniPathS[255] = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_) + "move_1.ini"
+
+    IF (FileExists(iniPathS))
+        PushLocation()
+        IF (CreateTempBuffer())
+            IF (InsertFile(iniPathS))
+                BegFile()
+                foundI = lFind("^silent=true$", "ix")
+            ENDIF
+            AbandonFile()
+        ENDIF
+        PopLocation()
+    ENDIF
+    Return(foundI)
+END FNMove1Silent
 
 /****************************************************************************
  *  The following two macros, mGotoWord1() and mGotoWord2() are dsigned to  *
@@ -74,9 +94,9 @@ END mGotoWord2
 /****************************************************************************
  *  mGotoLocation() provides the ability to either                          *
  *                                                                          *
- *      þ Go to a specific line,                                            *
- *      þ Go to a specific column                                           *
- *      þ Go to a specific line and column                                  *
+ *      th Go to a specific line,                                            *
+ *      th Go to a specific column                                           *
+ *      th Go to a specific line and column                                  *
  *                                                                          *
  *  by using either absolute references, or as offsets from the current     *
  *  cursor location.                                                        *
@@ -176,10 +196,7 @@ INTEGER PROC mGotoLocation(STRING numRowStr, STRING numColStr)
     ENDIF
     IF ((numRow + numCol) == FALSE)
         again:
-        IF (NOT gGotoLocHist)
-            gGotoLocHist = GetFreeHistory()
-        ENDIF
-        IF (Ask("Location (l[,c]): ", reply, gGotoLocHist))
+        IF (Ask("Location (l[,c]): ", reply, _EDIT_HISTORY_))
             numRow = 0
             numCol = 0
             cnt = 1
@@ -354,3 +371,13 @@ INTEGER PROC mGotoWord(INTEGER whichOne)
     KillPosition()
     Return(TRUE)
 END mGotoWord
+
+/****************************************************************************
+ *  Main() gives useful feedback when this library macro is run directly.   *
+ ****************************************************************************/
+
+PROC Main()
+    IF (NOT FNMove1Silent())
+        Warn("MOVE_1 1.0.0.0.2 loaded. This library provides mGotoLocation(), mGotoBlockBegin(), mGotoBlockEnd(), and mGotoWord(). Set silent=true in move_1.ini to hide this message. Created with OpenAI Codex.")
+    ENDIF
+END Main
