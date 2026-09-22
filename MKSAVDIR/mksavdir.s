@@ -3,7 +3,8 @@
    Author         Carlo.Hogeveen@xs4all.nl
    Date           24 jun 2007
    Compatibility  TSE Pro 2.5e upwards
-   Version        1.0.0
+   Package version 1.0.0.0.0
+   Updated         22 sep 2026
 
    When you save a file with a non-existing directory in its path,
    this macro makes TSE offer to create that directory.
@@ -53,6 +54,7 @@
 string macroname [255] = ""
 integer autoload_id = 0
 integer mkdir_mode = 0
+string GSVersion [20] = "1.0.0.0.0"
 
 #if EDITOR_VERSION < 0x3000
    menu MsgBoxEx_menu()
@@ -179,6 +181,13 @@ proc configure()
 end
 
 proc Main()
+   string ini_filename [255] = ""
+   string silent [10] = ""
+   ini_filename = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_) + "mksavdir.ini"
+   silent = GetProfileStr("mksavdir", "silent", "false", ini_filename)
+   if EquiStr(silent, "true") == FALSE
+      Warn("MKSAVDIR ", GSVersion, " offers to create missing directories when a file is saved. Use the configuration menu to enable or disable automatic loading. Set silent=true in mksavdir.ini to hide this message.")
+   endif
    configure()
 end
 
