@@ -1,7 +1,7 @@
 # MATCH2
 
-Version: 1.0.0.0.12  
-Date and time: 2026-09-21 23:48:49 UTC  
+Version: 1.0.0.0.13  
+Date and time: 2026-09-22 00:14:31 UTC  
 Updated with: OpenAI Codex
 
 ## Description
@@ -21,12 +21,12 @@ The original matching procedure is `mLanguageMatch()`. Running the compiled macr
 ## Files
 
 - `match2.s` - TSE SAL source code.
-- `match2.ini` - reserved for future configuration settings; version 1.0.0.0.12 does not read it.
+- `match2.ini` - configuration file for startup-warning behavior.
 - `match2_readme.md` - this description and help file.
 
 ## Compile
 
-1. Extract all files from `match21.0.0.0.12.zip` into one directory.
+1. Extract all files from `match21.0.0.0.13.zip` into one directory.
 2. Open a command prompt in that directory.
 3. Compile the source with:
 
@@ -54,6 +54,19 @@ For ordinary brackets, put the cursor on the character and press the same key. M
 
 Running `match2.mac` directly executes `Main()` and displays an informative message. The matching feature itself is run through the key assigned to `mLanguageMatch()`.
 
+## Configuration
+
+Keep `match2.ini` in the same directory as the compiled MATCH2 macro. The initial setting is:
+
+```ini
+[match2]
+silent=false
+```
+
+- `silent=false` displays the informative startup warning when MATCH2 is run directly.
+- `silent=true` suppresses the startup warning.
+- If `match2.ini` is missing or the value is invalid, MATCH2 uses `silent=false`.
+
 ## Notes
 
 - MATCH2 is intended for TSE SAL source code. Words inherited from the old xBase or Clipper implementation are not part of the advertised supported feature set.
@@ -69,6 +82,13 @@ Running `match2.mac` directly executes `Main()` and displays an informative mess
 - Save and back up important work before testing any newly compiled macro.
 
 ## Version history
+
+### 1.0.0.0.13 - 2026-09-22 00:14:31 UTC
+
+- Added the `silent` setting to `match2.ini` with the initial value `silent=false`.
+- Added portable loading of `match2.ini` from the MATCH2 macro directory.
+- `silent=true` suppresses the direct-run startup warning; `silent=false`, a missing INI file, or an invalid value shows it.
+- Updated the package version, source header, direct-run message, INI file, and documentation.
 
 ### 1.0.0.0.12 - 2026-09-21 23:48:49 UTC
 

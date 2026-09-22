@@ -1,5 +1,5 @@
-//  MATCH2                   version 1.0.0.0.12
-//  Package date             2026-09-21 23:48:49 UTC
+//  MATCH2                   version 1.0.0.0.13
+//  Package date             2026-09-22 00:14:31 UTC
 //  Updated with             OpenAI Codex
 //
 //  mLanguageMatch()         original version 2.00
@@ -37,6 +37,33 @@ constant    LOOK_AROUND     =   -1
 constant    MAX_WORD_SIZE   =   20
 
 integer     gDirection      = LOOK_DOWN
+integer     GBSilent        = FALSE
+
+// **************************************************************************
+integer proc FNReadSilentSetting()
+    integer silentB = FALSE
+    integer tempBufferI
+    string iniFileS[255] = SplitPath(CurrMacroFileName(), _DRIVE_ | _PATH_) + "match2.ini"
+    string lineS[255]
+
+    tempBufferI = CreateTempBuffer()
+    if tempBufferI
+        if FileExists(iniFileS) and InsertFile(iniFileS, _DONT_PROMPT_)
+            BegFile()
+            repeat
+                lineS = Lower(Trim(GetText(1, CurrLineLen())))
+                if lineS == "silent=true"
+                    silentB = TRUE
+                elseif lineS == "silent=false"
+                    silentB = FALSE
+                endif
+            until not Down()
+        endif
+        AbandonFile(tempBufferI)
+    endif
+
+    return(silentB)
+end
 
 // **************************************************************************
 string proc FNGetFirstWord()
@@ -334,10 +361,14 @@ keydef Match2Keys
 end
 
 proc WhenLoaded()
+    GBSilent = FNReadSilentSetting()
     Enable(Match2Keys)
 end
 
 // **************************************************************************
 proc Main()
-    Warn("MATCH2 1.0.0.0.12 is loaded. Press <Alt F3> on a supported language control word or bracket to jump to its matching partner.")
+    GBSilent = FNReadSilentSetting()
+    if not GBSilent
+        Warn("MATCH2 1.0.0.0.13 is loaded. Press <Alt F3> on a supported language control word or bracket to jump to its matching partner.")
+    endif
 end
