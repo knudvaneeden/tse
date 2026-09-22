@@ -4,7 +4,7 @@
  *  AUTHOR   :  Ray Asbury (rasbury@msmailpc01.saic.com)                    *
  *  COPYRIGHT:  1995 E. Ray Asbury, Jr.  All Rights Reserved Worldwide.     *
  *  DATE     :  Mon 11-20-1995 09:38:34                                     *
- *  FILES    :  mffind.inc      mffind2.inc     mffind.ini                  *
+ *  FILES    :  mffind.inc      mffind2.inc     mffnd58.ini                  *
  *              mffind.s        mffind2.s       mffind3.s                   *
  *              mffind4.s       mffind5.s       mffind6.s                   *
  *                                                                          *
@@ -200,13 +200,13 @@ PROC pnGetSettings(INTEGER lpiFromMenu)
 
     lsBuf1 = psGetProStr("Fill Characters", "SelectLineCharacter")
     IF (Length(lsBuf1) <> 1)
-        lsBuf1 = "þ"
+        lsBuf1 = "?"
     ENDIF
     SetGlobalStr("gsMFFndSelLineChar", lsBuf1)
 
     lsBuf1 = psGetProStr("Fill Characters", "BufferLineCharacter")
     IF (Length(lsBuf1) <> 1)
-        lsBuf1 = "ù"
+        lsBuf1 = "?"
     ENDIF
     SetGlobalStr("gsMFFndBufLineChar", lsBuf1)
 
@@ -679,11 +679,11 @@ MENU mnConfig()
     "&Restore Settings from INI File",
         pnGetSettings(TRUE),
         CloseBefore,
-        "Reads and activates all settings from MFFIND.INI"
+        "Reads and activates all settings from mffnd58.ini"
     "&Save Current Settings as default",
         pnSetSettings(),
         DontClose,
-        "Saves all settings to MFFIND.INI"
+        "Saves all settings to mffnd58.ini"
 END mnConfig
 
 MENU mnFileSettings()

@@ -4,7 +4,7 @@
  *  AUTHOR   :  Ray Asbury (rasbury@msmailpc01.saic.com)                    *
  *  COPYRIGHT:  1995 E. Ray Asbury, Jr.  All Rights Reserved Worldwide.     *
  *  DATE     :  Mon 11-20-1995 09:38:34                                     *
- *  FILES    :  mffind.inc      mffind2.inc     mffind.ini                  *
+ *  FILES    :  mffind.inc      mffind2.inc     mffnd58.ini                  *
  *              mffind.s        mffind2.s       mffind3.s                   *
  *              mffind4.s       mffind5.s       mffind6.s                   *
  *                                                                          *
@@ -56,7 +56,7 @@ DATADEF ddIniFile
 ";*************"
 "***************************************************************"
 ";*  FILENAME :"
-"  mffind.ini                                                  *"
+"  mffnd58.ini                                                  *"
 ";*  VERSION  :"
 "  5.8 (for TSE Pro 2.50a)                                     *"
 ";*  AUTHOR   :"
@@ -66,7 +66,7 @@ DATADEF ddIniFile
 ";*  DATE     :"
 "  Fri 01-13-1995 11:46:27                                     *"
 ";*  FILES    :  mffind.inc"
-"      mffind2.inc     mffind.ini                  *"
+"      mffind2.inc     mffnd58.ini                  *"
 ";*              mffind.s"
 "        mffind2.s       mffind3.s                   *"
 ";*              mffind4.s"
@@ -91,6 +91,9 @@ DATADEF ddIniFile
 " REVISIONS LIST IN MFFIND.S]                            *"
 ";***************"
 "*************************************************************"
+""
+"[Startup]"
+"silent=false"
 ""
 "[Custom File Definitions]"
 ""
@@ -139,8 +142,8 @@ DATADEF ddIniFile
 "DistinguishGroupHits=TRUE"
 ""
 "[Fill Characters]"
-"SelectLineCharacter=þ"
-"BufferLineCharacter=²"
+"SelectLineCharacter=?"
+"BufferLineCharacter=?"
 ""
 "[Function Search]"
 "DefaultOnAsk=NO"
@@ -224,7 +227,11 @@ END Main
 
 PROC pnCheckIniFile()
 
-    STRING  lsIniFile[127]  = ""
+    STRING  lsIniFile[127]   = "",
+            lsMacroDir[127]  = SplitPath(CurrMacroFileName(), _DRIVE_|_PATH_),
+            lsSourceDir[127] = SplitPath(CurrFileName(), _DRIVE_|_PATH_),
+            lsMacroIni[127]  = lsMacroDir + fsIniFile,
+            lsSourceIni[127] = lsSourceDir + fsIniFile
 
     INTEGER liIId,
             liCid           = GetBufferId(),
@@ -237,12 +244,26 @@ PROC pnCheckIniFile()
             liSec,
             liHun
 
-    lsIniFile = SearchPath(fsIniFile, Query(TSEPath), "mac")
+    IF (FileExists(lsMacroIni))
+        lsIniFile = lsMacroIni
+    ELSE
+        IF (FileExists(lsSourceIni))
+            lsIniFile = lsSourceIni
+        ELSE
+            lsIniFile = SearchPath(fsIniFile, Query(TSEPath), "mac")
+        ENDIF
+    ENDIF
     IF (NOT Length(lsIniFile))
-        Warn(fsMsgPrefix, "Unable to locate 'MFFIND.INI'")
-        lsIniFile = SearchPath("mffind.mac", Query(TSEPath), "mac")
-        lsIniFile = SubStr(lsIniFile, 1, (Length(lsIniFile) - 3)) +
-                    "ini"
+        Warn(fsMsgPrefix, "Unable to locate 'mffnd58.ini'")
+        IF (Length(lsMacroDir))
+            lsIniFile = lsMacroIni
+        ELSE
+            IF (Length(lsSourceDir))
+                lsIniFile = lsSourceIni
+            ELSE
+                lsIniFile = fsIniFile
+            ENDIF
+        ENDIF
         Warn(fsMsgPrefix, "Creating '", lsIniFile, "' using defaults")
         liIId = EditFile(lsIniFile)
         InsertData(ddIniFile)
@@ -388,17 +409,17 @@ PROC pnShowHistoryUsage(STRING lpsTitle)
                         GetGlobalInt("giMFFndHistFnd"):3))
         AddLine(Format("_FIND_HISTORY_":-30,
                         _FIND_HISTORY_:3))
-        AddLine(Format("Ä":33:"Ä"))
+        AddLine(Format("-":33:"-"))
         AddLine(Format("giMFFndHistFndOpts":-30,
                         GetGlobalInt("giMFFndHistFndOpts"):3))
         AddLine(Format("_FINDOPTIONS_HISTORY_":-30,
                         _FINDOPTIONS_HISTORY_:3))
-        AddLine(Format("Ä":33:"Ä"))
+        AddLine(Format("-":33:"-"))
         AddLine(Format("giMFFndHistRep":-30,
                         GetGlobalInt("giMFFndHistRep"):3))
         AddLine(Format("_REPLACE_HISTORY_":-30,
                         _REPLACE_HISTORY_:3))
-        AddLine(Format("Ä":33:"Ä"))
+        AddLine(Format("-":33:"-"))
         AddLine(Format("giMFFndHistRepOpts":-30,
                         GetGlobalInt("giMFFndHistRepOpts"):3))
         AddLine(Format("_REPLACEOPTIONS_HISTORY_":-30,

@@ -4,7 +4,7 @@
  *  AUTHOR   :  Ray Asbury (rasbury@msmailpc01.saic.com)                    *
  *  COPYRIGHT:  1995 E. Ray Asbury, Jr.  All Rights Reserved Worldwide.     *
  *  DATE     :  Mon 11-20-1995 09:38:34                                     *
- *  FILES    :  mffind.inc      mffind2.inc     mffind.ini                  *
+ *  FILES    :  mffind.inc      mffind2.inc     mffnd58.ini                  *
  *              mffind.s        mffind2.s       mffind3.s                   *
  *              mffind4.s       mffind5.s       mffind6.s                   *
  *                                                                          *
@@ -130,9 +130,9 @@
  *              ERA 01-31-95    Added progress messages to all searches &   *
  *                                  made it configureable                   *
  *              ERA 02-01-95    Added options to find lines                 *
- *                                  þ not containing a specified string     *
- *                                  þ which are blank                       *
- *                                  þ which are adjacent duplicates         *
+ *                                  ? not containing a specified string     *
+ *                                  ? which are blank                       *
+ *                                  ? which are adjacent duplicates         *
  *                              Properly adjust line numbers when going to  *
  *                                  the location of a deleted line          *
  *              ERA 02-02-95    Added configureable verification when       *
@@ -238,6 +238,7 @@ FORWARD         MENU mnMFFindDelete()
 FORWARD         MENU mnMFFindLines()
 FORWARD         PROC pnMFFind(INTEGER lpiWhichOpt)
 FORWARD INTEGER PROC pnLoadOtherMacFile(STRING lpsWhichOne)
+FORWARD INTEGER PROC pnSilentStartup()
 
 /****************************************************************************
  *  SECTION --> GLOBAL      Data Definitions                                *
@@ -295,6 +296,9 @@ END WhenPurged
  ****************************************************************************/
 
 PROC Main()
+    IF (NOT pnSilentStartup())
+        Warn("MFFind 5.8: Multi-file search and replace. Choose an operation from the menu that follows. Set silent=true in mffnd58.ini to hide this message.")
+    ENDIF
     mnMFFind()
 END Main
 
@@ -307,13 +311,51 @@ END Main
  ****************************************************************************/
 
 INTEGER PROC pnLoadOtherMacFile(STRING lpsWhichOne)
+    STRING lsMacroName[20] = "MFFIND" + lpsWhichOne + ".MAC",
+           lsMacroFile[255] = SplitPath(CurrMacroFileName(), _DRIVE_|_PATH_) + lsMacroName,
+           lsSourceFile[255] = SplitPath(CurrFileName(), _DRIVE_|_PATH_) + lsMacroName
+
     IF (NOT IsMacroLoaded("MFFIND" + lpsWhichOne))
-        IF (NOT LoadMacro("MFFIND" + lpsWhichOne))
-            Return(Val(lpsWhichOne))
+        IF (FileExists(lsMacroFile))
+            IF (NOT LoadMacro(lsMacroFile))
+                Return(Val(lpsWhichOne))
+            ENDIF
+        ELSE
+            IF (FileExists(lsSourceFile))
+                IF (NOT LoadMacro(lsSourceFile))
+                    Return(Val(lpsWhichOne))
+                ENDIF
+            ELSE
+                IF (NOT LoadMacro("MFFIND" + lpsWhichOne))
+                    Return(Val(lpsWhichOne))
+                ENDIF
+            ENDIF
         ENDIF
     ENDIF
     Return(FALSE)
 END pnLoadOtherMacFile
+
+INTEGER PROC pnSilentStartup()
+    STRING lsIniFile[127] = GetGlobalStr("gsMFFndIniFile")
+    INTEGER liOriginalBuffer = GetBufferId(),
+            liTempBuffer = 0,
+            liSilent = FALSE
+
+    IF (NOT Length(lsIniFile))
+        lsIniFile = SearchPath("mffnd58.ini", Query(TSEPath), "mac")
+    ENDIF
+    IF (Length(lsIniFile))
+        liTempBuffer = CreateTempBuffer()
+        IF (liTempBuffer)
+            InsertFile(lsIniFile)
+            BegFile()
+            liSilent = LFind("^silent=true$", "ix")
+            GotoBufferId(liOriginalBuffer)
+            AbandonFile(liTempBuffer)
+        ENDIF
+    ENDIF
+    Return(liSilent)
+END pnSilentStartup
 
 PROC pnMFFind(INTEGER lpiWhichOpt)
 

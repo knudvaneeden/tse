@@ -4,7 +4,7 @@
  *  AUTHOR   :  Ray Asbury (rasbury@msmailpc01.saic.com)                    *
  *  COPYRIGHT:  1995 E. Ray Asbury, Jr.  All Rights Reserved Worldwide.     *
  *  DATE     :  Mon 11-20-1995 09:38:34                                     *
- *  FILES    :  mffind.inc      mffind2.inc     mffind.ini                  *
+ *  FILES    :  mffind.inc      mffind2.inc     mffnd58.ini                  *
  *              mffind.s        mffind2.s       mffind3.s                   *
  *              mffind4.s       mffind5.s       mffind6.s                   *
  *                                                                          *

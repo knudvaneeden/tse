@@ -4,7 +4,7 @@
  *  AUTHOR   :  Ray Asbury (rasbury@msmailpc01.saic.com)                    *
  *  COPYRIGHT:  1995 E. Ray Asbury, Jr.  All Rights Reserved Worldwide.     *
  *  DATE     :  Mon 11-20-1995 09:38:34                                     *
- *  FILES    :  mffind.inc      mffind2.inc     mffind.ini                  *
+ *  FILES    :  mffind.inc      mffind2.inc     mffnd58.ini                  *
  *              mffind.s        mffind2.s       mffind3.s                   *
  *              mffind4.s       mffind5.s       mffind6.s                   *
  *                                                                          *
@@ -71,7 +71,7 @@ CONSTANT    koDEBUG                         = OFF,
  /* THIS FOLLOWING VALUES SHOULD BE REFLECTED IN EACH FILE'S HEADER, AS
     WELL AS IN THE HELPDEF hdText, FOUND IN MFFIND2.S ***********************/
 
-STRING      fsIniFile[]                     = "mffind.ini",
+STRING      fsIniFile[]                     = "mffnd58.ini",
             fsMsgPrefix[]                   = "MFFind: ",
             fsTseVer[]                      = "2.50a",
             fsVer[]                         = "5.8"
