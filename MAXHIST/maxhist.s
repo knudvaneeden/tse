@@ -4,6 +4,9 @@
    Date:    21 Februari 1999.
    Version: 2 (22 Februari 1999).
 
+   Package: 1.0.0.0.0 (2026-09-22 10:24:59 UTC).
+   Updated with OpenAI Codex.
+
    Purpose: If MaxHistoryPerList * number of history lists > MaxHistorySize,
             then an infrequently used history list can get "pushed out"
             by a frequently used history list.
@@ -113,4 +116,5 @@ proc whenloaded()
 end
 proc main()
    whenloaded()
+   warn("MAXHIST is active. It will optimize TSE's persistent history settings when TSE next becomes idle, save changed settings, and then purge itself from memory.")
 end
