@@ -105,9 +105,58 @@
 // ************************************************************************/
 
     Integer cline, cpos, cxofs, crow
+    Integer GBSilent
+    Integer GBGpgReady
+    Integer GIKeyBufferId
+    String GSVersion[20]
+    String GSIniFile[255]
+    String GSGpgExe[255]
+    String GSLocalUser[255]
+    String GSProgramDir[255]
+
+Proc LoadSettings()
+    Integer originalBufferId
+    String settingLine[255], lowerSettingLine[255]
+
+    GBSilent = FALSE
+    GSProgramDir = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
+    GSIniFile = GSProgramDir + "mpgp20.ini"
+    GSGpgExe = "gpg.exe"
+    GSLocalUser = ""
+
+    if FileExists(GSIniFile)
+        originalBufferId = GetBufferId()
+        EditFile(GSIniFile)
+        BegFile()
+        repeat
+            settingLine = GetText(1, 255)
+            lowerSettingLine = Lower(settingLine)
+            if lowerSettingLine == "silent=true"
+                GBSilent = TRUE
+            elseif lowerSettingLine == "silent=false"
+                GBSilent = FALSE
+            elseif SubStr(lowerSettingLine, 1, 4) == "gpg="
+                GSGpgExe = SubStr(settingLine, 5, 251)
+            elseif SubStr(lowerSettingLine, 1, 10) == "localuser="
+                GSLocalUser = SubStr(settingLine, 11, 245)
+            endif
+        until not Down()
+        AbandonFile()
+        GotoBufferId(originalBufferId)
+    endif
+End
 
 Proc Exec(string cmnd, Integer flag)
-    Dos(GetGlobalStr("env")+"\pgp " + cmnd, flag)
+    Dos('"' + GSGpgExe + '" ' + cmnd, flag)
+End
+
+Proc ShowGpgFailure()
+    if FileExists(GetGlobalStr("gpglog"))
+        EditFile(GetGlobalStr("gpglog"))
+        Warn("GnuPG did not create the expected output. Its diagnostic log is now open in TSE.")
+    else
+        Warn("GnuPG did not create the expected output and no diagnostic log was created. Check the gpg.exe path.")
+    endif
 End
 
 /* ************************************************************************
@@ -141,22 +190,55 @@ Integer Proc piView(string sHead, integer iWidth,
     return(rc)
 end /* piView() */
 
+String Proc GetUidField(string keyLine)
+
+    Integer charI, fieldI, startI
+    String resultS[255]
+
+    fieldI = 1
+    startI = 1
+    resultS = ""
+    for charI = 1 to Length(keyLine) by 1
+        if SubStr(keyLine, charI, 1) == ":"
+            if fieldI == 10
+                resultS = SubStr(keyLine, startI, charI - startI)
+                return(resultS)
+            endif
+            fieldI = fieldI + 1
+            startI = charI + 1
+        endif
+    endfor
+    if fieldI == 10
+        resultS = SubStr(keyLine, startI, 255)
+    endif
+    return(resultS)
+End
+
 String Proc GetKeyList()
 
     integer cid = GetBufferId()       // Get Current Buffer Id
-    Integer pid = GetBufferId(GetGlobalStr("KeyFile"))  // Get PickList Buffer Id
     integer pLine = 0
-    string cLine[80] = ""             // Store Line here
+    string cLine[255] = ""            // Store Line here
 
-    GotoBufferId(pid)                 // Go to pick buffer
-    pLine = piView("Public KeyRing", 50, 25, _ENABLE_SEARCH_)  // View picklist
-    if pLine                          // If user picked a line
-        MarkLine()                    // Mark it
-        cLine = GetMarkedText()       // Copy it into a string
-        UnMarkBlock()                 // Unmark the block
+    if GIKeyBufferId
+        GotoBufferId(GIKeyBufferId)
+        pLine = piView("GnuPG Public Keys - select a uid: line", 70, 25, _ENABLE_SEARCH_)
+        if pLine
+            MarkLine()
+            cLine = GetMarkedText()
+            UnMarkBlock()
+            if SubStr(cLine, 1, 4) == "uid:"
+                cLine = GetUidField(cLine)
+            else
+                Warn("Select a line beginning with uid: from the GnuPG key list.")
+                cLine = ""
+            endif
+        else
+            cLine = ""
+            Message("No key selected.")
+        endif
     else
-        cLine = " "
-        Message("No key selected.")   // Show if user didn't pick a line
+        Warn("The GnuPG key-list buffer is not available. Recreate the key list and try again.")
     endif
     GotoBufferId(cid)
     return(cLine)                     // Return the line
@@ -169,6 +251,7 @@ Integer Proc LoadKeyFile()
     EditFile(GetGlobalStr("KeyFile"))
     Buffertype(_HIDDEN_)
     pid = GetBufferId()
+    GIKeyBufferId = pid
     GotoBufferId(cid)
     return(pid)
 end
@@ -177,19 +260,14 @@ Integer Proc CreateKeyFile()
     integer cid = GetBufferID(),
             pid
 
-    Exec(format("-kv >"+GetGlobalStr("KeyFile")), _DONTPROMPT_)
+    if GIKeyBufferId
+        GotoBufferId(GIKeyBufferId)
+        AbandonFile()
+        GIKeyBufferId = 0
+        GotoBufferId(cid)
+    endif
+    Exec('--batch --with-colons --list-keys > "' + GetGlobalStr("KeyFile") + '"', _DONT_PROMPT_)
     EditFile(GetGlobalStr("KeyFile"))
-    MarkLine(1,3)
-    DelBlock()
-    EndFile()
-    MarkLine()
-    Up()
-    DelBlock()
-    BegFile()
-    MarkColumn()
-    GotoColumn(30)
-    EndFile()
-    DelBlock()
     SaveFile()
     AbandonFile()
     GotoBufferId(cid)
@@ -198,97 +276,77 @@ Integer Proc CreateKeyFile()
 end
 
 String Proc UserFormat()
-    string nuser[40] = ""
-    return(format(nuser, ' "', GetKeyList(), '" '))
-end
-
-String Proc GetGlEnv()
-    return(GetGlobalStr("env") + iif(GetGlobalInt("KeyRing"),
-           "\Pubring.pgp", "\Secring.pgp"))
+    string nuser[255] = ""
+    nuser = GetKeyList()
+    return('"' + nuser + '"')
 end
 
 Proc AddKey()
-    Exec(format("-ka "+GetGlobalStr("cfilename")+" "+GetGlEnv()), _DEFAULT_)
+    SetGlobalStr("cfilename", CurrFileName())
+    Exec('--import "' + GetGlobalStr("cfilename") + '"', _DONT_PROMPT_)
 End
 
 Proc CopyKey()
-    string opt[2]
-
-    if(GetGlobalInt("Radix") == 0)
-        opt = " "
-    else
-        opt = "a "
-    endif
-
-    Exec(format("-kx"+opt+UserFormat()+GetGlobalStr("cfilename")
-                +" "+GetGlEnv()), _DEFAULT_)
+    SetGlobalStr("cfilename", CurrFileName())
+    Exec('--armor --output "' + GetGlobalStr("cfilename") + '.public.asc" --export ' + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc RemKey()
-    Exec(format("-kr "+UserFormat()+GetGlEnv()), _DEFAULT_)
+    Exec("--delete-keys " + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc VKey()
-    String opt[2] = ""
-
-    if(GetGlobalInt("Verbose") == 0)
-        opt = " "
-    else
-        opt = "v "
-    endif
-
-    Exec(format("-kv"+opt+UserFormat()+GetGlEnv()), _DEFAULT_)
+    Exec("--list-keys " + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc Finger()
-    Exec(Format("-kvc "+UserFormat()+GetGlEnv()), _DEFAULT_)
+    Exec("--fingerprint " + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc VSig()
-    Exec(format("-kc "+UserFormat()+GetGlEnv()), _DEFAULT_)
+    Exec("--list-signatures " + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc EditTrust()
 
-    Exec(format("-ke "+UserFormat()+GetGlEnv()), _DEFAULT_)
+    Exec("--edit-key " + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc VCert()
-    Exec(format("-kc "+UserFormat()+GetGlEnv()), _DEFAULT_)
+    Exec("--list-signatures " + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc RevCert()
-    Exec(format("-krs "+UserFormat()+GetGlEnv()), _DEFAULT_)
+    Warn("GnuPG signature revocation needs both key fingerprints. Use gpg --quick-revoke-sig from a command prompt.")
 End
 
 Proc CertKey()
-    Exec(format("-ks "+UserFormat()+GetGlEnv()), _DEFAULT_)
+    Exec("--sign-key " + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc DisEnKey()
-    Exec(format("-kd "+UserFormat()), _DEFAULT_)
+    Exec("--edit-key " + UserFormat(), _DONT_PROMPT_)
 End
 
 Proc CertSig()
-    Exec(format("-sb "+GetGlobalStr("cfilename")+" "+"-u "
-                     +GetGlobalStr("YourKey")), _DEFAULT_)
+    SetGlobalStr("cfilename", CurrFileName())
+    Exec('--armor --detach-sign --local-user "' + GetGlobalStr("YourKey") + '" "' + GetGlobalStr("cfilename") + '"', _DONT_PROMPT_)
 End
 
 Proc DetSig()
-    Exec(format("-kx "+GetGlobalStr("cfilename")+" "+"-u "
-                     +GetGlobalStr("YourKey")), _DEFAULT_)
+    Warn("Use GnuPG --verify with the detached signature and original file.")
 End
 
 Proc EditKey()
-    Exec(format("-ke "+GetGlobalStr("YourKey")+" "+GetGlEnv()), _DEFAULT_)
+    Exec('--edit-key "' + GetGlobalStr("YourKey") + '"', _DONT_PROMPT_)
 End
 
 Proc RevokeKey()
-    Exec(format("-kd "+GetGlobalStr("YourKey")), _DEFAULT_)
+    Exec('--generate-revocation "' + GetGlobalStr("YourKey") + '"', _DONT_PROMPT_)
 End
 
 Proc CreateKey()
-    Exec(format("-kg"), _DEFAULT_)
+    Exec("--full-generate-key", _DONT_PROMPT_)
 End
 
 //  OnOffGlob() returns "On" if GetGlobalInt(s) = True, otherwise "Off".
@@ -345,7 +403,7 @@ Proc RestPos(Integer cline, Integer cpos, Integer cxofs, Integer crow)
 End RestPos
 
 Integer Proc CleanUp()
-    sound(0)
+    sound(0, 1)
     Find("-----BEGIN PGP", "I")
     MarkLine()
     Find("-----END PGP", "I")
@@ -373,7 +431,7 @@ Integer Proc CleanUp()
     BegFile()
     SaveFile()
     AbandonFile()
-    sound(1)
+    sound(1, 1)
 
     Return(cline)           // return current position information
     Return(cpos)
@@ -405,58 +463,62 @@ Proc ReQuote()
 End ReQuote
 
 Proc Epgp()
-    string opt[18] = ""
-    integer noask = 0
+    String commandS[255], recipientS[255]
+    Integer proceedB
 
-    if(GetGlobalInt("Radix") == 1 and GetGlobalInt("Sign") == 1
-       and GetGlobalInt("Text") == 1 and GetGlobalInt("Unix") == 1)
-        opt = "-feast "
-    elseif (GetGlobalInt("Radix") == 1 and GetGlobalInt("Sign") == 1
-       and GetGlobalInt("Text") == 1 and GetGlobalInt("More") == 1)
-        opt = "-steam "
-    elseif (GetGlobalInt("Radix") == 1 and GetGlobalInt("Sign") == 1
-        and GetGlobalInt("Text") == 1 and GetGlobalInt("ClearSig") == 1)
-        opt = "-sta +clearsig=on "
-        noask = 1
-    elseif (GetGlobalInt("Radix") == 1 and GetGlobalInt("Sign") == 1
-       and GetGlobalInt("Text") == 1)
-        opt = "-seat "
-    elseif (GetGlobalInt("Wipe") == 1 and GetGlobalInt("Sign") == 1)
-        opt = "-sew "
-    elseif (GetGlobalInt("Radix") == 1 and GetGlobalInt("Sign") == 1)
-        opt = "-sea "
-    elseif (GetGlobalInt("Sign") == 1)
-        opt = "-es "
-    elseif (GetGlobalInt("Conv") == 1)
-        opt = "-c "
-        noask = 1
-    else
-        opt = "-e "
-    endif
-
-// If the current file has the same extension as the ciphertext file, then
-// test this to make sure there is no conflict in filename.
-    if(GetGlobalStr("cfilename") == GetGlobalStr("nfilename"))
-        SetGlobalStr("cfilename", GetGlobalStr("tfilename"))
-        ChangeCurrFilename(GetGlobalStr("tfilename"))
-        EraseDiskFile(GetGlobalStr("nfilename"))
-    endif
-
-    BegFile()
+    proceedB = TRUE
+    SetGlobalStr("cfilename", CurrFileName())
+    SetGlobalStr("efilename", SplitPath(GetGlobalStr("cfilename"), _DRIVE_ | _PATH_ | _NAME_) + iif(GetGlobalInt("Radix"), ".asc", ".gpg"))
+    SetGlobalStr("gpglog", SplitPath(GetGlobalStr("cfilename"), _DRIVE_ | _PATH_) + "mpgp20_gpg.log")
     SaveFile()
 
-    Exec(format(opt,GetGlobalStr("cfilename"), UserFormat()), _DONTPROMPT_)
-                                                             // call PGP
-    AbandonFile()           // get rid of the file so we can reload it
-    EraseDiskFile(GetGlobalStr("cfilename"))
-    EditFile(GetGlobalStr("cfilename"))     // reloads the file from disk
-    InsertFile(GetGlobalStr("nfilename"))   // Insert ciphertext in place
-                                            // of plaintext.
-    UnMarkBlock()
-    EndFile()               // position cursor at the end of the file
-    CReturn()               // and insert <CR> for mail processor.
-    EraseDiskFile(GetGlobalStr("nfilename"))   // delete plaintext file.
-    Message("Encryption Complete!")
+    commandS = ""
+    if GetGlobalInt("Radix")
+        commandS = commandS + "--armor "
+    endif
+    if GetGlobalInt("Text")
+        commandS = commandS + "--textmode "
+    endif
+    if GetGlobalInt("Sign")
+        if GetGlobalStr("YourKey") == ""
+            Warn("Set localuser= in mpgp20.ini before enabling signing.")
+            proceedB = FALSE
+        else
+            commandS = commandS + '--sign --local-user "' + GetGlobalStr("YourKey") + '" '
+        endif
+    endif
+    if proceedB
+        if GetGlobalInt("Conv")
+            commandS = commandS + "--symmetric "
+        else
+            recipientS = UserFormat()
+            if recipientS == '""'
+                proceedB = FALSE
+            else
+                commandS = commandS + "--encrypt --recipient " + recipientS + " "
+            endif
+        endif
+    endif
+    if proceedB
+        commandS = commandS + '--output "' + GetGlobalStr("efilename") + '" "' + GetGlobalStr("cfilename") + '" 2> "' + GetGlobalStr("gpglog") + '"'
+        Exec(commandS, _DONT_PROMPT_)
+        if FileExists(GetGlobalStr("efilename"))
+            EditFile(GetGlobalStr("efilename"))
+            Message("GnuPG encryption complete. The original file was preserved.")
+        else
+            ShowGpgFailure()
+        endif
+    endif
+End
+
+Proc EncryptPublic()
+    SetGlobalInt("Conv", 0)
+    Epgp()
+End
+
+Proc EncryptSymmetric()
+    SetGlobalInt("Conv", 1)
+    Epgp()
 End
 //
 // End of EPGP()
@@ -464,36 +526,20 @@ End
 // Locate the ciphertext paragraph, writes it to a temp file, then removes
 // the quote marks (> ) preceeding the ciphertext.
 Proc Dpgp()
+    String commandS[255]
+
+    SetGlobalStr("cfilename", CurrFileName())
+    SetGlobalStr("nfilename", SplitPath(GetGlobalStr("cfilename"), _DRIVE_ | _PATH_ | _NAME_) + ".decrypted")
+    SetGlobalStr("gpglog", SplitPath(GetGlobalStr("cfilename"), _DRIVE_ | _PATH_) + "mpgp20_gpg.log")
     SaveFile()
-    BegFile()
-
-    CleanUp()               // remove quote marks (> ) from
-                            // ciphertext from Internet reply mail.
-
-    Exec(format(GetGlobalStr("dfilename")+" -o "+GetGlobalStr("nfilename"))
-         , _DONTPROMPT_)       // Decrypt message body with PGP
-
-    AbandonFile()              // get rid of the file so we can reload it
-    EditFile(GetGlobalStr("cfilename"))     // reloads the file from disk
-
-    RestPos(cline, cpos, cxofs, crow)
-    PopBlock()              // restore block, if one was marked.
-
-    ReQuote()                               // return quote marks (> )
-                                            // to plaintext for Internet
-                                            // reply mail.
-
-    InsertFile(GetGlobalStr("nfilename"))   // insert plaintext into
-                                            // message body in
-                                            // place of ciphertext.
-
-    UnMarkBlock()
-    EraseDiskFile(GetGlobalStr("nfilename"))  // deletes ciphertext file
-    EraseDiskFile(GetGlobalStr("dfilename"))  // deletes plaintext file
-                                              // for security.
-    SaveFile()
-    BegFile()
-    Message("Decryption Complete!")
+    commandS = '--output "' + GetGlobalStr("nfilename") + '" --decrypt "' + GetGlobalStr("cfilename") + '" 2> "' + GetGlobalStr("gpglog") + '"'
+    Exec(commandS, _DONT_PROMPT_)
+    if FileExists(GetGlobalStr("nfilename"))
+        EditFile(GetGlobalStr("nfilename"))
+        Message("GnuPG decryption complete. The encrypted file was preserved.")
+    else
+        ShowGpgFailure()
+    endif
 End
 //
 // End of DPGP()
@@ -505,7 +551,7 @@ End
 Proc UserGlobals()
      SetGlobalInt("Clearsig",0)   // encapsulate as Clear Text
      SetGlobalInt("Radix",1)      // ciphertext in ASCII-Radix-64 format
-     SetGlobalInt("Sign",1)       // Sign plaintext with you secret key
+     SetGlobalInt("Sign",0)       // signing is optional
      SetGlobalInt("Text",0)       // option to convert to canonical text
      SetGlobalInt("Verbose",0)    // extended keyring listing
      SetGlobalInt("More",0)       // display message on screen only
@@ -513,37 +559,34 @@ Proc UserGlobals()
      SetGlobalInt("KeyRing",0)    // which keyring file to use
      SetGlobalInt("Wipe",0)       // to wipe out plaintext completely
      SetGlobalInt("Conv",0)       // for conventional encryption
-     SetGlobalStr("YourKey", "Steve Schwartz")   // Put your name here
+     SetGlobalStr("YourKey", GSLocalUser)
 End
 
 // These are system Global Variables, DO NOT CHANGE THESE !!!
 Proc PGPGlobals()
      UserGlobals()
 
-     SetGlobalStr("env", GetEnvStr("PGPPATH"))
      SetGlobalStr("cfilename", CurrFileName())
-     SetGlobalStr("nfilename", SplitPath(GetGlobalStr("cfilename"), _DRIVE_
-                               | _PATH_ | _NAME_) +".asc")
+     SetGlobalStr("nfilename", SplitPath(GetGlobalStr("cfilename"), _DRIVE_ | _PATH_ | _NAME_) +".decrypted")
+     SetGlobalStr("efilename", SplitPath(GetGlobalStr("cfilename"), _DRIVE_ | _PATH_ | _NAME_) +".asc")
      SetGlobalStr("dfilename", SplitPath(GetGlobalStr("cfilename"), _DRIVE_
-                               | _PATH_ | _NAME_) +".pgp")
+                               | _PATH_ | _NAME_) +".gpg")
      SetGlobalStr("tfilename", SplitPath(GetGlobalStr("cfilename"), _DRIVE_
                                | _PATH_ | _NAME_) +".stv")
-     SetGlobalStr("KeyFile", GetGlobalStr("env")+"\keyring.lst")
+     SetGlobalStr("KeyFile", GSProgramDir + "mpgp20_keys.lst")
+     SetGlobalStr("gpglog", SplitPath(GetGlobalStr("cfilename"), _DRIVE_ | _PATH_) + "mpgp20_gpg.log")
 End
 
 // Menus
 
 Menu PGP_Menu()
-    "&Encrypt Message"      ,   Epgp()
+    "Encrypt with &Public Key" , EncryptPublic()
+    "Encrypt with &Passphrase" , EncryptSymmetric()
     "&Decrypt Message"      ,   Dpgp()
     "&Create Keylist File"  ,   CreateKeyFile()
-    "Encryption &Type"          [EncryType("Conv"):12]  ,
-                                ToggleStr("Conv")       ,   DontClose
 End
 
 Menu KeyMaint()
-    "&KeyRing"                  [RingType("KeyRing"):6] ,
-                                ToggleStr("KeyRing")    ,   DontClose
     "&Add Key",                 AddKey()
     "&Copy Key",                CopyKey()
     "&Remove Key",              RemKey()
@@ -569,22 +612,12 @@ Menu Revoke_Menu()
 End
 
 Menu Options_Menu()
-    "&Clearsig"             [OnOffGlob("ClearSig"):3]   ,
-                            ToggleOnOff("ClearSig")     ,   DontClose
-    "&Radix-64"             [OnOffGlob("Radix"):3]      ,
+    "&ASCII Armor"          [OnOffGlob("Radix"):3]      ,
                             ToggleOnOff("Radix")        ,   DontClose
     "&Sign"                 [OnOffGlob("Sign"):3]       ,
                             ToggleOnOff("Sign")         ,   DontClose
     "&Textmode"             [OnOffGlob("Text"):3]       ,
                             ToggleOnOff("Text")         ,   DontClose
-    "&Verbose Listing"      [OnOffGlob("Verbose"):3]    ,
-                            ToggleOnOff("Verbose")      ,   DontClose
-    "View &Only"            [OnOffGlob("More"):3]       ,
-                            ToggleOnOff("More")         ,   DontClose
-    "&Unix-Style Filter"    [OnOffGlob("Unix"):3]       ,
-                            ToggleOnOff("Unix")         ,   DontClose
-    "&Wipe PlainText"       [OnOffGlob("Wipe"):3]       ,
-                            ToggleOnOff("Wipe")         ,   DontClose
 End
 
 MenuBar MainMenu()
@@ -596,16 +629,31 @@ MenuBar MainMenu()
 End
 
 Proc Main()
-    Integer pid
-    PGPGlobals()
+    GSVersion = "1.0.0.0.7"
+    GIKeyBufferId = 0
+    LoadSettings()
 
-    if not FileExists(GetGlobalStr("KeyFile"))
-        pid = CreateKeyFile()
-    else
-        pid = LoadKeyFile()
+    GBGpgReady = FileExists(GSGpgExe)
+    if not GBGpgReady
+        if Ask("Full path to gpg.exe:", GSGpgExe, _EDIT_HISTORY_)
+            GBGpgReady = FileExists(GSGpgExe)
+        endif
     endif
 
-    MainMenu()
+    if GBGpgReady
+        if not GBSilent
+            Warn("MPGP20 " + GSVersion + ": menu-driven GnuPG encryption, decryption, and key management. Original files are preserved, but backups are recommended.")
+        endif
+        PGPGlobals()
+        if not FileExists(GetGlobalStr("KeyFile"))
+            CreateKeyFile()
+        else
+            LoadKeyFile()
+        endif
+        MainMenu()
+    else
+        Warn("GnuPG was not found. Set gpg= in mpgp20.ini or enter the full path when prompted.")
+    endif
 End
 
 // Keys for future use.
