@@ -1,6 +1,7 @@
 /****************************************************************************
  *  FILENAME :  mffind.s                                                    *
  *  VERSION  :  5.0 (for TSE 2.00)                                          *
+ *  PACKAGE  :  1.0.0.0.1 - 2026-09-22 11:35 UTC - OpenAI GPT-5             *
  *  AUTHOR   :  Ray Asbury (rasbury@msmailpc01.saic.com)                    *
  *  COPYRIGHT:  1995 E. Ray Asbury, Jr.  All Rights Reserved Worldwide.     *
  *  DATE     :  Tue 02-28-1995 10:54:36                                     *
@@ -208,6 +209,7 @@ CONSTANT    koNBR_MAC_FILES                 = 6,
 
 FORWARD         MENU mnMFFindDelete()
 FORWARD         MENU mnMFFindLines()
+FORWARD         MENU mnMFFind()
 FORWARD         PROC pnMFFind(INTEGER lpiWhichOpt)
 FORWARD INTEGER PROC pnLoadOtherMacFile(STRING lpsWhichOne)
 
@@ -265,6 +267,16 @@ END WhenPurged
 /****************************************************************************
  *  SECTION --> SYSPROC     Main                                            *
  ****************************************************************************/
+
+PROC Main()
+
+    STRING  lsSilent[5] = Lower(GetProfileStr("Startup", "silent", "false", "mffnd50.ini"))
+
+    IF (lsSilent <> "true")
+        Warn("MFFND50 Multi-File Find/Replace v1.0.0.0.1 is ready. Use the MFFind menu or its assigned keys to search, replace, or manage hits in loaded files.")
+    ENDIF
+    mnMFFind()
+END Main
 
 /****************************************************************************
  *  SECTION --> SYSPROC     Hooked Procedures                               *
