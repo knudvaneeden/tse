@@ -15,6 +15,7 @@
    at your own risk.
 
    Version 1.0, 04/27/93 10:00 pm   First cut
+   Package version 1.0.0.0.2, 2026-09-23 10:40:49 UTC
    Version 1.1, 04/29/93 12:00 pm   Fixed miscellaneous bugs.
                                     Added key assignments at end of file.
                                     Centers found text.
@@ -57,8 +58,6 @@
 constant
    mfind_mode_find = 0, mfind_mode_replace = 1, mfind_mode_count = 2
 integer
-   mfind_hist, mfind_options_history,
-   mreplace_hist, mreplace_options_history,
    mfind_repeat_mode
 string
    mfind_last_expr[65], mfind_last_repl[65], mfind_last_opts[12]
@@ -122,14 +121,8 @@ integer proc mMultiCount(integer prompt_user)
       end_id, curr_id, end_line, end_pos,
       count = 0,
       opt_b = FALSE, opt_m = FALSE
-   if mfind_hist == 0
-      mfind_hist = GetFreeHistory()
-      mfind_options_history = GetFreeHistory()
-      AddHistoryStr(Query(FindOptions), mfind_options_history)
-      prompt_user = TRUE
-   endif
    if prompt_user
-      if not Ask("String to count occurrences of:", expr, mfind_hist)
+      if not Ask("String to count occurrences of:", expr, _EDIT_HISTORY_)
          return (FALSE)
       endif
       mfind_last_expr = expr
@@ -141,7 +134,7 @@ integer proc mMultiCount(integer prompt_user)
    endif
    if prompt_user
       if not Ask("Options [MBGLIWNX] (Multi Back Local Ignore-case Words reg-eXp):",
-         opts, mfind_options_history)
+         opts, _EDIT_HISTORY_)
          return (FALSE)
       endif
       mfind_last_opts = opts
@@ -185,14 +178,8 @@ integer proc mMultiFind(integer prompt_user)
       rvalue = FALSE,
       end_id, end_line, end_pos,
       opt_m = FALSE
-   if mfind_hist == 0
-      mfind_hist = GetFreeHistory()
-      mfind_options_history = GetFreeHistory()
-      AddHistoryStr(Query(FindOptions), mfind_options_history)
-      prompt_user = TRUE
-   endif
    if prompt_user
-      if not Ask("Search for:", expr, mfind_hist)
+      if not Ask("Search for:", expr, _EDIT_HISTORY_)
          return (FALSE)
       endif
       mfind_last_expr = expr
@@ -204,7 +191,7 @@ integer proc mMultiFind(integer prompt_user)
    endif
    if prompt_user
       if not Ask("Search options [MBGLIWX] (Multi Back Global Local Ignore-case Words reg-eXp):",
-            opts, mfind_options_history)
+            opts, _EDIT_HISTORY_)
          return (FALSE)
       endif
       mfind_last_opts = opts
@@ -240,20 +227,8 @@ integer proc mMultiReplace(integer prompt_user)
       end_id, end_line, end_pos,
       count = 0, done = FALSE,
       opt_b = FALSE, opt_i = FALSE, opt_m = FALSE, opt_n = FALSE, opt_x = FALSE
-   if mfind_hist == 0
-      mfind_hist = GetFreeHistory()
-      mfind_options_history = GetFreeHistory()
-      AddHistoryStr(Query(FindOptions), mfind_options_history)
-      prompt_user = TRUE
-   endif
-   if mreplace_hist == 0
-      mreplace_hist = GetFreeHistory()
-      mreplace_options_history = GetFreeHistory()
-      AddHistoryStr(Query(ReplaceOptions), mreplace_options_history)
-      prompt_user = TRUE
-   endif
    if prompt_user
-      if not Ask("Search for:", expr, mfind_hist)
+      if not Ask("Search for:", expr, _EDIT_HISTORY_)
          return (FALSE)
       endif
       mfind_last_expr = expr
@@ -264,7 +239,7 @@ integer proc mMultiReplace(integer prompt_user)
       return (FALSE)
    endif
    if prompt_user
-      if not Ask("Replace with:", repl, mreplace_hist)
+      if not Ask("Replace with:", repl, _EDIT_HISTORY_)
          return (FALSE)
       endif
       mfind_last_repl = repl
@@ -273,7 +248,7 @@ integer proc mMultiReplace(integer prompt_user)
    endif
    if prompt_user
       if not Ask("Options [MBGLIWNX] (Multi Back Global Local Ignore-case Words No-promp reg-eXp):",
-            opts, mreplace_options_history)
+            opts, _EDIT_HISTORY_)
          return (FALSE)
       endif
       mfind_last_opts = opts
@@ -390,3 +365,29 @@ end mMultiRepeatFind
 <Ctrl r>                mMultiReplace(TRUE)
 
 
+
+// Direct execution shows usage; existing key mappings remain available.
+proc Main()
+   integer originalBufferI = GetBufferId(), iniBufferI = CreateTempBuffer()
+   string lineS[255]
+   integer silentI = FALSE
+   if iniBufferI
+      GotoBufferId(iniBufferI)
+      if LoadBuffer("multi1.ini")
+         BegFile()
+         repeat
+            lineS = Lower(Trim(GetText(1, 255)))
+            if lineS == "silent=true"
+               silentI = TRUE
+            elseif lineS == "silent=false"
+               silentI = FALSE
+            endif
+         until not Down()
+      endif
+      AbandonFile(iniBufferI)
+   endif
+   GotoBufferId(originalBufferI)
+   if not silentI
+      Warn("MULTI1 1.0.0.0.2 (GPT-6): Use Ctrl+F to find, Ctrl+R to replace, Ctrl+L to repeat. Add option M to search open buffers.")
+   endif
+end Main
