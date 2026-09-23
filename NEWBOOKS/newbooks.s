@@ -20,6 +20,7 @@
   Author:     James Coffer
 
 *************************************************************************/
+/* Package update 1.0.0.0.1, 2026-09-23; original macro by James Coffer. */
 string Lbmc[1] = ''
 
 integer proc mMarkSetup ()
@@ -249,7 +250,7 @@ proc mListFiles()
     integer ssl     = Set(StatusLineUpdating, Off),
             hl      = Set(ShowHelpLine, ON),
             msgl    = Set(MsgLevel, _WARNINGS_ONLY_),
-            scattr  = Set(CursorAttr, iif(Query(AttrSet) == _COLOR_, Color(Bright White on Green), Color(Black on White))),
+            scattr  = Set(CursorAttr, Color(Bright White on Green)),
             seof    = Set(ShowEofMarker, OFF),
             i
 
@@ -276,6 +277,14 @@ proc mListFiles()
     if Query(Key) == <Enter>
     GotoMark (bmc)
     endif
+end
+
+proc Main()
+    string silentS[8] = GetProfileStr("newbooks", "silent", "false", Query(StartUpPath) + "newbooks.ini")
+    if Lower(silentS) <> "true"
+        Warn("NEWBOOKS 1.0.0.0.1: bookmark list. F1 help; Enter jumps; Del deletes; Esc closes. Alt+B opens it again.")
+    endif
+    mListFiles()
 end
 
 <CtrlShift Z> List ("James Coffer", Query (ScreenCols) - 2)
