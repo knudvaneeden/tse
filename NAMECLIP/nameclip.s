@@ -92,7 +92,7 @@ INTEGER
      buffer_to_use,                          // current named clipboard
      clipblocktype,                          // block type for current clipboard
      sid,                                    // starting buffer
-     prompt_hist = 0,                        // history
+     prompt_hist = _EDIT_HISTORY_,           // editor file history
      clip_list_ID = 0,                       // buffer clipboard name list
      max_width = 78,
      operation,                              // menu-selected operation
@@ -158,6 +158,15 @@ forward proc                  x(integer arg)
 /****************************************************************************
           þ KEY DEFS
 ****************************************************************************/
+/* Package startup message (version 1.0.0.0.0). */
+proc Main()
+     string silentS[10]
+     silentS = Lower(GetProfileStr("nameclip", "silent", "false", Query(StartUpPath) + "nameclip.ini"))
+     if silentS <> "true"
+          Warn("NAMECLIP 1.0.0.0.3: F11 opens the clipboard menu; Ctrl F11 opens other actions; Shift F11 opens settings; Alt F11 opens global actions.")
+     endif
+end
+
 /* MENUS */
 
 <f11>          clipboardmenu()
@@ -178,7 +187,7 @@ forward proc                  x(integer arg)
 /* DAVID'S DIAGNOSTICS */
 //<alt F5>  markstream()
 //<alt f6>  PushPosition() GotoBufferid(clip_list_ID) list('',80) PopPosition()
-//<alt f7>  warn(getclipboardid())
+//<alt f7>  warn(Query(ClipBoardId))
 
 
 /**************************************************************************
@@ -265,7 +274,7 @@ proc                          backup_clipboard()
      integer
           selected_clipboard = 0,
           backup_of_clipboard = 0,
-          SCBID = GetClipBoardID()
+          SCBID = Query(ClipBoardId)
 
      if backup_type and count_buffer_lines(buffer_to_use)   // if there are
           PushPosition()                                    // contents
@@ -277,7 +286,7 @@ proc                          backup_clipboard()
                                                        // to .bak buffer
           backup_of_clipboard = buffer_to_use
           GotobufferID(selected_clipboard)
-          SetClipBoardID(backup_of_clipboard)           // backup ID
+          Set(ClipBoardId, backup_of_clipboard)           // backup ID
           mark_according_to_clipblocktype()
           if backup_type <> ADDITIVE              // if not additive
                Copy()
@@ -291,7 +300,7 @@ proc                          backup_clipboard()
           buffer_to_use = selected_clipboard          // reSet for the copy/cut
           clipboard_name = selected_clipboard_name     //     from the text file
           PopPosition()
-          SetClipBoardID( SCBID)
+          Set(ClipBoardId,  SCBID)
      endif
 end
 
@@ -513,7 +522,7 @@ end
                mode = 1 when deleting after Paste
  **************************************************************************/
 integer proc                  delete_named_clipboard(integer xmode)
-     integer original_clipboard_id = getclipboardID()
+     integer original_clipboard_id = Query(ClipBoardId)
      sid = getbufferid()
      operation = DELETE
      KM = set(KillMax, 0)
@@ -632,7 +641,7 @@ end
 proc                          edit_named_clipboard()
      integer this_old_house,
              temp_id,
-             SCBID = GetClipBoardID()
+             SCBID = Query(ClipBoardId)
      KM = Set(KillMAX,0)
      Set(break, ON)
      operation = EDIT
@@ -642,7 +651,7 @@ proc                          edit_named_clipboard()
           temp_id = CreateBuffer(clipboard_name+'¯CLP')
           this_old_house = buffer_to_use
           set_clipblocktype()                          // Sets clip block type to
-          SetClipBoardID(this_old_house)
+          Set(ClipBoardId, this_old_house)
           PushBlock()
           Paste()
           PopBlock()
@@ -653,7 +662,7 @@ proc                          edit_named_clipboard()
           process()                     /* editing occurs here */
           disable(edit_keys)
           Set(KillMax,0)
-          SetClipBoardID(this_old_house)
+          Set(ClipBoardId, this_old_house)
           PushBlock()
           UnMarkBlock()
           mark_according_to_clipblocktype()
@@ -666,7 +675,7 @@ proc                          edit_named_clipboard()
           add_contents_to_list()
      endif
      Set(KillMAX, KM)
-     SetClipBoardID( SCBID)
+     Set(ClipBoardId,  SCBID)
      UpdateDisplay()
 end
 
@@ -801,14 +810,14 @@ integer proc                  get_clipboard_block_type()
      gotcha = Set(UnMarkAfterPaste,OFF)
 
      if NOT buffer_to_use                    // allows for use of
-          buffer_to_use = GetClipBoardID()   // unnamed buffer as
+          buffer_to_use = Query(ClipBoardId)   // unnamed buffer as
      endif                                   // initial setting
 
-     SetClipboardID(buffer_to_use)
+     Set(ClipBoardId, buffer_to_use)
 
      if not Paste()
           warn('paste failed')
-          warn('gcbid ', getclipboardid())
+          warn('gcbid ', Query(ClipBoardId))
           warn('ibm ' , isblockmarked() )
           warn('btu ' , buffer_to_use)
      else
@@ -846,7 +855,7 @@ proc                          get_clips_from_file()
           temp,                              // temp buffer holds get file
           buffer                             // used to hold buffer #s
 
-     original_clip_ID = GetClipBoardId()
+     original_clip_ID = Query(ClipBoardId)
      operation = GETTING_FROM_FILE
      KM = set(KILLMAX, 0)
      Setup_list_buffer()                     // just in case?
@@ -870,7 +879,7 @@ proc                          get_clips_from_file()
      while lFind(buffer_flag, '^')
           UnMarkBLock()
           buffer_to_use = CreateTempBuffer()
-          SetClipBoardID(buffer_to_use)
+          Set(ClipBoardId, buffer_to_use)
           GotoBufferID(temp)
           clipblocktype = Val(GetText(Length(buffer_flag)+1,1))
           clipboard_name = GetText(Length(buffer_flag)+2,
@@ -951,7 +960,7 @@ proc                          get_clips_from_file()
      ending:
           AbandonFile(temp)
           PopBlock()
-          SetClipBoardID(original_clip_ID)
+          Set(ClipBoardId, original_clip_ID)
           set(KILLMAX, KM)
           PopPosition()
 end
@@ -1165,15 +1174,12 @@ integer proc                  named_clipboard()
      /*
           Save current ClipBoard Id
      */
-     original_clip_ID = GetClipBoardId()
+     original_clip_ID = Query(ClipBoardId)
 
      /*
           Make sure the history buffer has been Setup
      */
-     if prompt_hist == 0
-          prompt_hist = GetFreeHistory()
-          options = Query(FindOptions)
-     endif
+     options = Query(FindOptions)
 
      /*
           Make sure the list of names buffer has been Setup
@@ -1249,9 +1255,9 @@ integer proc                  named_clipboard()
           endif
           if not Length(clipboard_name)
                buffer_to_use = original_clip_id
-               SetClipBoardId( store_name_on_clip_list(NORMAL) )
+               Set(ClipBoardId,  store_name_on_clip_list(NORMAL) )
           else
-               SetClipBoardId( store_name_on_clip_list(NORMAL) )
+               Set(ClipBoardId,  store_name_on_clip_list(NORMAL) )
           endif
      elseif buffer_to_use == 0               // if returns 0 (<esc>)
           if marked
@@ -1260,11 +1266,11 @@ integer proc                  named_clipboard()
           Set(KillMax,KM)
           return(FALSE)
      elseif buffer_to_use                    // else Set ID
-          SetClipBoardId( buffer_to_use )
+          Set(ClipBoardId,  buffer_to_use )
      endif
      if operation >= PASTE_APPEND
           and if_clipboard_list_exists() == -99999
-          SetClipBoardID( original_clip_ID)
+          Set(ClipBoardId,  original_clip_ID)
           return(-99999)
      endif
      case Operation
@@ -1305,7 +1311,7 @@ integer proc                  named_clipboard()
      endif
 
      // Restore ClipBoard
-     SetClipBoardId( original_clip_ID )
+     Set(ClipBoardId,  original_clip_ID )
      Set(BREAK,OFF)
      Set(KillMax,KM)
      return(TRUE)
@@ -1563,7 +1569,7 @@ proc                          save_clipboards_to_file()
           return()
      endif
 
-     original_clip_ID = GetClipBoardId()
+     original_clip_ID = Query(ClipBoardId)
 
      /*
           Get file name
@@ -1611,7 +1617,7 @@ proc                          save_clipboards_to_file()
      Begfile()
      while Down()
           buffer_to_use = get_buffer_number_from_list()
-          SetClipBoardId( buffer_to_use )
+          Set(ClipBoardId,  buffer_to_use )
           set_clipblocktype()
           clipboard_name = GetText(bid_width+2, CurrLineLen() - bid_width - 1)
           msg = clipboard_name
@@ -1638,7 +1644,7 @@ proc                          save_clipboards_to_file()
      endif
      Set(MsgLevel, MSGL)
      ending:
-          SetClipBoardID(original_clip_ID)
+          Set(ClipBoardId, original_clip_ID)
           PopPosition()
 end
 
@@ -1823,7 +1829,7 @@ string proc                   toggle_clip_type(integer arg)
      Set(MsgLevel,MSGL)
      if clipboard_type == NAMED                  // just changed to NAMED
           PushPosition()                         // so add system clipboard
-          original_clip_id = GetClipboardID()    // to clip_list
+          original_clip_id = Query(ClipBoardId)    // to clip_list
           GotoBufferid(original_clip_id)
           Setup_list_buffer()
           if NumLines() > 0
