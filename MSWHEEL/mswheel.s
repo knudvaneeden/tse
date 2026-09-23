@@ -200,6 +200,10 @@ end
 proc Main()
     if EquiStr(Query(MacroCmdLine), "-menu")
         DoCfgMenu()
+    else
+        if not EquiStr(GetProfileStr("MSWHEEL", "silent", "false", Query(StartUpPath) + "mswheel.ini"), "true")
+            Warn("MSWHEEL 1.0.0.0.0: Mouse wheel support loads with the macro. Run mswheel -menu to configure wheel keys. Set silent=true in mswheel.ini to hide this message.")
+        endif
     endif
 end
 
