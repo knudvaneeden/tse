@@ -1,0 +1,48 @@
+/***********************************************************************
+Named state save and restore allows you to save and restore state at any
+time.  If you choose to accept the default TSEState.dat, you can restore
+with e -r.  Or you may choose other names to allow multiple states to be
+saved.
+
+I implemented named state save and restore as a UI include file because
+it is small and is used frequently.  Feel free to implement as an
+external macro if you prefer or make any other modifications.  Please
+send me a copy or let me know what improvements you made.
+
+Note:  I have a mykeys.ui which contains all my key assignments included
+in my TSE.ui where the original key assignments are located.  The rest
+of this was included in the procedure section.  One include like the
+following in your procedure section will work fine:
+
+#include "c:\tse\namstate.si"
+
+Dave Guyer         dguyer@cdsnet.net         11/12/95
+***********************************************************************/
+proc mSaveState()
+  string fn[80] = LoadDir() + "tsestate.dat"
+
+  if Ask("Save state to file: ", fn) and Length(fn)
+    execMacro("state -s -f" + fn)
+    Message ("State saved to " + fn)
+  endif
+end  mSaveState
+
+proc mRestoreState()
+  string fn[80] = loadDir() + "tsestate.dat"
+
+  Ask("Restore state from: ", fn)
+
+  // if empty, offer a pick list
+  if not Length(fn)
+    fn = PickFile(LoadDir())
+
+    if length(fn)
+      ExecMacro("state -r -f" + fn)
+    endif
+  else
+    ExecMacro("state -r -f" + fn)
+  endif
+end mRestoreState
+
+<AltShift r>                mRestoreState()        // savstate.si
+<AltShift s>                mSaveState()           // savstate.si
