@@ -21,6 +21,7 @@
  *                                                                          *
  ****************************************************************************/
 
+/* NEWSRCH package version 1.0.0.0.0. */
 /* GLOBAL VARIABLES *********************************************************/
 
 STRING  target[100],
@@ -274,3 +275,12 @@ END menuMFFind
 <Alt V><Shift v>            menuMFFind()
 <Alt V><v>                  menuMFFind()
 
+
+PROC Main()
+    STRING silentS[8]
+    silentS = GetProfileStr("newsrch", "silent", "false", "newsrch.ini")
+    IF (Lower(silentS) <> "true")
+        Warn("NEWSRCH 1.0.0.0.0: Search or replace across open files. Choose an action from the menu; replacement changes files.")
+    ENDIF
+    menuMFFind()
+END Main
