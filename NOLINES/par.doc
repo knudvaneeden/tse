@@ -1,0 +1,203 @@
+
+   MacPar3.zip:   DosPar.s
+                  File_id.diz
+                  InitPar.s
+                  Par.doc
+                  PopPar.si
+                  ProcPar.si
+                  PushPar.si
+                  TestPar.s
+
+   Author:        Carlo Hogeveen (hyphen@xs4all.nl).
+   Date:          30 september 1998.
+
+   Version 2:     13 april 1999.
+                  Only par.doc was updated (simplified).
+
+   Version 3:     28 June 1999.
+                  Uses the procedures from Global.si to avoid a bug
+                  in TSE 2.5 and 2.8.
+
+
+   Install instructions:
+
+    - Download and install Global.zip.
+    - Copy all files from MacPar3.zip to TSE's "mac" directory.
+    - Compile the three .s files: DosPar.s, InitPar.s and TestPar.s.
+    - Add "DosPar" to TSE's Macro AutoloadList (see TSE's menu).
+
+
+   Terminology:
+
+      A queue is something you pop elements off in the same order
+      as you pushed them on: the first in will be the first out.
+
+
+   Quick overview:
+
+      DosPar is put in the Macro AutoloadList and it pushes macro
+      parameters from the DosCmdLine onto the macro parameter queue.
+
+      PushPar() is used by calling macroes to push a macro parameter onto
+      the macro parameter queue.
+
+      PopPar() is used by called macroes to pop the next macro parameter
+      from either (in this order):
+       - the macro parameter queue,
+       - the macro command line.
+
+      InitPar() initializes the macro parameter queue.
+
+      Testpar reports the macro parameters it was called with:
+       - from the Dos commandline,
+       - from the menu with Macro Execute,
+       - from your own macro with PushPar() or ExecMacro("testpar").
+
+
+   Why DosPar, PushPar(), PopPar() and InitPar()?
+
+      Sometimes, between macro's, you need to pass string parameters,
+      which might contain spaces, or worse, you need to pass a string
+      variable which might contain any character, or you need to pass
+      parameters, which collectively might need more than 128 characters
+      (the limit of MacroCmdLine).
+      With ExecMacro() you cannot do these things.
+      Here PushPar() comes to the rescue of "calling macroes".
+
+      On the other hand, for interactively executing a macro (e.g. for
+      testing or as a function of your macro) it can be handy or necessary
+      to pass parameters via the MacroCmdLine the old way.
+
+      And on the third hand, the same goes for the DosCmdLine.
+
+      Called macroes that use PopPar() can handle all three ways!
+
+      And they don't (need to) know in which way they were called!
+
+      Disclaimer: it is not possible to pass macro parameters when doing
+      an editfile() of "-emymacro"; but who cares?
+
+
+   How to use PushPar() and PopPar() in your macroes:
+
+      Somewhere at the beginning of your macro put the line:
+
+         #include ["InitPar.si"]
+
+      That's all: you can from this point on use the commands InitPar(),
+      PushPar() and PopPar() in your macro!
+
+      Mandatory: always call InitPar() before the first PushPar() and/or
+      after the last PopPar().
+
+
+   Notes:
+
+      Parameters are allowed to have the empty string as a value.
+
+      An empty string is returned when you PopPar() from an empty parameter
+      queue.
+
+      There is no harm whatsoever in doing too many PopPar()'s: just empty
+      strings are returned.
+
+      Normally it makes sense to replace a macro's own MacroCmdLine parsing
+      with PopPar().
+
+      But even when you have a macro, that must do it's own MacroCmdLine
+      parsing, it makes sense to build in PopPar() in that macro, but in
+      such a way, that PopPar() returns all parameters as one parameter,
+      which can then be parsed by your macro. The advantage of this is,
+      that your macro can now be called in all the PopPar() compatible ways.
+
+
+   Rules for macro parameters in the Dos commandline:
+
+      1. A commandline macro may be followed by parameters.
+
+      2. Each parameter must be preceded by a colon.
+
+      3. No spaces are allowed between macro, colons and parameters.
+
+      4. A parameter preceded by a single colon may be delimited
+         by either single or double quotes.
+
+      5. Parameters may also be preceded by a double colon,
+         in which case delimiters are mandatory for that parameter,
+         the delimiter being the first character after the double colon,
+         and that delimiter must next be repeated at the end of the
+         parameter. Note that here the delimiter may be any character.
+
+      6. A parameter may not contain it's delimiters (obviously).
+
+      7. An undelimited parameter may not contain spaces.
+
+
+   Rules for parameters put in the MacroCmdLine via the macro ExecMacro()
+   command or via the menu's Macro Execute:
+
+      You can use both the old and the new format.
+
+      Old format: You separate parameters by spaces, and PopPar will
+                  interpret them as separate parameters.
+
+      New format: Same as for Dos commandline, with two logical extra rules:
+
+                  8. Only when using ExecMacro(), there must be a space
+                     before the first parameter colon: this to comply with
+                     the syntax of the ExecMacro() command itself.
+
+                  9. Only when using ExecMacro(), parameters may not contain
+                     the same quotes as used for the ExecMacro() command
+                     itself (obviously).
+
+
+   Examples for the Dos commandline:
+
+      e -emymacro:string1
+      e -emymacro:"string1"
+      e -emymacro:"string 1"
+      e -emymacro:'a double " quote in a string'
+      e -emymacro::@a single ' and a double " quote in one string@
+      e -emymacro:string1:string2:string3
+      e file1 -emymacro:'string 1':"string 2":'string 3'
+      e -emymacro::Athis is one macro parameterA file1
+      e file1 -emymacro::*this is,Also::just'one)macro"parameter* file2
+      e -emymacro:par1::(par 2(:"par 3":"":par5:" "::-par7-:""
+
+      Don't be scared by the more complex examples: probably most of the
+      time you will be using something like the first example, and you
+      might use quotes when a parameter is empty or contains spaces.
+
+
+   Examples for a calling macro:
+
+      #include ["InitPar.si"]
+      InitPar()
+      PushPar("string1")      // Push a string constant.
+      PushPar(string2)        // Push a string variable!
+      PushPar(str(integer3))  // Push an integer variable.
+      ExecMacro("mymacro")
+
+      ExecMacro("mymacro string1 string2 string3")          // The old way.
+      ExecMacro('mymacro string1 string2 string3')
+      ExecMacro("mymacro :string1:string2:string3")         // The new way.
+      ExecMacro("mymacro :'string1':'string2':'string3'")
+      ExecMacro('mymacro ::Athis is one macro parameterA')
+      ExecMacro('mymacro ::*this is,Also:one)macro"parameter*')
+
+      The PushPar() method is the best way to pass macro parameters,
+      and a must when passing string variables with unknown content.
+
+      The ExecMacro() method is useful either for backwards compatibility,
+      or for testing a macro via TSE's Macro Execute menu.
+
+
+   Example for a called macro:
+
+      #include ["InitPar.si"]                   // The called macro does not
+      string  var1 [255] =     PopPar()         // (need to) know how it was
+      integer var2       = val(PopPar())        // called!
+      string  var3 [255] =     PopPar()
+      InitPar()
+
