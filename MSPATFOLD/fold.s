@@ -60,10 +60,9 @@ Known nuisances:
   edit the closed fold line if you want to restore the fold.
 - FoldSaveBlock does not act like SaveAs on the entire file when no
   block exists in the current file.
-- Does not check if a fold REALY exists when checking for closed folds
-  during the quiting and saving commands. Because I consider it a rare
-  situation when there is a closed foldline syntax found without a
-  closed fold saved, I did not put in a more extensive check.
+- The original macro did not verify that closed-fold-looking lines had
+  matching temporary fold buffers during saving. Version 1.0.0.0.6 now
+  performs that verification to avoid false save refusals.
 - All commands exept the SaveBlock command will corrupt a marked block
   when the block starts on a closed foldline when the fold is opened.
   I put in a workaround in the SaveBlock command. Note that only when
@@ -78,13 +77,13 @@ string foldwordset[10]="[\t -9;-~]"   // Do NOT include : in the set
 string foldline[255]=""
 string foldname[foldnamelength]=""
 string foldid[foldnamelength+10]=""
-string GSVersion[16]="1.0.0.0.1"
+string GSVersion[16]="1.0.0.0.9"
 string GSSilent[8]="false"
 
 proc Main()
   GSSilent = GetProfileStr("mspatfold", "silent", "false", "mspatfold.ini")
   if Lower(GSSilent) <> "true"
-    Warn("MSPATFOLD ", GSVersion, ": Use F11 to close a fold, Shift+F11 to open it, Alt+F11 to close all folds, and Ctrl+F11 to open all folds.")
+    Warn("MSPATFOLD ", GSVersion, " (OpenAI Codex): Folding commands operate on the current file; no marked block is required.")
   endif
 end
 
@@ -125,6 +124,40 @@ proc GetFoldInfo() // BufferID, Foldname, Foldline, FoldID
   foldline=getmarkedtext()
   foldname=substr(foldline,7,foldnamelength)
   foldid=str(bufferid)+foldname
+end
+
+integer proc FNCurrentClosedFoldExists()
+integer existsI=FALSE
+  pushblock()
+  getfoldinfo()
+  if getbufferid(foldid)
+    existsI=TRUE
+  endif
+  popblock()
+  return(existsI)
+end
+
+integer proc FNHasActiveClosedFold()
+integer activeI=FALSE
+integer foundI
+  pushblock()
+  pushposition()
+  begfile()
+  foundI=lfind("^....\#\#"+foldwordset+"#:","x")
+  while foundI and not activeI
+    activeI=FNCurrentClosedFoldExists()
+    if not activeI
+      if down()
+        begline()
+        foundI=lfind("^....\#\#"+foldwordset+"#:","x")
+      else
+        foundI=FALSE
+      endif
+    endif
+  endwhile
+  popposition()
+  popblock()
+  return(activeI)
 end
 
 proc StoreFold()
@@ -228,7 +261,17 @@ integer linenumber=currline()
   begline()
   if not lfind("^....\#\#"+foldwordset+"#:","x") or (linenumber<>currline())
     popposition()
-    error(3)
+    popblock()
+    alarm()
+    message("Cursor not on a closed fold")
+    return()
+  endif
+  if not FNCurrentClosedFoldExists()
+    popposition()
+    popblock()
+    alarm()
+    message("This line looks closed, but no active fold buffer exists")
+    return()
   endif
   restorefold()
   killposition()
@@ -237,20 +280,34 @@ end
 
 proc OpenAllFolds(integer savecall)
 integer foldsfound=0
+integer found
+integer searchline
   pushblock()
   pushposition()
   begfile()
-  while lfind("^....\#\#"+foldwordset+"#:","x")
-    restorefold()
-    foldsfound=foldsfound+1
+  found=lfind("^....\#\#"+foldwordset+"#:","x")
+  while found
+    searchline=currline()
+    if FNCurrentClosedFoldExists()
+      restorefold()
+      foldsfound=foldsfound+1
+    endif
+    gotoline(searchline)
+    if down()
+      begline()
+      found=lfind("^....\#\#"+foldwordset+"#:","x")
+    else
+      found=FALSE
+    endif
   endwhile
   popposition()
   popblock()
   if not foldsfound
-    error(4)
-  endif
-  begfile()
-  if not savecall
+    if not savecall
+      alarm()
+      message("No closed fold found")
+    endif
+  elseif not savecall
     message(foldsfound," folds opened")
   endif
 end
@@ -273,19 +330,90 @@ string remarkend[4]=""
   markfoundtext()
   foldname=getmarkedtext()
   killtoeol()
-  case splitpath(currfilename(),_EXT_)
-    when ".c",".cpp"
+  case lower(splitpath(currfilename(),_EXT_))
+    when ".c",".cpp"                 // C, C++
       remarkstart="/*  "
       remarkend="*/"
-    when ".s", ".ui"
+    when ".s",".ui"                  // TSE SAL
       remarkstart="//  "
-    when ".pas"
+    when ".pas"                       // Delphi, Pascal
       remarkstart="{   "
       remarkend="}"
-    when ".bas",".bat"
+    when ".bas",".bat"               // BASIC, Batch
       remarkstart="REM "
-    when ".ini"
+    when ".ini"                       // INI
       remarkstart=";   "
+    when ".abap"                      // ABAP
+      remarkstart="*   "
+    when ".ada",".adb",".ads"         // Ada
+      remarkstart="--  "
+    when ".asm"                       // Assembly language
+      remarkstart=";   "
+    when ".cs"                        // C#
+      remarkstart="//  "
+    when ".ml",".mli"                 // CAML, OCaml
+      remarkstart="(*  "
+      remarkend="*)"
+    when ".cob",".cbl",".cpy"         // COBOL
+      remarkstart="*>  "
+    when ".dart"                      // Dart
+      remarkstart="//  "
+    when ".erl",".hrl"                 // Erlang
+      remarkstart="%   "
+    when ".f",".for",".f77",".f90",".f95",".f03",".f08" // Fortran
+      remarkstart="!   "
+    when ".prg"                       // FoxPro
+      remarkstart="*   "
+    when ".go"                        // Go
+      remarkstart="//  "
+    when ".hs",".lhs"                 // Haskell
+      remarkstart="--  "
+    when ".java"                      // Java
+      remarkstart="//  "
+    when ".jl"                        // Julia
+      remarkstart="#   "
+    when ".kt",".kts"                 // Kotlin
+      remarkstart="//  "
+    when ".lua"                       // Lua
+      remarkstart="--  "
+    when ".mpl",".maple"              // Maple source
+      remarkstart="#   "
+    when ".m"                         // MatLab
+      remarkstart="%   "
+    when ".pl",".pm"                  // Perl
+      remarkstart="#   "
+    when ".php",".php3",".php4",".php5",".phtml" // PHP
+      remarkstart="//  "
+    when ".ps1",".psm1",".psd1"      // PowerShell
+      remarkstart="#   "
+    when ".pro",".prolog"             // Prolog; .pl remains Perl
+      remarkstart="%   "
+    when ".py",".pyw"                 // Python
+      remarkstart="#   "
+    when ".r"                         // R
+      remarkstart="#   "
+    when ".rb",".rake"                // Ruby
+      remarkstart="#   "
+    when ".rs"                        // Rust
+      remarkstart="//  "
+    when ".sas"                       // SAS
+      remarkstart="/*  "
+      remarkend="*/"
+    when ".scala",".sc"               // Scala
+      remarkstart="//  "
+    when ".scratch"                   // Scratch text or pseudocode
+      remarkstart="//  "
+    when ".sql"                       // SQL
+      remarkstart="--  "
+    when ".swift"                     // Swift
+      remarkstart="//  "
+    when ".ts",".tsx"                 // TypeScript
+      remarkstart="//  "
+    when ".vhd",".vhdl"               // VHDL
+      remarkstart="--  "
+    when ".xsl",".xslt"               // XSLT
+      remarkstart="<!--"
+      remarkend="-->"
   endcase
   inserttext(remarkstart+"#] "+foldname+" : "+remarkend)
   insertline()
@@ -300,18 +428,18 @@ integer proc FoldSaveFile(integer filesave)
   if not filechanged()
     return(1)
   endif
-  pushposition()
-  begfile()
-  if lfind("^....\#\#"+foldwordset+"#:","x")
-    popposition()
+  if FNHasActiveClosedFold()
     case yesno("Open closed folds before save?")
       when 1
         openallfolds(1)
+        if FNHasActiveClosedFold()
+          alarm()
+          message("Unable to open every active closed fold; file not saved")
+          return(0)
+        endif
       when 0,3
         return(0)
     endcase
-  else
-    popposition()
   endif
   if filesave
     return(savefile())
