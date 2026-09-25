@@ -1,7 +1,7 @@
-// SEARCHFILEEXECMACROINCLUDE 1.0.0.0.6 - GPT-6 (OpenAI)
+// SEARCHFILEEXECMACROINCLUDE 1.0.0.0.7 - GPT-6 (OpenAI)
 // Depth-first, source-order search of SAL include/macro references.
 string GSPattern[255] = ""
-string GSOptions[40] = "ix"
+string GSOptions[40] = ""
 string GSDirectories[255] = ""
 integer GIVisited = 0
 integer GIOriginal = 0
@@ -320,8 +320,12 @@ proc Main()
     integer visitI = 1
     GIOriginal = GetBufferId()
     silentI = Lower(GetProfileStr("searchfileexecmacroinclude", "silent", "false", "searchfileexecmacroinclude.ini")) == "true"
+    GSPattern = GetProfileStr("SearchDefaults", "searchstring", "", "searchfileexecmacroinclude.ini")
+    GSOptions = GetProfileStr("SearchDefaults", "searchoptions", "", "searchfileexecmacroinclude.ini")
+    filenameS = GetProfileStr("SearchDefaults", "searchfilename", "", "searchfileexecmacroinclude.ini")
+    GSDirectories = GetProfileStr("SearchDefaults", "additionaldirectories", "", "searchfileexecmacroinclude.ini")
     if not silentI
-        Warn("SEARCHFILEEXECMACROINCLUDE 1.0.0.0.6 (GPT-6): search a file and its SAL includes/macro sources recursively.")
+        Warn("SEARCHFILEEXECMACROINCLUDE 1.0.0.0.7 (GPT-6): search a file and its SAL includes/macro sources recursively.")
     endif
     if not Ask("TSE search expression:", GSPattern, _EDIT_HISTORY_)
         return()
@@ -372,7 +376,7 @@ proc Main()
         return()
     endif
     GotoBufferId(GIOriginal)
-    PROCOutput("SEARCHFILEEXECMACROINCLUDE 1.0.0.0.6 | " + GSPattern + " | " + GSOptions)
+    PROCOutput("SEARCHFILEEXECMACROINCLUDE 1.0.0.0.7 | " + GSPattern + " | " + GSOptions)
     PROCWalk(pathS, 0)
     PROCOutput("Matches: " + Str(GICount) + "   Unresolved/skipped: " + Str(GISkipped))
     // Load every searched source into the normal TSE file ring.

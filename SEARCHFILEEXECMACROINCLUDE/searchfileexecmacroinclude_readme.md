@@ -1,7 +1,7 @@
 # SEARCHFILEEXECMACROINCLUDE
 
-Version: **1.0.0.0.6**  
-Date and time: **2026-09-25 19:56 CEST (Europe/Amsterdam)**  
+Version: **1.0.0.0.7**  
+Date and time: **2026-09-25 20:25 CEST (Europe/Amsterdam)**  
 SAL source author: **GPT-6 (OpenAI)**
 
 ## Description
@@ -26,6 +26,18 @@ For relative references the lookup order is: directory containing the running co
 ## INI file
 
 `[searchfileexecmacroinclude]` has `silent=false` by default. Set `silent=true` to suppress the introductory `Warn()` box. Error boxes remain visible.
+
+`[SearchDefaults]` contains four optional initial values for the prompts. All are blank by default:
+
+```ini
+[SearchDefaults]
+searchstring=
+searchoptions=
+searchfilename=
+additionaldirectories=
+```
+
+Fill in any values to prepopulate the corresponding `Ask()` prompts. Text the user enters or changes in a prompt takes priority for that run. `additionaldirectories` uses semicolons as separators. An empty `searchoptions` is allowed: the macro adds the regular expression option `x` when running.
 
 ## Limits
 
