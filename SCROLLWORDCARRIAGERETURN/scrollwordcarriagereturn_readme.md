@@ -1,7 +1,7 @@
 # SCROLLWORDCARRIAGERETURN
 
-Version: 1.0.0.0.0  
-Date: 2026-09-25, 23:33 Europe/Amsterdam  
+Version: 1.0.0.0.1  
+Date: 2026-09-25, 23:57 Europe/Amsterdam  
 Created with: OpenAI Codex (GPT-6)
 
 ## Description
@@ -19,7 +19,7 @@ The percentages refer to the width of the current editing window, including a sp
 ## Compile and run
 
 1. Keep the `.s` and `.ini` files together in the same directory. Compile with `sc32 scrollwordcarriagereturn.s` to produce `scrollwordcarriagereturn.mac`.
-2. Run `scrollwordcarriagereturn.mac` once in TSE to enable the automatic action. With `silent=true`, this displays no message.
+2. Run `scrollwordcarriagereturn.mac` once in TSE to enable the automatic action. With the default `silent=false`, a status message is shown.
 3. Type along a long line. Each time the cursor reaches the right position, the view returns it to the left position without changing the text.
 4. Run the macro again to disable the automatic action. Running it again enables it and rereads the INI values.
 
@@ -33,16 +33,20 @@ The automatic hook lasts while this macro is loaded in the editor session. After
 [scrollwordcarriagereturn]
 targetbegin=25
 targetend=75
-silent=true
+silent=false
 ```
 
 Set `targetbegin` and `targetend` to integer percentages. The values are read when you run the macro, not after each typed character. `targetbegin` is clamped to 1–99 and `targetend` to 2–100. If the resulting beginning is at or beyond the ending, the macro uses 25 and 75. Very narrow windows may place both percentages in the same screen column; the automatic trigger still returns the view as far as possible. Near the start of a line, the view offset cannot be negative.
 
-`silent=true` suppresses the enable/disable `Warn()` box; `silent=false` shows that status message after running the macro. The keyboard shortcut does not display a message.
+`silent=true` suppresses the enable/disable `Warn()` box; `silent=false` shows that status message after running the macro. The default is `false`, including when the setting is absent. The keyboard shortcut does not display a message.
 
 The INI is found beside the compiled macro using `CurrMacroFilename()`; no editor installation directory is required.
 
 ## Version history
+
+### 1.0.0.0.1 — 2026-09-25
+
+- Set the initial `silent` value and missing-setting fallback to `false`.
 
 ### 1.0.0.0.0 — 2026-09-25
 

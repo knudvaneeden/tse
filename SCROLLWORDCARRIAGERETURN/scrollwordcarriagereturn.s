@@ -1,13 +1,13 @@
 /******************************************************************************
   Filename : scrollwordcarriagereturn.s
-  Version  : 1.0.0.0.0
+  Version  : 1.0.0.0.1
   Date     : 2026-09-25
   Purpose  : Return the horizontal view to a configurable left position
              when typing reaches a configurable right position.
   LLM      : OpenAI Codex (GPT-6)
 ******************************************************************************/
 
-STRING GSVersion[20] = "1.0.0.0.0"
+STRING GSVersion[20] = "1.0.0.0.1"
 INTEGER GBEnabled = FALSE
 INTEGER GIBeginPercent = 25
 INTEGER GIEndPercent = 75
@@ -88,7 +88,7 @@ PROC Main()
         ENDIF
     ENDIF
 
-    silentS = GetProfileStr("scrollwordcarriagereturn", "silent", "true", iniFilenameS)
+    silentS = GetProfileStr("scrollwordcarriagereturn", "silent", "false", iniFilenameS)
     IF EquiStr(silentS, "true") == FALSE
         IF GBEnabled
             Warn("SCROLLWORDCARRIAGERETURN ", GSVersion, ": automatic horizontal return enabled.")
