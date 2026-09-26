@@ -426,6 +426,18 @@ menu  SelEncryptMenu()
 
 end   SelEncryptMenu
 
+// PGP032 package entry point.  Keep the original menu and key binding.
+proc Main()
+    string silentS[16] = ""
+
+    silentS = Lower(Trim(GetProfileStr("PGP032", "silent", "false",
+                                      ExpandPath("pgp032.ini"))))
+    if silentS <> "true"
+        Warn("PGP032 1.0.0.0.0: Legacy PGP 2.x menu. Configure PGP and your user ID first. Encrypting a file replaces its editor contents. Use Ctrl+S, E to reopen this menu.")
+    endif
+    SelEncryptMenu()
+end
+
 //**My choice of a key.  Change to anything that you desire.
 //**This is the place to change the key if you desire
 
