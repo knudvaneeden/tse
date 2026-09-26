@@ -1,4 +1,4 @@
-// emtoems
+// PCTAGS package version 1.0.0.0.1; updated by OpenAI Codex.
 
 /* File Name...: Pctags.s         															*/
 /* Program Name: PCTags macro procedures for The SemWare Editor      */
@@ -17,8 +17,8 @@ Works with ONE tagfile
 "GetWordAtCursor()" and "GetTextUntil()" as they duplicate procedures in
 the default TSE.S file.
 
-You must change the sting assigned to "s_tagfile" (in proc pctags_main)
-to match the path and file name of your tagfile.
+Configure tagfile in pctags.ini in the current directory. The default is
+pctags.tag in the current directory.
 
 As written, the find used in these PC-TAGS procedures
 is case insensitive.
@@ -58,10 +58,12 @@ string s_phrase[20]   // the target phrase
 string s_prefix[20]   // prefix of the the target phrase
 string s_suffix[20]   // suffix of the target phrase
 
-string s_tagfile[30]  // path and name for the tagfile
+string s_tagfile[255]  // path and name for the tagfile
 
-s_tagfile = "c:\cl\pctags.tag"   // <==-- change for *YOUR* path and file
- set( sound, off )
+s_tagfile = GetProfileStr("PCTAGS", "tagfile", "pctags.tag", CurrDir() + "pctags.ini")
+if not Length(s_tagfile)
+  s_tagfile = "pctags.tag"
+endif
 if not editfile( s_tagfile )
   message( "Can't find "+s_tagfile)
 else
@@ -138,7 +140,7 @@ proc pctags_prompt()
 //  prompts for a word to use in search
 string s_prom_word[30] = ""    // word you'll type-in
 
-if Ask('PC-TAGS word? ', s_prom_word) AND Length( s_prom_word )
+if Ask('PC-TAGS word? ', s_prom_word, _EDIT_HISTORY_) AND Length( s_prom_word )
   // give the rest of the task to our common procedure
   // note: we're adding a space as we pass the word <==--
   // delete the space if you want to use partial function names
@@ -146,9 +148,18 @@ if Ask('PC-TAGS word? ', s_prom_word) AND Length( s_prom_word )
 else
   message( "Sorry.  Need a word" )
 endif
- set( sound, on )
 end pctags_prompt
 
 // demo keys
  <alt a>    pctags_auto()
  <Alt p>    pctags_prompt()
+
+proc Main()
+    string silentS[10]
+
+    silentS = GetProfileStr("PCTAGS", "silent", "false", CurrDir() + "pctags.ini")
+    if Lower(silentS) <> "true"
+        Warn("PCTAGS 1.0.0.0.1 (OpenAI Codex): Alt+A searches the word at the cursor; Alt+P prompts for a tag. Running cursor search now.")
+    endif
+    pctags_auto()
+end Main
