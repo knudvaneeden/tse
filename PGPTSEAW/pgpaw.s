@@ -454,7 +454,9 @@ end   SelEncryptMenu
 <ctrlalt p>  SelEncryptMenu()
 
 proc main()
-    Message ("PGP Macro hotkey is Ctrl-Alt-P")      //!//
+    if GetProfileStr("PGPTSEAW", "silent", "false", ".\pgptseaw.ini") <> "true"
+        Warn("PGPAW 1.0.0.0.0: Press Ctrl-Alt-P for the PGP menu. Configure PGP, your key ID, and temporary paths before use.")
+    endif
 end
 //*******************************************************************
 
