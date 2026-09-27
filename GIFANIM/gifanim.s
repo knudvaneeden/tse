@@ -1,8 +1,8 @@
-// GIFANIM 1.0.0.0.9 - TSE SAL launcher, ASCII only.
-// First try GIFANIM under the working directory, then beside the compiled macro.
+// GIFANIM 1.0.0.0.14 - TSE SAL launcher, ASCII only.
+// Resolve companion files beside the running gifanim.mac (compiled from gifanim.s).
 proc Main()
     string macroDirS[255] = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
-    string packageDirS[255] = "GIFANIM\"
+    string packageDirS[255] = macroDirS
     string iniFileS[255] = ""
     string scriptFileS[255] = ""
     string directoryS[255]
@@ -13,13 +13,12 @@ proc Main()
     string commandS[255]
     string noPngFileS[255]
     string errorFileS[255]
-    if not FileExists(packageDirS + "gifanim.ini") or not FileExists(packageDirS + "gifanim.ps1")
-        packageDirS = macroDirS
-    endif
+    integer dosStartedI
+    integer exitCodeI
     iniFileS = packageDirS + "gifanim.ini"
     scriptFileS = packageDirS + "gifanim.ps1"
     if not FileExists(iniFileS) or not FileExists(scriptFileS)
-        Warn("GIFANIM: gifanim.ini and gifanim.ps1 were not found together.")
+        Warn("GIFANIM: put gifanim.ini and gifanim.ps1 beside gifanim.mac.")
         return()
     endif
     directoryS = GetProfileStr("GifAnim", "directory", "", iniFileS)
@@ -27,10 +26,10 @@ proc Main()
     outputS = GetProfileStr("GifAnim", "output", "01.gif", iniFileS)
     outputDirS = GetProfileStr("GifAnim", "outputdirectory", "", iniFileS)
     delayS = GetProfileStr("GifAnim", "delay_cs", "10", iniFileS)
-    if not Ask("PNG directory (blank = package directory):", directoryS, _EDIT_HISTORY_)
+    if not Ask("Numbered PNG selection (e.g. *.png):", sequenceS, _EDIT_HISTORY_)
         return()
     endif
-    if not Ask("Numbered PNG selection (e.g. *.png):", sequenceS, _EDIT_HISTORY_)
+    if not Ask("INPUT directory for PNG files (blank = macro directory):", directoryS, _EDIT_HISTORY_)
         return()
     endif
     if not Ask("Output GIF filename:", outputS, _EDIT_HISTORY_)
@@ -46,6 +45,14 @@ proc Main()
         Warn("GIFANIM: check delay, PNG selection, and output filename.")
         return()
     endif
+    // A trailing backslash immediately before a closing quote breaks Windows
+    // argument parsing. Append a dot: F:\dir\ becomes F:\dir\.
+    if Length(directoryS) and RightStr(directoryS, 1) == "\"
+        directoryS = directoryS + "."
+    endif
+    if Length(outputDirS) and RightStr(outputDirS, 1) == "\"
+        outputDirS = outputDirS + "."
+    endif
     // PowerShell handles empty directory as the package directory.
     // Use ordinary trusted filenames without embedded double quotes.
     commandS = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + scriptFileS + '" -FrameDirectory "' + directoryS + '" -Sequence "' + sequenceS + '" -OutputFile "' + outputS + '" -OutputDirectory "' + outputDirS + '" -DelayCs ' + delayS
@@ -57,11 +64,18 @@ proc Main()
     if FileExists(errorFileS)
         EraseDiskFile(errorFileS)
     endif
-    Dos(commandS, _DONT_PROMPT_)
-    if FileExists(noPngFileS)
-        Warn("GIFANIM: No numbered PNG files match the selection in the PNG directory.")
+    dosStartedI = Dos(commandS, _DONT_PROMPT_ | _RETURN_CODE_)
+    if dosStartedI
+        exitCodeI = DosIOResult()
+    endif
+    if not dosStartedI
+        Warn("GIFANIM: TSE could not start PowerShell (Dos returned zero).")
+    elseif FileExists(noPngFileS)
+        Warn("GIFANIM: No numbered PNG files (with optional underscore) match the selection in the PNG directory.")
     elseif FileExists(errorFileS)
         Warn("GIFANIM: Could not create the GIF. Check PowerShell error output.")
+    elseif exitCodeI <> 0
+        Warn("GIFANIM: PowerShell returned a nonzero exit code. Check its output.")
     else
         Warn("GIFANIM: encoding completed. Check the GIF in the output directory.")
     endif

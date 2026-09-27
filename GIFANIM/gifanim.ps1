@@ -32,9 +32,9 @@ if (-not [IO.Path]::IsPathRooted($FrameDirectory)) {
 }
 if ($DelayCs -lt 1 -or $DelayCs -gt 100) { throw 'delay_cs must be 1 through 100' }
 function Get-Frames($extension) {
- $frames = @(Get-ChildItem -LiteralPath $FrameDirectory -File | Where-Object { $_.Name -like $Sequence -and $_.Extension -ieq $extension -and $_.BaseName -match '^\d+$' } |
-  Sort-Object @{Expression={[long]$_.BaseName}}, @{Expression={$_.Name}})
- if ($frames.Count -eq 0) { throw "GIFANIM_NO_PNG: No numerically named $extension frames in $FrameDirectory" }
+ $frames = @(Get-ChildItem -LiteralPath $FrameDirectory -File | Where-Object { $_.Name -like $Sequence -and $_.Extension -ieq $extension -and $_.BaseName -match '^_?\d+$' } |
+  Sort-Object @{Expression={[long]($_.BaseName -replace '^_', '')}}, @{Expression={$_.Name}})
+ if ($frames.Count -eq 0) { throw "GIFANIM_NO_PNG: No numbered $extension frames (optionally prefixed with _) in $FrameDirectory" }
  return $frames
 }
 function GifParts($path) {
