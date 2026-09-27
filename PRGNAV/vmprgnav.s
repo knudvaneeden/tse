@@ -31,7 +31,7 @@ procedure to two keys-- one up, the other down.
 
     5.  If the line above has the SAME indent as the current line,
     go up until there's a line with less indent. Ie., go up to the
-+    next higher level of organization.  End.
+    next higher level of organization.  End.
 
     6.  If the line above has a DIFFERENT indent than the current
     line, go up until there's line with the same or less indent as
@@ -133,12 +133,12 @@ integer proc vmProgNav (string dir)
 
 end  // of vmProgNav ().
 
-// PRGNAV package 1.0.0.0.0; original navigation by Volker Multhopp.
+// PRGNAV package 1.0.0.0.1; original navigation by Volker Multhopp.
 // Read the INI in the current directory; a missing file defaults to visible help.
 proc Main()
     string silentS[16] = GetProfileStr("Settings", "silent", "false", AddTrailingSlash(CurrDir()) + "prgnav.ini")
     if Lower(silentS) <> "true"
-        Warn("PRGNAV 1.0.0.0.0: Alt+Up/Alt+Down navigate by indentation. Keep prgnav.ini in the current directory; set silent=true to hide this message. Documentation: OpenAI GPT-6.")
+        Warn("PRGNAV 1.0.0.0.1: Alt+Up/Alt+Down navigate by indentation. Keep prgnav.ini in the current directory; set silent=true to hide this message. Documentation: OpenAI GPT-6.")
     endif
 end Main
 

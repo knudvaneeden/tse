@@ -1,7 +1,7 @@
 # PRGNAV
 
-**Version:** 1.0.0.0.0  
-**Date and time:** 2026-09-26 23:30 CEST (21:30 UTC)  
+**Version:** 1.0.0.0.1  
+**Date and time:** 2026-09-27 16:51 CEST (14:51 UTC)  
 **Documentation:** OpenAI GPT-6  
 **Original navigation procedure:** Volker Multhopp (1993)
 
@@ -20,7 +20,7 @@
 1. Extract all files together into a directory.
 2. From a command prompt in that directory, compile with the SAL compiler for your installed TSE version: `sc32 VMPRGNAV.S` (Win32 example).
 3. Load or execute the resulting `VMPRGNAV.mac` in TSE. Keep `prgnav.ini` in TSE's **current working directory** when loading the macro.
-4. Press **Alt+GreyCursorUp** (Alt+numeric-keypad Up) to navigate upward; press **Alt+GreyCursorDown** (Alt+numeric-keypad Down) to navigate downward. These are the original bindings in the source. Depending on keyboard or TSE configuration, you may need to change them and recompile.
+4. Press **Alt+CursorUp** to navigate upward; press **Alt+CursorDown** to navigate downward. These are the bindings in version 1.0.0.0.1. Depending on keyboard or TSE configuration, you may need to change them and recompile.
 
 ## Configuration
 
@@ -41,4 +41,4 @@ With `silent=false` (the default), `Main()` displays a `Warn()` box describing t
 
 ## Notes
 
-The original routine and its key bindings have been retained. There is no bundled compiled `.mac`; compile the supplied source for your own TSE version. This package was inspected but could not be compiled here because `sc32` is unavailable in this environment.
+The original navigation routine has been retained; the key bindings were changed from Alt+GreyCursorUp/Down to Alt+CursorUp/Down. There is no bundled compiled `.mac`; compile the supplied source for your own TSE version. This package was inspected but could not be compiled here because `sc32` is unavailable in this environment.
