@@ -1,4 +1,4 @@
-// SEARCHHELPTSE 1.0.0.0.3 - GPT-6 (OpenAI)
+// SEARCHHELPTSE 1.0.0.0.4 - GPT-6 (OpenAI)
 // Search disk files and browse matching lines in a TSE List() picker.
 string GSPattern[255] = ""
 string GSOptions[40] = ""
@@ -73,7 +73,7 @@ proc PROCSearchFile(string filenameS)
     GotoBufferId(previousI)
 end
 
-proc PROCShowResults()
+public proc PROCShowResults()
     integer destinationI = GetBufferId()
     integer originalI = destinationI
     string filenameS[255] = ""
@@ -114,6 +114,10 @@ proc PROCShowResults()
     endif
 end
 
+keydef SearchHelpKeys
+    <CtrlAltShift H> PROCShowResults()
+end
+
 <CtrlAltShift H> PROCShowResults()
 
 proc Main()
@@ -123,12 +127,16 @@ proc Main()
     integer separatorI = 0
     integer originalI = GetBufferId()
     integer silentI = FALSE
+    if GIHasResults and Lower(Trim(Query(MacroCmdLine))) <> "new"
+        PROCShowResults()
+        return()
+    endif
     silentI = Lower(GetProfileStr("searchhelptse", "silent", "false", "searchhelptse.ini")) == "true"
     GSPattern = GetProfileStr("searchhelptse", "searchstring", "", "searchhelptse.ini")
     GSOptions = GetProfileStr("searchhelptse", "searchoptions", "ix", "searchhelptse.ini")
     locationsS = GetProfileStr("searchhelptse", "searchlocations", "tsehelp.s", "searchhelptse.ini")
     if not silentI
-        Warn("SEARCHHELPTSE 1.0.0.0.3 (GPT-6): search help files; Enter opens a selected hit.")
+        Warn("SEARCHHELPTSE 1.0.0.0.4 (GPT-6): search help files; Enter opens a selected hit.")
     endif
     if not Ask("Search string:", GSPattern, _EDIT_HISTORY_)
         return()
@@ -200,5 +208,8 @@ proc Main()
         AddLine("No matches found.")
     endif
     GIHasResults = TRUE
+    if not Enable(SearchHelpKeys, _DEFAULT_)
+        Warn("SEARCHHELPTSE: Shortcut unavailable; run the macro again to reopen results.")
+    endif
     PROCShowResults()
 end

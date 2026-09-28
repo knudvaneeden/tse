@@ -1,10 +1,10 @@
 # SEARCHHELPTSE
 
-Version: 1.0.0.0.3  
-Date and time: 2026-09-28 03:13 Europe/Amsterdam  
+Version: 1.0.0.0.4  
+Date and time: 2026-09-28 03:27 Europe/Amsterdam  
 Author: GPT-6 (OpenAI)
 
-SEARCHHELPTSE searches one or more text files on disk for a TSE search expression and shows matching lines in a read-only picklist. The package includes `tsehelp.s`, a text copy of TSE Professional's internal help screens. Press Enter on a result to open its source file at the matching line and column; press Escape to close the list. After opening a hit, press **Ctrl+Alt+Shift+H** to reopen the last results list without searching again. Keep the macro loaded in TSE so its key assignment remains active.
+SEARCHHELPTSE searches one or more text files on disk for a TSE search expression and shows matching lines in a read-only picklist. The package includes `tsehelp.s`, a text copy of TSE Professional's internal help screens. Press Enter on a result to open its source file at the matching line and column; press Escape to close the list. After opening a hit, press **Ctrl+Alt+Shift+H** to reopen the last results list without searching again. Keep the compiled macro loaded in TSE so its key assignment remains active. You can also execute `searchhelptse` again to reopen the results; execute `searchhelptse new` to begin another search. The public procedure `PROCShowResults` can be called from a custom TSE key assignment.
 
 ## Install and run
 
@@ -30,6 +30,6 @@ silent=false
 
 Example file list: `tsehelp.s;C:\\docs\\other-help.txt`. Unreadable files are counted in a warning after the list closes. A result displays the source filename, line, column, and a preview (up to 160 characters). The full source file is opened when selected.
 
-Each new search replaces the previous results. The macro does not modify the searched files.
+Running the macro again reopens the previous results. Running it with `new` starts a new search and replaces the previous results. The macro does not modify the searched files.
 
 The earlier Ctrl+Alt+H assignment conflicted with a clipboard command in TSE and has been removed.
