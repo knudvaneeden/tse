@@ -1,0 +1,405 @@
+
+    Profile -- TSE 2.5 macro for reading and writing INI files
+    ---------------------------------------------------------------
+
+    BACKGROUND
+    ---------------------------------------------------------------
+        Profile.mac is a compatability macros for TSE 2.5 to allow it
+    to read and write Windows INI files.
+
+        It is largely based on INI.MAC (INI110.ZIP) by Chris Antos,
+    but has been modified to use the same syntax and functionality
+    as the (undocumented) GetProfile* commands now provided by TSE/32.
+
+        The documentation has been adapted from INI.MAC and from the
+    GetHelp macros (GETHLP20.ZIP and GETHLP28.ZIP) which include
+    documentation on the the undocumented features of TSE.
+
+        The GetHelp macros were also written by Chris Antos.
+
+        Profile.* is not backwards compatible with INI.MAC.  To upgrade
+    to Profile.*, you will have to make some changes to the sources
+    of your macros.  But in doing so, you will also make your macros
+    compatible with TSE/32!
+
+        When converting old macros note especially that all of the
+    profile functions now require that you specify a filename.  The
+    FindProf.si macro included in this package is designed to make
+    finding the default TSE.INI or TSEPRO.INI file less painful.
+
+        Note that the new profile functions tend to use the word 'item'
+    instead of the word 'key'.
+
+        If you are interested in fixing bugs in this macro or adding
+    features, you may be interested in the test macros which are
+    not part of this distribution but are available on demand from
+    Michael Graham <magtse@occamstoothbrush.com>.
+
+    SUMMARY
+    ---------------------------------------------------------------
+
+        This macro allows several macros to share a single common
+    .INI file. Each macro can have its own section in the .INI file,
+    and can update its settings indenpendent of other macros'
+    settings.
+
+        A section in the .INI file begins with a marker string
+    between brackets. For example, a section might begin like this:
+    "[Bullet]". The marker string can be the name of the macro, or
+    something more elaborate like "[Bullet - bullet and outlining
+    macro]".
+
+        A section ends either at the end of the file, or at the
+    beginning of the next section.
+
+        Each line in a section can either be a comment line (comment
+    lines start with a semicolon, ";") or a key line. A key line
+    consists of a keyname followed by an equal sign, followed by a
+    value. An example section for a macro might look like this:
+
+        [AutoSignature]
+        UserName=Eric Frank Russell
+        Initials=er
+        Signatures=3
+        Signature1=Yours Truly,
+        Signature2=Best Wishes,
+        Signature3=Thank You For Your Time,
+
+ ** NOTE: Some functions use the term 'item' instead of the word
+    'key'.  The two terms mean the same thing.
+
+ ** NOTE: Section names and keynames are not case sensitive and may
+    only contain letters, digits, spaces, and the underscore; other
+    characters may generate unpredictable results. Values may
+    contain any characters except the linefeed character (Chr(10)),
+    the carriage return (Chr(13)), or the NUL character (Chr(0)).
+
+
+    USING PROFILE.MAC IN YOUR MACROS
+    ---------------------------------------------------------------
+
+        To use Profile.mac, you'll need to include 'Profile.si' in your
+    macro.  To do so add the following lines to the top of your macro's
+    source file:
+
+        #ifndef WIN32
+        #include ["profile.si"]
+        #endif
+
+    In this way, your macro will be able to run unchanged under both the
+    TSE 2.5 (DOS) and TSE 2.8+ (WIN32) versions.
+
+    Once you've made this addition to a macro's source file, you'll be
+    able to use the following functions:
+
+    GetProfileStr, GetProfileInt ----------------------------------
+
+    STRING  proc GetProfileStr(STRING section,  STRING keyname,
+                               STRING default,  STRING ini_fn)
+
+    INTEGER proc GetProfileInt(STRING section,  STRING keyname,
+                               INTEGER default, STRING ini_fn)
+
+        To get a keyname's value, use these functions. You can get
+    string and integer values using these functions. If a keyname
+    cannot be found, an empty string or 0 is returned. Example:
+
+        string section[] = "AutoSignature"
+        string s[80]
+        integer numsigs
+        s = GetProfileStr(section, "UserName", '', FindProfile())
+        numsigs = GetIniInt(section, "Signatures", '', FindProfile())
+
+    ** For information on the FindProfile() function, see below under
+    'FINDING THE RIGHT INI FILE'
+
+    WriteProfileStr, WriteProfileInt ----------------------------------
+
+    INTEGER proc WriteProfileStr(STRING section, STRING keyname,
+                                 STRING value,   STRING ini_fn)
+
+    INTEGER proc WriteProfileInt(STRING section, STRING keyname,
+                                 STRING value,   STRING ini_fn)
+
+        To set a keyname's value, use these functions. You can set
+    string and integer values using these functions. (If a keyname
+    does not exist, it is automatically added at the end of the
+    section.) Example:
+
+        string section[] = "AutoSignature"
+        WriteProfileStr(section, "UserName", "Joe Cool", FindProfile())
+        WriteProfileInt(section, "Signatures", 5, FindProfile())
+
+
+    SetProfileStr
+    and SetProfileInt Return:    Non-zero if successful,
+                                 zero (FALSE) otherwise.
+
+    ** For information on the FindProfile() function, see below under
+    'FINDING THE RIGHT INI FILE'
+
+    FlushProfile --------------------------------------------------
+
+    proc FlushProfile(STRING ini_fn)
+
+        Changes are automatically saved when you exit TSE or
+    when Profile.s is purged, or when you change to a different
+    profile file. However, you can also force the changes to be
+    saved by calling FlushProfile() directly.
+
+
+    RemoveProfileItem ---------------------------------------------
+
+    proc RemoveProfileItem(STRING section, STRING keyname, STRING ini_fn)
+
+        This removes a key from a section in the profile.
+    The macro searches 'section' for a key named 'keyname' and
+    removes both the key and the value.
+
+    Example:
+
+        if forget_password
+            RemoveProfileItem("AutoSignature", "Password", FindProfile())
+        endif
+
+    RemoveProfileItem Returns:    Non-zero if successful,
+                                  zero (FALSE) otherwise.
+
+    ** For information on the FindProfile() function, see below under
+    'FINDING THE RIGHT INI FILE'
+
+    RemoveProfileSection ------------------------------------------
+
+    INTEGER proc RemoveProfileSection(STRING section, STRING ini_fn)
+
+    Removes an entire section from and INI file, including all keys
+    and values in that section.
+
+    Example:
+        if delete_user
+            RemoveProfileSection("Settings_" + username, FindProfile())
+        endif
+
+
+    RemoveProfileSection Returns: Non-zero if successful,
+                                  zero (FALSE) otherwise.
+
+    ** For information on the FindProfile() function, see below under
+    'FINDING THE RIGHT INI FILE'
+
+    LoadProfileSection --------------------------------------------
+
+    INTEGER LoadProfileSection(STRING section, STRING ini_fn)
+
+    Loads the keynames in 'section' so that you can loop through them
+    with GetNextProfileItem (see below).
+
+    Example:
+            if LoadProfileSection("AutoSignature", FindProfile())
+                while GetNextProfileItem(keyname, value)
+                    AddLine(format(keyname:10,value:64)    // or something...
+                endwhile
+            endif
+
+
+    LoadProfileSection Returns:    Non-zero if the section exists,
+                                   and contains at least one item.
+                                   Returns zero (FALSE) otherwise.
+
+    GetNextProfileItem --------------------------------------------
+
+    INTEGER GetNextProfileItem(VAR STRING keyname, VAR STRING value)
+
+    This function fetches the next key and value from a section loaded
+    with LoadProfileSection (see above).  The variables 'keyname' and
+    'value' are passed by reference, meaning that the function actually
+    changes their values for you.
+
+    Example:
+            if LoadProfileSection("AutoSignature", FindProfile())
+                while GetNextProfileItem(keyname, value)
+                    AddLine(format(keyname:10,value:64)    // or something...
+                endwhile
+            endif
+
+
+    GetNextProfileItem Returns:    Non-zero if successful,
+                                   zero (FALSE) otherwise.
+
+    ** For information on the FindProfile() function, see below under
+    'FINDING THE RIGHT INI FILE'
+
+
+    LoadProfileSectionNames ---------------------------------------
+
+    INTEGER proc LoadProfileSectionNames(STRING ini_fn)
+
+    Loads the names of all the sections in an INI file, so that they can
+    be looped through by GetNextProfileSectionName (see below).
+
+    Example:
+            if LoadProfileSectionNames(FindProfile())
+                while GetNextProfileSectionName(section)
+                    Addline(section)                    // or something...
+                endwhile
+            endif
+
+    LoadProfileSection Returns:    Non-zero if there exists at least one
+                                   section containing at least one item
+                                   in the INI file.  Returns zero (FALSE)
+                                   otherwise.
+
+    ** For information on the FindProfile() function, see below under
+    'FINDING THE RIGHT INI FILE'
+
+
+    GetNextProfileSectionName -------------------------------------
+
+    INGEGER GetNextProfileSectionName(VAR STRING section)
+
+    This function fetches the next in the list of section names loaded
+    by LoadProfileSectionNAmes (see above).
+
+    Example:
+            if LoadProfileSectionNames(FindProfile())
+                while GetNextProfileSectionName(section)
+                    Addline(section)                    // or something...
+                endwhile
+            endif
+
+    ** For information on the FindProfile() function, see below under
+    'FINDING THE RIGHT INI FILE'
+
+
+    Writing Macros that are Compatible with TSE/DOS and TSE/32.
+    ---------------------------------------------------------------
+    The Profile functions that are built in to the WIN32 version of TSE
+    allow you to leave out certain parameters such as the INI filename,
+    and default values.
+
+    User-defined Macros aren't allowed to have optional parameters, so
+    for Profile.s you have to supply every parameter on every call.
+
+    For instance:
+
+        // Method 1 -- WIN32 usage
+        s = GetProfileStr(section, "UserName")
+
+        // Method 2 -- DOS usage
+        s = GetProfileStr(section, "UserName", '', '')
+
+    To write macros that are compatible between versions, it is a good
+    idea to use the second method above, and include all parameters.
+
+    Additionally, to avoid ambiguities concerning which INI file you
+    are accessing, you should always specify the ini_fn parameter,
+    if you wish to write cross-version compatible macros.
+    See the next section: "FINDING THE RIGHT INI FILE".
+
+    FINDING THE RIGHT INI FILE
+    ---------------------------------------------------------------
+
+    The WIN32 version Profile functions will let you access any INI file.
+
+    However if you don't specify the ini_fn parameter for a function,
+    the functions assume that you want to access a file called TSE.INI
+    in the Editor's load directory.  If you specify a filename, but no
+    path, it tries to find that file in the WINDOWS directory.  This is
+    a useful feature, since that's a good place to find INI files
+    (WIN.INI, SYSTEM.INI, etc.).
+
+    The DOS version of INI.MAC always loaded a file called 'TSEPRO.INI'
+    in the editor's load directory.
+
+    Profile.s tries to emulate the new WIN32 behaviour:
+
+        You Provide:               Profile.mac assumes:
+        ------------               --------------------
+        * Filename with path    => filename unchanged
+        * Filename without path => GetEnvStr('WINDIR') + filename
+        * Blank Filenme         => LoadDir()           + 'TSE.INI'
+
+    This means that if a user of TSE/DOS still has macros using INI.MAC,
+    the user will end up with both a TSE.INI and a TSEPRO.INI, both in
+    the editor's load directory.
+
+    For slightly more sophisticated handling of filenames, use
+    the FindProf package (included).  This library provides
+    a single function, FindProfile(), which searches the macro
+    directories and the editor load directory for both the 'TSEPRO.INI'
+    and 'TSE.INI' files, and returns whichever one it finds.
+
+        #ifndef WIN32
+        #include ["profile.si"]
+        #endif
+
+        #include ["FindProf.si"]
+
+        GetProfileStr('My_Settings', 'My_Key', '', FindProfile())
+
+    See FindProf.txt for more details.
+
+    CONCURRENT USE BY MULTIPLE MACROS
+    ---------------------------------------------------------------
+
+    - Profile is written so that two macros that are both in
+      use can access their settings without conflicting with each
+      other.  However, two macros may have problems if one or both
+      of them use any of the the looping functions:
+
+          LoadProfileSection
+          GetNextProfileItem
+          LoadProfileSectionNames
+          GetNextProfileSectionName
+
+      Also, because of the way these functions are implemented, you may
+      get unpredictable results if you modify the INI file (via
+      WriteProfile* or RemoveProfile*) between calls to these functions.
+
+      For example, suppose you load an INI file section via
+      LoadProfileSection.  If, between two calls to GetNextProfileItem,
+      another macro calls LoadProfileSection, GetNextProfileItem,
+      WriteProfileStr, WriteProfileInt, RemoveProfileSection,
+      or RemoveProfileItem then the results will be unpredictable.
+
+      Generally this would only happen without your knowledge in the
+      following circumstances:
+          * You are adding a function to your massive .UI file, and from
+            within a GetNextProfile* loop you inadvertently call
+            another function that uses Profile.s
+
+          * From within a GetNextProfile* loop, you call another
+            macro (via ExecMacro) which uses Profile.s
+
+          * A hooked macro gets called and interrupts your macro while
+            it is executing a GetNextProfile* loop.
+
+      The first two cases are fairly easy to avoid.  The third can be
+      dangerous.  For instance, the CurrExt macro is designed to be
+      attached to the _ON_CHANGING_FILES_ hook.  If you install this macro
+      and then call NextFile() or PrevFile() within a GetNextProfile*
+      loop, you will end up with nasty results.
+
+      The solution in this case is to call "CurrExt -z" to temporarily
+      suspend its activity for the length of your loop, and then call
+      "CurrExt -r" when you are finished.
+
+      Other macros that use these volatile Profile functions and
+      attach themselves to hooks should be careful to provide similar
+      suspend/resume functionality.
+
+      I imagine this is also a problem with the built in Profile
+      functions in the WIN32 version (although I haven't tested this).
+
+    ---------------------------------------------------------------
+    Use this macro at your own risk!!
+    Enjoy!
+
+    Authors:
+
+    Chris Antos <chrisant@microsoft.com>, Michael Graham <magmac@occamstoothbrush.com>
+
+    Thanks to Kyle Watkins at Semware for providing additional
+    documentation on the Profile functions.
+
+

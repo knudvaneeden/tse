@@ -1,0 +1,116 @@
+
+/*
+    Profile.si -- TSE 2.5 macro for reading and writing INI files
+
+    See Profile.txt for usage.
+
+    v1.3.5 - Dec 12, 2001
+
+    Authors:
+
+    Chris Antos <chrisant@microsoft.com>, Michael Graham <magmac@occamstoothbrush.com>
+
+*/
+
+#ifndef WIN32
+
+string  Profile_Current_INI_file[255]    = ""
+
+proc ProfileExec(
+     string command,
+     string fn,
+     string section,
+     string keynm,
+     string value
+     )
+
+    if fn <> '*'
+        Profile_Current_INI_File = fn
+    endif
+
+    ExecMacro("profile -f"+Chr(10)+Profile_Current_INI_File)
+    // warn("profile -"+command+Chr(10)+section+Chr(10)+keynm+Chr(10)+value)
+    ExecMacro("profile -"+command+Chr(10)+section+Chr(10)+keynm+Chr(10)+value)
+end
+
+string proc GetProfileStr (string section, string keynm, string default, string fn)
+    ProfileExec("g", fn, section, keynm, default)
+    return(Query(MacroCmdLine))
+end
+
+integer proc GetProfileInt (string section, string keynm, integer default, string fn)
+    return(Val(GetProfileStr(section, keynm, Str(default), fn)))
+end
+
+integer proc LoadProfileSection (string section, string fn)
+    ProfileExec("lk", fn, section,'','')
+    return(Val(Query(MacroCmdLine)))
+end
+
+integer proc GetNextProfileItem (var string keynm, var string value)
+    ProfileExec("kn", '*', '','','')
+    keynm = Query(MacroCmdLine)
+
+    ProfileExec("kv", '*', '','','')
+    value = Query(MacroCmdLine)
+
+    if keynm <> "" or value <> ""
+        warn("key: (" + keynm + "); val: (" + value + ")")
+        return(1)
+    endif
+    return (0)
+end
+
+integer proc LoadProfileSectionNames(string fn)
+    ProfileExec("ls", fn, '','','')
+    return(Val(Query(MacroCmdLine)))
+end
+
+integer proc GetNextProfileSectionName (var string section)
+    ProfileExec("sn",'*', '','','')
+    section = Query(MacroCmdLine)
+    if section <> ""
+        return (1)
+    endif
+    return (0)
+end
+
+proc RemoveProfileItem (string section, string keynm, string fn)
+    ProfileExec("rk", fn, section, keynm,'')
+end
+
+proc RemoveProfileSection (string section, string fn)
+    ProfileExec("rs", fn, section, '','')
+end
+
+proc WriteProfileStr (string section, string keynm, string value, string fn)
+    ProfileExec("s", fn, section, keynm, value)
+end
+
+proc WriteProfileInt (string section, string keynm, integer value, string fn)
+    ProfileExec("s", fn, section, keynm, Str(value))
+end
+
+proc FlushProfile (string fn)
+    ProfileExec("x", fn,'','','')
+end
+
+proc Useless_Profile_Function_to_Avoid_Warnings ()
+    string foo[1] = ''
+    if 0
+         GetProfileStr ('','','','')
+         GetProfileInt ('','',0,'')
+         LoadProfileSection ('','')
+         GetNextProfileItem (foo, foo)
+         LoadProfileSectionNames ('')
+         GetNextProfileSectionName (foo)
+         RemoveProfileItem ('','','')
+         RemoveProfileSection ('','')
+         WriteProfileInt ('','',0,'')
+         WriteProfileStr ('','','','')
+         FlushProfile ('')
+         Useless_Profile_Function_to_Avoid_Warnings ()
+    endif
+end
+
+#endif
