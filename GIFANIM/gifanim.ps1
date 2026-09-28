@@ -38,9 +38,32 @@ function Get-Frames($extension) {
  if ($frames.Count -eq 0) { throw "GIFANIM_NO_PNG: No numbered $extension frames (optionally prefixed with _) in $FrameDirectory" }
  return $frames
 }
-function GifParts($path) {
+function GifParts($path, $targetWidth, $targetHeight) {
  $img = [Drawing.Image]::FromFile($path)
- try { $ms = New-Object IO.MemoryStream; try { $img.Save($ms,[Drawing.Imaging.ImageFormat]::Gif); $b = $ms.ToArray() } finally { $ms.Dispose() } } finally { $img.Dispose() }
+ try {
+  $source = $img
+  $canvas = $null
+  try {
+   if ($targetWidth -and $targetHeight -and ($img.Width -ne $targetWidth -or $img.Height -ne $targetHeight)) {
+    $canvas = New-Object Drawing.Bitmap($targetWidth, $targetHeight)
+    $graphics = [Drawing.Graphics]::FromImage($canvas)
+    try {
+     $graphics.Clear([Drawing.Color]::Transparent)
+     $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+     $scale = [Math]::Min(($targetWidth / [double]$img.Width), ($targetHeight / [double]$img.Height))
+     $width = [Math]::Max(1, [int][Math]::Round($img.Width * $scale))
+     $height = [Math]::Max(1, [int][Math]::Round($img.Height * $scale))
+     $x = [int][Math]::Floor(($targetWidth - $width) / 2)
+     $y = [int][Math]::Floor(($targetHeight - $height) / 2)
+     $graphics.DrawImage($img, $x, $y, $width, $height)
+    } finally { $graphics.Dispose() }
+    $source = $canvas
+   }
+   $ms = New-Object IO.MemoryStream
+   try { $source.Save($ms,[Drawing.Imaging.ImageFormat]::Gif); $b = $ms.ToArray() }
+   finally { $ms.Dispose() }
+  } finally { if ($canvas) { $canvas.Dispose() } }
+ } finally { $img.Dispose() }
  $p = 13; $n = 0
  if ($b[10] -band 128) { $n = 3 * (1 -shl (($b[10] -band 7) + 1)); $p += $n }
  while ($b[$p] -eq 0x21) { $p += 2; do { $len = $b[$p]; $p += 1 + $len } while ($len -ne 0) }
@@ -66,12 +89,15 @@ function GifParts($path) {
  $OutputFile = [IO.Path]::GetFullPath($OutputFile)
  $frames = @(Get-Frames '.png')
   Add-Type -AssemblyName System.Drawing
-  $first = GifParts $frames[0].FullName
+  $firstImage = [Drawing.Image]::FromFile($frames[0].FullName)
+  try { $targetWidth = $firstImage.Width; $targetHeight = $firstImage.Height }
+  finally { $firstImage.Dispose() }
+  $first = GifParts $frames[0].FullName $targetWidth $targetHeight
   $out = New-Object IO.MemoryStream
   try {
    $out.Write($first.B,0,(13 + $first.Palette))
    foreach ($frame in $frames) {
-    $part = GifParts $frame.FullName; $b = $part.B; $start = $part.Start
+    $part = GifParts $frame.FullName $targetWidth $targetHeight; $b = $part.B; $start = $part.Start
     if ($b[6] -ne $first.B[6] -or $b[7] -ne $first.B[7] -or $b[8] -ne $first.B[8] -or $b[9] -ne $first.B[9]) { throw "Frame dimensions differ: $($frame.Name)" }
     [byte[]]$gce = @(0x21,0xf9,0x04,0x08,($DelayCs -band 255),(($DelayCs -shr 8) -band 255),0,0)
     $out.Write($gce,0,8)

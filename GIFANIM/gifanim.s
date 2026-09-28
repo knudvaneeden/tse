@@ -1,4 +1,4 @@
-// GIFANIM 1.0.0.0.15 - TSE SAL launcher, ASCII only.
+// GIFANIM 1.0.0.0.16 - TSE SAL launcher, ASCII only.
 // Resolve companion files beside the running gifanim.mac (compiled from gifanim.s).
 proc Main()
     string macroDirS[255] = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
