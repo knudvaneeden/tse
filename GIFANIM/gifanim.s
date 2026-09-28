@@ -1,10 +1,12 @@
-// GIFANIM 1.0.0.0.18 - TSE SAL launcher, ASCII only.
+// GIFANIM 1.0.0.0.19 - TSE SAL launcher, ASCII only.
 // Resolve companion files beside the running gifanim.mac (compiled from gifanim.s).
 proc Main()
     string macroDirS[255] = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
     string packageDirS[255] = macroDirS
     string iniFileS[255] = ""
     string scriptFileS[255] = ""
+    string batchFileS[255] = ""
+    string runIniFileS[255] = ""
     string directoryS[255]
     string sequenceS[255]
     string outputS[255]
@@ -18,8 +20,10 @@ proc Main()
     integer exitCodeI
     iniFileS = packageDirS + "gifanim.ini"
     scriptFileS = packageDirS + "gifanim.ps1"
-    if not FileExists(iniFileS) or not FileExists(scriptFileS)
-        Warn("GIFANIM: put gifanim.ini and gifanim.ps1 beside gifanim.mac.")
+    batchFileS = packageDirS + "gifanim.bat"
+    runIniFileS = packageDirS + "gifanim_run.ini"
+    if not FileExists(iniFileS) or not FileExists(scriptFileS) or not FileExists(batchFileS)
+        Warn("GIFANIM: put gifanim.ini, gifanim.ps1 and gifanim.bat beside gifanim.mac.")
         return()
     endif
     directoryS = GetProfileStr("GifAnim", "directory", "", iniFileS)
@@ -46,17 +50,34 @@ proc Main()
         Warn("GIFANIM: check delay, PNG selection, and output filename.")
         return()
     endif
-    // A trailing backslash immediately before a closing quote breaks Windows
-    // argument parsing. Append a dot: F:\dir\ becomes F:\dir\.
-    if Length(directoryS) and RightStr(directoryS, 1) == "\"
-        directoryS = directoryS + "."
+    // Keep the command short: pass Ask() values through a separate run INI.
+    // The batch job passes only that INI filename to PowerShell.
+    if not WriteProfileStr("GifAnim", "directory", directoryS, runIniFileS)
+        Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
+        return()
     endif
-    if Length(outputDirS) and RightStr(outputDirS, 1) == "\"
-        outputDirS = outputDirS + "."
+    if not WriteProfileStr("GifAnim", "sequence", sequenceS, runIniFileS)
+        Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
+        return()
     endif
-    // PowerShell handles empty directory as the package directory.
-    // Use ordinary trusted filenames without embedded double quotes.
-    commandS = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + scriptFileS + '" -FrameDirectory "' + directoryS + '" -Sequence "' + sequenceS + '" -OutputFile "' + outputS + '" -OutputDirectory "' + outputDirS + '" -DelayCs ' + delayS
+    if not WriteProfileStr("GifAnim", "output", outputS, runIniFileS)
+        Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
+        return()
+    endif
+    if not WriteProfileStr("GifAnim", "outputdirectory", outputDirS, runIniFileS)
+        Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
+        return()
+    endif
+    if not WriteProfileStr("GifAnim", "delay_cs", delayS, runIniFileS)
+        Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
+        return()
+    endif
+    FlushProfile(runIniFileS)
+    if Length(batchFileS) + Length('cmd.exe /d /c """"') > 254
+        Warn("GIFANIM: macro path is too long for the TSE command string.")
+        return()
+    endif
+    commandS = 'cmd.exe /d /c ""' + batchFileS + '""'
     noPngFileS = packageDirS + "gifanim_no_png.flag"
     errorFileS = packageDirS + "gifanim_error.flag"
     if FileExists(noPngFileS)
