@@ -8,7 +8,8 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 try {
-# Resolve default INI, blank directory, and relative output from the script folder.
+# Resolve the INI and blank frame directory from the script folder.
+# SAL resolves relative directories against TSE's CurrDir() before writing the run INI.
 if (-not [IO.Path]::IsPathRooted($IniFile)) { $IniFile = Join-Path $PSScriptRoot $IniFile }
 Set-Location -LiteralPath $PSScriptRoot
 # Plain ASCII INI: one key=value per line; command-line arguments take priority.
@@ -79,7 +80,7 @@ function GifParts($path, $targetWidth, $targetHeight) {
  # A configured output directory overrides the location in output=.
  if ($OutputDirectory) {
   if (-not [IO.Path]::IsPathRooted($OutputDirectory)) {
-   $OutputDirectory = Join-Path $FrameDirectory $OutputDirectory
+   $OutputDirectory = Join-Path $PSScriptRoot $OutputDirectory
   }
   if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) { throw "Output folder not found: $OutputDirectory" }
   $OutputFile = Join-Path $OutputDirectory ([IO.Path]::GetFileName($OutputFile))
@@ -89,9 +90,21 @@ function GifParts($path, $targetWidth, $targetHeight) {
  $OutputFile = [IO.Path]::GetFullPath($OutputFile)
  $frames = @(Get-Frames '.png')
   Add-Type -AssemblyName System.Drawing
-  $firstImage = [Drawing.Image]::FromFile($frames[0].FullName)
-  try { $targetWidth = $firstImage.Width; $targetHeight = $firstImage.Height }
-  finally { $firstImage.Dispose() }
+  # First pass: choose the largest source frame by pixel area.
+  # Second pass below: scale every frame to fit its dimensions.
+  $bestArea = 0.0
+  foreach ($frame in $frames) {
+   $probe = [Drawing.Image]::FromFile($frame.FullName)
+   try {
+    $area = [double]$probe.Width * $probe.Height
+    if ($area -gt $bestArea) {
+     $bestArea = $area
+     $targetWidth = $probe.Width
+     $targetHeight = $probe.Height
+    }
+   } finally { $probe.Dispose() }
+  }
+  if ($targetWidth -gt 65535 -or $targetHeight -gt 65535) { throw 'GIF frame dimensions must not exceed 65535 pixels' }
   $first = GifParts $frames[0].FullName $targetWidth $targetHeight
   $out = New-Object IO.MemoryStream
   try {
@@ -112,7 +125,7 @@ function GifParts($path, $targetWidth, $targetHeight) {
    $out.WriteByte(0x3b)
    [IO.File]::WriteAllBytes($OutputFile,$out.ToArray())
   } finally { $out.Dispose() }
- Write-Host "Created $OutputFile from $($frames.Count) frames (PowerShell)."
+ Write-Host "Created $OutputFile from $($frames.Count) frames at ${targetWidth}x${targetHeight} (PowerShell)."
  exit 0
 } catch {
  $message = $_.Exception.Message

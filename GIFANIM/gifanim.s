@@ -1,4 +1,4 @@
-// GIFANIM 1.0.0.0.19 - TSE SAL launcher, ASCII only.
+// GIFANIM 1.0.0.0.22 - TSE SAL launcher, ASCII only.
 // Resolve companion files beside the running gifanim.mac (compiled from gifanim.s).
 proc Main()
     string macroDirS[255] = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
@@ -11,6 +11,7 @@ proc Main()
     string sequenceS[255]
     string outputS[255]
     string outputDirS[255]
+    string currentDirS[255]
     string delayS[16]
     string commandS[255]
     string noPngFileS[255]
@@ -34,13 +35,13 @@ proc Main()
     if not Ask("Numbered PNG selection (e.g. *.png):", sequenceS, _EDIT_HISTORY_)
         return()
     endif
-    if not Ask("INPUT directory for PNG files (blank = macro directory):", directoryS, _EDIT_HISTORY_)
+    if not Ask("INPUT PNG directory (blank = macro; relative = CurrDir):", directoryS, _EDIT_HISTORY_)
         return()
     endif
     if not Ask("Output GIF filename:", outputS, _EDIT_HISTORY_)
         return()
     endif
-    if not Ask("GIF output directory (blank = PNG directory):", outputDirS, _EDIT_HISTORY_)
+    if not Ask("GIF output directory (blank = PNG; relative = CurrDir):", outputDirS, _EDIT_HISTORY_)
         return()
     endif
     if not Ask("Delay per frame (hundredths of a second; 100 = 1 second; max 65535):", delayS, _EDIT_HISTORY_)
@@ -50,8 +51,26 @@ proc Main()
         Warn("GIFANIM: check delay, PNG selection, and output filename.")
         return()
     endif
+    // CurrDir() is evaluated by TSE now; do not store it as an INI setting.
+    currentDirS = AddTrailingSlash(CurrDir())
+    if directoryS <> "" and SubStr(directoryS, 2, 1) <> ":" and LeftStr(directoryS, 1) <> "\"
+        if Length(currentDirS) + Length(directoryS) > 255
+            Warn("GIFANIM: resolved PNG directory exceeds TSE's string limit.")
+            return()
+        endif
+        directoryS = currentDirS + directoryS
+    endif
+    if outputDirS <> "" and SubStr(outputDirS, 2, 1) <> ":" and LeftStr(outputDirS, 1) <> "\"
+        if Length(currentDirS) + Length(outputDirS) > 255
+            Warn("GIFANIM: resolved output directory exceeds TSE's string limit.")
+            return()
+        endif
+        outputDirS = currentDirS + outputDirS
+    endif
     // Keep the command short: pass Ask() values through a separate run INI.
     // The batch job passes only that INI filename to PowerShell.
+    // Remove the key left by version 1.0.0.0.21, if present.
+    RemoveProfileItem("GifAnim", "currentdirectory", runIniFileS)
     if not WriteProfileStr("GifAnim", "directory", directoryS, runIniFileS)
         Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
         return()
