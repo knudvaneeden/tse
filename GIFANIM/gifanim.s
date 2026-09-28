@@ -1,4 +1,4 @@
-// GIFANIM 1.0.0.0.14 - TSE SAL launcher, ASCII only.
+// GIFANIM 1.0.0.0.15 - TSE SAL launcher, ASCII only.
 // Resolve companion files beside the running gifanim.mac (compiled from gifanim.s).
 proc Main()
     string macroDirS[255] = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
@@ -13,6 +13,7 @@ proc Main()
     string commandS[255]
     string noPngFileS[255]
     string errorFileS[255]
+    string errorMessageS[255]
     integer dosStartedI
     integer exitCodeI
     iniFileS = packageDirS + "gifanim.ini"
@@ -71,9 +72,11 @@ proc Main()
     if not dosStartedI
         Warn("GIFANIM: TSE could not start PowerShell (Dos returned zero).")
     elseif FileExists(noPngFileS)
-        Warn("GIFANIM: No numbered PNG files (with optional underscore) match the selection in the PNG directory.")
+        errorMessageS = GetProfileStr("GifAnimError", "message", "No numbered PNG files match the selection.", noPngFileS)
+        Warn("GIFANIM: " + errorMessageS)
     elseif FileExists(errorFileS)
-        Warn("GIFANIM: Could not create the GIF. Check PowerShell error output.")
+        errorMessageS = GetProfileStr("GifAnimError", "message", "Could not create the GIF.", errorFileS)
+        Warn("GIFANIM: " + errorMessageS)
     elseif exitCodeI <> 0
         Warn("GIFANIM: PowerShell returned a nonzero exit code. Check its output.")
     else

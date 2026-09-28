@@ -7,6 +7,7 @@ param(
  [string]$IniFile = 'gifanim.ini'
 )
 $ErrorActionPreference = 'Stop'
+try {
 # Resolve default INI, blank directory, and relative output from the script folder.
 if (-not [IO.Path]::IsPathRooted($IniFile)) { $IniFile = Join-Path $PSScriptRoot $IniFile }
 Set-Location -LiteralPath $PSScriptRoot
@@ -50,7 +51,6 @@ function GifParts($path) {
  do { $len = $b[$p]; $p += 1 + $len } while ($len -ne 0)
  return @{ B=$b; Start=$start; End=$p; Palette=$n }
 }
-try {
  if (-not (Test-Path -LiteralPath $FrameDirectory -PathType Container)) { throw "Folder not found: $FrameDirectory" }
  $FrameDirectory = (Resolve-Path -LiteralPath $FrameDirectory).Path
  # A configured output directory overrides the location in output=.
@@ -91,7 +91,9 @@ try {
 } catch {
  $message = $_.Exception.Message
  $marker = if ($message -like 'GIFANIM_NO_PNG:*') { 'gifanim_no_png.flag' } else { 'gifanim_error.flag' }
- try { [IO.File]::WriteAllText((Join-Path $PSScriptRoot $marker), $message) } catch {}
+ # INI format lets TSE read the actual error with GetProfileStr().
+ $message = $message -replace '[\r\n]+', ' '
+ try { [IO.File]::WriteAllText((Join-Path $PSScriptRoot $marker), "[GifAnimError]`r`nmessage=$message`r`n") } catch {}
  [Console]::Error.WriteLine($message)
  exit 1
 }

@@ -1,6 +1,6 @@
 # GIFANIM for TSE SAL
 
-Version **1.0.0.0.14** — 2026-09-28, 01:20 Europe/Amsterdam.
+Version **1.0.0.0.15** — 2026-09-28, Europe/Amsterdam.
 
 Creates a looping GIF from numbered PNG frames, such as `01.png`, `02.png`, `03.png`. Frames are selected by the `sequence` wildcard and sorted by the number in their filename. One leading underscore is allowed, so `01.png`, `_02.png`, `_03.png` become frames 1, 2, 3. The only encoder is Windows PowerShell and .NET System.Drawing; no FFmpeg or custom DLL is needed.
 
@@ -9,7 +9,7 @@ Creates a looping GIF from numbered PNG frames, such as `01.png`, `02.png`, `03.
 1. Place `gifanim.s`, `gifanim.ps1`, `gifanim.ini`, `01.png`, and `02.png` together. Compile `gifanim.s` in that directory and keep the resulting `gifanim.mac` there. The macro locates the INI and PowerShell script beside its compiled `.mac` through `CurrMacroFilename()`, even when TSE's working directory is elsewhere.
 2. Compile `gifanim.s` with `sc32 gifanim.s`, then execute that `gifanim.mac` in TSE.
 3. Review or change the five values shown by `Ask()`: numbered PNG selection, INPUT directory for PNG files, GIF filename, GIF output directory, and delay per frame. Their initial values come from `gifanim.ini`.
-4. If no matching numbered PNGs are found, TSE shows a `Warn()` box. The macro checks both whether `Dos()` launched PowerShell and whether `DosIOResult()` reports a zero process exit code; failures produce a warning. Inspect the GIF at the path printed by PowerShell.
+4. If PowerShell reports an error, TSE shows the actual error text in a `Warn()` box (for example, `Frame dimensions differ: 02.png`). The macro checks both whether `Dos()` launched PowerShell and whether `DosIOResult()` reports a zero process exit code. Inspect the GIF at the path printed by PowerShell.
 
 The package includes two example frames, `01.png` and `02.png` (both 960 × 516 pixels). Put them beside `gifanim.ps1` to try the default blank `directory=` setting. The uploaded first image was named `01(1).png`; it is named `01.png` inside this package so it matches the numeric filename rule.
 
@@ -27,4 +27,4 @@ All PNG frames should have equal dimensions. The GIF color format supports at mo
 
 The macro launches Windows PowerShell with `-NoProfile -ExecutionPolicy Bypass`; this setting applies only to the launched process. The package contains the complete PowerShell encoder script, without any third-party GIF program or DLL.
 
-**Verification:** This environment does not have the Windows TSE SAL compiler or Windows PowerShell, so version `1.0.0.0.14` has not been compiled or run here. The prior PowerShell version was reported working by the user; this revision prompts for the filename selection before the INPUT directory.
+**Verification:** This environment does not have the Windows TSE SAL compiler or Windows PowerShell, so version `1.0.0.0.15` has not been compiled or run here. PowerShell writes its error to an INI-formatted status file next to the macro, which SAL reads with `GetProfileStr()`. Failures before the script starts (for example, invalid PowerShell parameters) still report an exit code without detailed text.
