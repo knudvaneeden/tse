@@ -1,4 +1,4 @@
-// GIFANIM 1.0.0.0.16 - TSE SAL launcher, ASCII only.
+// GIFANIM 1.0.0.0.18 - TSE SAL launcher, ASCII only.
 // Resolve companion files beside the running gifanim.mac (compiled from gifanim.s).
 proc Main()
     string macroDirS[255] = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
@@ -39,10 +39,10 @@ proc Main()
     if not Ask("GIF output directory (blank = PNG directory):", outputDirS, _EDIT_HISTORY_)
         return()
     endif
-    if not Ask("Delay per frame in hundredths (1 to 100):", delayS, _EDIT_HISTORY_)
+    if not Ask("Delay per frame (hundredths of a second; 100 = 1 second; max 65535):", delayS, _EDIT_HISTORY_)
         return()
     endif
-    if Val(delayS) < 1 or Val(delayS) > 100 or sequenceS == "" or outputS == ""
+    if Val(delayS) < 1 or Val(delayS) > 65535 or sequenceS == "" or outputS == ""
         Warn("GIFANIM: check delay, PNG selection, and output filename.")
         return()
     endif

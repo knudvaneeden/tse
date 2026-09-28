@@ -2,7 +2,7 @@ param(
  [string]$FrameDirectory = '',
  [string]$OutputFile = '01.gif',
  [string]$OutputDirectory = '',
- [ValidateRange(1,100)][int]$DelayCs = 10,
+ [ValidateRange(1,65535)][int]$DelayCs = 10,
  [string]$Sequence = '*.png',
  [string]$IniFile = 'gifanim.ini'
 )
@@ -31,7 +31,7 @@ if (-not $FrameDirectory) { $FrameDirectory = $PSScriptRoot }
 if (-not [IO.Path]::IsPathRooted($FrameDirectory)) {
  $FrameDirectory = Join-Path $PSScriptRoot $FrameDirectory
 }
-if ($DelayCs -lt 1 -or $DelayCs -gt 100) { throw 'delay_cs must be 1 through 100' }
+if ($DelayCs -lt 1 -or $DelayCs -gt 65535) { throw 'delay_cs must be 1 through 65535' }
 function Get-Frames($extension) {
  $frames = @(Get-ChildItem -LiteralPath $FrameDirectory -File | Where-Object { $_.Name -like $Sequence -and $_.Extension -ieq $extension -and $_.BaseName -match '^_?\d+$' } |
   Sort-Object @{Expression={[long]($_.BaseName -replace '^_', '')}}, @{Expression={$_.Name}})
