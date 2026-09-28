@@ -1,4 +1,4 @@
-// SEARCHHELPTSE 1.0.0.0.2 - GPT-6 (OpenAI)
+// SEARCHHELPTSE 1.0.0.0.3 - GPT-6 (OpenAI)
 // Search disk files and browse matching lines in a TSE List() picker.
 string GSPattern[255] = ""
 string GSOptions[40] = ""
@@ -114,9 +114,7 @@ proc PROCShowResults()
     endif
 end
 
-keydef SearchHelpKeys
-    <CtrlAlt H> PROCShowResults()
-end
+<CtrlAltShift H> PROCShowResults()
 
 proc Main()
     string locationsS[255] = ""
@@ -130,7 +128,7 @@ proc Main()
     GSOptions = GetProfileStr("searchhelptse", "searchoptions", "ix", "searchhelptse.ini")
     locationsS = GetProfileStr("searchhelptse", "searchlocations", "tsehelp.s", "searchhelptse.ini")
     if not silentI
-        Warn("SEARCHHELPTSE 1.0.0.0.2 (GPT-6): search help files; Enter opens a selected hit.")
+        Warn("SEARCHHELPTSE 1.0.0.0.3 (GPT-6): search help files; Enter opens a selected hit.")
     endif
     if not Ask("Search string:", GSPattern, _EDIT_HISTORY_)
         return()
@@ -190,7 +188,6 @@ proc Main()
                 GotoBufferId(GIResults)
                 AbandonFile()
                 GotoBufferId(originalI)
-                Disable(SearchHelpKeys)
                 Warn("SEARCHHELPTSE: File not found: " + filenameS)
                 return()
             endif
@@ -203,6 +200,5 @@ proc Main()
         AddLine("No matches found.")
     endif
     GIHasResults = TRUE
-    Enable(SearchHelpKeys)
     PROCShowResults()
 end
