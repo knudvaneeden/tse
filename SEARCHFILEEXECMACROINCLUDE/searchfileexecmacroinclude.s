@@ -1,13 +1,16 @@
-// SEARCHFILEEXECMACROINCLUDE 1.0.0.0.7 - GPT-6 (OpenAI)
+// SEARCHFILEEXECMACROINCLUDE 1.0.0.0.11 - GPT-6 (OpenAI)
 // Depth-first, source-order search of SAL include/macro references.
 string GSPattern[255] = ""
 string GSOptions[40] = ""
 string GSDirectories[255] = ""
 integer GIVisited = 0
 integer GIOriginal = 0
+integer GIOriginalCursor = TRUE
 integer GIBlockComment = FALSE
 string GSMacroDir[255] = ""
 integer GIResults = 0
+integer GIMap = 0
+integer GIHasResults = FALSE
 integer GICount = 0
 integer GISkipped = 0
 
@@ -166,13 +169,60 @@ string proc FNCode(string lineS)
     return(resultS)
 end
 
-proc PROCOutput(string messageS)
+proc PROCMatch(string filenameS, integer lineI, integer columnI, string lineS)
     integer previousI = GetBufferId()
     GotoBufferId(GIResults)
     EndFile()
-    AddLine(messageS)
+    AddLine(SplitPath(filenameS, _NAME_ | _EXT_) + " (" + Str(lineI) + "," + Str(columnI) + "): " + lineS)
+    GotoBufferId(GIMap)
+    EndFile()
+    AddLine(filenameS + "|" + Str(lineI) + "|" + Str(columnI))
     GotoBufferId(previousI)
 end
+
+public proc PROCShowResults()
+    integer destinationI = GetBufferId()
+    integer originalI = destinationI
+    integer selectedI = 0
+    integer separatorI = 0
+    integer columnI = 0
+    integer lineI = 0
+    string filenameS[255] = ""
+    string mapS[255] = ""
+    if not GIHasResults
+        Warn("SEARCHFILEEXECMACROINCLUDE: No previous search results are available.")
+        return()
+    endif
+    GotoBufferId(GIResults)
+    BegFile()
+    if List("SEARCHFILEEXECMACROINCLUDE: " + Str(GICount) + " hits (Enter opens file)", Query(ScreenCols)) and GICount > 0
+        selectedI = CurrLine()
+        GotoBufferId(GIMap)
+        if selectedI <= NumLines()
+            GotoLine(selectedI)
+            mapS = GetText(1, 255)
+            separatorI = Pos("|", mapS)
+            filenameS = SubStr(mapS, 1, separatorI - 1)
+            mapS = SubStr(mapS, separatorI + 1, 255)
+            separatorI = Pos("|", mapS)
+            lineI = Val(SubStr(mapS, 1, separatorI - 1))
+            columnI = Val(SubStr(mapS, separatorI + 1, 255))
+            GotoBufferId(originalI)
+            if EditFile(filenameS, _DONT_PROMPT_)
+                GotoLine(lineI)
+                GotoPos(columnI)
+                destinationI = GetBufferId()
+            endif
+        endif
+    endif
+    GotoBufferId(destinationI)
+end
+
+keydef SearchFileExecMacroIncludeKeys
+    <CtrlAltShift H> PROCShowResults()
+end
+
+<CtrlAltShift H> PROCShowResults()
 
 proc PROCProgress(string filenameS)
     integer previousI = GetBufferId()
@@ -182,6 +232,14 @@ proc PROCProgress(string filenameS)
     Message("Searching: " + filenameS)
     BufferVideo()
     GotoBufferId(previousI)
+end
+
+proc PROCRestoreCursor()
+    if GIOriginalCursor
+        SetCursorOn()
+    else
+        SetCursorOff()
+    endif
 end
 
 proc PROCWalk(string filenameS, integer depthI)
@@ -199,7 +257,6 @@ proc PROCWalk(string filenameS, integer depthI)
     string childS[255] = ""
     string resolvedS[255] = ""
     if depthI > 24
-        PROCOutput("SKIPPED (depth limit): " + filenameS)
         GISkipped = GISkipped + 1
         return()
     endif
@@ -227,7 +284,6 @@ proc PROCWalk(string filenameS, integer depthI)
     BufferType(_HIDDEN_)
     PROCProgress(filenameS)
     if not LoadBuffer(filenameS)
-        PROCOutput("MISSING: " + filenameS)
         GISkipped = GISkipped + 1
         GotoBufferId(sourceI)
         AbandonFile()
@@ -273,7 +329,7 @@ proc PROCWalk(string filenameS, integer depthI)
         GotoLine(lineI)
         lineS = GetText(1, 255)
         while hitLineI == lineI
-            PROCOutput(filenameS + "(" + Str(lineI) + "," + Str(hitPosI) + "): " + lineS)
+            PROCMatch(filenameS, lineI, hitPosI, lineS)
             GICount = GICount + 1
             GotoBufferId(cleanI)
             GotoLine(hitLineI)
@@ -288,7 +344,6 @@ proc PROCWalk(string filenameS, integer depthI)
         if childS <> ""
             resolvedS = FNResolve(childS, filenameS, FALSE)
             if resolvedS == ""
-                PROCOutput("UNRESOLVED from " + filenameS + "(" + Str(lineI) + "): " + childS)
                 GISkipped = GISkipped + 1
             else
                 PROCWalk(resolvedS, depthI + 1)
@@ -298,7 +353,6 @@ proc PROCWalk(string filenameS, integer depthI)
         if childS <> ""
             resolvedS = FNResolve(childS, filenameS, TRUE)
             if resolvedS == ""
-                PROCOutput("UNRESOLVED source from " + filenameS + "(" + Str(lineI) + "): " + childS)
                 GISkipped = GISkipped + 1
             else
                 PROCWalk(resolvedS, depthI + 1)
@@ -319,13 +373,17 @@ proc Main()
     integer silentI = FALSE
     integer visitI = 1
     GIOriginal = GetBufferId()
+    if GIHasResults and Lower(Trim(Query(MacroCmdLine))) <> "new"
+        PROCShowResults()
+        return()
+    endif
     silentI = Lower(GetProfileStr("searchfileexecmacroinclude", "silent", "false", "searchfileexecmacroinclude.ini")) == "true"
     GSPattern = GetProfileStr("SearchDefaults", "searchstring", "", "searchfileexecmacroinclude.ini")
     GSOptions = GetProfileStr("SearchDefaults", "searchoptions", "", "searchfileexecmacroinclude.ini")
     filenameS = GetProfileStr("SearchDefaults", "searchfilename", "", "searchfileexecmacroinclude.ini")
     GSDirectories = GetProfileStr("SearchDefaults", "additionaldirectories", "", "searchfileexecmacroinclude.ini")
     if not silentI
-        Warn("SEARCHFILEEXECMACROINCLUDE 1.0.0.0.7 (GPT-6): search a file and its SAL includes/macro sources recursively.")
+        Warn("SEARCHFILEEXECMACROINCLUDE 1.0.0.0.11 (GPT-6): search a file and its SAL includes/macro sources recursively.")
     endif
     if not Ask("TSE search expression:", GSPattern, _EDIT_HISTORY_)
         return()
@@ -359,26 +417,54 @@ proc Main()
         Warn("Input file not found: " + filenameS)
         return()
     endif
+    if GIHasResults
+        GotoBufferId(GIMap)
+        AbandonFile()
+        GotoBufferId(GIResults)
+        AbandonFile()
+        GotoBufferId(GIOriginal)
+        GIHasResults = FALSE
+    endif
+    GICount = 0
+    GISkipped = 0
+    GIOriginalCursor = SetCursorOff()
     BufferVideo()
-    GIResults = CreateBuffer("[Search results - searchfileexecmacroinclude]", _NORMAL_)
+    GIResults = CreateTempBuffer()
     if GIResults == 0
         UnBufferVideo()
-        Warn("Close the previous search results buffer and try again.")
+        PROCRestoreCursor()
+        Warn("Could not allocate a results buffer.")
         GotoBufferId(GIOriginal)
         return()
     endif
-    GotoBufferId(GIOriginal)
+    GIMap = CreateTempBuffer()
+    if GIMap == 0
+        GotoBufferId(GIResults)
+        AbandonFile()
+        GotoBufferId(GIOriginal)
+        UnBufferVideo()
+        PROCRestoreCursor()
+        Warn("Could not allocate a result-location buffer.")
+        return()
+    endif
     GIVisited = CreateTempBuffer()
     if GIVisited == 0
-        UnBufferVideo()
-        Warn("Could not allocate a visited-files buffer.")
+        GotoBufferId(GIMap)
+        AbandonFile()
+        GotoBufferId(GIResults)
+        AbandonFile()
         GotoBufferId(GIOriginal)
+        UnBufferVideo()
+        PROCRestoreCursor()
+        Warn("Could not allocate a visited-files buffer.")
         return()
     endif
     GotoBufferId(GIOriginal)
-    PROCOutput("SEARCHFILEEXECMACROINCLUDE 1.0.0.0.7 | " + GSPattern + " | " + GSOptions)
     PROCWalk(pathS, 0)
-    PROCOutput("Matches: " + Str(GICount) + "   Unresolved/skipped: " + Str(GISkipped))
+    if GICount == 0
+        GotoBufferId(GIResults)
+        AddLine("No matches found.")
+    endif
     // Load every searched source into the normal TSE file ring.
     GotoBufferId(GIVisited)
     while visitI <= NumLines()
@@ -392,9 +478,17 @@ proc Main()
     endwhile
     GotoBufferId(GIVisited)
     AbandonFile()
-    GotoBufferId(GIResults)
-    BegFile()
-    UpdateDisplay(_ALL_WINDOWS_REFRESH_)
+    GotoBufferId(GIOriginal)
     UnBufferVideo()
-    Message("Search complete: " + Str(GICount) + " matches.")
+    PROCRestoreCursor()
+    // Redraw to the physical screen after leaving buffered video mode.
+    UpdateDisplay(_ALL_WINDOWS_REFRESH_)
+    GIHasResults = TRUE
+    if not Enable(SearchFileExecMacroIncludeKeys, _DEFAULT_)
+        Warn("Shortcut unavailable; run this macro again to reopen results.")
+        PROCShowResults()
+    elseif not PushKey(<CtrlAltShift H>)
+        // If TSE's key stack is full, display the list immediately.
+        PROCShowResults()
+    endif
 end
