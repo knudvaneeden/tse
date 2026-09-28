@@ -3,6 +3,7 @@ param(
  [string]$OutputFile = '01.gif',
  [string]$OutputDirectory = '',
  [ValidateRange(1,65535)][int]$DelayCs = 10,
+ [ValidateSet('sharp','smooth','fast')][string]$Quality = 'sharp',
  [string]$Sequence = '*.png',
  [string]$IniFile = 'gifanim.ini'
 )
@@ -15,7 +16,7 @@ Set-Location -LiteralPath $PSScriptRoot
 # Plain ASCII INI: one key=value per line; command-line arguments take priority.
 if (Test-Path -LiteralPath $IniFile) {
  foreach ($line in [IO.File]::ReadAllLines((Resolve-Path -LiteralPath $IniFile).Path)) {
-  if ($line -match '^\s*(directory|sequence|output|outputdirectory|delay_cs)\s*=\s*(.*?)\s*$') {
+  if ($line -match '^\s*(directory|sequence|output|outputdirectory|delay_cs|quality)\s*=\s*(.*?)\s*$') {
    $key = $matches[1].ToLowerInvariant(); $value = $matches[2]
    switch ($key) {
     directory { if (-not $PSBoundParameters.ContainsKey('FrameDirectory')) { $FrameDirectory = $value } }
@@ -23,6 +24,7 @@ if (Test-Path -LiteralPath $IniFile) {
     output { if (-not $PSBoundParameters.ContainsKey('OutputFile')) { $OutputFile = $value } }
     outputdirectory { if (-not $PSBoundParameters.ContainsKey('OutputDirectory')) { $OutputDirectory = $value } }
     delay_cs { if (-not $PSBoundParameters.ContainsKey('DelayCs')) { $DelayCs = [int]$value } }
+    quality { if (-not $PSBoundParameters.ContainsKey('Quality')) { $Quality = $value } }
    }
   }
  }
@@ -33,6 +35,7 @@ if (-not [IO.Path]::IsPathRooted($FrameDirectory)) {
  $FrameDirectory = Join-Path $PSScriptRoot $FrameDirectory
 }
 if ($DelayCs -lt 1 -or $DelayCs -gt 65535) { throw 'delay_cs must be 1 through 65535' }
+if ($Quality -notin @('sharp','smooth','fast')) { throw 'quality must be sharp, smooth, or fast' }
 function Get-Frames($extension) {
  $frames = @(Get-ChildItem -LiteralPath $FrameDirectory -File | Where-Object { $_.Name -like $Sequence -and $_.Extension -ieq $extension -and $_.BaseName -match '^_?\d+$' } |
   Sort-Object @{Expression={[long]($_.BaseName -replace '^_', '')}}, @{Expression={$_.Name}})
@@ -50,7 +53,11 @@ function GifParts($path, $targetWidth, $targetHeight) {
     $graphics = [Drawing.Graphics]::FromImage($canvas)
     try {
      $graphics.Clear([Drawing.Color]::Transparent)
-     $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+     switch ($Quality) {
+      sharp { $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::NearestNeighbor; $graphics.PixelOffsetMode = [Drawing.Drawing2D.PixelOffsetMode]::Half }
+      smooth { $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic }
+      fast { $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::Bilinear }
+     }
      $scale = [Math]::Min(($targetWidth / [double]$img.Width), ($targetHeight / [double]$img.Height))
      $width = [Math]::Max(1, [int][Math]::Round($img.Width * $scale))
      $height = [Math]::Max(1, [int][Math]::Round($img.Height * $scale))

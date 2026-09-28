@@ -1,4 +1,4 @@
-// GIFANIM 1.0.0.0.22 - TSE SAL launcher, ASCII only.
+// GIFANIM 1.0.0.0.23 - TSE SAL launcher, ASCII only.
 // Resolve companion files beside the running gifanim.mac (compiled from gifanim.s).
 proc Main()
     string macroDirS[255] = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
@@ -13,6 +13,7 @@ proc Main()
     string outputDirS[255]
     string currentDirS[255]
     string delayS[16]
+    string qualityS[16]
     string commandS[255]
     string noPngFileS[255]
     string errorFileS[255]
@@ -32,6 +33,7 @@ proc Main()
     outputS = GetProfileStr("GifAnim", "output", "01.gif", iniFileS)
     outputDirS = GetProfileStr("GifAnim", "outputdirectory", "", iniFileS)
     delayS = GetProfileStr("GifAnim", "delay_cs", "10", iniFileS)
+    qualityS = GetProfileStr("GifAnim", "quality", "sharp", iniFileS)
     if not Ask("Numbered PNG selection (e.g. *.png):", sequenceS, _EDIT_HISTORY_)
         return()
     endif
@@ -45,6 +47,14 @@ proc Main()
         return()
     endif
     if not Ask("Delay per frame (hundredths of a second; 100 = 1 second; max 65535):", delayS, _EDIT_HISTORY_)
+        return()
+    endif
+    if not Ask("Resize quality (sharp, smooth, fast):", qualityS, _EDIT_HISTORY_)
+        return()
+    endif
+    qualityS = Lower(qualityS)
+    if qualityS <> "sharp" and qualityS <> "smooth" and qualityS <> "fast"
+        Warn("GIFANIM: quality must be sharp, smooth, or fast.")
         return()
     endif
     if Val(delayS) < 1 or Val(delayS) > 65535 or sequenceS == "" or outputS == ""
@@ -88,6 +98,10 @@ proc Main()
         return()
     endif
     if not WriteProfileStr("GifAnim", "delay_cs", delayS, runIniFileS)
+        Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
+        return()
+    endif
+    if not WriteProfileStr("GifAnim", "quality", qualityS, runIniFileS)
         Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
         return()
     endif
