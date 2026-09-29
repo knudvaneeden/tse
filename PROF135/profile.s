@@ -388,8 +388,22 @@ proc InteractiveProfile()
     string action[4] = ''
     string result[255] = ''
     string promptText[80] = 'Choose existing INI file (F10 picks a file):'
+    string macroDirectory[255] = ''
+    string settingsFilename[255] = ''
 
-    Load_INI_File(CurrDir() + 'prof135.ini')
+    macroDirectory = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_)
+    if macroDirectory <> ''
+        if macroDirectory[Length(macroDirectory):1] <> '\'
+            if macroDirectory[Length(macroDirectory):1] <> '/'
+                macroDirectory = macroDirectory + '\'
+            endif
+        endif
+    endif
+    settingsFilename = macroDirectory + 'prof135.ini'
+    if macroDirectory == '' or not FileExists(settingsFilename)
+        settingsFilename = CurrDir() + 'prof135.ini'
+    endif
+    Load_INI_File(settingsFilename)
     if id_ini
         GotoBufferId(id_ini)
         if Lower(Trim(GetValue('prof135', 'silent', 'false'))) == 'true'
@@ -479,7 +493,7 @@ proc InteractiveProfile()
                                         Save()
                                         GotoBufferId(originalBuffer)
                                         if showResult
-                                            Warn('PROF135 1.0.0.0.8 (Codex): Created [' + section + ']')
+                                            Warn('PROF135 1.0.0.0.9 (Codex): Created [' + section + ']')
                                         endif
                                     endif
                                 endif
@@ -599,7 +613,7 @@ proc InteractiveProfile()
                         endif
                         GotoBufferId(originalBuffer)
                         if result <> '' and showResult
-                            Warn('PROF135 1.0.0.0.8 (Codex): ' + result)
+                            Warn('PROF135 1.0.0.0.9 (Codex): ' + result)
                         endif
                         if sectionDeleted
                             break
