@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.79**  
-Prepared: **2026-09-30 13:20 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.84**  
+Prepared: **2026-09-30 15:00 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -551,3 +551,25 @@ Project reopening now avoids passing zero IDs to the previous-project and tempor
 In customized TSE menus, use the command that invokes `EditFile()` to reopen the full project picklist; a Buffer List shows only currently loaded files. The user verified SAL definition lookup through the CTags menu in rc24; an existing F12 binding prevented the keyboard shortcut from reaching PROJ.
 
 The SAL changes require compilation and runtime verification on Windows; no TSE compiler is available in the package preparation environment.
+
+## Version 80: visible loaded-language summary
+
+While a project is open and the editor status line is enabled, its right-hand portion shows `Languages: Python / C / C++`, for example. The summary lists distinct recognized languages of files currently loaded in the normal file ring, updates after commands and on idle, and restores the current buffer and cursor after inspecting the ring. Files included in the project but not loaded are not counted. Unknown file extensions are omitted; `None` means no recognized language is currently loaded. `.s` and `.si` always mean TSE SAL, and `.pl` means Perl. This indicator describes filename mappings; it does not prove that a particular CTags parser indexed a file.
+
+The status summary occupies up to 70 columns, limited to half the screen width, replacing the existing information in that portion of the status line while a project is open. Longer summaries end in `...`. Use **Alt+[ -> Loaded languages...** to view the summary (up to SAL's 255-character limit). The ordering follows the loaded file ring; each language appears once. Recompile all five macros. Compilation and visual behavior still require testing in Windows TSE rc24 and 4.50.30.
+
+## Version 81: Delete Project
+
+Use **Alt+[ -> Delete project...**, select a saved project, and confirm. Close the selected project first if it is currently open; this prevents later autosaving from recreating its file. Cancellation keeps the saved files. The command validates the PROJ file identifier, deletes the `.pj` file and its adjacent same-name `.tag` file, and removes the project from the Open Project list. It clears a matching last-project profile value. Source files and directories, custom/shared CTags locations, and clipboard/history/key-macro sidecars are retained. Matching AutoLoad associations are removed from the project database. Errors are reported. This release also includes version 80's loaded-language indicator. Recompile and test on Windows TSE.
+
+## Version 82: Delete Project compiler fix
+
+The Delete Project profile cleanup now uses the literal `LastProject` key in the support macro. Its earlier reference to `c_stIniLastProject` failed because that constant is conditionally declared only for the main macro. Recompile all five macros. The user confirmed compilation of the main macro in version 81; the corrected support macro still requires Windows compilation and runtime testing.
+
+## Version 83: language message wording
+
+The Loaded languages message now reads `Current computer language(s) loaded:`, suitable for either one or several languages. Recompile with `build.bat`.
+
+## Version 84: Escape from the Load prompt
+
+When files are already in the editor ring, Escape cancels the File(s) to edit / Load prompt and returns to the current file without an exit question. The exit confirmation appears only when the ring is empty, where cancelling that prompt can exit TSE. Recompile all five macros and verify the loaded-file and empty-ring cases in your TSE configuration.
