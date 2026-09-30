@@ -1,13 +1,13 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.78**  
-Prepared: **2026-09-29 23:50 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.79**  
+Prepared: **2026-09-30 13:20 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
 ## Supported CTags languages
 
-This package covers **59 language entries**: the **41 built-in parsers** reported by your Exuberant CTags 5.8 plus **18 package-defined regex parsers**. The latter provide basic definition indexing, not full language parsing. TSE SAL takes priority for `.s` and `.si`; `.pl` retains Perl priority. This table lists the packaged example extension for each language; your executable's `--list-maps` and the package configuration determine all accepted extensions. Examples are in `ctagsexamples/`.
+This package covers **59 language entries**: the **41 built-in parsers** reported by your Exuberant CTags 5.8 plus **18 package-defined regex parsers**. The latter provide basic definition indexing, not full language parsing. TSE SAL takes priority for `.s` and `.si`; `.pl` retains Perl priority. This table lists the packaged example extension for each language; your executable's `--list-maps` and the package configuration determine all accepted extensions. Examples are in `CTAGSEXAMPLES/`.
 
 | Language | Example extension | Parser | Navigation test |
 |---|---|---|---|
@@ -357,34 +357,34 @@ The Exuberant CTags 5.8 verbose trace showed `ddd.s` opening as Asm even after m
 
 ## CTags C example
 
-`ctagsexamples/ddd.c` is a small standalone C program. Add `ddd.c` to a project, generate the CTags file, place the cursor on `draw_menu` in `main`, and press **F12**. The lookup should jump to `static void draw_menu(void)` near the top of the file. You can compile it with a C compiler (for example `gcc ddd.c -o ddd.exe`), but compilation is not required for the CTags test.
+`CTAGSEXAMPLES/ddd.c` is a small standalone C program. Add `ddd.c` to a project, generate the CTags file, place the cursor on `draw_menu` in `main`, and press **F12**. The lookup should jump to `static void draw_menu(void)` near the top of the file. You can compile it with a C compiler (for example `gcc ddd.c -o ddd.exe`), but compilation is not required for the CTags test.
 
 ## Included language examples
 
-The `ctagsexamples` directory contains six `ddd` examples for languages previously tested for CTags navigation. These are optional test files; add only the ones you want to a test project and regenerate its CTags file after adding them. Open a file, put the cursor on the call named below, and press **F12** to jump to its definition. The `.s` example uses TSE SAL and its included custom language configuration.
+The `CTAGSEXAMPLES` directory contains six `ddd` examples for languages previously tested for CTags navigation. These are optional test files; add only the ones you want to a test project and regenerate its CTags file after adding them. Open a file, put the cursor on the call named below, and press **F12** to jump to its definition. The `.s` example uses TSE SAL and its included custom language configuration.
 
 | File | Language | F12 on call | Expected definition |
 |---|---|---|---|
-| `ctagsexamples/ddd.c` | C | `draw_menu()` | `static void draw_menu(void)` |
-| `ctagsexamples/ddd.s` | TSE SAL | `FooBar()` | `PROC FooBar()` |
-| `ctagsexamples/ddd.py` | Python | `greet()` | `def greet():` |
-| `ctagsexamples/ddd.rs` | Rust | `greet()` | `fn greet()` |
-| `ctagsexamples/ddd.ts` | TypeScript | `formatName()` | `function formatName(...)` |
-| `ctagsexamples/ddd.go` | Go | `makeGreeting()` | `func makeGreeting()` |
+| `CTAGSEXAMPLES/ddd.c` | C | `draw_menu()` | `static void draw_menu(void)` |
+| `CTAGSEXAMPLES/ddd.s` | TSE SAL | `FooBar()` | `PROC FooBar()` |
+| `CTAGSEXAMPLES/ddd.py` | Python | `greet()` | `def greet():` |
+| `CTAGSEXAMPLES/ddd.rs` | Rust | `greet()` | `fn greet()` |
+| `CTAGSEXAMPLES/ddd.ts` | TypeScript | `formatName()` | `function formatName(...)` |
+| `CTAGSEXAMPLES/ddd.go` | Go | `makeGreeting()` | `func makeGreeting()` |
 
 The examples are newly supplied test sources; they do not require compilation to build a CTags index.
 
 ## Full language test set
 
-The `ctagsexamples` directory contains all the sample files and a language/file/symbol checklist in `ctagsexamples/README.md`. This now covers 59 language entries across 60 files (both `.s` and `.si` for TSE SAL): the 41 built-in languages plus 18 regex languages, with Ada and ActionScript supplied as regex languages. Each file is a small syntax sample intended for CTags indexing; entries marked **Pending TSE test** have not been verified with your executable. Add a chosen example file to a project, regenerate CTags, and test F12 on the symbol. Some languages require a compiler, runtime, or different CTags parser behavior for their examples to be executable or indexed.
+The `CTAGSEXAMPLES` directory contains all the sample files and a language/file/symbol checklist in `CTAGSEXAMPLES/README.md`. This now covers 59 language entries across 60 files (both `.s` and `.si` for TSE SAL): the 41 built-in languages plus 18 regex languages, with Ada and ActionScript supplied as regex languages. Each file is a small syntax sample intended for CTags indexing; entries marked **Pending TSE test** have not been verified with your executable. Add a chosen example file to a project, regenerate CTags, and test F12 on the symbol. Some languages require a compiler, runtime, or different CTags parser behavior for their examples to be executable or indexed.
 
 ## Example layout in 1.0.0.0.61
 
-All `ddd.*` sources are now together under `ctagsexamples/`. When updating a test project created from an earlier release, remove its old `ddd.*` entries and add the new full paths, then regenerate the CTags file.
+All `ddd.*` sources are now together under `CTAGSEXAMPLES/`. When updating a test project created from an earlier release, remove its old `ddd.*` entries and add the new full paths, then regenerate the CTags file.
 
 ## Known file types in 1.0.0.0.61
 
-The default **Known file types** list is alphabetical and includes the extension of every `ctagsexamples/ddd.*` file. It fits SAL's 255-character string limit (251 characters), so some less common prior defaults that are not used by these examples were removed from the default. You can still add any file explicitly by its full filename.
+The default **Known file types** list is alphabetical and includes the extension of every `CTAGSEXAMPLES/ddd.*` file. It fits SAL's 255-character string limit (251 characters), so some less common prior defaults that are not used by these examples were removed from the default. You can still add any file explicitly by its full filename.
 
 When opening a project whose Known file types list exactly matches the previous package default, PROJ upgrades that list to the new one; customized lists stay as entered. This permits the existing `FOOBAR01` project to recognize the additional extensions after rebuilding and reopening it. Regenerate the CTags file after reopening. A directory scan determines which files enter the project; if a file still has no tag, check the project file list and then CTags parser behavior.
 
@@ -392,7 +392,7 @@ Default: `abap adb as asm asp awk bas bat bet btm c cc cfg cob cpp cs cxx dart e
 
 ## Parser inventory correction in 1.0.0.0.61
 
-The tested Exuberant CTags 5.8 reports 41 built-in languages, including Vim and YACC, but not Ada or ActionScript. The configuration now supplies basic regex parsers for Ada (`.adb`, `.ads`, `.ada`) and ActionScript (`.as`). `ctagsexamples` adds `ddd.vim` and `ddd.y`, bringing the inventory to 59 language entries and 60 sample files (both SAL extensions are tested). These two new parser rules and samples require testing with your Windows CTags.
+The tested Exuberant CTags 5.8 reports 41 built-in languages, including Vim and YACC, but not Ada or ActionScript. The configuration now supplies basic regex parsers for Ada (`.adb`, `.ads`, `.ada`) and ActionScript (`.as`). `CTAGSEXAMPLES` adds `ddd.vim` and `ddd.y`, bringing the inventory to 59 language entries and 60 sample files (both SAL extensions are tested). These two new parser rules and samples require testing with your Windows CTags.
 
 The alphabetized default list includes `.vim` and `.y` and remains within SAL's 255-character limit. The previous default list is upgraded on project open; customized lists are preserved. To make room, the default no longer includes `cfg` and `rc2`, which may still be added manually. Rebuild the SAL macros, reopen the project, refresh the file list, and regenerate CTags.
 
@@ -404,11 +404,11 @@ The default Known file types list now includes `mxml`; the `.build.xml` file use
 
 ## TeX sample correction in 1.0.0.0.61
 
-The Exuberant CTags 5.8 Tex parser maps `.tex` but indexes document parts and sections, not `\newcommand`. The revised `ctagsexamples/ddd.tex` defines `\section{TexGreeting}` and uses `TexGreeting` in later text. Regenerate the project CTags file and press F12 on the later occurrence; select the `ddd.tex` entry if a chooser appears. A direct `ctags.exe --excmd=n -f C:\TEMP\ddd_tex.tag C:\Users\knud_\Downloads\D\ctagsexamples\ddd.tex` should emit a `TexGreeting` section tag. This replacement still requires verification on your Windows CTags build.
+The Exuberant CTags 5.8 Tex parser maps `.tex` but indexes document parts and sections, not `\newcommand`. The revised `CTAGSEXAMPLES/ddd.tex` defines `\section{TexGreeting}` and uses `TexGreeting` in later text. Regenerate the project CTags file and press F12 on the later occurrence; select the `ddd.tex` entry if a chooser appears. A direct `ctags.exe --excmd=n -f C:\TEMP\ddd_tex.tag C:\Users\knud_\Downloads\D\CTAGSEXAMPLES\ddd.tex` should emit a `TexGreeting` section tag. This replacement still requires verification on your Windows CTags build.
 
 ## Make sample correction in 1.0.0.0.61
 
-The tested Exuberant CTags 5.8 Make parser indexes macros (`m`), not targets. The previous `greet:` target produced no tag, so the revised `ctagsexamples/ddd.mak` defines `GREETING = Hello from Make` and uses `$(GREETING)` in the `all` recipe. Regenerate tags and press F12 on `GREETING` in the recipe. The TeX `TexGreeting` section sample was verified by the user: F12 jumped from its later occurrence to the section at line 3.
+The tested Exuberant CTags 5.8 Make parser indexes macros (`m`), not targets. The previous `greet:` target produced no tag, so the revised `CTAGSEXAMPLES/ddd.mak` defines `GREETING = Hello from Make` and uses `$(GREETING)` in the `all` recipe. Regenerate tags and press F12 on `GREETING` in the recipe. The TeX `TexGreeting` section sample was verified by the user: F12 jumped from its later occurrence to the section at line 3.
 
 If F12 shows a list of other files, it is listing definitions for the symbol under the cursor. A file does not appear there when it contributed no tag for that symbol. The Make correction still needs testing on Windows.
 
@@ -434,7 +434,7 @@ Example for a clean test installation:
 
 ```ini
 projectdirectoryorfilename=FOOBAR01
-scanpath=ctagsexamples
+scanpath=CTAGSEXAMPLES
 scansubdirectories=no
 ```
 
@@ -455,7 +455,7 @@ Regenerate project CTags after installing this version. Press F12 on `greet` on 
 To isolate generation from the editor, run:
 
 ```bat
-g:\utils\ctags.exe --options=proj0200_ctags_languages.conf --excmd=n -f C:\TEMP\ddd_beta.tag ctagsexamples\ddd.bet
+g:\utils\ctags.exe --options=proj0200_ctags_languages.conf --excmd=n -f C:\TEMP\ddd_beta.tag CTAGSEXAMPLES\ddd.bet
 type C:\TEMP\ddd_beta.tag
 ```
 
@@ -472,7 +472,7 @@ Run these commands from the extracted package's main directory.
 
 All package source bindings, labels, example instructions, and README key references now use F12. Prior successful navigation tests were performed with the previous key binding; the replacement keys still need testing in TSE. Compile with `build.bat` and restart TSE to load the rebuilt macros.
 
-This version includes the BETA ordinary-pattern fix from version 66. Regenerate CTags, then test **F12** on `greet` at line 6 of `ctagsexamples/ddd.bet`; expected destination is line 4.
+This version includes the BETA ordinary-pattern fix from version 66. Regenerate CTags, then test **F12** on `greet` at line 6 of `CTAGSEXAMPLES/ddd.bet`; expected destination is line 4.
 
 ## Version 1.0.0.0.68 — resolve duplicate F12 binding
 
@@ -493,14 +493,14 @@ The version 69 trace correctly extracted `AntGreeting` but the generated tag fil
 After rebuilding and regenerating, test F12 on `AntGreeting` at line 5 of `ddd.build.xml`; expected destination is line 2. To check generation independently, run these commands from the package directory:
 
 ```bat
-g:\utils\ctags.exe --options=proj0200_ctags_languages.conf --verbose --excmd=n -f C:\TEMP\ddd_ant.tag ctagsexamples\ddd.build.xml
+g:\utils\ctags.exe --options=proj0200_ctags_languages.conf --verbose --excmd=n -f C:\TEMP\ddd_ant.tag CTAGSEXAMPLES\ddd.build.xml
 type C:\TEMP\ddd_ant.tag
 ```
 
 The verbose output should identify the file as Ant and the output should include `AntGreeting`. If it still does not, force the parser to isolate filename detection:
 
 ```bat
-g:\utils\ctags.exe --options=proj0200_ctags_languages.conf --language-force=Ant --excmd=n -f C:\TEMP\ddd_ant.tag ctagsexamples\ddd.build.xml
+g:\utils\ctags.exe --options=proj0200_ctags_languages.conf --language-force=Ant --excmd=n -f C:\TEMP\ddd_ant.tag CTAGSEXAMPLES\ddd.build.xml
 ```
 
 ## Version 1.0.0.0.71 — Ant detection for Windows CTags 5.8
@@ -512,7 +512,7 @@ Regenerate project CTags, then test F12 on `AntGreeting` at line 5 of `ddd.build
 
 ## Version 1.0.0.0.72 — SLang example compatible with Exuberant CTags 5.8
 
-The `ddd.sl` function header and body now occupy separate lines. The built-in SLang parser rejects header lines containing a semicolon, so the previous one-line function produced no tag. Regenerate the project CTags file, open `ctagsexamples/ddd.sl`, and press F12 on `greet` in the final call (line 6). The expected destination is the definition on line 1. This change still needs testing in TSE on Windows.
+The `ddd.sl` function header and body now occupy separate lines. The built-in SLang parser rejects header lines containing a semicolon, so the previous one-line function produced no tag. Regenerate the project CTags file, open `CTAGSEXAMPLES/ddd.sl`, and press F12 on `greet` in the final call (line 6). The expected destination is the definition on line 1. This change still needs testing in TSE on Windows.
 
 ## Version 1.0.0.0.73 — CTags chooser starts at the current file
 
@@ -541,3 +541,13 @@ The chooser now checks each returned symbol explicitly. Looking up `greeting` ex
 ## Version 1.0.0.0.78 — Alt+[ replaces Alt+P
 
 The Project menu shortcut is now **Alt+[** (Alt plus the left square bracket). Startup instructions and documentation use the new shortcut. The help viewer print shortcut was changed too, so this package no longer binds Alt+P. Recompile all five macros using build.bat and restart TSE to load the new bindings. Version 77 remains the user-tested stable baseline; the version 78 key binding needs compilation and testing on Windows.
+
+## Version 79: project reopen diagnostics and uppercase examples directory
+
+Examples are stored in `CTAGSEXAMPLES/`. Recompile all five macros with `build.bat` using the compiler for the TSE version being tested.
+
+Project reopening now avoids passing zero IDs to the previous-project and temporary-buffer cleanup calls. This is a defensive change for the reported rc24 exit, whose root cause is not yet confirmed. Every Open Project attempt writes `proj0200_project_open_trace.txt` beside the installed macros. The file is replaced at the start of each attempt and saved at each checkpoint, including before project-file loading, list restoration, previous-buffer cleanup, and the empty-ring file prompt. If TSE exits, retain this file before another attempt. Supply the rc24 and 4.50.30 traces separately, together with the corresponding project files. CTags traces describe symbol lookup and do not diagnose project reopening.
+
+In customized TSE menus, use the command that invokes `EditFile()` to reopen the full project picklist; a Buffer List shows only currently loaded files. The user verified SAL definition lookup through the CTags menu in rc24; an existing F12 binding prevented the keyboard shortcut from reaching PROJ.
+
+The SAL changes require compilation and runtime verification on Windows; no TSE compiler is available in the package preparation environment.
