@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.84**  
-Prepared: **2026-09-30 15:00 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.85**  
+Prepared: **2026-09-30 18:42 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -573,3 +573,7 @@ The Loaded languages message now reads `Current computer language(s) loaded:`, s
 ## Version 84: Escape from the Load prompt
 
 When files are already in the editor ring, Escape cancels the File(s) to edit / Load prompt and returns to the current file without an exit question. The exit confirmation appears only when the ring is empty, where cancelling that prompt can exit TSE. Recompile all five macros and verify the loaded-file and empty-ring cases in your TSE configuration.
+
+## Version 85: language indicator visibility and position
+
+Corrected the reversed QueryEditState check that suppressed the indicator during ordinary editing. The language summary now begins just right of the screen midpoint and leaves the final 25 columns untouched for date/time information. If fewer than 16 columns remain for it, the status indicator is omitted; the Loaded languages menu entry remains available. Long lists are shortened with `...`. Recompile and check the status line while editing, outside a prompt.
