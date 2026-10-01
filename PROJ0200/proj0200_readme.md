@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.117**  
-Prepared: **2026-10-02 01:30 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.118**  
+Prepared: **2026-10-02 01:42 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -732,3 +732,7 @@ Exports use the last saved project record: explicitly Save Project first if you 
 ## Version 117: Import helper declaration
 
 Added the forward declaration for EnsureProjectDirectory before the new import code, correcting the undefined-symbol error reported for version 116. Export/import behavior is unchanged. Rebuild with your SAL compiler to verify.
+
+## Version 118: Validate saved-project entries
+
+Project selection, View all projects and batch transfers validate database entries against an existing `.pj` containing the PROJ project-file identifier. Stray document names and missing/invalid project records are excluded from these views and batch exports. The underlying database is not deleted or rewritten by this filtering. A name containing a period remains valid if it actually has a matching saved project. Rebuild and restart TSE to verify the lists.
