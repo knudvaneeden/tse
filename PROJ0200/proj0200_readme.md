@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.104**  
-Prepared: **2026-10-01 22:51 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.113**  
+Prepared: **2026-10-01 23:51 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -678,3 +678,39 @@ The supplied `proj0200.ini` now sets `silent=true`, so opening the Project menu 
 ## Version 104: Change Projects menu entry
 
 Use **Alt+[ → Change Projects…** to choose another existing project. This entry uses the same project selector as Open project. Existing open documents and unsaved edits remain in the ring; project membership changes to the selected project. Open project remains available. Rebuild and restart TSE to load the updated menu.
+
+## Version 105: One-time launcher introduction
+
+`showbeginmessage=true` is the new default in `proj0200.ini`. The first successful run of `projstart.mac` in a TSE session shows the introductory Warn() message once. Subsequent launcher runs and Project menu openings do not repeat it. Restarting TSE resets the one-time state; purging/reloading the launcher does not. Set `showbeginmessage=false` to disable the one-time launcher message. This setting is independent of `silent=true`, which continues to suppress the ordinary repeated introduction. With `silent=false`, ordinary direct runs of proj can still show that introduction. Error warnings are unaffected. Rebuild and restart TSE to test.
+
+## Version 106: Change Projects menu hotkey
+
+Change Projects now underlines **g** (`Chan&ge Projects...` in SAL). Open the Project menu with **Alt+[**, then press **G** to choose Change Projects. G does not conflict with another active entry in this menu. Rebuild and restart TSE to apply the menu change.
+
+## Version 107: Project selector highlighting and selection
+
+The project selector clears the copied block before displaying its list, preventing block highlighting from making several project rows look selected. Choosing an existing project explicitly disables the separate filename prompt and uses that selected project path. Only Open other project file requests a filename. This applies to the shared project selector. Rebuild and restart TSE, then test Change Projects with two saved projects.
+
+## Version 108: Project menu stays available
+
+After a completed Project menu action, the menu is shown again. Press Escape in the Project menu to leave it and return to the editing context. Session tools still opens outside the active Project menu and returns to it afterwards. Ordinary file-picklist and F12 navigation commands are unchanged. Rebuild and restart TSE; verify New Project, Open Project, Change Projects, Close Project and Escape.
+
+## Version 109: Show current active project
+
+Use **Alt+[ → Show current active project…**, or press **A** in the Project menu. It displays the current project name followed by its full saved `.pj` filename. If no project is active, it reports that explicitly; an unsaved project is identified as having no saved filename. This information command does not change projects or documents and keeps the menu available. Rebuild and restart TSE to test.
+
+## Version 110: Active-project command declaration
+
+Added the forward declaration of PROJ_ShowActiveProject before the Project menu definitions, correcting the undefined-symbol error reported when compiling version 109 with SAL Compiler V4.50.rc23. The command behavior is unchanged. Rebuild to verify compilation on your machine.
+
+## Version 111: Project selector navigation
+
+Replaced the project selector's legacy List call with lList, as used by the other project lists. The selected project is read from the selector buffer after acceptance. Explicit CursorUp/CursorDown bindings move one row in the indicated direction and stop at the first/last row. Selector keys are disabled on cleanup. These changes address the reported failure to switch projects and confusing arrow navigation; they need testing with the two saved projects on your TSE installation. Rebuild and restart TSE.
+
+## Version 112: Preserve project-name case
+
+The project selector now displays project names and directories in their stored case, without title-casing names or lowercasing directory labels. For example, PROJ0200CTAGSEXAMPLES stays uppercase. Case-insensitive path comparisons remain for matching Windows filenames; they do not modify the stored names. Rebuild and restart TSE to apply the display change.
+
+## Version 113: Native project-list highlighting
+
+Removed the project selector's custom drawing hook, which applied menu-letter colors to the entire project name and made unselected names look highlighted. TSE now draws the project list with its native list colors and selected-row highlighting. Names retain their stored case; stored directory paths may appear directly in the list. Rebuild and restart TSE, then verify one selected row while moving Up/Down.
