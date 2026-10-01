@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.115**  
-Prepared: **2026-10-02 01:17 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.117**  
+Prepared: **2026-10-02 01:30 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -722,3 +722,13 @@ Removed COMDATABASEMYSQL.BAT: it is unrelated to PROJ0200 and is not part of thi
 ## Version 115: View all projects
 
 Use **Alt+[ → View all projects…**, or press **V** in the Project menu, to view the saved project names recorded in the project database. Enter or Escape closes the view and returns to the Project menu. Viewing does not open, switch, save or delete a project. Use Change Projects to activate another project. Rebuild and restart TSE to test the new command.
+
+## Version 116: Export and import project records
+
+The Project menu includes Export Project, Export All Projects, Import Project and Import All Projects. These transfer saved `.pj` records containing filenames, membership and project settings; they never copy source-file contents. Export Project selects a registered project and asks for a destination `.pj` filename. Export All Projects writes the registered saved projects to an existing directory. Import Project copies one `.pj` into the package project directory and registers it; Import All Projects imports every `.pj` in the selected directory, without recursion. Replacing an existing destination requires confirmation. Import does not activate the project or close documents.
+
+Exports use the last saved project record: explicitly Save Project first if you want recent membership changes included. Referenced document paths are preserved, so those documents must remain available at those paths after import. Only `.pj` records are transferred; CTags indexes and session sidecars are excluded. Regenerate CTags when needed. Cancelled or skipped files are not counted in the transfer total. Rebuild and restart TSE; these new commands need Windows SAL compile and runtime testing.
+
+## Version 117: Import helper declaration
+
+Added the forward declaration for EnsureProjectDirectory before the new import code, correcting the undefined-symbol error reported for version 116. Export/import behavior is unchanged. Rebuild with your SAL compiler to verify.
