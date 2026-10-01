@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.114**  
-Prepared: **2026-10-02 00:31 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.115**  
+Prepared: **2026-10-02 01:17 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -718,3 +718,7 @@ Removed the project selector's custom drawing hook, which applied menu-letter co
 ## Version 114: Package cleanup
 
 Removed COMDATABASEMYSQL.BAT: it is unrelated to PROJ0200 and is not part of this package. Project selector highlighting in version 113 was tested by the user and confirmed to work as expected. Program behavior is unchanged in this cleanup release.
+
+## Version 115: View all projects
+
+Use **Alt+[ → View all projects…**, or press **V** in the Project menu, to view the saved project names recorded in the project database. Enter or Escape closes the view and returns to the Project menu. Viewing does not open, switch, save or delete a project. Use Change Projects to activate another project. Rebuild and restart TSE to test the new command.
