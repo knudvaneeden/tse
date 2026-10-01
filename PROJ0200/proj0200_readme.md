@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.113**  
-Prepared: **2026-10-01 23:51 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.114**  
+Prepared: **2026-10-02 00:31 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -714,3 +714,7 @@ The project selector now displays project names and directories in their stored 
 ## Version 113: Native project-list highlighting
 
 Removed the project selector's custom drawing hook, which applied menu-letter colors to the entire project name and made unselected names look highlighted. TSE now draws the project list with its native list colors and selected-row highlighting. Names retain their stored case; stored directory paths may appear directly in the list. Rebuild and restart TSE, then verify one selected row while moving Up/Down.
+
+## Version 114: Package cleanup
+
+Removed COMDATABASEMYSQL.BAT: it is unrelated to PROJ0200 and is not part of this package. Project selector highlighting in version 113 was tested by the user and confirmed to work as expected. Program behavior is unchanged in this cleanup release.
