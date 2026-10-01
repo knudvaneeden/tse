@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.94**  
-Prepared: **2026-10-01 16:18 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.102**  
+Prepared: **2026-10-01 22:02 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -631,8 +631,42 @@ The integration preserves filename case, widens path variables to SAL's 255-char
 
 Fixed the Configure entry in the session menu bar: SAL requires a menu there, so it now opens `ConfigMenu()`, whose information item displays the integration message. The reported version 92 compiler error at line 2113 is corrected. The first five macros compiled successfully in the user test; `projsession.s` still needs recompilation and runtime testing.
 
-Package version labels in the active sources are synchronized to **1.0.0.0.94**, including `projstart.s`. Original upstream version numbers and historical release notes identify their original versions and remain unchanged.
+Package version labels in the active sources are synchronized to **1.0.0.0.96**, including `projstart.s`. Original upstream version numbers and historical release notes identify their original versions and remain unchanged.
 
 ## Version 94: launching Session tools
 
 The Project menu now queues the Session tools request and launches the companion menu bar after closing the Project menu and restoring its menu state. Previously the companion menu bar was invoked inside the still-active Project menu. Missing or incompatible `projsession.mac` now produces an explicit warning. Rebuild, restart TSE, choose Alt+[ then Session tools, and verify that the File/Search/Utility/Configure/Help menu bar appears. This launch correction still requires runtime verification on the user machine.
+
+## Version 95: advance the file picklist
+
+When reopening the project file picklist, highlight the file immediately below the previously selected file in the same project. For example, selecting and editing `ddd.asp` then returning to the file list highlights `ddd.awk`. The prompt filename also follows that highlighted row. At the final row, keep the final file selected rather than wrap to the first. If the prior file is no longer listed or the project changes, use the usual initial selection. CTags lookup lists retain their existing selection behavior. Rebuild and test this change in TSE.
+
+## Version 96: context above the next file
+
+Reopening the project picklist still highlights the next file, but now shows up to three preceding filenames above it. Near the beginning of the list it shows as many preceding entries as exist. Small picklist windows reduce that context so the selected row stays visible. CTags result lists are unchanged. Rebuild and verify in TSE.
+
+## Version 97: keep editor files open during project setup
+
+New Project no longer asks to close all open files and no longer saves or abandons document buffers as part of that question. Open Project also keeps previous document buffers rather than silently abandoning unchanged files absent from the opened project. Existing unsaved edits stay in the ring. Project metadata can still be saved or replaced; ring membership and project membership are separate. Explicit file-close, editor-exit, and session save/switch commands retain their stated actions. Rebuild and verify New/Open Project with both saved and modified files already open.
+
+## Version 98: Escape cancels without exiting
+
+Escape at the package-managed File/File(s) to edit prompt no longer asks to exit TSE. With files in the ring it cancels the prompt and returns to the editing context from which it was opened. Version 99 replaces the empty-ring fallback described in the original version 98 implementation: Escape keeps the empty file prompt active without creating a document. Further Escape presses in editing have the editor configuration's normal binding; PROJ0200 does not assign them to Exit. Explicit exit commands remain available. Rebuild, restart, and verify repeated Escape from the file list and project menus, including an initially empty ring.
+
+## Version 99: Escape never creates an unnamed document
+
+Escape at a package-managed file prompt returns to the existing editing context when files are open. If the file ring is empty, Escape leaves the file prompt active instead of creating an unnamed buffer or requesting editor exit. New/Open Project keep existing document buffers open. Explicit editor exit commands remain available. Rebuild and restart TSE to test this change.
+
+## Version 100: Escape behavior tested
+
+This release carries forward version 99 without functional changes and uses the unambiguous archive name `proj02001.0.0.0.100.zip`. All package version labels in the source code have been updated to 1.0.0.0.100.
+
+On 2026-10-01, the user tested the Escape behavior in version 1.0.0.0.99 and confirmed that it works correctly: cancelling the file picklist returns to the existing editing context without asking to exit TSE or creating an unnamed buffer. This tested behavior is retained in version 100. The empty-file-ring behavior remains to keep the file prompt active; it was not separately confirmed by this test.
+
+## Version 101: Missing project file diagnostics
+
+Opening a missing project now reports the full project filename and explains that the file or PJ directory may have been deleted. Restore the project metadata or create a new project. A failed project save also reports its filename and asks you to check whether the directory still exists and is writable. These messages do not recreate deleted project membership. The Escape behavior tested in version 99 is unchanged.
+
+## Version 102: Opening projects does not save or close documents
+
+Removed the changed-file save questions from Open Project. Switching project membership leaves existing open documents and their unsaved edits in the ring. Existing buffers are also kept when a saved project requests binary mode; they are not discarded to change mode. Project metadata may still be saved by project operations. Explicit document Save, Close and editor Exit commands retain their normal behavior. Session snapshot Save/Switch is a separate explicit operation. Rebuild and restart TSE, then test opening another project with modified documents in the ring.
