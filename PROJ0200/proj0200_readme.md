@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.103**  
-Prepared: **2026-10-01 22:18 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.104**  
+Prepared: **2026-10-01 22:51 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -674,3 +674,7 @@ Removed the changed-file save questions from Open Project. Switching project mem
 ## Version 103: Quiet startup by default
 
 The supplied `proj0200.ini` now sets `silent=true`, so opening the Project menu does not repeatedly display the informative startup box. Set `silent=false` to show that information again. Error warnings and setup dialogs remain available. The source fallback when the INI is missing remains `silent=false`.
+
+## Version 104: Change Projects menu entry
+
+Use **Alt+[ → Change Projects…** to choose another existing project. This entry uses the same project selector as Open project. Existing open documents and unsaved edits remain in the ring; project membership changes to the selected project. Open project remains available. Rebuild and restart TSE to load the updated menu.
