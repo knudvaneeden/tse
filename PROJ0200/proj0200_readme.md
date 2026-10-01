@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.102**  
-Prepared: **2026-10-01 22:02 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.103**  
+Prepared: **2026-10-01 22:18 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -79,7 +79,7 @@ This package covers **61 language entries**: the **41 built-in parsers** reporte
 
 PROJ manages TSE projects containing many files. It remembers open files and editor state, offers a project file list in the Edit File prompt, associates directories with projects, and can navigate to related files and tags. The included original release is v2.00 (2002). Its original `README.txt` and `SRC/MAC/proj.hlp` provide further details; portions of the original help remain unfinished.
 
-This package adds an optional startup message to `SRC/MAC/proj.si` and supplies `proj0200.ini`. Running `proj` directly shows a `Warn()` box that points to the Projects menu. First-run setup still runs, then the Project menu opens automatically. Later direct runs open the Project menu immediately. The message does not appear when PROJ is invoked with an internal command such as `-m`, or when it is autoloaded. `silent=true` hides only the added startup message; existing error warnings and setup dialogs retain their behavior.
+This package adds an optional startup message to `SRC/MAC/proj.si` and supplies `proj0200.ini`. Running `proj` directly can show an informative `Warn()` box that points to the Projects menu; the supplied INI now suppresses it by default. First-run setup still runs, then the Project menu opens automatically. Later direct runs open the Project menu immediately. The message does not appear when PROJ is invoked with an internal command such as `-m`, or when it is autoloaded. `silent=true` hides only the added startup message; existing error warnings and setup dialogs retain their behavior.
 
 ## Requirements
 
@@ -123,13 +123,13 @@ When saving a project, PROJ can also save this internal clipboard as a `.clp` fi
 Edit `proj0200.ini` beside `proj.mac`:
 
 ```ini
-silent=false
+silent=true
 ctags=g:\utils\ctags.exe
 ctagsdebug=true
 ```
 
-- `silent=false` (default): show the added informative `Warn()` box when `proj` runs directly.
-- `silent=true`: suppress that box.
+- `silent=false`: show the added informative `Warn()` box when `proj` runs directly.
+- `silent=true` (packaged default): suppress that box.
 - `ctags=`: path to a compatible `ctags.exe` for **CTags → Generate CTags file**. The default is `g:\utils\ctags.exe`; an empty setting also uses this default. An absolute path is used as written; a relative path is resolved from the package directory. Paths containing spaces may be enclosed in double quotes.
 
 If the INI file is absent, PROJ behaves as `silent=false`. The `ctags` setting controls the external tag generator; PROJ's project database, paths, and other options use its existing setup and TSE profile settings.
@@ -670,3 +670,7 @@ Opening a missing project now reports the full project filename and explains tha
 ## Version 102: Opening projects does not save or close documents
 
 Removed the changed-file save questions from Open Project. Switching project membership leaves existing open documents and their unsaved edits in the ring. Existing buffers are also kept when a saved project requests binary mode; they are not discarded to change mode. Project metadata may still be saved by project operations. Explicit document Save, Close and editor Exit commands retain their normal behavior. Session snapshot Save/Switch is a separate explicit operation. Rebuild and restart TSE, then test opening another project with modified documents in the ring.
+
+## Version 103: Quiet startup by default
+
+The supplied `proj0200.ini` now sets `silent=true`, so opening the Project menu does not repeatedly display the informative startup box. Set `silent=false` to show that information again. Error warnings and setup dialogs remain available. The source fallback when the INI is missing remains `silent=false`.
