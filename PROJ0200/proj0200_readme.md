@@ -1,13 +1,13 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.91**  
-Prepared: **2026-10-01 15:18 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.94**  
+Prepared: **2026-10-01 16:18 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
 ## Supported CTags languages
 
-The user has verified F12 navigation for every previously listed language, including Emacs Lisp; the newly added Markdown example awaits verification. This records the packaged example tests, not complete parser coverage.
+The user has verified F12 navigation for every listed language, including Emacs Lisp and Markdown. This records the packaged example tests, not complete parser coverage.
 
 This package covers **61 language entries**: the **41 built-in parsers** reported by your Exuberant CTags 5.8 plus **19 package-defined regex parsers**, with Emacs Lisp shown separately from Lisp although both use the same parser. The latter provide basic definition indexing, not full language parsing. TSE SAL takes priority for `.s` and `.si`; `.pl` retains Perl priority. This table lists the packaged example extension for each language; your executable's `--list-maps` and the package configuration determine all accepted extensions. Examples are in `CTAGSEXAMPLES/`.
 
@@ -42,7 +42,7 @@ This package covers **61 language entries**: the **41 built-in parsers** reporte
 | Lisp | `.lisp` | Built-in | F12 verified |
 | Lua | `.lua` | Built-in | F12 verified |
 | Make | `.mak` | Built-in | F12 verified |
-| Markdown | `.md` | Custom regex | F12 pending |
+| Markdown | `.md` | Custom regex | F12 verified |
 | Maple | `.mpl` | Custom regex | F12 verified |
 | Mathematica | `.wl` | Custom regex | F12 verified |
 | MatLab | `.m` | Built-in | F12 verified |
@@ -601,3 +601,38 @@ The user confirmed that F12 navigation works for Emacs Lisp. All listed language
 Markdown is recognized in the loaded-language indicator and by the custom `ProjMarkdown` CTags parser. `CTAGSEXAMPLES/ddd.md` demonstrates heading navigation: regenerate project CTags, put the cursor on `Greet` in `See Greet for the greeting above`, and press F12 to jump to `## Greet`. Markdown indexes headings rather than functions or every word occurrence. The parser covers ATX headings (`#` through `######`), including optional closing hashes; Setext underlined headings and fenced-code awareness are not implemented. For headings containing spaces, use the CTags name prompt and enter the full heading title. The `.markdown` alias is also mapped; add it manually to Known file types when scanning that extension.
 
 The default Known file types list now includes `md`. To stay within SAL's 255-character string limit, the optional `btm` batch alias was removed from that default; custom lists are preserved. Projects with the previous default automatically receive the new default. There are now 62 example source files. Markdown F12 navigation is pending user verification; Windows SAL compilation and CTags runtime testing are required.
+
+## Version 92: editor-session tools from PROJECTS
+
+Open the project menu with **Alt+[**, then choose **Session tools**. This opens an integrated companion macro, `projsession.mac`, adapted from the attached `projects.s` by **Ian Campbell**, with later revisions credited in its source. The original `projects.s` is part of the TSE **Potpourri** options. Its adapted implementation is `SRC/MAC/projsession.s`; the unused original-source copy is omitted from this package. Rebuild using the usual `build.bat` command; the build now compiles and copies six macros, including `projsession`.
+
+| Menu | Added functionality |
+|---|---|
+| File / Save session snapshot | Save named editor session and a `!!LAST!!.PRJ` copy; save modified disk files |
+| File / Restore session snapshot | Restore saved files and editor context; existing ring files are retained |
+| File / Save snapshot & Exit | Save successfully, then use TSE's normal Exit command |
+| File / Save & switch session | Choose a snapshot, save the present session, close saved files, and restore the chosen snapshot |
+| File / Add another snapshot's files | Add files and saved context from another snapshot to the current editor ring |
+| File / List Open | Sortable ring list; name, path, extension and buffer-order sorting; recent-file cycling |
+| Search | Audit bookmark navigation; find/repeat/find-word in a file or across open ring files; multi-file replace; toggle previous file |
+| Utility | Standard TSE `clipview`, `timelog`, and `cmp2bkup` macros if installed |
+
+Snapshots store normal file names, cursor/view coordinates, ordinary and audit bookmarks, the marked block, main and up to 26 named clipboards, histories, keystroke macros, working directory, editor version, insert/autoindent/wrap/margin state, video mode, and binary/hex state. The imported implementation uses TSE's internal history format; incompatible editor-version histories are skipped by default. SAL macro reloading remains disabled by default. Restoring a snapshot applies its editor settings and clipboards globally. Saving collapses split windows with `OneWindow()`; window layouts are not stored. Unsaved unnamed buffers are not captured as document contents. Source files must still exist on disk for restoration.
+
+The portable snapshot store is **`PRJ/` beside `projsession.mac`**, created on first save. Snapshot sidecars are `.CLP` and `.KBD`. Native PROJ0200 project definitions and CTags remain in `PJ/`; `.PRJ` snapshots do not replace `.PJ` project membership, scan settings, or CTags configuration. Files restored into the ring are not automatically registered in the current `.PJ` project. Add them through the native project menu when needed. Multi-file searches operate on the editor ring, including files outside the active project. From the snapshot selection list, Delete offers confirmation to remove the snapshot and its sidecars; source files are kept.
+
+Global Ctrl-K and right-click assignments and automatic startup takeover from PROJECTS were omitted. List-dialog shortcuts stay local to their dialogs; path sorting uses Alt+[. Existing PROJ0200 Alt+[ and F12 assignments remain in use. Session tools load on demand, retain audit/recent-file hooks after use, and can be reopened from the same project menu. Optional direct calls are `ExecMacro("projsession -save")`, `ExecMacro("projsession -restore")`, and `ExecMacro("projsession -append")`. No separate auto-loading setup is required. Macro-path lookup must find the package, as for the other PROJ0200 macros.
+
+The integration preserves filename case, widens path variables to SAL's 255-character limit, adds `_EDIT_HISTORY_` to imported Ask prompts, avoids recursive control-file restoration, checks snapshot write results, and keeps TSE running when restored files are missing. Canceling the switch selection leaves the ring intact. Markdown navigation is now marked F12 verified following the user's successful test.
+
+**Validation:** archive integrity and integration wiring were checked here. Windows SAL compilation and interactive session save/restore tests are still required. Test a named snapshot using a few saved files, a bookmark, a clipboard and changed cursor positions; restart TSE, open Session tools, restore it, and verify the state. Also test cancellation and mixed `.PJ`/`.PRJ` use before adopting the session tools for everyday work.
+
+## Version 93: session menu compiler correction
+
+Fixed the Configure entry in the session menu bar: SAL requires a menu there, so it now opens `ConfigMenu()`, whose information item displays the integration message. The reported version 92 compiler error at line 2113 is corrected. The first five macros compiled successfully in the user test; `projsession.s` still needs recompilation and runtime testing.
+
+Package version labels in the active sources are synchronized to **1.0.0.0.94**, including `projstart.s`. Original upstream version numbers and historical release notes identify their original versions and remain unchanged.
+
+## Version 94: launching Session tools
+
+The Project menu now queues the Session tools request and launches the companion menu bar after closing the Project menu and restoring its menu state. Previously the companion menu bar was invoked inside the still-active Project menu. Missing or incompatible `projsession.mac` now produces an explicit warning. Rebuild, restart TSE, choose Alt+[ then Session tools, and verify that the File/Search/Utility/Configure/Help menu bar appears. This launch correction still requires runtime verification on the user machine.
