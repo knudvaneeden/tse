@@ -1,15 +1,15 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.88**  
-Prepared: **2026-09-30 19:41 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.91**  
+Prepared: **2026-10-01 15:18 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
 ## Supported CTags languages
 
-The user has verified F12 navigation for every listed language, including Emacs Lisp. This records the packaged example tests, not complete parser coverage.
+The user has verified F12 navigation for every previously listed language, including Emacs Lisp; the newly added Markdown example awaits verification. This records the packaged example tests, not complete parser coverage.
 
-This package covers **60 language entries**: the **41 built-in parsers** reported by your Exuberant CTags 5.8 plus **18 package-defined regex parsers**, with Emacs Lisp shown separately from Lisp although both use the same parser. The latter provide basic definition indexing, not full language parsing. TSE SAL takes priority for `.s` and `.si`; `.pl` retains Perl priority. This table lists the packaged example extension for each language; your executable's `--list-maps` and the package configuration determine all accepted extensions. Examples are in `CTAGSEXAMPLES/`.
+This package covers **61 language entries**: the **41 built-in parsers** reported by your Exuberant CTags 5.8 plus **19 package-defined regex parsers**, with Emacs Lisp shown separately from Lisp although both use the same parser. The latter provide basic definition indexing, not full language parsing. TSE SAL takes priority for `.s` and `.si`; `.pl` retains Perl priority. This table lists the packaged example extension for each language; your executable's `--list-maps` and the package configuration determine all accepted extensions. Examples are in `CTAGSEXAMPLES/`.
 
 | Language | Example extension | Parser | Navigation test |
 |---|---|---|---|
@@ -42,6 +42,7 @@ This package covers **60 language entries**: the **41 built-in parsers** reporte
 | Lisp | `.lisp` | Built-in | F12 verified |
 | Lua | `.lua` | Built-in | F12 verified |
 | Make | `.mak` | Built-in | F12 verified |
+| Markdown | `.md` | Custom regex | F12 pending |
 | Maple | `.mpl` | Custom regex | F12 verified |
 | Mathematica | `.wl` | Custom regex | F12 verified |
 | MatLab | `.m` | Built-in | F12 verified |
@@ -594,3 +595,9 @@ Removed a plain comment from the Exuberant CTags options file for compatibility.
 ## Version 88: Emacs Lisp navigation verified
 
 The user confirmed that F12 navigation works for Emacs Lisp. All listed languages now have F12 verified status in the language table and example inventory. This release updates documentation and version labels; CTags behavior is unchanged from version 87.
+
+## Version 91: Markdown
+
+Markdown is recognized in the loaded-language indicator and by the custom `ProjMarkdown` CTags parser. `CTAGSEXAMPLES/ddd.md` demonstrates heading navigation: regenerate project CTags, put the cursor on `Greet` in `See Greet for the greeting above`, and press F12 to jump to `## Greet`. Markdown indexes headings rather than functions or every word occurrence. The parser covers ATX headings (`#` through `######`), including optional closing hashes; Setext underlined headings and fenced-code awareness are not implemented. For headings containing spaces, use the CTags name prompt and enter the full heading title. The `.markdown` alias is also mapped; add it manually to Known file types when scanning that extension.
+
+The default Known file types list now includes `md`. To stay within SAL's 255-character string limit, the optional `btm` batch alias was removed from that default; custom lists are preserved. Projects with the previous default automatically receive the new default. There are now 62 example source files. Markdown F12 navigation is pending user verification; Windows SAL compilation and CTags runtime testing are required.
