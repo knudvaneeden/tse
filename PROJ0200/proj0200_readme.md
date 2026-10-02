@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.123**  
-Prepared: **2026-10-02 02:43 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.126**  
+Prepared: **2026-10-02 18:20**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -766,3 +766,23 @@ Recompile with build.bat and restart TSE. The ZIP and buffer/filter invariants w
 Open or change to the desired project, then choose Load all files in current project (menu hotkey 2). This opens all files from the project picklist. Already open files are skipped, preserving unsaved edits. Files missing from disk are skipped and counted; no empty replacement document is created. A final message reports loaded, already open, and missing/failed counts. If the directory scan is pending, loading follows its completion. A project switch cancels any queued load. The previously active document is restored after loading.
 
 Recompile and restart TSE. Windows SAL compilation and runtime testing remain required.
+
+## Version 1.0.0.0.124: Rename project and explicit menu hotkeys
+
+Open the project to rename, then choose R: Rename project. Enter its new name; capitalization is preserved. The project is saved under the new name in the same directory, its database entry and AutoLoad references are updated, and the old .pj file is removed after a successful save. Existing destination projects are not overwritten. Source files and open documents are kept. Regenerate CTags afterward; old tag/history/keyboard sidecar files may remain under their previous names.
+
+The main project menu uses the explicit &character: Label notation from the supplied example. Hotkeys are N New, Y Copy, O Open, G Change, A Active, V View all, L Load all files, E Export, X Export all, I Import, M Import all, S Save, C Close, D Delete, R Rename, 2 CTags, B Clipboards, 3 Refresh, 4 Settings, 5 Options, 6 Help, 7 Languages, and 8 Session tools. Press F1 for help as before.
+
+Recompile and restart TSE. The ZIP and menu hotkey uniqueness were validated locally; SAL compilation and runtime testing remain required.
+
+## Version 1.0.0.0.125
+
+All occurrences of the word projects in the main project-menu labels are lowercase. Hotkey prefixes remain unchanged. Recompile and restart TSE.
+
+### Updated hotkeys in version 1.0.0.0.125
+
+The main project menu uses unique uppercase letters before digits or punctuation. First letters are preferred where available; conflicting labels use another letter. The current keys are N New, Y Copy, O Open, G Change, A Active project, V View all, L Load all files, E Export, X Export all, I Import, M Import all, S Save, C Close, D Delete, R Rename, T CTags, B Clipboards, F Refresh, P Project settings, Q Options, H Help, U Loaded languages, and J Session tools. The label format is &character: Label. F1 still opens help.
+
+## Version 1.0.0.0.126
+
+The single-project menu labels now read &I: Import project... and &E: Export project..., with project in lowercase. Existing uppercase hotkeys are retained. Recompile and restart TSE.
