@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.120**  
-Prepared: **2026-10-02 01:56 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.121**  
+Prepared: **2026-10-02 02:01 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -737,10 +737,14 @@ Added the forward declaration for EnsureProjectDirectory before the new import c
 
 Project selection, View all projects and batch transfers validate database entries against an existing `.pj` containing the PROJ project-file identifier. Stray document names and missing/invalid project records are excluded from these views and batch exports. The underlying database is not deleted or rewritten by this filtering. A name containing a period remains valid if it actually has a matching saved project. Rebuild and restart TSE to verify the lists.
 
-## Version 1.0.0.0.120
+## Version 1.0.0.0.121
 
 The project file picklist preserves filename and directory capitalization instead of applying title case or lowercase. The forced rebuild introduced in version 119 has been rolled back in version 120 because it caused flickering. Case-insensitive filename matching remains available. Recompile with build.bat and restart TSE. These SAL changes require testing in TSE.
 
-## Version 1.0.0.0.120
+## Version 1.0.0.0.121
 
 Removed the forced file-list rebuild at File > Open. The earlier refresh behavior is restored, while filenames and directory names retain their original capitalization. Recompile and restart TSE; runtime verification is still required.
+
+## Version 1.0.0.0.121
+
+The project menu now has hotkeys X for Export All Projects and M for Import All Projects. The ampersand marks the selected letter in each menu definition. These two letters do not conflict with other current project-menu hotkeys. Recompile with build.bat and restart TSE.
