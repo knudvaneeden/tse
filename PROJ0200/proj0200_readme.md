@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.121**  
-Prepared: **2026-10-02 02:01 CEST** (Europe/Amsterdam)  
+Package version: **1.0.0.0.122**  
+Prepared: **2026-10-02 02:34 CEST** (Europe/Amsterdam)  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -748,3 +748,15 @@ Removed the forced file-list rebuild at File > Open. The earlier refresh behavio
 ## Version 1.0.0.0.121
 
 The project menu now has hotkeys X for Export All Projects and M for Import All Projects. The ampersand marks the selected letter in each menu definition. These two letters do not conflict with other current project-menu hotkeys. Recompile with build.bat and restart TSE.
+
+## Version 1.0.0.0.122: buffer-based Known file types
+
+Known file types are now held in a temporary buffer, one extension per line, and saved in the project `[KnownFileTypes]` section. There is no 255-character limit on the whole list. New projects use `proj0200_filetypes.txt`; edit the defaults through Options > Known file types. Old `Extensions=` entries are not read or migrated. Create new projects for this format.
+
+Project settings > Known file types opens the line list. Insert adds a new extension at the top, Delete removes the selected entry, and Escape returns. Each extension is entered without a leading dot. New entries retain all existing entries. Save Project retains the settings.
+
+Directory scanning gathers filenames and then filters them against the buffer directly. If no recognized files exist but unrecognized extensions were found, a list shows the missing extensions and a Yes/No question offers adding them at the top. Accepting filters the existing scan results again; it does not start a second directory scan. Normal File > Open does not force continuous rebuilding. Exact file sources continue to be included directly.
+
+The supplied `proj0200_binarytypes.txt` contains the user's excluded extensions, one per line, without a leading dot. Matching is case-insensitive. These types are excluded from suggestions; an explicitly selected file remains the user's choice. This is an extension exclusion list, not a content-based binary detector.
+
+Recompile with build.bat and restart TSE. The ZIP and buffer/filter invariants were checked locally. SAL compilation and TSE runtime testing remain necessary on Windows.
