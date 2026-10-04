@@ -1,9 +1,39 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.128**  
-Prepared: **2026-10-04 19:12**  
+Package version: **1.0.0.0.133**  
+Prepared: **2026-10-05 00:06**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
+
+## Search and refresh — version 1.0.0.0.132
+
+Open the project menu with **Alt+[**. Two entries near the top open submenus: **Z: Search projects** and **0: Refresh projects**. Each label ends with **ASCII decimal 16** as the submenu indicator. The same indicator is used on other submenu labels throughout the package.
+
+The Search submenu offers **C** current file, **P** current project, and **A** all projects, each including archives.
+
+Enter the expression and options (`i` for ignore case, `x` for TSE regular expressions). Results show source, line, column, and matching text. Nested members use `archive::member` names. The results list is a viewer: Escape returns to the original file. Search does not activate other projects or open their files in the editor ring. Already-open ordinary files are searched using their current buffer contents, including unsaved edits; other files are read from disk. Archive members are read from disk.
+
+The archive engine reuses GREPZIP 1.0.0.0.14. Supported containers: ZIP, JAR, TAR, TGZ/TAR.GZ, GZ/GZIP, 7z, RAR, BZ2, and XZ, including nested archives up to 32 levels. ZIP/JAR and standalone GZIP use PowerShell/.NET. TAR/TGZ uses Windows `tar.exe` (or 7-Zip as fallback); 7z/BZ2/XZ needs `7z.exe`; RAR uses `rar.exe` or 7-Zip. Set optional `SevenZipExecutable=` and `RarExecutable=` paths in `proj0200.ini`, or leave empty for automatic detection. Extraction failures and missing paths are reported in the search results. A path exceeding 254 characters (SAL's 255-character limit minus the record prefix) is reported rather than searched under a truncated path.
+
+Directory membership follows the project's Known file types and subdirectory/exclusion settings. Archive containers in included directories are also inspected for search, without adding their binary extensions to Known file types. Explicit filenames remain exact. All-project operations use registered saved project records and the current project's in-memory membership, with duplicate physical files processed once. Save changes to other projects before using this scope. No active project switch occurs.
+
+The Refresh submenu offers **C** current file without asking, **Q** current file with asking, **P** current project with asking, **N** current project without asking, **A** all projects without asking, and **Y** all projects with asking.
+
+| Scope | With asking | Without asking |
+|---|---|---|
+| Current file | Confirm the file before reload | Reload directly, subject to the unsaved-edits warning below |
+| Current project | Confirm each matching open file | Reload matching open files, subject to the warning |
+| All projects | Confirm each matching open file | Reload matching open files, subject to the warning |
+
+**Refresh replaces buffer contents with disk contents, discarding unsaved edits.** For “without asking”, if any targeted open buffer has unsaved edits, a **YesNo() warning appears once before any buffer is changed**. No cancels the whole operation; Yes proceeds without individual questions. “With asking” confirms each file separately; No skips that file.
+
+Refresh only affects files already open in the TSE ring. It does not open closed project files, close buffers, change membership, save source files, or refresh the project picklist. Unnamed and missing disk files are not overwritten. Each disk file is read into a temporary staging buffer before replacing its open buffer, so a failed read leaves the original contents intact. Archive refresh reloads the container file itself if open; it does not rewrite archive members. The original file/cursor is restored after the operation and a final count is displayed.
+
+Ordinary current-buffer search also works for unnamed buffers and needs no PowerShell. PowerShell is required for project scope enumeration and archive preparation. Generated `proj0200_scope_request.txt` and batch wrappers remain beside the package for troubleshooting; extracted temporary archive members and the manifest are cleaned after the operation.
+
+Suggested refresh test: open two project files, change one without saving, then choose refresh without asking. Choose **No** at the initial warning and verify both buffers are unchanged. Repeat and choose **Yes** to confirm that disk contents replace the edits. Repeat with asking to confirm that **No** skips only the selected file. Verify that a closed third project file stays closed throughout.
+
+Recompile using `build.bat "C:\path\to\sc32.exe"`. This release has source/static checks; SAL compilation and Windows runtime testing remain pending.
 
 ## Supported CTags languages
 
@@ -800,3 +830,21 @@ Recompile and restart TSE. ZIP integrity, menu hotkey uniqueness, and the unsave
 K: Close saved files in current project closes only members of the active project's picklist. W: Close saved files from all projects closes saved named files across the entire editor ring, including open files not associated with a project. It does not require an active project. Both actions retain modified buffers, unnamed buffers, files not yet saved to disk, and the last buffer needed to keep TSE running. Neither changes project membership, saves source files, or deletes files on disk. A final message reports what was closed and retained.
 
 Recompile and restart TSE. ZIP integrity, unique hotkeys, and source guards were checked locally; SAL compilation and runtime tests remain pending.
+
+## Version 1.0.0.0.130: prominent main-menu actions
+
+Moved all three scoped searches and all six disk refresh actions directly onto the main project menu. Unique hotkeys are Z and 1–8. The one-time YesNo warning before overwriting unsaved edits remains in place. Recompile after extracting this release, restart TSE to unload older macros, and run projstart. SAL compilation and Windows testing remain pending.
+
+## Version 1.0.0.0.131
+
+Added a main-menu divider between the three Search actions and the six Refresh actions.
+
+## Version 1.0.0.0.132
+
+Grouped search and refresh into two prominent main-menu entries with three and six submenu actions respectively. Submenu labels carry ASCII character decimal 16 at the right of their text. The unsaved-edits YesNo warning remains unchanged.
+
+## Version 1.0.0.0.133: centered list dialogs
+
+Open/Change project now centers its project selection box horizontally and vertically at startup and during editing. The same positioning is applied to directory/file membership, all saved projects, autoload projects, known/missing file types, clipboard contents, CTags selection lists, and search results. Large lists are clamped to screen bounds. Cascading submenus retain their normal menu behavior. Recompile and restart TSE to test the updated positioning.
+
+The main-menu labels are now Search projects and Refresh projects, each followed by ASCII decimal 16.
