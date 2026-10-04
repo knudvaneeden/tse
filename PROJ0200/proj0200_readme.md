@@ -1,7 +1,7 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.126**  
-Prepared: **2026-10-02 18:20**  
+Package version: **1.0.0.0.128**  
+Prepared: **2026-10-04 19:12**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
@@ -786,3 +786,17 @@ The main project menu uses unique uppercase letters before digits or punctuation
 ## Version 1.0.0.0.126
 
 The single-project menu labels now read &I: Import project... and &E: Export project..., with project in lowercase. Existing uppercase hotkeys are retained. Recompile and restart TSE.
+
+## Version 1.0.0.0.127: close saved project files in the editor ring
+
+Open or change to the desired project, then choose K: Close saved files in current project. This closes only currently open files present in that project's picklist. It keeps modified buffers, files not yet saved to disk, and buffers outside the project. Project membership, directory sources, and disk files are unchanged. Load all files in current project can reopen them later.
+
+If closing the last editor buffer would exit TSE, that buffer is retained. No unnamed replacement buffer is created. A final message reports closed files, unsaved files retained, and last-buffer protection. If the file scan is pending, closing follows its completion; changing or closing the project cancels a queued operation.
+
+Recompile and restart TSE. ZIP integrity, menu hotkey uniqueness, and the unsaved/last-buffer guards were checked locally. SAL compilation and Windows runtime testing remain pending.
+
+## Version 1.0.0.0.128: close saved files across all projects
+
+K: Close saved files in current project closes only members of the active project's picklist. W: Close saved files from all projects closes saved named files across the entire editor ring, including open files not associated with a project. It does not require an active project. Both actions retain modified buffers, unnamed buffers, files not yet saved to disk, and the last buffer needed to keep TSE running. Neither changes project membership, saves source files, or deletes files on disk. A final message reports what was closed and retained.
+
+Recompile and restart TSE. ZIP integrity, unique hotkeys, and source guards were checked locally; SAL compilation and runtime tests remain pending.
