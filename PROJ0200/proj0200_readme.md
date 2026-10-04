@@ -1,9 +1,52 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.135**  
-Prepared: **2026-10-05 01:06**  
+Package version: **1.0.0.0.136**  
+Prepared: **2026-10-05 01:24**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
+
+## Git uploads — version 1.0.0.0.136
+
+Open **Alt+[**, then **1: File Version Control of projects**, then **G: Git uploads**. **S: Subversion uploads** retains the existing SVN choices.
+
+Git offers the same three scopes and two modes:
+
+| Scope | With notes | Automatic |
+|---|---|---|
+| Current file | C | N |
+| All files in current project | P | Q |
+| All files in all projects | A | B |
+
+**With notes** asks for each file's message and commits each selected destination separately. **Automatic** uses non-empty `gitmessage` directly for one combined commit; if empty, one `Ask()` requests the shared message. All prompts use `_EDIT_HISTORY_`. Cancelling a prompt cancels before the upload helper starts.
+
+Files do not need to be loaded in the editor ring. Closed files use disk contents. With `gitsnapshotunsaved=true`, unsaved named open buffers upload temporary snapshots without saving, renaming, closing, or marking the originals unchanged. Project membership remains intact. Current-project membership follows the project's filename/directory and Known file types settings; all-project scope also reads registered saved projects.
+
+| INI parameter | Default / purpose |
+|---|---|
+| `gitexe` | `G:\CYGWIN\bin\git.exe` |
+| `gitworkingdirectory` | `G:\VERSIONCONTROL\GIT\DDD01\`; existing Git working tree |
+| `gitcygpath` | Empty; detect `cygpath.exe` beside Cygwin Git |
+| `gitbash` | Empty; detect `bash.exe` beside Cygwin Git |
+| `gitlayout` | `flat`; copies basenames directly into the working directory. `paths` preserves source drive/directory names beneath it |
+| `gitmessage` | `recompiled`; empty means ask once in automatic mode |
+| `gitsnapshotunsaved` | `true`; false uploads disk contents |
+| `gitpush` | `false`; true pushes after successful local commits |
+| `gitremote` | `origin`; existing configured remote name |
+| `gitbranch` | Empty; current branch is the remote destination. A value chooses a destination branch |
+
+Matching basenames share a destination; the last selected source wins. Originals retain their locations. For example, `F:\BBC\TAAL\COMADA.BAT` is copied to `G:\VERSIONCONTROL\GIT\DDD01\COMADA.BAT` in flat mode.
+
+The integration adapts the supplied **updaficd.s** copy/add/commit/optional-push workflow in `SRC/MAC/projgit.si`. Cygwin Git runs through **Bash --login**, with filenames passed as arguments and messages passed through a file. Windows paths are converted using that installation's `cygpath.exe`. The original macro is not loaded, so its F12 binding does not replace CTags navigation.
+
+Only selected files are staged and committed; unrelated staged files are excluded using Git's `commit --only`. Unchanged selected files create no new commit. Git must support `add`/`commit --pathspec-from-file` and `--pathspec-file-nul`; unsupported clients are reported before destination copies. An existing repository and configured Git author/committer identity are required. The helper does not initialize repositories, rename branches, rewrite remotes, or force-push.
+
+For remote upload, set `gitpush=true` and use the repository's existing credential setup. No password or token is stored in the package, generated script, or INI. The configured remote branch receives the current local branch history, including earlier unpushed commits. If pushing fails, completed local commits remain. With-notes mode can leave earlier files committed if a later operation fails; copied/staged changes can remain after an error.
+
+Logs and status are saved beside the installation as `proj0200_git_log.txt` and `proj0200_git_status.txt`. Generated request/settings/target/message files and batch/Bash wrappers remain available for troubleshooting.
+
+Local Git tests passed for selected-only commits, retaining unrelated staged changes, new files, names containing spaces or `@`, and unchanged-file detection. SAL compilation and the Windows/Cygwin wrapper still require testing on your machine. Recompile using `build.bat "path\to\sc32.exe"`, restart TSE, then run `projstart`.
+
+**Subversion verification:** the automatic current-project upload in version 135 succeeded with revision **8083**. A binary comparison confirmed `COMADA.BAT` matched its uploaded copy; unchanged files did not require another revision.
 
 ## Cygwin Subversion path correction — version 1.0.0.0.135
 
