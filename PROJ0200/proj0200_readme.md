@@ -1,9 +1,48 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.133**  
-Prepared: **2026-10-05 00:06**  
+Package version: **1.0.0.0.135**  
+Prepared: **2026-10-05 01:06**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
+
+## Cygwin Subversion path correction — version 1.0.0.0.135
+
+The SVN helper now supports the existing Cygwin client. Defaults are `svnexe=G:\CYGWIN\bin\svn.exe` and `svnworkingdirectory=G:\VERSIONCONTROL\SUBVERSION\W1\`.
+
+The helper detects `cygwin1.dll` beside the resolved SVN executable and uses that installation's `cygpath.exe`. Windows paths are converted for `svn info`, `add`, `status`, the commit target-list entries, and the target-list/message-file arguments. Actual copying continues to use Windows paths. Optional repository verification converts the returned repository path back to Windows form. Native Windows SVN remains supported without conversion.
+
+This corrects the reported failure where Cygwin interpreted `G:\VERSIONCONTROL\SUBVERSION\W1` as a relative pathname beneath `/cygdrive/f/BBC/TAAL/`. The log now records the resolved executable, converter, converted paths, and SVN commands. Keep `svnmessage=recompiled` to upload automatically without a message prompt; empty requests one shared message using `_EDIT_HISTORY_`.
+
+`svncygpath=` can explicitly select a converter if automatic detection is unsuitable. See the [Cygwin cygpath documentation](https://cygwin.org/cygwin-ug-net/cygpath.html). Recompile with `build.bat`, restart TSE, and repeat the current-project automatic upload test. Windows/Cygwin execution remains to be verified on your machine.
+
+## Local Subversion uploads — version 1.0.0.0.134
+
+Open **Alt+[**, then **1: File Version Control of projects**. Choose the current file, all files in the current project, or all files in all projects. Each scope offers **with notes** and **automatic**.
+
+- **With notes:** an `Ask()` requests a change message for each file. Each destination is committed separately.
+- **Automatic:** a non-empty `svnmessage` from the INI (default `recompiled`) is used directly for every uploaded file in one commit. If it is empty, one `Ask()` requests the shared message. There are no individual message prompts.
+
+All these prompts use `_EDIT_HISTORY_`. Escape or an empty message cancels before upload starts.
+
+Configure `proj0200.ini`:
+
+| Parameter | Default / purpose |
+|---|---|
+| `svnexe` | `G:\CYGWIN\bin\svn.exe`; executable path or command on PATH |
+| `svncygpath` | Empty; detect `cygpath.exe` beside the Cygwin SVN client. Optional explicit converter path |
+| `svnworkingdirectory` | `G:\VERSIONCONTROL\SUBVERSION\W1\`; existing checkout of a local Subversion repository |
+| `svnrepository` | Empty; optionally specify the repository disk directory to verify |
+| `svnlayout` | `flat`; upload basenames into the working directory. `paths` preserves drive/directory names beneath it |
+| `svnmessage` | `recompiled`; used directly in automatic mode; empty means Ask once |
+| `svnsnapshotunsaved` | `true`; upload temporary snapshots of unsaved named buffers. `false` uploads disk contents |
+
+Matching basenames share the same destination, as requested. If several different sources in one operation have the same basename, **the last source in the scope wins**, and this is logged. Project membership and original filenames remain unchanged.
+
+The implementation adapts the supplied **updafisc.s** copy/add/commit workflow in `SRC/MAC/projsvn.si`. It uses a portable PowerShell helper instead of the original personal command aliases, global configuration, and browser macros. It does not load the original macro or replace the CTags F12 binding. Source buffers are not saved, renamed, closed, or marked unchanged. Only the selected destination files and newly added parent directories are committed.
+
+Install the Subversion command-line client and configure an existing local working copy before using this feature. The helper checks that the checkout repository uses `file://`; it does not create a repository or checkout. Windows PowerShell is required. Upload reports are written beside the package to `proj0200_svn_log.txt` and `proj0200_svn_status.txt`. If a commit fails, copied or added working-copy files can remain; earlier per-file commits in with-notes mode remain committed.
+
+Recompile using `build.bat "path\to\sc32.exe"`, restart TSE, and run `projstart`. SAL compilation and Subversion execution still need testing on your Windows installation.
 
 ## Search and refresh — version 1.0.0.0.132
 
