@@ -1,9 +1,65 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.136**  
-Prepared: **2026-10-05 01:24**  
+Package version: **1.0.0.0.142**  
+Prepared: **2026-10-05 13:23**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
+
+## Backing up the PROJ0200 installation — version 1.0.0.0.142
+
+Backup now skips its own generated request/settings/status/log files, batch wrappers, temporary snapshots, and scope manifests/wrappers **when they are beside the installed helper**. These files can change or be removed during the backup operation. This fixes the reported missing `proj0200_backup_status.txt` failure when backing up the PROJ0200 project itself, and avoids copying the actively written log.
+
+Skipped control files are listed in `proj0200_backup_log.txt`. Package source files, INI settings, project membership, and ordinary user files remain eligible under the existing membership rules. A same-named file outside the installation directory is not excluded. Actual missing user files still produce an error; they are not silently skipped.
+
+Version 141 compiled successfully on the user's Windows SAL compiler. The ZIP backup correction still needs runtime verification. Keep your own `backupdirectories` value and `backupzip=true` when testing ZIP mode after rebuilding.
+
+## SAL macro size correction — version 1.0.0.0.141
+
+Uploads and backups now execute in the separately compiled **projtransfer.s / projtransfer.mac** worker. The main project macro retains the menu entries and passes the selected project membership to the worker without switching or saving projects. This reduces the compiled size of `proj.si`, addressing compiler error **2332: Macro too long** reported in version 140.
+
+`build.bat` now compiles seven entry files, including `projtransfer.s`, and copies its macro into the installation directory. Rebuild the **complete package**, restart TSE, and run `projstart`. Upload/backup menu choices, INI settings, filenames, and logs are unchanged. The standalone worker is intended to run through the project menu.
+
+Static include/dispatch/build checks passed; compilation with your Windows SAL compiler still needs confirmation.
+
+## Backup projects — version 1.0.0.0.140
+
+Open **Alt+[**, then **2: Backup projects**. The label has the ASCII decimal 16 submenu indicator.
+
+- **C: Backup current file**
+- **P: Backup all files in current project**
+- **A: Backup all files in all projects**
+
+Ordinary file copies are the default. Configure one or more destination directories in `proj0200.ini`, separated by semicolons. The default is empty, which requests destinations through `Ask()` with `_EDIT_HISTORY_`. Spaces around separators are ignored. A configured list is used directly. For example:
+
+```ini
+backupdirectories=D:\; H:\; E:\; Z:\
+backupzip=false
+backupsnapshotunsaved=true
+backupzipexe=G:\UTILS\ZIP\PKWARE\pkzipc.exe
+backupzipcommand=cd /d "{source}" && "{exe}" -add -dir "{archive}" "*"
+```
+
+The delivered package leaves `backupdirectories=` empty. Change it to your own destination list. Each destination receives the complete selected set of files; duplicate destination paths are processed once. Relative destination paths resolve beside the package; environment variables are expanded.
+
+Each run gets a unique dated name such as `PROJ0200_current_project_20261005_130400_ab12cd34`. Copy mode creates that subdirectory at every destination. Source drive/directory names are retained inside it, so `F:\BBC\TAAL\COMADA.BAT` becomes `D:\PROJ0200_current_project_...\F\BBC\TAAL\COMADA.BAT`. UNC sources use an `UNC` prefix. Earlier backups are not overwritten. Set `backupzip=true` to create an identically named `.zip` file instead, with the same source-path layout inside it.
+
+| Parameter | Purpose |
+|---|---|
+| `backupdirectories` | Semicolon-separated destinations; empty asks where |
+| `backupzip` | `false`: ordinary copies; `true`: ZIP archives |
+| `backupsnapshotunsaved` | `true`: include unsaved contents of named open buffers through temporary snapshots. `false`: disk contents |
+| `backupzipexe` | ZIP executable path or command on PATH; default `G:\UTILS\ZIP\PKWARE\pkzipc.exe`. Only required for ZIP mode |
+| `backupzipcommand` | Full command template; default is your PKZIP `-add -dir` command |
+
+The command template must contain **`{exe}`**, **`{archive}`**, and **`{source}`**. They become the resolved executable, a temporary ZIP output filename, and the staged source directory. Quote the placeholders as shown. The default changes into the staged directory before running PKZIP, keeping archive paths relative. `%1` through `%9` from your batch wrapper are replaced here by the named placeholders and the staged-file wildcard. The tool must return exit code zero and create the requested ZIP, storing the **contents** of `{source}` at the archive root. The archive is checked for the requested file entries before distribution. Set `backupzipexe` to your full `pkzipc.exe` path or adapt both values for a different ZIP tool. Copy mode does not invoke the ZIP executable.
+
+Project files need not be loaded in the ring. Closed files are read from disk; named open buffers with unsaved edits can be snapshotted. Source files are not saved, renamed, closed, or marked unchanged. No project switch or membership change occurs. The same filename/directory and Known file types membership rules used by project uploads apply to project backups; explicit filenames remain exact. All-project scope combines current membership with registered saved project records and processes duplicate sources once.
+
+The helper first stages the selected files once, then copies that set to each destination. Missing source files stop the backup before destination writes. An unavailable destination is reported while the others are still attempted. A failed destination may contain an incomplete backup folder/file; check the log before relying on it. No incomplete destination is silently reported as successful.
+
+Windows PowerShell is required. `proj0200_backup_log.txt` records the exact completed backup paths and failures; `proj0200_backup_status.txt` reports completion counts. Both are beside the installation. Temporary source snapshots and staging files are removed afterwards. Request/settings files and the batch wrapper remain for troubleshooting.
+
+Recompile using `build.bat`, restart TSE, then run `projstart`. Package checks passed; SAL compilation, Windows copying, and execution of your configured ZIP tool still need testing on your machine.
 
 ## Git uploads — version 1.0.0.0.136
 
