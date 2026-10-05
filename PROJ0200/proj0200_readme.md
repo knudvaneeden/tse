@@ -1,19 +1,35 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.142**  
-Prepared: **2026-10-05 13:23**  
+Package version: **1.0.0.0.145**  
+Prepared: **2026-10-05 15:41**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
-## Backing up the PROJ0200 installation — version 1.0.0.0.142
+## Active project menu label — version 1.0.0.0.145
+
+Renamed the main menu option to **A: View current active project**. Its hotkey and behavior remain unchanged: it displays the active project name and saved project filename. Rebuild with `build.bat`, then restart TSE.
+
+## Import hotkeys — version 1.0.0.0.145
+
+The main project menu now uses **I: Import All projects** and **M: Import project**. Rebuild with `build.bat`, then restart TSE to activate the revised menu.
+
+## Close all projects — version 1.0.0.0.145
+
+Open **Alt+[**, then **3: Close all projects**. Only one project can be active at a time, so this closes its runtime state using the same project-metadata autosave setting as **Close project**. Saved projects remain registered and can be reopened. Open documents, unsaved document edits, source files, and project membership are retained. The option is disabled when no project is active; the project menu remains available until Escape.
+
+Recompile with `build.bat "path\to\sc32.exe"`, restart TSE, and run `projstart`. Static menu, dispatcher, and source checks passed; the new option still needs compilation and runtime testing on Windows.
+
+Ordinary-copy and PKZIP backups of PROJ0200 were verified by the user in version 142: 26 files, one destination, zero failures in each mode, with a readable ZIP archive.
+
+## Backing up the PROJ0200 installation â version 1.0.0.0.145
 
 Backup now skips its own generated request/settings/status/log files, batch wrappers, temporary snapshots, and scope manifests/wrappers **when they are beside the installed helper**. These files can change or be removed during the backup operation. This fixes the reported missing `proj0200_backup_status.txt` failure when backing up the PROJ0200 project itself, and avoids copying the actively written log.
 
 Skipped control files are listed in `proj0200_backup_log.txt`. Package source files, INI settings, project membership, and ordinary user files remain eligible under the existing membership rules. A same-named file outside the installation directory is not excluded. Actual missing user files still produce an error; they are not silently skipped.
 
-Version 141 compiled successfully on the user's Windows SAL compiler. The ZIP backup correction still needs runtime verification. Keep your own `backupdirectories` value and `backupzip=true` when testing ZIP mode after rebuilding.
+Version 141 compiled successfully on the user's Windows SAL compiler. The ZIP backup correction was verified by the user. Keep your own `backupdirectories` value and `backupzip=true` when testing ZIP mode after rebuilding.
 
-## SAL macro size correction — version 1.0.0.0.141
+## SAL macro size correction â version 1.0.0.0.141
 
 Uploads and backups now execute in the separately compiled **projtransfer.s / projtransfer.mac** worker. The main project macro retains the menu entries and passes the selected project membership to the worker without switching or saving projects. This reduces the compiled size of `proj.si`, addressing compiler error **2332: Macro too long** reported in version 140.
 
@@ -21,7 +37,7 @@ Uploads and backups now execute in the separately compiled **projtransfer.s / pr
 
 Static include/dispatch/build checks passed; compilation with your Windows SAL compiler still needs confirmation.
 
-## Backup projects — version 1.0.0.0.140
+## Backup projects â version 1.0.0.0.140
 
 Open **Alt+[**, then **2: Backup projects**. The label has the ASCII decimal 16 submenu indicator.
 
@@ -61,7 +77,7 @@ Windows PowerShell is required. `proj0200_backup_log.txt` records the exact comp
 
 Recompile using `build.bat`, restart TSE, then run `projstart`. Package checks passed; SAL compilation, Windows copying, and execution of your configured ZIP tool still need testing on your machine.
 
-## Git uploads — version 1.0.0.0.136
+## Git uploads â version 1.0.0.0.136
 
 Open **Alt+[**, then **1: File Version Control of projects**, then **G: Git uploads**. **S: Subversion uploads** retains the existing SVN choices.
 
@@ -104,7 +120,7 @@ Local Git tests passed for selected-only commits, retaining unrelated staged cha
 
 **Subversion verification:** the automatic current-project upload in version 135 succeeded with revision **8083**. A binary comparison confirmed `COMADA.BAT` matched its uploaded copy; unchanged files did not require another revision.
 
-## Cygwin Subversion path correction — version 1.0.0.0.135
+## Cygwin Subversion path correction â version 1.0.0.0.135
 
 The SVN helper now supports the existing Cygwin client. Defaults are `svnexe=G:\CYGWIN\bin\svn.exe` and `svnworkingdirectory=G:\VERSIONCONTROL\SUBVERSION\W1\`.
 
@@ -114,7 +130,7 @@ This corrects the reported failure where Cygwin interpreted `G:\VERSIONCONTROL\S
 
 `svncygpath=` can explicitly select a converter if automatic detection is unsuitable. See the [Cygwin cygpath documentation](https://cygwin.org/cygwin-ug-net/cygpath.html). Recompile with `build.bat`, restart TSE, and repeat the current-project automatic upload test. Windows/Cygwin execution remains to be verified on your machine.
 
-## Local Subversion uploads — version 1.0.0.0.134
+## Local Subversion uploads â version 1.0.0.0.134
 
 Open **Alt+[**, then **1: File Version Control of projects**. Choose the current file, all files in the current project, or all files in all projects. Each scope offers **with notes** and **automatic**.
 
@@ -143,7 +159,7 @@ Install the Subversion command-line client and configure an existing local worki
 
 Recompile using `build.bat "path\to\sc32.exe"`, restart TSE, and run `projstart`. SAL compilation and Subversion execution still need testing on your Windows installation.
 
-## Search and refresh — version 1.0.0.0.132
+## Search and refresh â version 1.0.0.0.132
 
 Open the project menu with **Alt+[**. Two entries near the top open submenus: **Z: Search projects** and **0: Refresh projects**. Each label ends with **ASCII decimal 16** as the submenu indicator. The same indicator is used on other submenu labels throughout the package.
 
@@ -163,7 +179,7 @@ The Refresh submenu offers **C** current file without asking, **Q** current file
 | Current project | Confirm each matching open file | Reload matching open files, subject to the warning |
 | All projects | Confirm each matching open file | Reload matching open files, subject to the warning |
 
-**Refresh replaces buffer contents with disk contents, discarding unsaved edits.** For “without asking”, if any targeted open buffer has unsaved edits, a **YesNo() warning appears once before any buffer is changed**. No cancels the whole operation; Yes proceeds without individual questions. “With asking” confirms each file separately; No skips that file.
+**Refresh replaces buffer contents with disk contents, discarding unsaved edits.** For âwithout askingâ, if any targeted open buffer has unsaved edits, a **YesNo() warning appears once before any buffer is changed**. No cancels the whole operation; Yes proceeds without individual questions. âWith askingâ confirms each file separately; No skips that file.
 
 Refresh only affects files already open in the TSE ring. It does not open closed project files, close buffers, change membership, save source files, or refresh the project picklist. Unnamed and missing disk files are not overwritten. Each disk file is read into a temporary staging buffer before replacing its open buffer, so a failed read leaves the original contents intact. Archive refresh reloads the container file itself if open; it does not rewrite archive members. The original file/cursor is restored after the operation and a final count is displayed.
 
@@ -252,7 +268,7 @@ This package adds an optional startup message to `SRC/MAC/proj.si` and supplies 
 ## Requirements
 
 - TSE for Windows with a compatible **32-bit** `ProjDLL.dll`. The original documentation describes TSE Pro 2.8, 3.0, and 4.0; the user has compiled all five entry files using SAL 4.50.rc23 and confirmed that PROJ starts, help opens, and a new project can be created.
-- A SAL compiler compatible with your installed TSE. The bundled `.mac` files are from the original release and can report “macro compiled with wrong version”; recompile from the supplied sources for your TSE version.
+- A SAL compiler compatible with your installed TSE. The bundled `.mac` files are from the original release and can report âmacro compiled with wrong versionâ; recompile from the supplied sources for your TSE version.
 - Optional: `CTAGS.EXE` for tag generation. Download the official [Exuberant Ctags 5.8 Windows ZIP (`ctags58.zip`)](https://sourceforge.net/projects/ctags/files/ctags/5.8/ctags58.zip/download), extract `ctags.exe`, and set its full path in `proj0200.ini` using `ctags=C:\path\to\ctags.exe`. Check `ctags.exe --version` for `+regex`, which the package-defined language rules require. BSC navigation uses the supplied `msbsc60.dll`.
 
 ## Install and run
@@ -260,7 +276,7 @@ This package adds an optional startup message to `SRC/MAC/proj.si` and supplies 
 1. Extract this ZIP, preserving `SRC/MAC` and `SRC/DLL` if you want to rebuild the program.
 2. From the extracted package root, run `build.bat "F:\WORDPROC\tse32_v45024\sc32.exe"` from that root directory, substituting the path to the compiler matching your TSE version. It compiles the five entry macros and copies the compiled macros and help file to the same directory as both DLLs and the INI. Alternatively, compile `SRC/MAC/proj.si`, `SRC/MAC/pjfile.si`, `SRC/MAC/gethelp.si`, `SRC/MAC/helphelp.s`, and `SRC/MAC/projstart.s` with the SAL compiler supplied for your installed TSE. Compile in `SRC/MAC` so the included `.si` and `.inc` files resolve. The original README suggests `SC32 PROJ.SI`, `SC32 PJFILE.SI`, `SC32 GETHELP.SI`, and `SC32 HELPHELP.S`; also compile `SC32 PROJSTART.S` for this portable package. If your compiler does not accept `.si` as an input extension, make a copy of the top-level `.si` files with `.s` extensions for compilation; keep their includes alongside them.
 3. Put the newly compiled `proj.mac`, `pjfile.mac`, `gethelp.mac`, `helphelp.mac`, `projstart.mac`, the included `ProjDLL.dll`, `msbsc60.dll`, and `SRC/MAC/proj.hlp` together in a directory of your choice (the installation directory). Put `proj0200.ini` and `proj0200_ctags_languages.conf` beside `proj.mac`. Ensure TSE can execute macros from that directory, for example by supplying the full path in **Macro -> Execute**. Do not substitute the old bundled `.mac` files for a newer compiler's output.
-4. In TSE, choose **Macro → Execute**, enter the full path to `projstart.mac`, and press **Enter**. Follow the first-run prompts. For startup project selection, add the compiled `projstart.mac` to TSE's AutoLoad list yourself. This optional TSE-wide setting is outside the package.
+4. In TSE, choose **Macro â Execute**, enter the full path to `projstart.mac`, and press **Enter**. Follow the first-run prompts. For startup project selection, add the compiled `projstart.mac` to TSE's AutoLoad list yourself. This optional TSE-wide setting is outside the package.
 5. The Project menu opens when `projstart.mac` runs. Create or open a project there. Press **Alt+[** to reopen it later. Other default keys include **Alt+H** (associated header), **F12** (file at cursor), **Shift+F8** (grep project), and **F12** (tag at cursor).
 
 
@@ -272,7 +288,7 @@ Place the cursor on a symbol use and press **F12** (Goto CTags definition at cur
 
 ## Language support (1.0.0.0.37)
 
-The configured Exuberant Ctags 5.8 program supports 41 built-in languages, including C, C++, C#, Java, JavaScript, Python, Perl, PHP, Ruby, Lua, HTML, shell scripts, and many others. The authoritative list is [Exuberant Ctags supported languages](https://ctags.sourceforge.net/languages.html); on your machine run `"g:\utils\ctags.exe" --list-languages` to see the actual languages of your executable. TSE SAL (`.s` and `.si`) takes priority over the built-in Assembly mapping of `.s`: the included `proj0200_ctags_languages.conf` defines a TSESal parser for procedures, menu declarations, and defines, and the first variable declared on a line. Keep that file beside `proj.mac`. It requires a CTags executable built with regular-expression support (`+regex` in `ctags.exe --version`). Other languages retain the executable’s own mappings. The pasted 41-language extension table is not necessarily the mapping in your particular executable; check `ctags.exe --list-maps` as well as `--list-languages`.
+The configured Exuberant Ctags 5.8 program supports 41 built-in languages, including C, C++, C#, Java, JavaScript, Python, Perl, PHP, Ruby, Lua, HTML, shell scripts, and many others. The authoritative list is [Exuberant Ctags supported languages](https://ctags.sourceforge.net/languages.html); on your machine run `"g:\utils\ctags.exe" --list-languages` to see the actual languages of your executable. TSE SAL (`.s` and `.si`) takes priority over the built-in Assembly mapping of `.s`: the included `proj0200_ctags_languages.conf` defines a TSESal parser for procedures, menu declarations, and defines, and the first variable declared on a line. Keep that file beside `proj.mac`. It requires a CTags executable built with regular-expression support (`+regex` in `ctags.exe --version`). Other languages retain the executableâs own mappings. The pasted 41-language extension table is not necessarily the mapping in your particular executable; check `ctags.exe --list-maps` as well as `--list-languages`.
 
 PROJ now passes **all files already in the project** to ctags; the earlier C/C++-only filter is gone. Ctags chooses its parser by file extension and ignores files whose language it does not recognize. New project defaults include several common extensions, such as `java`, `py`, `js`, `cs`, `php`, and `rb`. For other languages or an existing project, add the extension to **Project Settings -> Known file types** when scanning a directory, then refresh the file list and generate CTags again. You can also add a specific full filename under **Add files to project**; exact file entries are passed to ctags regardless of the known types list. PROJ does not change the languages built into your `ctags.exe`. With no project open, generation indexes the current file only.
 
@@ -298,7 +314,7 @@ ctagsdebug=true
 
 - `silent=false`: show the added informative `Warn()` box when `proj` runs directly.
 - `silent=true` (packaged default): suppress that box.
-- `ctags=`: path to a compatible `ctags.exe` for **CTags → Generate CTags file**. The default is `g:\utils\ctags.exe`; an empty setting also uses this default. An absolute path is used as written; a relative path is resolved from the package directory. Paths containing spaces may be enclosed in double quotes.
+- `ctags=`: path to a compatible `ctags.exe` for **CTags â Generate CTags file**. The default is `g:\utils\ctags.exe`; an empty setting also uses this default. An absolute path is used as written; a relative path is resolved from the package directory. Paths containing spaces may be enclosed in double quotes.
 
 If the INI file is absent, PROJ behaves as `silent=false`. The `ctags` setting controls the external tag generator; PROJ's project database, paths, and other options use its existing setup and TSE profile settings.
 
@@ -350,9 +366,9 @@ The batch file uses `cd /d` for directory changes, so it can run from Windows `c
 
 ## Project reopening and Add Files in 1.0.0.0.13
 
-A `.PJ` project stores **directories** in `[Paths]`. `FOOBAR01.pj` showed `c:\temp\ddd.s` and `c:\temp\ddd.txt` under `[Paths]`, while `[FilesInProject]` remained empty. Enter `C:\TEMP\` in **Project Settings → Add files to project**, then add `txt` under **Known file types** (the default already contains `s`). The file list is generated from those directory paths and known extensions. To restore specific open buffers and cursor positions, open the files in TSE and save the project; `[Buffers]` and `[Windows]` are separate from `[Paths]`. In 1.0.0.0.13, `pjfile.si` rejected individual files in that prompt; version 1.0.0.0.14 accepts them and converts them automatically.
+A `.PJ` project stores **directories** in `[Paths]`. `FOOBAR01.pj` showed `c:\temp\ddd.s` and `c:\temp\ddd.txt` under `[Paths]`, while `[FilesInProject]` remained empty. Enter `C:\TEMP\` in **Project Settings â Add files to project**, then add `txt` under **Known file types** (the default already contains `s`). The file list is generated from those directory paths and known extensions. To restore specific open buffers and cursor positions, open the files in TSE and save the project; `[Buffers]` and `[Windows]` are separate from `[Paths]`. In 1.0.0.0.13, `pjfile.si` rejected individual files in that prompt; version 1.0.0.0.14 accepts them and converts them automatically.
 
-`proj.si` now tries to reopen the last project when TSE starts with a single unnamed buffer, as well as when it starts with no files. PROJ previously skipped this step when `NumFiles()` was one. Verify this with **Options → Open last project** enabled. At TSE's `File(s) to edit` prompt, **Escape** asks for confirmation before exiting. **No** keeps the prompt open; **Yes** exits. **Alt+[** opens the project menu there.
+`proj.si` now tries to reopen the last project when TSE starts with a single unnamed buffer, as well as when it starts with no files. PROJ previously skipped this step when `NumFiles()` was one. Verify this with **Options â Open last project** enabled. At TSE's `File(s) to edit` prompt, **Escape** asks for confirmation before exiting. **No** keeps the prompt open; **Yes** exits. **Alt+[** opens the project menu there.
 
 ## Automatic directory and file type in 1.0.0.0.14
 
@@ -362,7 +378,7 @@ Version 1.0.0.0.14 converted a full filename to its parent directory and scanned
 
 ## Exact filenames in 1.0.0.0.15
 
-In **Project Settings → Add files to project**, enter `C:\TEMP\ddd.txt` and `C:\TEMP\ddd.s` as two separate entries. Full filenames stay exact in `[Paths]` and contribute only those two files to the generated project file list. A directory entry such as `C:\TEMP\` still scans that directory using **Known file types**. Exact filenames work regardless of Known file types and may be mixed with directory entries. Duplicate file entries are removed during the sorted merge. A changed path list invalidates the old `[FilesInProject]` cache, allowing the next rebuild to reflect the new selection. No DLL rebuild is required; compile `pjfile.si` and `proj.si` via `build.bat`.
+In **Project Settings â Add files to project**, enter `C:\TEMP\ddd.txt` and `C:\TEMP\ddd.s` as two separate entries. Full filenames stay exact in `[Paths]` and contribute only those two files to the generated project file list. A directory entry such as `C:\TEMP\` still scans that directory using **Known file types**. Exact filenames work regardless of Known file types and may be mixed with directory entries. Duplicate file entries are removed during the sorted merge. A changed path list invalidates the old `[FilesInProject]` cache, allowing the next rebuild to reflect the new selection. No DLL rebuild is required; compile `pjfile.si` and `proj.si` via `build.bat`.
 
 ## Exact-file sort fix in 1.0.0.0.18
 
@@ -382,7 +398,7 @@ PROJ now writes the highlighted project file's full path into TSE's **File(s) to
 
 ## Reopen the project picker while editing (1.0.0.0.20)
 
-With a project open, choose **File → Open** to show TSE's **File to edit:** prompt. PROJ now also attaches its project file list to this singular prompt, in addition to the startup **File(s) to edit:** prompt. Use the arrow keys to choose a file, then Enter to open it. The previously edited file remains in TSE's ring. Rebuild with `build.bat`; test this menu path in TSE.
+With a project open, choose **File â Open** to show TSE's **File to edit:** prompt. PROJ now also attaches its project file list to this singular prompt, in addition to the startup **File(s) to edit:** prompt. Use the arrow keys to choose a file, then Enter to open it. The previously edited file remains in TSE's ring. Rebuild with `build.bat`; test this menu path in TSE.
 
 ## Prompt repaint (1.0.0.0.21)
 
@@ -390,11 +406,11 @@ After returning from the project picker to an editing window, PROJ requests one 
 
 ## Project transition repaint (1.0.0.0.22)
 
-Closing and reopening a project could leave repeated `1` and `[ End` fragments in the editing area. PROJ now schedules a full display refresh after the project menu returns to the editor. The earlier picker cleanup also called `UpdateDisplay()` while the prompt was still active; TSE documents that this is unsupported, so that premature call was removed. Recompile with `build.bat`, then repeat **Close project → Open project** several times to verify the screen. This change has not been run under TSE here.
+Closing and reopening a project could leave repeated `1` and `[ End` fragments in the editing area. PROJ now schedules a full display refresh after the project menu returns to the editor. The earlier picker cleanup also called `UpdateDisplay()` while the prompt was still active; TSE documents that this is unsupported, so that premature call was removed. Recompile with `build.bat`, then repeat **Close project â Open project** several times to verify the screen. This change has not been run under TSE here.
 
 ## Single-window project reopen (1.0.0.0.23)
 
-The preceding redraw did not resolve repeated line-number columns after **Close project → Open project**. For a project with one saved edit window, PROJ now uses TSE's current single window instead of reconstructing its saved geometry. It still reopens project buffers and restores their recorded positions. Projects with multiple saved windows keep the original restoration path. Recompile `pjfile.si` using `build.bat`; check repeated close/open of a one-window project in TSE. The behavior has not been run under TSE here.
+The preceding redraw did not resolve repeated line-number columns after **Close project â Open project**. For a project with one saved edit window, PROJ now uses TSE's current single window instead of reconstructing its saved geometry. It still reopens project buffers and restores their recorded positions. Projects with multiple saved windows keep the original restoration path. Recompile `pjfile.si` using `build.bat`; check repeated close/open of a one-window project in TSE. The behavior has not been run under TSE here.
 
 ## CTags path (1.0.0.0.24)
 
@@ -414,7 +430,7 @@ Version 1.0.0.0.26 passed `draw_menu` correctly but the DLL exact-lookup flag st
 
 ## Inspect CTags command (1.0.0.0.28)
 
-With `ctagsdebug=true`, **CTags → Generate CTags file** copies the actual command line to the Windows clipboard. The generated `proj0200_ctags_run.bat` remains in the installation directory for inspection. For a whole-project build, it also retains the input file list as `proj0200_ctags_files.txt` beside `proj.mac`; if an ignore file is used, it retains `proj0200_ctags_ignore.txt` there. The copied command references these files, so it can be pasted into a command prompt for diagnosis. Set `ctagsdebug=false` after testing to resume temporary input cleanup. This setting also enables the F12 lookup trace described below. Recompile `proj.si` via `build.bat`.
+With `ctagsdebug=true`, **CTags â Generate CTags file** copies the actual command line to the Windows clipboard. The generated `proj0200_ctags_run.bat` remains in the installation directory for inspection. For a whole-project build, it also retains the input file list as `proj0200_ctags_files.txt` beside `proj.mac`; if an ignore file is used, it retains `proj0200_ctags_ignore.txt` there. The copied command references these files, so it can be pasted into a command prompt for diagnosis. Set `ctagsdebug=false` after testing to resume temporary input cleanup. This setting also enables the F12 lookup trace described below. Recompile `proj.si` via `build.bat`.
 
 ## F12 lookup trace (1.0.0.0.33)
 
@@ -468,7 +484,7 @@ F12 on an indexed name in a `.s` or `.si` file now applies the same priority to 
 
 Exuberant CTags 5.8 lacks a built-in Rust parser. The package options file `proj0200_ctags_languages.conf` adds a regex-based `ProjRust` language and maps `.rs` to it. It indexes common `fn` (including basic `pub`, `async`, `const`, and `unsafe` qualifiers), `struct`, `enum`, `trait`, `mod`, `type`, `const`, `static`, and `macro_rules!` declarations. The bundled DLL recognizes the one-letter tag kinds used by these rules. This is deliberately a basic index: it cannot parse Rust scopes, generics, attributes, re-exports, or every form of declaration. The file also keeps the TSE SAL `.s`/`.si` priority rules.
 
-For a **new** project, `rs` is now in **Known file types**, so adding a directory can find `.rs` files. An existing project retains its saved settings: add `rs` to **Project Settings → Known file types** if you use directory scanning, or add a specific `.rs` file by its full path. Generate the CTags file again, then place the cursor on a Rust definition name and press F12. Keep the renamed options file beside `proj.mac` after extracting a fresh ZIP. Verify with your Windows CTags executable; this workspace has not run it.
+For a **new** project, `rs` is now in **Known file types**, so adding a directory can find `.rs` files. An existing project retains its saved settings: add `rs` to **Project Settings â Known file types** if you use directory scanning, or add a specific `.rs` file by its full path. Generate the CTags file again, then place the cursor on a Rust definition name and press F12. Keep the renamed options file beside `proj.mac` after extracting a fresh ZIP. Verify with your Windows CTags executable; this workspace has not run it.
 
 ## Additional CTags languages (1.0.0.0.44)
 
@@ -497,7 +513,7 @@ For projects created before this version, saved **Known file types** remain unch
 
 ## Visible subdirectory scan choice (1.0.0.0.45)
 
-Choose **Alt+[ → Project Settings → Add files or scan directories**. Press **Ins** and enter an exact filename or an existing directory. For a directory, PROJ explicitly asks **“Also scan subdirectories of this directory?”**; Yes enables recursive scanning, No scans that directory only. In the path list, entries with recursion show **“(includes subdirectories)”**. Select a directory and press **Ctrl+S** to toggle that option later; the full shortcut is displayed in the list footer. **Known file types** filters directory scans; an exact filename includes only that file. Save the path list with **Enter**, then generate the CTags file when needed.
+Choose **Alt+[ â Project Settings â Add files or scan directories**. Press **Ins** and enter an exact filename or an existing directory. For a directory, PROJ explicitly asks **âAlso scan subdirectories of this directory?â**; Yes enables recursive scanning, No scans that directory only. In the path list, entries with recursion show **â(includes subdirectories)â**. Select a directory and press **Ctrl+S** to toggle that option later; the full shortcut is displayed in the list footer. **Known file types** filters directory scans; an exact filename includes only that file. Save the path list with **Enter**, then generate the CTags file when needed.
 
 ## Windows CTags download (1.0.0.0.46)
 
@@ -513,7 +529,7 @@ The CTags batch command was complete in user testing, but its input list contain
 
 ## CTags loader completion (1.0.0.0.49)
 
-After CTags writes the tag file, PROJ now waits for the DLL to finish loading it before testing the definition count. A new file previously returned the DLL status “load in progress,” which PROJ mistook for an empty index. A nonzero TSE command return alone no longer raises a warning if the tag file loads with definitions. If generation still fails, the warning includes both the command return and the loaded count; run `proj0200_ctags_run.bat` in cmd.exe and inspect the retained input list. Regenerate CTags after recompiling `proj.si`, then place the cursor on `draw_menu` and press F12.
+After CTags writes the tag file, PROJ now waits for the DLL to finish loading it before testing the definition count. A new file previously returned the DLL status âload in progress,â which PROJ mistook for an empty index. A nonzero TSE command return alone no longer raises a warning if the tag file loads with definitions. If generation still fails, the warning includes both the command return and the loaded count; run `proj0200_ctags_run.bat` in cmd.exe and inspect the retained input list. Regenerate CTags after recompiling `proj.si`, then place the cursor on `draw_menu` and press F12.
 
 ## TSE SAL uppercase declarations (1.0.0.0.50)
 
@@ -588,18 +604,18 @@ If F12 shows a list of other files, it is listing definitions for the symbol und
 
 The tested Exuberant CTags 5.8 HTML parser lists named anchors and JavaScript functions. The prior sample's heading `id="greet"` produced no tag. The revised `ddd.html` defines `<a name="HtmlGreeting"></a>` and uses that name in a later hyperlink. Regenerate tags and press F12 on `HtmlGreeting` in the hyperlink. Expected destination: the named anchor at line 5. The user has now verified this HTML jump. Make's `GREETING` example is now verified: F12 jumped from its recipe use to line 1.
 
-## Version 1.0.0.0.63 — startup help
+## Version 1.0.0.0.63 â startup help
 
 The startup message displays package version **1.0.0.0.63** and explains **F1** help. Dismiss the message to open the Project menu; press **F1** there to open PROJ help. The menu also labels its Help entry with `<F1>`. This F1 binding applies while the Project menu is open. Recompile with `build.bat` before testing.
 
-## Version 1.0.0.0.64 — optional INI prompt overrides
+## Version 1.0.0.0.64 â optional INI prompt overrides
 
 All three settings are empty by default, preserving interactive prompts:
 
 | Setting | When configured |
 |---|---|
 | `projectdirectoryorfilename` | Bypasses the new-project filename prompt and the Open Project selection. A bare name such as `FOOBAR01` resolves to `PJ/FOOBAR01.pj`; other relative paths resolve from the package directory. Explicit project filenames supplied internally still take priority. Existing overwrite and close/save confirmations remain. |
-| `scanpath` | Bypasses “Enter directory to scan or exact filename” when you add a list entry (Insert). An exact filename adds only that file; a directory uses the existing Known file types filter. Relative paths resolve from the package directory. |
+| `scanpath` | Bypasses âEnter directory to scan or exact filenameâ when you add a list entry (Insert). An exact filename adds only that file; a directory uses the existing Known file types filter. Relative paths resolve from the package directory. |
 | `scansubdirectories` | `yes` scans recursively; `no` scans only the selected directory. Empty keeps the question. Applies only to directories. Other values produce an error message. |
 
 Example for a clean test installation:
@@ -610,15 +626,15 @@ scanpath=CTAGSEXAMPLES
 scansubdirectories=no
 ```
 
-Choose **New project** or **Open project** normally; these values do not automatically create a project or start a scan at startup. In **Project settings → Add files or scan directories**, press **Insert** to add the configured scan path, then **Enter** to save the list. Clear `scanpath` to enter other files interactively. Existing list entries are preserved.
+Choose **New project** or **Open project** normally; these values do not automatically create a project or start a scan at startup. In **Project settings â Add files or scan directories**, press **Insert** to add the configured scan path, then **Enter** to save the list. Clear `scanpath` to enter other files interactively. Existing list entries are preserved.
 
 HTML navigation has now also been verified by the user: F12 on `HtmlGreeting` in the hyperlink jumps to its named anchor. Recompile this version with `build.bat`; the new INI override code requires testing in TSE.
 
-## Version 1.0.0.0.65 — startup Project menu selection
+## Version 1.0.0.0.65 â startup Project menu selection
 
 Set `startprojectmenu=New Project` (default) or `startprojectmenu=Open Project` in `proj0200.ini`. When the startup Project menu appears, the chosen entry is highlighted and waits for your action; press Enter to execute it. Empty also selects New Project. This setting applies to the startup menu; subsequent Alt+[ openings retain the existing menu behavior. Recompile and test the selection in TSE.
 
-## Version 1.0.0.0.66 — BETA ordinary patterns
+## Version 1.0.0.0.66 â BETA ordinary patterns
 
 The supplied tag file contained no definition from `ddd.bet`. The BETA parser disables ordinary pattern tags (`p`) by default. The package configuration now adds `--beta-kinds=+p`, enabling them without replacing the built-in parser. `ddd.bet` is now multiline: `greet` is defined on line 4 and used on line 6.
 
@@ -633,7 +649,7 @@ type C:\TEMP\ddd_beta.tag
 
 Run these commands from the extracted package's main directory.
 
-## Version 1.0.0.0.67 — CTags navigation keys
+## Version 1.0.0.0.67 â CTags navigation keys
 
 | Key | Action |
 |---|---|
@@ -646,11 +662,11 @@ All package source bindings, labels, example instructions, and README key refere
 
 This version includes the BETA ordinary-pattern fix from version 66. Regenerate CTags, then test **F12** on `greet` at line 6 of `CTAGSEXAMPLES/ddd.bet`; expected destination is line 4.
 
-## Version 1.0.0.0.68 — resolve duplicate F12 binding
+## Version 1.0.0.0.68 â resolve duplicate F12 binding
 
 The previous version assigned F12 to both CTags lookup and Open file at cursor, producing warning 1106 and stopping `build.bat`. Open file at cursor now uses **Ctrl+Alt+F12**. CTags keeps **F12**, **Ctrl+F12**, **Shift+F12**, and **Alt+Shift+F12**. Recompile this version; compilation and navigation still require confirmation in TSE.
 
-## Version 1.0.0.0.69 — Ant target indexing
+## Version 1.0.0.0.69 â Ant target indexing
 
 The supplied project tag file had no entries from `ddd.build.xml`. The configuration now supplements the Ant parser with an explicit target-name regex. This indexes a target whose `name` attribute immediately follows `<target`, as in the packaged sample; it is not a general XML parser. The filename remains `ddd.build.xml` for Ant language detection.
 
@@ -658,7 +674,7 @@ Regenerate CTags and press **F12** on `AntGreeting` in `depends="AntGreeting"` a
 
 BETA navigation is now confirmed working by the user.
 
-## Version 1.0.0.0.70 — explicit Ant filename-pattern mapping
+## Version 1.0.0.0.70 â explicit Ant filename-pattern mapping
 
 The version 69 trace correctly extracted `AntGreeting` but the generated tag file still contained no Ant entry. This version adds `--langmap=Ant:+(*.build.xml)`: an explicit filename wildcard rather than reliance on the executable's compound extension mapping. The explicit target regex remains. The mapping change needs verification with Windows Exuberant CTags 5.8.
 
@@ -675,42 +691,42 @@ The verbose output should identify the file as Ant and the output should include
 g:\utils\ctags.exe --options=proj0200_ctags_languages.conf --language-force=Ant --excmd=n -f C:\TEMP\ddd_ant.tag CTAGSEXAMPLES\ddd.build.xml
 ```
 
-## Version 1.0.0.0.71 — Ant detection for Windows CTags 5.8
+## Version 1.0.0.0.71 â Ant detection for Windows CTags 5.8
 
 The user's direct tests confirm that forced Ant parsing generates `AntGreeting` at line 2, while automatic detection reports `ddd.build.xml` as an unknown language. The configuration now uses `--langmap=Ant:+.xml` instead of the compound filename pattern. This maps all `.xml` files to Ant; it indexes Ant projects and targets, not arbitrary XML elements. Other language mappings remain unchanged.
 
 Regenerate project CTags, then test F12 on `AntGreeting` at line 5 of `ddd.build.xml`. Expected destination: line 2. Automatic detection with the new simple extension mapping still needs confirmation on Windows.
 
 
-## Version 1.0.0.0.72 — SLang example compatible with Exuberant CTags 5.8
+## Version 1.0.0.0.72 â SLang example compatible with Exuberant CTags 5.8
 
 The `ddd.sl` function header and body now occupy separate lines. The built-in SLang parser rejects header lines containing a semicolon, so the previous one-line function produced no tag. Regenerate the project CTags file, open `CTAGSEXAMPLES/ddd.sl`, and press F12 on `greet` in the final call (line 6). The expected destination is the definition on line 1. This change still needs testing in TSE on Windows.
 
-## Version 1.0.0.0.73 — CTags chooser starts at the current file
+## Version 1.0.0.0.73 â CTags chooser starts at the current file
 
 When F12 finds multiple definitions, the chooser initially highlights the first matching definition from the current file. If none exists, it highlights the first match with the same file extension. Otherwise it retains the first match. All matches remain available, and Enter opens the highlighted definition. The list scrolls to show the selected row. Existing nearest preceding TSE SAL lookup remains in effect.
 
 SLang, Ant, and Java example navigation has now been confirmed by user testing. The new chooser selection still needs compilation and testing in TSE on Windows.
 
-## Version 1.0.0.0.74 — Remember the project file picklist selection
+## Version 1.0.0.0.74 â Remember the project file picklist selection
 
 Reopening the project file picklist highlights the last selected filename and scrolls it into view. The filename field follows that selection. Selection is remembered while the macro remains loaded, for the most recently used project; restarting TSE clears it. If that file is removed or a different project is opened, normal initial selection applies. CTags chooser selection from version 73 was confirmed by user testing. The new file picklist behavior needs compilation and testing in TSE on Windows.
 
-## Version 1.0.0.0.75 — Edit history for every Ask prompt
+## Version 1.0.0.0.75 â Edit history for every Ask prompt
 
 All 11 executable `Ask()` calls now explicitly use `_EDIT_HISTORY_` as their history argument, including project filenames, directory scan prompts, search paths, associated extensions, project display names, CTags lookup/reference prompts, and Windows help prompts. Previously custom CTags and path prompt histories now use the shared edit history too. Configured INI overrides still skip their corresponding prompts. Recompile using build.bat; SAL compilation and runtime verification must be performed on Windows.
 
-## Version 1.0.0.0.76 — Vera example with a top-level task
+## Version 1.0.0.0.76 â Vera example with a top-level task
 
 The Vera example now declares `task greet()` outside the `program` block and calls it inside that block. Previously the generated tags contained only the program name `ddd`. Regenerate CTags, open `ddd.vr`, and press F12 on `greet` in line 8; the expected destination is line 1. This example still requires testing with Windows Exuberant CTags 5.8.
 
 YACC `.y` navigation was confirmed: test lowercase `greet` in `start: greet;`, rather than uppercase token `GREET`. SQL contains separate tags for table `greeting` and column `greeting.message`; the duplicate SQL file-picklist row remains under investigation and requires the project `.pj` file.
 
-## Version 1.0.0.0.77 — Exact symbol filtering in the CTags chooser
+## Version 1.0.0.0.77 â Exact symbol filtering in the CTags chooser
 
 The chooser now checks each returned symbol explicitly. Looking up `greeting` excludes `greeting.message`, even when the DLL returns that prefix match despite the exact lookup flag. Multiple definitions with the exact requested name remain selectable. A single exact definition opens directly. The SQL file list was confirmed to contain one filename; its two CTags rows represented a table and a column. Vera navigation has now been confirmed by user testing. Recompile and test F12 on `greeting` in line 3 of `ddd.sql`; it should jump directly to line 1.
 
-## Version 1.0.0.0.78 — Alt+[ replaces Alt+P
+## Version 1.0.0.0.78 â Alt+[ replaces Alt+P
 
 The Project menu shortcut is now **Alt+[** (Alt plus the left square bracket). Startup instructions and documentation use the new shortcut. The help viewer print shortcut was changed too, so this package no longer binds Alt+P. Recompile all five macros using build.bat and restart TSE to load the new bindings. Version 77 remains the user-tested stable baseline; the version 78 key binding needs compilation and testing on Windows.
 
@@ -845,7 +861,7 @@ The supplied `proj0200.ini` now sets `silent=true`, so opening the Project menu 
 
 ## Version 104: Change Projects menu entry
 
-Use **Alt+[ → Change Projects…** to choose another existing project. This entry uses the same project selector as Open project. Existing open documents and unsaved edits remain in the ring; project membership changes to the selected project. Open project remains available. Rebuild and restart TSE to load the updated menu.
+Use **Alt+[ â Change Projectsâ¦** to choose another existing project. This entry uses the same project selector as Open project. Existing open documents and unsaved edits remain in the ring; project membership changes to the selected project. Open project remains available. Rebuild and restart TSE to load the updated menu.
 
 ## Version 105: One-time launcher introduction
 
@@ -863,9 +879,9 @@ The project selector clears the copied block before displaying its list, prevent
 
 After a completed Project menu action, the menu is shown again. Press Escape in the Project menu to leave it and return to the editing context. Session tools still opens outside the active Project menu and returns to it afterwards. Ordinary file-picklist and F12 navigation commands are unchanged. Rebuild and restart TSE; verify New Project, Open Project, Change Projects, Close Project and Escape.
 
-## Version 109: Show current active project
+## Version 109: View current active project
 
-Use **Alt+[ → Show current active project…**, or press **A** in the Project menu. It displays the current project name followed by its full saved `.pj` filename. If no project is active, it reports that explicitly; an unsaved project is identified as having no saved filename. This information command does not change projects or documents and keeps the menu available. Rebuild and restart TSE to test.
+Use **Alt+[ â View current active projectâ¦**, or press **A** in the Project menu. It displays the current project name followed by its full saved `.pj` filename. If no project is active, it reports that explicitly; an unsaved project is identified as having no saved filename. This information command does not change projects or documents and keeps the menu available. Rebuild and restart TSE to test.
 
 ## Version 110: Active-project command declaration
 
@@ -889,7 +905,7 @@ Removed COMDATABASEMYSQL.BAT: it is unrelated to PROJ0200 and is not part of thi
 
 ## Version 115: View all projects
 
-Use **Alt+[ → View all projects…**, or press **V** in the Project menu, to view the saved project names recorded in the project database. Enter or Escape closes the view and returns to the Project menu. Viewing does not open, switch, save or delete a project. Use Change Projects to activate another project. Rebuild and restart TSE to test the new command.
+Use **Alt+[ â View all projectsâ¦**, or press **V** in the Project menu, to view the saved project names recorded in the project database. Enter or Escape closes the view and returns to the Project menu. Viewing does not open, switch, save or delete a project. Use Change Projects to activate another project. Rebuild and restart TSE to test the new command.
 
 ## Version 116: Export and import project records
 
@@ -971,7 +987,7 @@ Recompile and restart TSE. ZIP integrity, unique hotkeys, and source guards were
 
 ## Version 1.0.0.0.130: prominent main-menu actions
 
-Moved all three scoped searches and all six disk refresh actions directly onto the main project menu. Unique hotkeys are Z and 1–8. The one-time YesNo warning before overwriting unsaved edits remains in place. Recompile after extracting this release, restart TSE to unload older macros, and run projstart. SAL compilation and Windows testing remain pending.
+Moved all three scoped searches and all six disk refresh actions directly onto the main project menu. Unique hotkeys are Z and 1â8. The one-time YesNo warning before overwriting unsaved edits remains in place. Recompile after extracting this release, restart TSE to unload older macros, and run projstart. SAL compilation and Windows testing remain pending.
 
 ## Version 1.0.0.0.131
 
