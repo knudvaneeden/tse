@@ -1,0 +1,21 @@
+Extension=.go
+Description=1.0.0.0.11 Go: COMGO.BAT
+Command=COMGO.BAT "&name&" "&ext&" "&fn&" "&drive&" "&path&" "&output&"
+Output=Don't Clear Screen or Prompt After Shell
+ -Error=^.*:{[0-9]+}:{[0-9]+}: {.*}$
+  Error: Options=x
+  Error: Extra line (default empty line)=
+ -FileName=
+  FileName: Options=
+  FileName: Tag=-1
+ -Line=
+  Line: Options=
+  Line: Tag=1
+ -Column=
+  Column: Options=
+  Column: Tag=2
+ -Message=
+  Message: Options=
+  Message: Tag=0
+User Macro=
+------------------------------------------------------------------------------

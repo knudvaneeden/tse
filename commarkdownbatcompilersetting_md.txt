@@ -1,0 +1,21 @@
+Extension=.md
+Description=Markdown: Knud
+Command=COMMARKDOWN.BAT &name& &ext& &fn& &drive& &path& &output&
+Output=Don't Clear Screen or Prompt After Shell
+ -Error=
+  Error: Options=
+  Error: Extra line (default empty line)=
+ -FileName=^[ ]*filename={.*}$
+  FileName: Options=ib
+  FileName: Tag=1
+ -Line=
+  Line: Options=
+  Line: Tag=
+ -Column=
+  Column: Options=
+  Column: Tag=
+ -Message=
+  Message: Options=
+  Message: Tag=
+User Macro=
+------------------------------------------------------------------------------

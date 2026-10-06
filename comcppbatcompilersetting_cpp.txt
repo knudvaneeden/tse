@@ -1,0 +1,21 @@
+Extension=.cpp
+Description=1.0.0.0.7 C++: Knud [Embarcadero Borland bcc 5.5]
+Command=COMCPP.BAT &name& &ext& &fn& &drive& &path& &output&
+Output=Don't Clear Screen or Prompt After Shell
+ -Error=^{Warning}|{Error}|{Fatal} {W|E|F}[0-9]* #{.*} {[0-9]#}: {.@}$\c
+  Error: Options=i
+  Error: Extra line (default empty line)=
+ -FileName=
+  FileName: Options=
+  FileName: Tag=5
+ -Line=
+  Line: Options=
+  Line: Tag=6
+ -Column=
+  Column: Options=
+  Column: Tag=
+ -Message=
+  Message: Options=
+  Message: Tag=0
+User Macro=
+------------------------------------------------------------------------------

@@ -1,0 +1,21 @@
+Extension=.java
+Description=1.0.0.9 Java: Knud [Oracle: Sun: version: 1.8]
+Command=COMJAVA.BAT &name& &ext& &fn& &drive& &path& &output&
+Output=Don't Clear Screen or Prompt After Shell
+ -Error=^{{.*\.java}:{[0-9]#}: error: {.*}}$
+  Error: Options=i
+  Error: Extra line (default empty line)=
+ -FileName=^[ ]*filename={.*}$
+  FileName: Options=ib
+  FileName: Tag=1
+ -Line=
+  Line: Options=
+  Line: Tag=3
+ -Column=
+  Column: Options=
+  Column: Tag=
+ -Message=^.*$
+  Message: Options=i
+  Message: Tag=0
+User Macro=
+------------------------------------------------------------------------------

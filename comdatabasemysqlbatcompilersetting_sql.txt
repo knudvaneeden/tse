@@ -1,0 +1,21 @@
+Extension=.sql
+Description=1.0.0.7 Mysql: Knud
+Command=COMDATABASEMYSQL.BAT &name& &ext& &fn& &drive& &path& &output&
+Output=Don't Clear Screen or Prompt After Shell
+ -Error=^{ERROR .#} at line {[0-9]#}:{.#}$
+  Error: Options=
+  Error: Extra line (default empty line)=
+ -FileName=^[ ]*filename={.*}$
+  FileName: Options=ib
+  FileName: Tag=1
+ -Line=^{ERROR .#} at line {[0-9]#}:{.#}$
+  Line: Options=
+  Line: Tag=2
+ -Column=
+  Column: Options=
+  Column: Tag=-1
+ -Message=^{ERROR .#} at line {[0-9]#}:{.#}$
+  Message: Options=
+  Message: Tag=0
+User Macro=
+------------------------------------------------------------------------------

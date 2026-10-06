@@ -1,0 +1,21 @@
+Extension=.asp
+Description=1.0.0.8 ASP: Knud
+Command=COMASP.BAT "&name&" "&ext&" "&fn&" "&drive&" "&path&" "&output&"
+Output=Don't Clear Screen or Prompt After Shell
+ -Error=^{.*}({[0-9]#},{[0-9]#}): Error: {.*}$
+  Error: Options=i
+  Error: Extra line (default empty line)=
+ -FileName=^{.*}({[0-9]#},{[0-9]#}): Error: {.*}$
+  FileName: Options=
+  FileName: Tag=1
+ -Line=^{.*}({[0-9]#},{[0-9]#}): Error: {.*}$
+  Line: Options=
+  Line: Tag=2
+ -Column=^{.*}({[0-9]#},{[0-9]#}): Error: {.*}$
+  Column: Options=
+  Column: Tag=3
+ -Message=^{.*}({[0-9]#},{[0-9]#}): Error: {.*}$
+  Message: Options=
+  Message: Tag=0
+User Macro=
+------------------------------------------------------------------------------
