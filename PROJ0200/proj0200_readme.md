@@ -1,19 +1,56 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.145**  
-Prepared: **2026-10-05 15:41**  
+Package version: **1.0.0.0.149**  
+Prepared: **2026-10-06 11:58**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
-## Active project menu label — version 1.0.0.0.145
+## Browser output-file correction — version 1.0.0.0.149
+
+Fixed the reported Subversion browser startup warning: an unnamed temporary buffer was incorrectly saved using its empty current filename. Both Subversion and Git browsers now save to their explicit output filenames. Rebuild the complete package and restart TSE. Static checks confirm both initialization routines use the explicit path; Windows runtime verification remains necessary.
+
+## Bundled Git browser — version 1.0.0.0.149
+
+The supplied **git.s** by **Knud van Eeden**, adapted from Carlo Hogeveen's SVN browser, is now bundled in `SRC/MAC`. `build.bat` compiles it as the ninth entry macro and copies `git.s` and `git.mac` to the installation directory. **Git options > R: Browse Git repository** now defaults to `gitbrowsermacro=git.mac`; a configured external macro is still supported.
+
+The bundled browser reads `gitexe`, `gitbash` (empty locates Bash beside Git), `gitworkingdirectory`, `gitbrowserlocation` (empty uses the working directory), and `gitcompareexe` from `proj0200.ini`. It asks for the working directory using `_EDIT_HISTORY_`; Windows drive paths are converted to Cygwin /cygdrive paths.
+
+Enter browses directories/reads files; Enter from a read view opens an editable copy. F5 shows file history; selecting a commit opens that historical content. F8 shows information, F9 Git status/attributes information, F1 help. F10 marks the first version, then compares it with a second selection through the configured comparison executable. Escape returns from details or leaves the browser without exiting TSE. It does not bind F12. Temporary comparison extracts are kept for the comparison tool.
+
+The browser retains its historical filename-case lookup logic. Repository browsing does not commit or push; the existing upload options handle those operations separately. Rebuild and restart TSE. Static build/configuration checks passed; Windows SAL compilation and Cygwin/Beyond Compare runtime testing remain required. Very long commands remain subject to SAL's 255-character string limit.
+
+## Git browser launcher — version 1.0.0.0.149
+
+Open **Alt+[ > File Version Control of projects > Git options > R: Browse Git repository**. This implements the load-and-execute functionality of the supplied **runprcgj.s**, keeping the launched macro loaded for reuse. Existing Git upload options remain available.
+
+Set `gitbrowsermacro=git\git` in `proj0200.ini`, or supply a full filename for your installed Git browser `.mac`. The package installation directory is checked first, followed by TSE's macro lookup. The supplied file is only a launcher: the browser implementation was supplied later and is bundled starting with version 148. If it cannot be loaded, PROJ0200 displays an explanatory warning. The external browser controls its own interface, Git executable configuration, and operations; PROJ0200's existing `gitexe` setting applies to its upload workflow.
+
+The original launcher's F12 binding is omitted so CTags keeps F12. No additional build target is needed. Rebuild with `build.bat` and restart TSE. Static launcher/menu checks passed; compilation and testing with your external Git macro remain necessary.
+
+## Subversion repository browser — version 1.0.0.0.149
+
+Adapted the supplied `svn.s` by **Carlo Hogeveen** into the separately compiled **projsvnbrowse.s**. Open **Alt+[ > File Version Control of projects > Subversion options > R: Browse Subversion repository**. Existing upload options remain available. `build.bat` now compiles eight entry macros.
+
+The browser asks for a repository URL or checkout location, initially `svnbrowserlocation` or, when empty, `svnworkingdirectory`. It uses `svnexe`. Windows checkout paths are converted to /cygdrive paths for the Cygwin client. Credentials must already be available to Subversion; this browser does not implement a login dialog.
+
+- Arrow keys / PageUp / PageDown / Home / End: select an entry.
+- Enter: enter a directory or read a file; Enter again opens an editable extracted copy, without saving or committing it to the repository.
+- F5: history; select a revision and press Enter to read it.
+- F8: information. F9: properties. F1: browser help.
+- F10: extract the first selected file/revision; choose another and press F10 to compare using `svncompareexe`. Extraction files remain in the temporary directory so the asynchronous comparison tool can read them.
+- Escape: return from a detail view, or leave the browser and return to the editor/project menu. It never exits TSE.
+
+Repository queries are read operations. Explicit editing opens a new copy; existing document contents are retained. The original macro's editor-exit action was removed and its file-node detection corrected. Static integration checks passed; Windows SAL compilation and Cygwin/Beyond Compare runtime testing are still required. SAL's 255-character strings limit very long repository URLs and commands.
+
+## Active project menu label — version 1.0.0.0.149
 
 Renamed the main menu option to **A: View current active project**. Its hotkey and behavior remain unchanged: it displays the active project name and saved project filename. Rebuild with `build.bat`, then restart TSE.
 
-## Import hotkeys — version 1.0.0.0.145
+## Import hotkeys — version 1.0.0.0.149
 
 The main project menu now uses **I: Import All projects** and **M: Import project**. Rebuild with `build.bat`, then restart TSE to activate the revised menu.
 
-## Close all projects — version 1.0.0.0.145
+## Close all projects — version 1.0.0.0.149
 
 Open **Alt+[**, then **3: Close all projects**. Only one project can be active at a time, so this closes its runtime state using the same project-metadata autosave setting as **Close project**. Saved projects remain registered and can be reopened. Open documents, unsaved document edits, source files, and project membership are retained. The option is disabled when no project is active; the project menu remains available until Escape.
 
@@ -21,7 +58,7 @@ Recompile with `build.bat "path\to\sc32.exe"`, restart TSE, and run `projstart`.
 
 Ordinary-copy and PKZIP backups of PROJ0200 were verified by the user in version 142: 26 files, one destination, zero failures in each mode, with a readable ZIP archive.
 
-## Backing up the PROJ0200 installation â version 1.0.0.0.145
+## Backing up the PROJ0200 installation â version 1.0.0.0.149
 
 Backup now skips its own generated request/settings/status/log files, batch wrappers, temporary snapshots, and scope manifests/wrappers **when they are beside the installed helper**. These files can change or be removed during the backup operation. This fixes the reported missing `proj0200_backup_status.txt` failure when backing up the PROJ0200 project itself, and avoids copying the actively written log.
 
