@@ -1,0 +1,6 @@
+(Jul 1, 2007) - AbanName v3.0.2 for TSE Pro v2.5e upwards.
+Abandon or Keep those opened files, the drive:\path\filenames of which match
+or contain the string you supply.
+Version 3.0.1 improves the warning if too many files were opened.
+Version 3.0.2 solves a nasty bug with an incorrectly resulting empty file.
+Author: Carlo Hogeveen.

@@ -1,0 +1,163 @@
+
+
+
+PGFx25.s - Pretty Good Folding for TSE 2.5
+
+/***
+This version of PGF 1.054 was adapted for use on TSE 2.5.
+ Ignore all references to:
+ 1. hiliting - used to hilite fold codes and reminder ribbon
+ 2. fold code protection - used to prevent accidental editing of fold
+    codes
+ 3. reminder ribbon - used to remind user of assigned menu/termination keys
+ 4. hooks - used to act on the above features
+
+In this initial adaptation, those would not work with TSE 2.5. Such
+fetures may be worked out in the future.
+***/
+
+PGF.s - Pretty Good Folding
+
+PGF Version 1.054 was written with and for TSEPRO 4.4.
+
+After compiling and executing, this macro will fold any number of
+paragraphs and marked line blocks up to 1.7 million.
+
+The macro will fold text anywhere in a file in any number of files.
+
+As usual, if you decide to play with this macro, do it using throwaway
+text and report anything unusual.
+
+Once folded, text can be expanded in any order.
+
+All folded text from all sources are kept in one fold buffer file.
+
+Once text is folded, the top text line remains in the original file and
+a unique fold code is inserted at columns 1-3. This code is continuously
+hilited and the macro protects it from being changed at the cursor. Care
+must be taken while using Replace() and deleting text so that the codes
+are not lost.
+
+The macro operations are intuitive and controlled using either the menu
+or the assigned keys for each operation.
+
+For the safety of the folded text, the macro automatically saves the
+source file and the fold buffer file. This means that you can exit TSE
+today and load a file containing folded text tomorrow and still be able
+to expand that text using this macro. (The automatic save feature can be
+toggled off at the menu for experimentation.)
+
+The menu operations:
+=============================
+
+Fold Paragraph or Block To One Fold Line
+  This command will fold a paragraph or a marked line block of any size
+  to one fold line. The marked block can include many paragraphs or a
+  whole file.
+  1. To fold a paragraph:
+    a. place cursor on any text line in the paragraph
+    b. execute this command
+    c. Notes:
+      1) the top line of the paragraph cannot be a line that has
+         already been folded and contains fold codes.
+      2) but, other lines in the paragraph could already have been
+         folded and will be folded with the paragraph.
+      3) single line paragraphs or blocks are not folded
+  2. To fold a marked line block:
+    a. mark all of the text to be folded
+    b. execute this command
+    c. Notes:
+      1) blank lines at the top and bottom of the marked block will not
+         be included in the fold
+      2) the top text line in the marked block must not have already
+         been folded and this command will be cancelled if so
+      3) the marked block may contain other folded text lines and they
+         will be included in the folded text
+      4) single line paragraphs or block are not folded
+Fold Paragraphs To Multiple Fold Lines
+  This command will fold all paragraphs in a marked line block to
+  individual folds. Thus, if you have 10 paragraphs in the marked block,
+  the macro will produce 10 fold lines, one for each paragraph
+  1. To fold a marked block:
+    a. line block mark the paragraphs to be folded
+    b. blank lines at top and bottom will not be folded
+    c. the top line of the block must not have already been folded
+    d. execute this command
+    e. Notes:
+      1) single line paragraphs are not folded
+      2) this command will ignore paragraphs that have already been
+         folded
+  2. if no block is marked, this command will fold all paragraphs in
+     the current file
+
+Expand Folded Text At Cursor Line
+  1. This command will expand the folded paragraph or block at the cursor
+     line.
+  2. It will only expand the fold that actually happened when the
+     paragraph or marked block was folded.
+  3. Other folds that were present when the fold took place will still
+     remain folded.
+
+Expand All Folded Text
+  1. This command will expand all folds in a marked block
+  2. The marked block could either be one fold line or multiple fold
+     lines.
+  3. ALL folds in the marked block will be expanded.
+  4. If a block is not marked, all folds in the current file will be
+     expanded.
+
+Find Next Folded Text
+  This command will look for the next fold code in the current file.
+  Once the command is given, you can use RepeatFind backward or forward
+  to find other fold codes. (The Repeat finds will only work until your
+  next different Find() command.)
+
+Show All Fold Locations
+  This command will search all loaded files for fold codes and display
+  them using the 'v' FindView option. It does not show the fold codes in
+  the fold buffer.
+
+View The PGF Fold Buffer
+  This command opens the PGF Fold Buffer. While there, you can view the
+  existing folded text segments and edit any of the text. (NOTE: DO NOT
+  edit or change the lines containing the fold codes or the fold
+  separation lines.)
+
+Toggle Reminder Ribbon On/Off
+  The Reminder Ribbon shows the current version of this macro, the
+  assigned key for the Menu, the assigned key to terminate the macro,
+  and the current number of folds.
+
+Toggle AutoSave On/Off
+  The AutoSave feature is intended to prevent the loss of text that has
+  been folded in case of accidental shut down, etc.
+
+  This command will toggle the AutoSave feature on and off. The default
+  state is ON, which means that the macro saves the current file and the
+  fold buffer file to disk every time you fold or expand text.
+
+Terminate Macro
+  This command terminates the macro and turns off all of its features,
+  including the highlighting and protection of the fold codes.
+
+  Since the folded text files and the fold buffer have been
+  automatically saved, you can exit TSE and return another time and
+  execute the macro and recover the folded text.
+
+The Assigned Keys:
+========================
+
+<ctrlshift p><p>                            // execute/terminate the macro
+<ctrlshift p><m> mpgfmenu()                 // menu
+<ctrlshift p><f> mpgffold2one()             // fold to one
+<ctrlshift p><e> mpgfexpand()               // expand marked
+<ctrlshift p><-> mpgffold2many()            // fold to many
+<ctrlshift p><=> mpgfexpandall()            // expand all
+<ctrlshift p><g> mpgffindcode()             // find next fold code
+<ctrlshift p><s> mpgfshowallfoldlocations() // show fold code locations
+<ctrlshift p><v> mpgfview()                 // view the fold buffer
+
+The assigned keys are also shown in the menu.
+
+Enjoy.
+

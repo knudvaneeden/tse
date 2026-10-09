@@ -1,0 +1,6 @@
+(11-12-01) DelSpace.s for TSE Pro/32 v3.0.
+DelSpace version 6 finds words with a space
+inside in a text, and offers a user-friendly
+interface to repair them.  Uses the same
+dictionary as Semware's standard SpellChk
+macro. Author: carlo.hogeveen@xs4all.nl.

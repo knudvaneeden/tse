@@ -1,0 +1,11 @@
+Use NAMED CLIPBOARDS w/picklists for all TSE
+clipboard functions. Includes enhanced Paste-
+Over for all block types, and Cut&BlankFill.
+CBs can be viewed, edited, printed, renamed,
+deleted and saved to or read from disk. You
+can find a string in a clipboard and Repeat-
+Find. You can set: IncludeTextOnPicklists
+AutoNaming, BackupCB Y/N/Additive, UnMark
+After Copy, UnMark After Paste, Delete After
+Paste and Position After Paste BEGIN/END.
+Version 5.0.1

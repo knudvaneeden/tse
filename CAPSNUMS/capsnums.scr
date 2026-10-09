@@ -1,0 +1,22 @@
+a100
+call   0124
+and    byte ptr [0417],bf
+retf
+call   0124
+or     byte ptr [0417],40
+retf
+call   0124
+and    byte ptr [0417],df
+retf
+call   0124
+or     byte ptr [0417],20
+retf
+xor    bx,bx
+mov    ds,bx
+ret
+
+nCAPSNUMS.BIN
+rcx
+29
+w
+q

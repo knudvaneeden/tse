@@ -1,0 +1,163 @@
+                    HSK Read-Only Macros for TSE 2.0
+
+                          by Howard Kapustein
+
+                              Version 1.0
+
+                                02/22/95
+
+Legal Stuff:
+
+These macros are Copyright (C) 1995 by Howard Kapustein, All Rights
+Reserved, but useable as per the usual terms for freeware (you can use
+them for yourself w/o paying me, but you can't sell them, etc. and I own
+the rights to the macros). If you like them or find any gotchas or
+suggestions, send me email or a postcard.
+
+Features:
+
+    - Warning when loading Read-Only files
+      TSE Jr. 2.x would beep and display a warning (press ESC to continue)
+      and TSE Jr. 3.x would display a message, but TSE simply loads the
+      file and keeps going. Very annoying when using version control and
+      you don't realize a file's not locked until you can't save the
+      file. Particularly annoying if you've made lots of changes to the
+      source...
+
+      The read-only indicator is determined at display time.
+
+    - Status Line w/Attributes & Character at Cursor Info
+      Easier to see than describe. The status line can display:
+
+        - Short Name
+          If the full pathname won't fit on the status line, the path
+          can be shortened a la Windows, changing parts of teh path to
+          ..., for example C:\SOURCE\PROJECT\HELLO\DEBUG\FOO.CPP might
+          be shortened to C:\...\...\HELLO\DEBUG\FOO.CPP.
+
+        - Attributes
+          Displays the file's attributes ('R'eadonly, 'Archive', 'S'ystem
+          and 'H'idden).
+
+          This macro is pretty smart about tracking file attributes.
+          Here's a quick summary:
+
+                * A 'tracking buffer' is created when the macro's
+                  loaded. This is used to store attributes for files for
+                  display. The 'tracking buffer' is updated at the
+                  following times:
+
+                    * When the macro's loaded, it iterates through all
+                      windows and updates the info for all files
+                      displayed
+
+                    * When a new file is loaded (noticed via
+                      _ON_FIRST_EDIT_ hook), the tracking info is
+                      updated
+
+                    * When a file is saved (noticed via _ON_FILE_SAVE_
+                      hook), the info is updated
+
+                    * When a file is unloaded (noticed via
+                      _ON_FILE_QUIT_ hook), the info is updated
+                      (removing the info for the unloaded file)
+
+                    * The macro mRefreshFileInfo_Current() (and
+                      corresponding menu item) updates the info for the
+                      file in the current buffer
+
+                    * The macro mRefreshFileInfo_All() (and
+                      corresponding menu item) iterates through all
+                      normal buffers and updates the tracking info
+
+                    * After TSE updates the status line (noticed via
+                      _AFTER_UPDATE_STATUSLINE_ hook), this macro will
+                      display its info (if necessary)
+
+          This effectively caches the attribute info, minimizing disk
+          hits. [I didn't want to hit the disk every time the status
+          line was updated, much too wasteful and, in some scenarios
+          (e.g. floppy or busy network drive), probably unnecessarily
+          slow.]
+
+        - Character at Cursor
+          This displays the decimal (base-10) and hex (base-16) value of
+          the character under the cursor, or "<EOL>" if the cursor is
+          past the last character on the line. [TSE Jr. 3.x has this
+          feature, and it was easy to do.]
+
+    - Enhanced List Open Files
+      Displays a Read-Only indicator in the display.
+
+    - Menus
+      Lots of options to configure the display, as well as
+      enable/disable the status line macro, view the tracking buffer
+      (great for debugging) and other miscellaneous items.
+
+How to use:
+
+Just load and execute READONLY.MAC.
+
+As supplied, all features will be enabled when loaded with the following
+keys mapped:
+
+    <CenterCursor>      mHskListOpenFiles()
+    <CtrlShift R>       mHskReadOnlyMenu()
+
+NOTE: I had to make it a separate macro because it really needs
+      'WhenLoaded' and 'WhenPurged' but TSE.UI already has them and I
+      hate directly modifying that file.
+
+Packaging:
+
+Here's what you'll find in this archive:
+
+    READONLY MAC    - Compiled macro
+    READONLY MAP    - Map file
+    READONLY S      - Source, Main file
+    READHLPR S      - Source, Helper functions
+    READLIST S      - Source, Enhanced list
+    READMENU S      - Source,
+    READMSG  S      - Source,
+    READSTAT S      - Source, Status Line
+    FILE_ID  DIZ    - Description
+    READ     ME     - "Documentation" (this file)
+
+To rebuild READONLY.MAC, just run "SC.EXE -M READONLY.S".
+
+NOTE: READHLPR.S contains macros copied from WP.UI and TSE.UI.
+
+NOTE: READHLPR.S will #include "..\UI\WP.BIN". WP.BIN is shipped with
+      TSE in the UI directory; I keep my macros in a subdirectory under
+      TSE called HSK, hence the relative pathing.
+
+Credit where credit is due:
+
+  * Mike Brocious, for giving me the extra incentive to get up off my
+    butt and actually write these macros I'd thought about for a while.
+
+  * Ray Asbury, for posting a wonderful status line macro w/full source,
+    greatly improving my education of TSE's hook facility.
+
+  * Richard Blackburn, for spotting the crippling bug that appeared at
+    the last minute, due to a simple logic error on my part ("But I
+    swear I barely touched the code!" :-)
+
+  * Sage Professional Editor, though I thoroughly dislike it, for its
+    nice minor aspects (e.g. read-only indicator in the buffer list),
+    even if it's bogged down w/mind-numbing sloth and awkwardness for
+    even the most basic operations (the folks at SemWare manage to spoil
+    you very quickly...).
+
+If you like these macros, find or bugs or come up with any improvements,
+let me know. I'm reguarly on the SemWare BBS as well as CompuServe
+(71736,101), or send me a postcard at
+
+                Howard Kapustein
+                333 Lancaster Ave
+                Apt 418
+                Frazer, PA 19355
+
+Enjoy...
+
+    - Howard

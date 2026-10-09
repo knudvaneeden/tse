@@ -1,0 +1,6 @@
+(10-03-2004) - NoLines for TSE Pro v2.5 upwards.
+ - NoLines switches line numbers on/off in Find-lists.
+ - Version 3 replaces version 2, <06-26-99>,
+which didn't work for TSE 4.0 upwards.
+ - Needs Global.zip, MacPar3.zip, ClipBor2.zip.
+ - Author: Carlo Hogeveen@xs4all.nl.

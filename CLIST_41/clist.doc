@@ -1,0 +1,206 @@
+/****************************************************************************
+ *  FILENAME :  clist.doc                                                   *
+ *  VERSION  :  4.1 (for TSE 2.00)                                          *
+ *  AUTHOR   :  Ray Asbury (rasbury@msmailpc01.saic.com)                    *
+ *  DATE     :  Mon 09-26-1994 19:00:33                                     *
+ *  PURPOSE  :  CallList documentation and usage guide.                     *
+ *  Copyright 1994 E. Ray Asbury, Jr.           ALL RIGHTS RESERVED         *
+ ****************************************************************************/
+
+SAL USAGE DESCRIPTION AND INSTALLATION NOTES
+
+It generates a listing file which includes each procedure and menu
+within the SAL file, showing
+
+    þ the commands called and occurrence counts
+
+    þ the other procedures called and occurrence counts
+
+    þ separates calls according to the arguments when possible
+
+    þ optionally shows the code and stack sizes for procedures
+
+    þ summary of the commands & procedures information for the
+      entire file
+
+These features can be helpful when optimizing applications.
+
+Since operation of CallList depends upon detecting "words", the WordSet
+must be correctly.  For example, IF your default WordSet does not
+include "~", but you use that character in procedure names, CallList
+must be aware of that in order to function correctly.  In the main
+function below, simply edit the first SetGlobalInt line for
+"gCL_WordSet" so that it includes such characters.  At the least,
+gCL_WordSet should include "0..9A..Za..z".  After making this change, IF
+needed, be sure to recompile this file.  Then, simply place CLIST.MAC,
+CLIST2.MAC, & CLIST3.MAC in one of the following locations:
+
+    1.  the current directory
+    2.  any directory contained with TSEPath
+    3.  the startup directory of The SemWare Editor
+
+Then, start the editor with the file to be analyzed, and execute
+CallList.  The SAL file (.S), which must be the current file, is copied
+to a temporary buffer and the copy is used by CallList.  The original
+SAL file is not modified.  During processing, messages will appear to
+show what CallList is doing.  On large files, CallList may take several
+minutes.
+
+Currently, there is one known situation which can lead to erroneous
+reports.  In the following code fragment
+
+    WHILE (LFind("/*", ""))
+        MarkStream()
+        LFind("*/", "")
+        Right()
+        MarkStream()
+        KillBlock()
+        CReturn()
+    ENDWHILE
+
+CallList will behave as if nothing exists between '/*' in the first line
+and '*/' in the third line.  The best way to currently avoid this is to
+modify the above code to
+
+    STRING  fsOpenCBlkCmnt[]    = "/*",
+            fsCloseCBlkCmnt[]   = "*/"
+
+    WHILE (LFind(fsOpenCBlkCmnt, ""))
+        MarkStream()
+        LFind(fsCloseCBlkCmnt, "")
+        Right()
+        MarkStream()
+        KillBlock()
+        CReturn()
+    ENDWHILE
+
+In this new version, CallList stills ignores the text between '/*' &
+'*/', but there aren't any command/function calls ignore anymmore.  I
+hope to resolve this with a better parsing routine in the future.
+
+Here is a sample listing:
+
+    INTEGER PROC mFactor()
+      Return()                  Count:    1
+      Val()                     Count:    1
+      mGetToken(FALSE)          Count:    3
+      mSimpleExpression()       Count:    1
+      mSyntaxError()            Count:    1
+    END mFactor
+
+    TOTALS FOR ALL BLOCKS:
+      AddLine()                 Count:    4
+      Ask()                     Count:   17
+      EmptyBuffer()             Count:    1
+      EraseDiskFile()           Count:    1
+      Return()                  Count:  103
+      Val()                     Count:    8
+      mGetToken(TRUE)           Count:    1
+      mGetToken(FALSE)          Count:    5
+      mSimpleExpression()       Count:    2
+      mSyntaxError()            Count:    3
+
+    END TOTALS           :         Total Call Count: 1780
+
+CallList also includes the ability to incorporate map file information.
+If CallList uses a map file (.MAP) for the SAL file being analyzed, it
+will also include code and stack sizes in the listing.  To generate a
+map file, specify the "-m" option when compiling the file  with SC. To
+determine whether to use a map file or not, main(), below, must set
+"gCL_UseMapFile" to one of the following settings:
+
+    SetGlobalInt("gCL_UseMapFile", 0) - do not use a map file
+    SetGlobalInt("gCL_UseMapFile", 1) - do use a map file
+    SetGlobalInt("gCL_UseMapFile", 2) - ask whether to use a map file
+
+If a map file is used (either by setting "gCL_UseMapFile" to 1 or by
+setting it to 2 and answering yes when asked), CallList first looks for
+a map file with the same name as the current file, but with the .MAP
+extension.  If found, that map file is used.  If it isn't found, the
+user will be prompted to specify the map file to use.  For example, if
+the current file is "TEST.S", CallList would look for "TEST.MAP", and
+use it if found.  If "TEST.MAP" isn't found, CallList will prompt you to
+specify the name of the map file to use.
+
+If a map file is used, the listing will look similar to:
+
+    INTEGER PROC mFactor()                   Code:    68  Stack:     4
+      Return()                  Count:    1
+      Val()                     Count:    1
+      mGetToken(FALSE)          Count:    3  Code:   381  Stack:   261
+      mSimpleExpression()       Count:    1  Code:   145  Stack:     8
+      mSyntaxError()            Count:    1  Code:    32  Stack:     0
+    END mFactor
+
+    TOTALS FOR ALL BLOCKS:
+      AddLine()                 Count:    4
+      Ask()                     Count:   17
+      EmptyBuffer()             Count:    1
+      EraseDiskFile()           Count:    1
+      Return()                  Count:  103
+      Val()                     Count:    8
+      mGetToken(TRUE)           Count:    1  Code:   381  Stack:   261
+      mGetToken(FALSE)          Count:    5  Code:   381  Stack:   261
+      mSimpleExpression()       Count:    2  Code:   145  Stack:     8
+      mSyntaxError()            Count:    3  Code:    32  Stack:     0
+
+    END TOTALS           :         Total Call Count: 1780
+
+Use your imagination - such numbers should help to develop more
+efficient SAL procedures.  For example, although mFactor above looks
+like it needs 68 bytes for code and 4 for the stack, it calls another
+procedure, mGetToken, which requires 381 bytes for code and 261 for the
+stack. That means mFactor actually needs 449 bytes for code and 265 for
+the stack - assuming mGetToken (or the other called procedures) does not
+call other procedures.
+
+If you're running out of macro or stack space, or are just curious,
+CallList might be helpful.
+
+C USAGE DESCRIPTION
+
+When the current file is a C source file, CallList operates in a
+different manner than when evaluating a SAL file.  The main differences
+are:
+
+     þ  MAP files are not used (no code or stack information)
+
+     þ  The generated List file, currently, shows only the functions
+        called, not how many calls are made, or are they grouped within
+        the calling function.  However, since line numbers for each call
+        are provided, determining the number of calls is relatively
+        easy.
+
+     þ  Function calls are grouped into one of two categories - those
+        which are part of the ANSI X3.159-1989 language definition, and
+        those that aren't.  This should be of use when determining the
+        ANSI compatibility of a source file.
+
+GENERAL INFORMATION
+
+Whether you are processing a SAL or a C file, the global variable
+"gCL_SortSensitive" is used to determine how the listing file is sorted.
+(See below for instructions on the use of this global variable).
+
+If you have any questions, or CallList doesn't work properly, please
+leave me a Message on either the SemWare BBS, or in any of the echoed
+conferences (CompuServe excluded) supported by SemWare.
+
+FUTURE PLANS
+
+I hope to continue to modify and improve CallList in the future.  A top
+modification I have planned is to include SAL listing features such as
+number of calls into the C listing, and C listing features such as line
+numbers in the SAL listing.  I also hope to provide the ability to
+generate a flow control listing which will include graphic structures to
+make the flow of a program's source code more apparent.  The last is a
+feature that I have found, in the past, to be very helpful not only when
+developing an application, but when modifying one, especially when I
+haven't looked at the source in a while.  I also plan to add to the C
+listing a mechanism similar that used for SAL listings to group calls by
+the calling function.
+
+If you have any ideas for ways to improve CallList's usefulness, please
+let me know.  I will gladly consider all suggestions.
+
+Ray

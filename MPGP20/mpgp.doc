@@ -1,0 +1,82 @@
+8/25/94 Ver. 2.0
+
+Additions and Changes:
+
+  1. Added picklist for choosing Public Keys istead of typing in
+     a part of the users name.
+
+  2. Added the ability to create the Public Key list for the picklist
+     procedure. This has been made automatic, if the keylist is not
+     there, it will be created. I also added a menu selection to manually
+     create this list for user after updates to the Public Keyring.
+
+  3. Consolidated much of the code regarding Keyfile selection and Public
+     Key selection.
+
+This version has not currently been tested on TSE versions prior to
+1.53b. If you any would like to test it on the Prerelease version, I
+would greatly appreciate knowing if it works. I have asked Semware to post
+this only to the Beta Testers.
+
+I hope this makes MPGP easier to use. If you have any other suggestions or
+implemetations, please let me know.
+
+This update it made possible due to the assistance of George De Bruin of
+Semware's Technical Support Team, Thanks for the help George.
+-----------------------------------------------------------------------------
+Ver 1.2
+This is a minor bug fix for MPGP.
+
+I discovered that one of the toggle configurations didn't function properly.
+I made this fix in EPGP()
+
+    if(GetGlobalInt("Radix") == 1 and GetGlobalInt("Sign") == 1
+       and GetGlobalInt("Text") == 1 and GetGlobalInt("Unix") == 1)
+        opt = "-feast "
+    elseif (GetGlobalInt("Radix") == 1 and GetGlobalInt("Sign") == 1
+       and GetGlobalInt("Text") == 1 and GetGlobalInt("More") == 1)
+        opt = "-steam "
+    elseif (GetGlobalInt("Radix") == 1 and GetGlobalInt("Sign") == 1
+        and GetGlobalInt("Text") == 1 and GetGlobalInt("ClearSig") == 1)
+        opt = "-sta +clearsig=on "
+        noask = 1
+
+// The last elseif in the abovce statement was not being interpreted due to
+// the fact that it was lacated at the end of the if - endif loop.
+
+    ...
+
+    endif
+
+----------------------------------------------------------------------------
+INSTALLATION
+
+Place this macro in your source directory.
+
+Make sure that PGP is installed properly, and that the environment variable
+PGPPATH is set in your AUTOEXEC.BAT.
+
+At line 561 is is the start of UserGlobals(), these are the defaults for the
+operation of this macro. Change these to your liking.
+
+Make sure you change line 572 to contain your name as it was used to create
+your Public/Secret key pair.
+
+OPERATION
+
+I suggest that you place this as a menu option in your main menu. I have
+placed it under my Options Pulldown Menu, this seems to be a good place for
+it.
+
+The default is to encrypt what is in the editor using Public Key encryption
+(instead of conventional), to Sign the message with your Secret key, and to
+produce output in Radix-64 format for transmission as e-mail.
+
+The Toggles can be changed as you like for any particular valid operation.
+
+I have attempted to make this macro as intuitive as possible. If you have
+any comments, question, or suggetions, please feel free to e-mail me on the
+Semware BBS or via Internet: highmage@astral.scvl.ca.us
+
+Here is my Public Key, include it in your Public Key Ring, and feel free to
+use it to encrypt any e-mail to me.

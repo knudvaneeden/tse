@@ -1,0 +1,8 @@
+<05-29-98> Macro for TSE Pro/32 v2.8.
+Syntax-hilite regular expressions.  This
+macro (for 32-bit versions of TSE Pro only)
+allows you to color parts of each screen line
+based on: 1) the current file extension, 2)
+the current comment colors (by NOT recoloring
+them), and 3) multiple regular expressions.
+Author: Carlo Hogeveen <hyphen@xs4all.nl>

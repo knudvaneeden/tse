@@ -1,0 +1,3 @@
+MARKWORD.S: two markword enhancement procs designed to mark
+            successive words by repeating the same keystroke.
+            One works forwards, the other backwards.

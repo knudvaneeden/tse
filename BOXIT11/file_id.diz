@@ -1,0 +1,9 @@
+BoxIt 0.11 -- 11/23/94.  This is a minor
+revision of BoxIt to support TSE 2.0.
+No new features have been added.  This
+macro allows the user to draw a box
+around a section of text marked with a
+column block.  Changes in this version:
+help removed, key assignments change to
+not conflict with TSE 2.0's help system,
+documentation updated.

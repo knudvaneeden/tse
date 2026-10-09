@@ -1,0 +1,61 @@
+      How to install and/or customize the macro
+
+1. Installation
+   Copy BibleRes.s to your macro directory, compile it
+   if you wish (the supplied .mac was compiled with
+   TSE 4.4 on Windows XP with all updates applied)
+   Copy KJV.txt to wherever you want it, default C:\Bible
+   Open KJV.txt in TSE editor, execute macro BibleRes
+   Files created while running (Hits.txt, Verses.txt)
+   will be created in the same directory as KJV.txt
+
+
+2. Customization
+   A. Line length:
+      shipped with KJV.txt wrapped to 60 char wide - if you
+      want to change this, included is a macro "ReWrap" you
+      can compile and use - will leave the verse address
+      line as-is, then wrap the text of the verse to whatever
+      you have your margins set
+
+   B. Fonts and Bullets:
+      The original BibleRes used upper-ascii characters for
+      bullets - I have always used "Letter Gothic Line"
+      since the gui versions of TSE were first released -
+      but it seems a lot of people now use "Courier New" or
+      other fonts that do not have the same upper-ascii
+      characters - so I used Courier New for this version,
+      and very common keyboard characters for bullets - by
+      the way, the bullets serve very important functions in
+      the operation of the Bible Research macro - so you are
+      free to change them to whatever you wish, but _some_
+      bullet characters have to be there for the macro to
+      work - when you change a bullet, you must change it
+      every place it occurs, in the KJV.txt file, Bullets.s,
+      and the BibleRes macro, then recompile them - a
+      simple replace operation in the editor will work, as
+      long as you do it in ALL the files - while we're at
+      it, there is something that needs to be retained, the
+      "section separator" that appears in the hits.text file
+      that looks like this:  -=<>=-  without this, the menu
+      items alt + 6, 7, and 8 (which allow you to jump from
+      the hits list to the verse in the KJV, move around and
+      read the context as much as you wish, then return to
+      the hits list and move to the next hit) will not work
+      - once again, you can replace this, but _something_
+      has to be there
+
+3. What if something doesn't work?
+      While I have tested this macro repeatedly, and
+      intentionally made mistakes and entered wrong characters
+      when asked for a book name abbreviation, it _seems_ to
+      be bug-free at this time.  But if you find a bug that I
+      missed, contact me and I will do my best to fix the
+      problem.
+
+4. If you need help in the areas of installation or
+   customization, I will try to help you with that as well.
+
+      Ed Marsh
+      <libby1018@comcast.net>
+

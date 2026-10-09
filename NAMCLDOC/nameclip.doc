@@ -1,0 +1,456 @@
+/****************************************************************************
+                       TSE Named Clipboard System
+****************************************************************************
+                              Version 4.7
+
+  Copyright: (c) 1993 David Marcus
+
+          Permission is granted to all persons for non-commercial
+          distribution of this file and the macros and ideas contained
+          herein provided (a) credit is given to the author and (b) all
+          changes not made by the author are attributed.
+
+          Permission is granted to SemWare for commercial distribution
+          provided (a) and (b) above.
+
+  Author:  David Marcus
+
+  Date:    5-24-93
+
+  Description:
+
+          Nameclip is a macro system that implements named clipboards
+          and related functions in The Semware Editor.
+
+/****************************************************************************
+şş Installation:
+****************************************************************************/
+
+  1. Place this file in the directory where your configuration
+  (interface) files reside.  Add this line to your TSE.S (or other
+  configuration) file:
+
+     #include ['nameclip.s']
+
+  Place this line anywhere the file as long as it comes before your
+  menus.
+
+  2. Delete any definitions you already have in your TSE.KEY file for
+  these keys:
+
+     Key            NameClip Definition
+     ------------   ----------------------------------------
+     <f11>          clipboardmenu()
+     <Ctrl F11>     clipboard_other_menu()
+     <Shift F11>    clipboard_settings_menu()
+     <Alt F11>      clipboard_global_menu()
+
+     <Grey*>        clipboard( PASTE_APPEND )
+     <Ctrl Grey*>   clipboard( Paste_OVERWRITE )
+     <Ctrl PrtSc>   clipboard( Paste_OVERWRITE )
+     <Grey+>        clipboard( Copy_OverWrite )
+     <Ctrl Grey+>   clipboard( Copy_APPEND )
+     <Grey->        clipboard( Cut_OverWrite )
+     <Ctrl Grey->   clipboard( Cut_APPEND )
+     <Alt Grey->    clipboard( Cut_FILL_WITH_BLANKS )
+
+  Or, change any of the key definitions included in NameClip.S
+  to use keys you prefer.
+
+  Or, delete the keydefs at the end of this file and run NameClip only
+  from menus.
+
+  3. If you have a menu named ClipBoardMenu in your user interface file,
+  as you probably do, delete it or comment it out. This file contains a
+  substitution for it.
+
+  4. Make sure that your main menu has a listing for ClipBoardMenu on
+  it; it should look something like this:
+
+        "&Clipboard",   clipboardmenu()
+
+  5. Delete the main() procedure from this file; it is only useful if
+  you want to compile and use this file as an external macro file.
+
+  6. Advanced Users: In NAMECLIP.S, the string ':U:' appears on each
+  line that contains the initial Setting of a toggle or mode. Search for
+  :U: and customize as you like.  (Note: The initial Settings for the
+  UnMarkAfterPaste and UseCurrentLineifNoBlock toggles comes from your
+  TSE configuration.)
+
+  7. Re-bind the editor using the -b switch of sc.  If you receive any
+  "duplicate name" errors, delete the specified procedure from your
+  configuration file [NOT from nameclip.s] or comment it out, and
+  re-bind.
+
+  8. (optional) Delete or comment out any procedures that sc reports as
+  "unused."
+
+  9. (optional) Update your help file with any of the keys listed above.
+
+/****************************************************************************
+şş Menus:
+****************************************************************************/
+
+  ÉÍÍÍÍÍÍ  ClipBoard Menu  ÍÍÍÍÍÍ»
+  º Copy                 <Grey+> º
+  º Copy Append     <Ctrl Grey+> º
+  ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶
+  º Cut                  <Grey-> º
+  º Cut Append      <Ctrl Grey-> º
+  º Cut & Blank Fill <Alt Grey-> º
+  ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶
+  º Paste                <Grey*> º
+  º Paste Over      <Ctrl Grey*> º
+  ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶
+  º Other Functions  <Ctrl F11> º>ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+  ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶                     ³
+  º Global Actions    <Alt F11> º>ÄÄÄÄÄ¿              ³
+  ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶      ³  ÉÍ Other Clipboard Functions ÍÍ»
+  º Settings        <Shift F11> º>Ä¿   ³  º View/Edit Named Clipboard    º
+  ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼  ³   ³  º Print Clipboard              º
+                                    ³   ³  º Rename Clipboard             º
+                 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ   ³  º Delete Named Clipboard       º
+                 ³                      ³  º Find String in Clipboard     º
+ÉÍÍÍÍÍÍÍ  ClipBoard Settings  ÍÍÍÍÍÍÍ»  ³  º Repeat Find                  º
+º Clipboard Type           [  Named] º  ³  ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶
+º Use Picklists                [Yes] º  ³  º Global Actions              º
+º Include Text on Picklists    [Yes] º  ³  ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶
+º Use Auto Naming              [Yes] º  ³  º Settings                    º
+ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶  ³  ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+º Backup Clipboards       [Additive] º  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶                    ³
+º Use Current Line If No Block [Yes] º     ÉÍÍ ClipBoard Global Actions ÍÍÍ»
+º UnMark After Copy            [ No] º     º Fill Clipboards From File     º
+ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶     º Save All Clipboards to a File º
+º UnMark After Paste           [ No] º     ÇÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¶
+º Delete After Paste           [ No] º     º Delete All Named Clipboards   º
+º Position After Paste   [Beginning] º     ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+
+/****************************************************************************
+şş Keystrokes:
+****************************************************************************/
+
+                              /* MENUS */
+
+     <f11>          Main Clipboard Menu
+     <Ctrl F11>     Other Clipboard Functions mene
+     <Shift F11>    Clipboard Settings Menu
+     <Alt F11>      Global Clipboard Actions
+
+                            /* OPERATIONS */
+
+     <Grey+>        clipboard( Copy_OverWrite )
+     <Ctrl Grey+>   clipboard( Copy_APPEND )
+
+     <Grey->        clipboard( Cut_OverWrite )
+     <Ctrl Grey->   clipboard( Cut_APPEND )
+     <Alt Grey->    clipboard( Cut_FILL_WITH_BLANKS )
+
+     <Grey*>        clipboard( Paste_APPEND )
+     <Ctrl Grey*>   clipboard( Paste_OVERWRITE )
+     <Ctrl PrtSc>   clipboard( Paste_OVERWRITE )
+
+/****************************************************************************
+şş Functions:
+****************************************************************************/
+
+ş Copy
+
+     Standard function -- see TSE doc.
+
+     See settings for: Use Curr Line If No Block, Unmark After Copy, Use
+     Auto Naming, Backup Clipboards, Use Picklists
+
+ş Copy Append
+
+     Standard function -- see TSE doc.
+
+     See settings for: Use Curr Line If No Block, Unmark After Copy, Use
+     Picklists, Use Auto Naming, Backup Clipboards
+
+ş Cut
+
+     Standard function -- see TSE doc.
+
+     See settings for: Use Curr Line If No Block, Use Picklists, Use
+     Auto Naming, Backup Clipboards
+
+ş Cut Append
+
+     Standard function -- see TSE doc.
+
+     See settings for: Use Curr Line If No Block, Use Picklists, Use
+     Auto Naming, Backup Clipboards
+
+ş Cut & Blank Fill
+
+     Cuts the block to the clipboard you select and fills the block
+     location with spaces. The block is always left marked. This is
+     intended for use with column blocks. In particular, combined with
+     Paste Overwrite, it provides a way to move data around tables
+     without destroying column alignments. Thanks to Alan Kelley for the
+     idea.
+
+     See settings for: Use Curr Line If No Block, Use Picklists, Use
+     Auto Naming, Backup Clipboards
+
+ş Paste
+
+     Standard function -- see TSE doc.
+
+     See settings for: Use Picklists, UnMark After Paste, Delete After
+     Paste, Position After Paste
+
+ş Paste Over
+
+     Standard TSE function enhanced to work for all block types.
+     (Standard function works only for column blocks.)
+
+     See settings for: Delete After Paste, Position After
+     Paste
+
+ş View/Edit Named Clipboard
+
+     Pops up a list of clipboards. If you select one, TSE displays it in
+     list mode. If you press <enter>, you can edit it. If you press
+     <escape>, you are done viewing.
+
+     Note that no backup is made of the original contents. You can use
+     all clipboard operations during the edit. You can even choose
+     "View/Edit" from the clipboard menu while in the process of editing
+     a clipboard, in order to edit a 2nd clipboard. (I wouldn't
+     recommend nesting this too many levels, although on my system I
+     have nested to 5 levels deep). Press <escape> to stop editing. Note
+     that the main menu is not available during editing.
+
+     See settings for: Use Picklists
+
+ş Print
+
+     Prints a clipboard you select. Includes the clipboard name on the
+     output.
+
+ş Rename
+
+     Renames a clipboard you select. If a backup of the clipboard
+     exists, it is not renamed.
+
+ş Delete
+
+     Deletes a clipboard you select without conifirmation. No backup is
+     made. Any existing backup is not deleted.
+
+ş Find String in Clipboard
+
+     Searches named clipboards until it finds the string you seek. Then
+     it displays the clipboard. Press <enter> to continue searching or
+     <esc> to stop searching. Always starts search at the top of the
+     last clipboard used. Last clipboard displayed becomes the current
+     clipboard.
+
+ş Find Again
+
+     Repeats last find, start at the beginning of the current clipboard.
+
+ş Fill Clipboards from File
+
+     Reads a disk file (theoretically created) by Save All Clipboards to
+     a File) and loads named clipboards according to what it finds in
+     the file. Clipboard block type (line, column, etc.) is set as
+     specified in the file.
+
+     It does not check for duplicate names. This may create multiple
+     clipboards with the same name; you can use the rename function to
+     change them.
+
+ş Save All Clipboard to a File
+
+     Creates a disk file with a section for each named clipboard,
+     including backups. Clipboard block type is saved along with each
+     clipboard. There is no reason not to edit the file to add or change
+     items.
+
+     Each clipboard is preceded by line that begins:
+          ®clipboard start¯
+     This is followed by a number (in col 18) indicating the block type:
+          1 - character, non-inclusive
+          2 - character, inclusive
+          4 - line
+          8 - column
+     The clipboard name starts in column 19. Max of 33 characters.
+
+ş Delete All Named Clipboards
+
+     Deletes without confirmation or making backups. Existing backups
+     are deleted.
+
+/****************************************************************************
+şş Settings:
+****************************************************************************/
+
+ş Clipboard Type
+
+     NAMED - Allows access to the wide world of named clipboards.
+
+     UNNAMED - Standard TSE unnamed clipboard.
+
+     WINDOWS - Allows integration of Tim Farley's WinClip macro to add
+          Windows clipboard support when available. (This macro is NOT
+          currently available.) Note that when this is available:
+
+          1. The 'clipboard type' toggle goes NAMED/UNNAMED when TSE is
+             not being run in a Windows DOS Window. When it is in a DOS
+             Window, it toggles to WINDOWS, too.
+
+          2. WINCLIP must be compiled and available as WINCLIP.MAC.
+
+             If it is not available, NameCLip will still run fine but
+             you will not see WINDOWS as a possible clipboard type to
+             use. WINCLIP may be available from the SemWare BBS in the
+             future.
+
+             ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»
+             º NOTE: This proc _must_ be added to WINCLIP:              º
+             º                                                          º
+             º public proc IWCP()                                       º
+             º      SetGlobalInt( 'IWCP', IsWindowsClipboardPresent() ) º
+             º end                                                      º
+             ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+
+ş Use Picklists
+
+     Affects: All Cut and Copy operations.
+
+     Settings:
+
+           ON - Clipboards are selected from picklists. If <new> is
+           selected and an existing name is entered, overwrite
+           confirmation is requested.
+
+           OFF - No picklists, no verification of overwrites of existing
+           clipboards. Clipboard name entries must be typed.
+
+ş Include Text on Picklists
+
+     Affects: All operations except global ones.
+
+          ON - Picklists include the first 50 or so characters from each
+          clipboard as well as clipboard name.
+
+          OFF - Picklists include clipboard names only.
+
+ş Use Auto Naming
+
+     Affects: All Cut and Copy operations.
+
+     Settings:
+
+          ON - NameClip does not prompt for Clipboard name for cutting
+          and copying. Instead, it uses up to 33 characters of the first
+          line of clipboard text, beginning with the first non-white
+          character, as the clipboard name.
+
+          OFF - NameClip displays a picklist of names. If you select
+          <new clipboard>, NameClip prompts you for a name. If the name
+          you type is already in use, you are prompted for
+          overwrite/re-enter.
+
+     Notes:
+
+          When this option is turned on, the first time you do a copy or
+          cut in a TSE session, it may look as if nothing has happened.
+          This is because NameClip knows to create a new clipboard
+          (there aren't any existing ones) but does not need to prompt
+          you for name.
+
+          When you use this feature, you will probably want to turn
+          "Include Text on Picklists" off.
+
+ş Backup Clipboards
+
+     Affects: Cut, Cut & BLank Fill and Copy operations.
+
+     Settings:
+
+          ON - If the clipboard to which you are doing a Copy or Cut
+          (without the append option) exists and has text, the text is
+          first copied to another clipboard. The backup clipboard name
+          is 'şBAKş' + the name of the source clipboard. If the backup
+          clipboard already has text on it, it is first deleted.
+
+          ADDITIVE - Same as above except text on the backup clipboard
+          is not deleted. New text being copied to the clipboard is
+          added at the top of the clipboard.
+
+          OFF - No backups.
+
+     Notes:
+
+          Backups are not made when loading clipboards from a file
+          and when renaming clipboards.
+
+ş Use Current Line if No Block
+
+     Affects: All Cut and Copy operations.
+
+     Settings:
+
+          ON - When no block is marked in the current file, the current
+          line is cut/copied. (If UnMarkAfterCopy/Cut is set to NO, it
+          is left as the marked block.)
+
+          OFF - If no block is marked in the current file, an error
+          message is displayed.
+
+ş UnMark After Copy
+
+     Affects: All Copy operations.
+
+     Settings:
+
+          ON - The block is left as the marked block after being copied
+          to the clipboard.
+
+          OFF - The block is unmarked.
+
+ş UnMark After Paste
+
+     Affects: Paste (but not Paste Over)
+
+     Settings:
+
+          OFF - The pasted text becomes the marked block.
+
+          ON - Whatever block us marked before the Paste operation is
+          left as the marked block.
+
+ş Delete After Paste
+
+     Affects: Paste, Paste Over
+
+     Settings:
+
+          ON - After a clipboard is Pasted, it is deleted and no longer
+          available.
+
+          OFF - The clipboard is not deleted after Paste and can be
+          Pasted again.
+
+     Notes:
+
+          Set this to ON when you have moved a lot of stuff into
+          clipboards and you want to make sure you move it _all_ back
+          into your file.
+
+ş Position After Paste
+
+     Affects: Paste, Paste Over.
+
+     Settings:
+
+          BEGINNING - Leaves the cursor at the beginning of the Pasted
+          text.
+
+          END - Leaves the cursor at the end of the Pasted text.

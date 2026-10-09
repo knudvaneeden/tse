@@ -1,0 +1,7 @@
+Implements a folding editor with TSE
+(outliner). Very simple, US-version
+of FOLD131.ZIP. Nested folds not yet
+possible. Menu-driven configuration,
+improved handling when closing
+folds (this is now possible from
+ANYWHERE within the fold). For TSE2.

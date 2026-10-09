@@ -1,0 +1,9 @@
+(12-06-02) Three TSE Pro Macros for Cobol-
+Set of three macros from my Cobol days:
+Files: bakspac2.s, settabs2.s, and tab2.s.
+I just adopted them for more general use,
+but you still need to adjust the Cobol
+tabs settings for your own site. As is,
+Tab2 and BakSpac2 go into the Macro
+AutoLoadList.
+Author: Carlo Hogeveen

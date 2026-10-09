@@ -1,0 +1,14 @@
+<05-15-02> v3.0 - GREP macro for TSE Pro/32.
+Works with v4.0 (both the console and the GUI
+versions), v3.0, v2.8, and v2.6.  To try it
+out, load the GREP macro or add it to your
+AutoLoad list.  Hit <Alt G> to bring up the
+main dialog box, then hit <F1> to see the
+help file.  The help file is lame, but should
+be good enough to get you started.  The GREP
+macro can search files in the BACKGROUND,
+while you continue to work (hit <Esc> to
+continue working; it will beep when it's
+finished, or at any time hit <AltShift G> to
+display the GREP result list).
+Author: Chris Antos

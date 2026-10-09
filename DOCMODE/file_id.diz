@@ -1,0 +1,6 @@
+DocMode package includes two important document processing functions:
+  1. A replacement aurowrap package correcting some of the
+  problems cuased by the stock autowrap.
+  2. DocMode, a word processor compatibility package including load & save
+  to/from generic word processor format and carriage return marking -
+  (paragraph wrapping stops at the mark).

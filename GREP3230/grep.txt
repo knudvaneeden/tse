@@ -1,0 +1,128 @@
+GREP v3.0
+Christopher Antos
+chrisant@microsoft.com
+
+
+
+Info ----------------------------------------------------------------------
+
+GREP is a powerful facility to search files for a string.  You can
+specify many different options to control the search.
+
+Load the GREP macro, or add it to your AutoLoad list.  Hit <Alt G> to
+bring up the main dialog box.  From there, <F1> gives help.
+
+
+Some hilights include:
+
+    ù NEW!  Performs searches in the background so you can continue
+      editing during long searches.
+
+    ù A context window shows matching lines as they appear in the
+      context of the file they come from.  (on TSE 2.6, the context
+      window is scrollable using <Ctrl Up/Down>)
+
+    ù Almost everything but the kitchen sink - see the help file for
+      more info.
+
+    ù Works on TSE 2.6, 2.8, 3.0, and 4.0.
+
+
+It does NOT:
+
+    ù Allow searching for a string that spans multiple lines.
+
+    ù Support proximity searches (eg, find "foo" near "bar").
+
+
+
+Unzip ---------------------------------------------------------------------
+
+Unzip the contents of the .ZIP file into your MAC\ directory, and load
+the GREP macro.  You're set to go!
+
+
+
+Requirements --------------------------------------------------------------
+
+ù Dieter Koessl's Dialog system (dialog.mac and dialogp.mac), which is
+  included in the ZIP file.
+
+ù GETHELP.MAC, which is also included in the ZIP file.  For the full
+  version of the GETHELP macro, along with extra help files that
+  supplement the built-in TSE help, look for GETHLP*.ZIP at
+  ftp:ftp.semware.com/TSE-Pro.
+
+
+
+History -------------------------------------------------------------------
+
+v3.0:
+
+ù Tons of optimizations and minor bug fixes.
+
+ù Searches across deep nested directories will be MUCH faster now.
+
+ù <Ctrl CursorLeft> and <Ctrl CursorRight> scroll the context window
+  horizontally.
+
+
+v2.5:
+
+ù Searches in the background so you can continue editing during long
+  searches (or you can peruse the search results as the search
+  progresses)!  You can terminate a search by pressing <Ctrl C> while
+  you're viewing the search results window.
+
+
+v2.2:
+
+ù Improved the "Search for:" prompt so you toggle -i, -x, and -w
+  options by hitting <Ctrl I/X/W>.
+
+ù Context window has meter on the right side showing roughly where it is
+  looking in the file.
+
+ù Fixed bug where searching for "path1\*.* path2\*.*" did not work.
+
+
+v2.1:
+
+ù Forgot to include the help file in earlier releases.  Also forgot to
+  include the batch file for using GREP from the DOS prompt.  Both are
+  included in this release.
+
+ù This is the last planned release of this GREP macro for DOS TSE 2.5.
+  The macro will continue to gain new and exciting superhuman powers on
+  TSE 2.6 and new versions of TSE, but I regret to say it just takes too
+  much work to keep it working on DOS TSE, since the macro has gotten so
+  darn big.  With some of the latest new features, it took almost two
+  hours to trim the thing down so it was small enough to run on DOS TSE
+  (we're talking two hours to trim off only 200 bytes!  It's not worth
+  it to me).  As a result, some new features just couldn't fit into the
+  DOS version.
+
+ù The context window shows the name of the function that contains the
+  matching line, if the file is a programming language source code file!
+  (Note, it's not 100% accurate, but it's close)
+
+ù <F5> refreshes the results list (does the whole search again).
+
+ù Long filenames are supported, but long filenames with spaces cannot be
+  used for "Files to search" or "Files to exclude", not even if you use
+  quotes.  [TSE 2.6 only]
+
+ù <Alt L> loads all files with matches.  [TSE 2.6 only]
+
+ù <Alt Left> and <Alt Right> let you browse the 10 most recent results
+  lists, similar to Internet Explorer's Back/Forward commands that let
+  you view web pages you've visited recently.  [TSE 2.6 only]
+
+ù Bug fixes for TSE 2.5 version:
+    ù now works correctly from Potpourri menu.
+    ù one user reported files being missed by the search; this has been
+      fixed (technical info: I was missing a SetDTA command).
+    ù misc other minor fixes.
+
+
+

@@ -1,0 +1,7 @@
+(12-04-00) - Fotopage - TSE Pro/32 v2.x
+FOTOPAGE  Generates a single page album HTML
+file from a directory of images and a subdir
+of thumbnails with the same name.  Macro file
+comments contain info on generating
+thumbnail.  Author:  Mike Chambers
+mchambers3@houston.rr.com

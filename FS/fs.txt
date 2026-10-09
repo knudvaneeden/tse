@@ -1,0 +1,144 @@
+
+                                 ÛßßßßßßßßßßÛ
+                                 Û  FS.MAC  Û±±
+                                 ÛÜÜÜÜÜÜÜÜÜÜÛ±±
+                                   ±±±±±±±±±±±±
+
+
+            This macro keeps track of certain settings individually for
+        each file in the ring.
+
+            It doesn't take too much work to add more settings to track.
+        You are free to modify, customize, distribute, and delete this
+        macro.  Just don't sell it.  It's free.  Also, if you make any
+        cool enhancements, please email me -- I might want to
+        incorporate them, myself!
+
+
+        === About FS.MAC ===============================================
+
+            If you execute FS.MAC, it will display a short help screen
+        explaining how to use it.  If you just load FS.MAC (or add it to
+        your AutoLoad List) it will not display the help screen.  If you
+        want to be able to show the help screen by pressing a key,
+        change the HELP_SCREEN_KEY at the beginning of FS.S to whatever
+        key you want to use.  (I can't imagine why someone might want to
+        see the help screen, since it's a bunch of technical information
+        and FS works completely behind-the-scenes.  Hence, by default
+        there is no key binding to show the help screen.)
+
+            I've tried to make FS pick reasonable settings based on file
+        extensions, but since the age-old adage "You can't please
+        everyone" is quite true, you may find it doesn't work how you'd
+        like.  Just modify the FSDecideSettings() function to your
+        liking.
+
+            FS automatically tracks the following settings on a per-file
+        basis:
+
+            ù TabType (soft, hard, smart, variable)
+            ù TabWidth
+            ù VarTabs (variable tab stops)
+            ù ExpandTabs
+            ù WordWrap
+            ù AutoIndent (off, on, sticky)
+            ù LeftMargin
+            ù RightMargin
+            ù RemoveTrailingWhite
+
+            FS lets you simultaneously edit files of different types
+        with different settings for each file.  This comes in
+        particularly handy if you're a programmer and edit files written
+        in different languages with different tab types and tab widths.
+        That's why I wrote FS to begin with.
+
+            I hope you enjoy FS!  If you have any problems with it,
+        please feel free to contact me at the email address given below,
+        but I can't guarantee I'll be able to respond in a timely
+        fashion.
+
+
+        === Installing FS ==============================================
+
+            I find FS most useful when I add it to the AutoLoad list and
+        add a couple items to the Options menu.
+
+        NOTE: You should replace the "Full Configuration" and "Save
+        Current Settings" menu items with the lines below to make sure
+        you can edit and save TSE's default settings correctly, instead
+        of saving whatever settings the current file has.
+
+            To add FS to the AutoLoad list, go to the main menu and
+        pulldown the "Macro" menu.  Then select "AutoLoad List...".  Now
+        hit the <Insert> key and type in "fs.mac".  You may need to tell
+        TSE the full path to the file.
+
+            To add a couple useful items to the Options menu, add these
+        to the OptionsMenu() menu in your .UI file:
+
+        "Remove Trailing White"
+                [OnOffStr(Query(RemoveTrailingWhite)):3],
+				Toggle(RemoveTrailingWhite), DontClose
+	    "Current  >", ExecMacro("fs -c"), DontClose
+	    "Defaults  >", ExecMacro("fs -m"), DontClose
+        "&Full Configuration  >", ExecMacro("fs -i"), DontClose
+        "&Save Current Settings  >", ExecMacro("fs -s")
+
+
+        === Technical Gobbletygook =====================================
+
+            I have tried to minimize the amount of work needed to add
+        additional trackable settings.  There are only 3 functions that
+        need to be modified in order to add new settings.  These
+        functions are indicated at the top of FS.S.
+
+            FS uses a system buffer to list the settings for each file
+        in the ring.  Each time the _ON_CHANGING_FILES_ hook is called,
+        FS will update the settings of the previous file and use the
+        settings for the new file.  When it runs into a file that is not
+        in the list, it adds the file to the list and intelligently
+        decides what the settings for that file should be.
+
+            Let's say you wanted to make FS also keep track of the
+        LineDrawing mode.  You would first need to edit the
+        _InsertSettings function and add a new line at the bottom that
+        said:
+
+            InsertText(Format(Query(LineDrawing):2), _INSERT_)
+
+            The Format() command is used to keep everything in nice
+        columns so that if you use the debugFileSettings() function, the
+        list looks pretty.  All you really need to do is make sure there
+        are spaces in between each value, so that _RestoreSettings()
+        will work.  Speaking of _RestoreSettings(), here's the line
+        you'd need to add to the bottom of _RestoreSettings():
+
+            Set(LineDrawing, Val(GetToken(tok, " ", 9)))
+
+            The GetToken() command is used to grab the values from the
+        line.  Make sure when you add a value to _InsertSettings() and
+        _RestoreSettings() that both functions expect the values to be
+        in the same order on the line.
+
+            Finally, you'd need to modify FSDecideSettings() to decide
+        whether LineDrawing should be on or off for a particular file.
+        Most settings will be decided based on file extension.  Say you
+        wanted LineDrawing to be on for files with the extension ".ans".
+        You would add a "case" or "if" statement something like this:
+
+            if ext == ".ans"
+                Set(LineDrawing, ON)
+            endif
+
+            Now, whenever you edit a file whose extesion is ".ans",
+        LineDrawing mode will automatically be turned on.
+
+            One last thing you might want to do is add a menu option to
+        the FSSettings menu to let you change TSE's burnin default value
+        for that setting.  This is highly recommended, but not
+        necessary.
+
+
+        ================================================================
+        Chris Antos, chrisant@microsoft.com
+

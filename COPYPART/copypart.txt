@@ -1,0 +1,47 @@
+TSE Macro                                                        TSE Macro
+
+ File: copypart.s                        Saturday -  June 12, 1993
+
+                    Copies Block to second Window
+                    Initiate with ExecMacro("CopyPart")
+
+ Macro was originally called 'cpyparts'.  Changed to 'copypart'
+ The macro was originally in a three part message and has been combined
+ ===========================================================================
+
+  ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+  ³ At the request of Bob Campbell the author of 'copypart.s' the three ³
+  ³part message that originally contained this messege is being combined³
+  ³and a header inserted so the file may be uploaded to the SemWare BBS.³
+  ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+ I often grab text from one file and paste it into a second file.  I
+ would make a temporary <Ctrl Return> macro to paste the current block
+ into the next file.
+
+ I did do this enough that I decided to write a macro and assign it to a
+ key. At first I only intended to write a simple 10 line macro but as
+ usual I started to have fun and it got a little out of hand.
+
+ The macro below and the next two messages contain the code for copypart.s.
+ If you wish to use it, it should be compiled and called by a key
+ assignment:
+
+ <keyname>  ExecMacro("CopyParts")
+
+  In order to allow you to try the macro with learning to compile it the
+  'copypart.mac' is included in the zipfile.
+
+  It is highly recommended that you learn to compile TSE macros.
+
+  As an example of the command line syntax necessary to compile this
+  macro you would enter this on the command line:
+
+        sc.exe copypart.s
+        or
+        sc copypart
+  You must be in the directory containing 'copypart' and the
+  'copypart.mac' will also be in this directory.
+
+
+

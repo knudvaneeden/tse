@@ -1,0 +1,7 @@
+ChgNotif v1.6 - for TSE 2.6 and higher. 
+Detects when another application changes a 
+file loaded in TSE Pro/32. It gets a Windows 
+file change notification, so it uses no CPU 
+while idle. The macro automatically 
+configures itself the first time you load it.  
+Author: Chris Antos

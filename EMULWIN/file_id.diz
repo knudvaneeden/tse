@@ -1,0 +1,22 @@
+<02-24-99> -  Emul_Win.ui  -  TSE Pro/32 v2.8
+If you do your programming in TSE32 and have
+to prepare your documentation in a Windows
+word processor, you may find this user
+interface useful.  It emulates the most
+common Windows keys and some useful functions
+found in Windows word processors.  The UI
+manages to maintain all of the features found
+in the standard TSE32 UI.  Repeat find
+up/down is bound to the cursor up and down
+keys. Not standard but very handy. Push Shift
+F1 to view the key bindings. Incoporated also
+is the TSE jr's "Open File At Cursor" macro,
+patched to allow for blanks in the file name.
+The most frequently used WordStar keys have
+been left intact in case you need them.
+(Actually it's because I wrote my first
+serious code in WordStar 3.3's non-document
+mode for a FORTRAN 77/dBASE II project
+targeted at CPM-80.  Yeah I know ..."What's
+CMP?")
+Author: Al Stanbury <al.stanbury@hydro.on.ca>

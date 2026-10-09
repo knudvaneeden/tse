@@ -1,0 +1,101 @@
+
+                              €ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ€
+                              €  DRAGDROP.MAC  €±±
+                              € v1.1, 04/03/97 €±±
+                              €‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹€±±
+                                ±±±±±±±±±±±±±±±±±±
+
+             (This version of DRAGDROP works on both TSE 2.5 and
+            TSE 2.6, comes with DRAGDROP.MAC compiled for TSE 2.6;
+                 recompile the macro to use it with TSE 2.5)
+
+
+
+            This macro provides mouse selection and drag-drop support
+        that is similar to Microsoft Word for Windows.  You are free to
+        modify, customize, distribute, and delete this macro.  Just
+        don't sell it.  It's free.
+
+            You can add it to your TSE AutoLoad List to make it active
+        every time you start TSE.  If you use some key other than
+        <Escape> to call your MainMenu(), then you should change the
+        constant MAINMENU_KEY at the beginning of DRAGDROP.S to whatever
+        your key is.
+
+
+        === Using DRAGDROP.MAC =========================================
+
+            If you execute DRAGDROP.MAC, it will display a short help
+        screen explaining how to use it.  If you just load DRAGDROP.MAC
+        (or add it to your AutoLoad List) it will not display the help
+        screen.  If you want to be able to show the help screen by
+        pressing a key, change the HELP_SCREEN_KEY at the beginning of
+        DRAGDROP.S to whatever key you want to use.
+
+
+        --- Selection: -------------------------------------------------
+
+            Clicking the left button outside of any windows brings up
+        the main menu.  Clicking the left button in the current window
+        moves the cursor there.  Clicking the left button in a window
+        other than the current window makes that window the current
+        window (holding the button will move the cursor there, too).
+        Click and hold the left button in the current window to mark the
+        word under the mouse cursor.
+
+            Shift-clicking the left button in a window will make that
+        window the current window and also move the cursor there.
+
+            Click and drag to select a character block.  Ctrl-click and
+        drag to select a column block.  To select a line block,
+        doubleclick and drag, or Alt-click and drag.
+
+
+        --- Drag and drop: ---------------------------------------------
+
+            To drag-drop a selected block, click on it and begin
+        dragging.  To abort the drag, press <Escape>.  If you do not
+        abort the drag, then when you release the mouse button, the
+        block will be moved to wherever the mouse cursor is.  If you
+        hold down the <Ctrl> key, then the block will be copied (instead
+        of moved).  If you hold down the <Alt> key and the block is a
+        column block, it will be moved/copied over the text at the
+        destination (see CopyBlock(_OVERWRITE_) in the TSE help file for
+        more information).  You can drag and drop between windows, even!
+
+            To change files while dragging, hit <Alt-,> (previous file)
+        or <Alt-.> (next file).  (But make sure you don't let go of the
+        mouse button).
+
+
+        === Caveats ====================================================
+
+            To minimize the configuration necessary to use this macro, I
+        made it use the MouseRepeatDelay variable to determine the delay
+        while scrolling.  There is a simple proc mDelay which tries to
+        emulate the TSE internal delay routine; I'm running on a
+        Pentium-90, and I timed the delay scrolling through a huge file
+        (it took over a minute) and my routine was only off by 2 seconds
+        from TSE's internal routine.  I tried it on my 386-33, and it
+        performed well, too, but your mileage may vary.  Feel free to
+        modify the mDelay routine to fine-tune the actual delay.  Or
+        just use a constant delay value instead of MouseRepeatDelay.
+
+        	Drag-scrolling only works on boxed (bordered) edges of
+        windows.  So if you happen to have DisplayBoxed set to 0 (or 1
+        but UseMouse is 0 or MouseEnabled is 0), drag-scrolling will not
+        work on some edges of windows.  This was a design decision to
+        improve drag-scrolling performance.  I fixed it once, but
+        decided it ran too slowly and ripped out the fix.
+
+
+        === Bonus ======================================================
+
+            Near the bottom of DRAGDROP.S, I list a few undocumented
+        keys I've found that TSE recognizes.  You can bind commands to
+        them, etc.
+
+
+        === Enjoy! =====================================================
+                      Chris Antos, chrisant@microsoft.com
+

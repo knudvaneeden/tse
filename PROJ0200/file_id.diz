@@ -1,0 +1,18 @@
+<05-19-02> PROJ v2.00
+Requires TSE Pro/32 v2.8 or higher.
+
+- Automatically configures itself the first
+  time you run it.
+- For programmers, it supports CTags and BSC
+  symbol information.
+- No more having to remember paths; PROJ
+  builds a list of all the files in your
+  project and autocompletes them for you.
+- Remembers keyboard macros, clipboard, and
+  more between editing sessions.
+- Associate projects with directories, and
+  automatically load the appropriate project
+  when TSE is started from that directory.
+- Now with a DLL that makes it much faster
+  than before!
+- See README.TXT inside for more info.

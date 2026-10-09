@@ -1,0 +1,486 @@
+
+    CurrExt - Find out the real type of the current file
+
+    1. INTRODUCTION
+    ---------------------------------------------------------------
+
+    The Semware Editor allows you to have settings that only apply
+    to a certain type of file.  For example, you can have indenting and
+    brace matching turned on for source code files, but not for your
+    letters to Aunt Selma.
+
+    And if you use extension macros like TEMPLATE and FILEPAL, you can
+    do all sorts of neat stuff like expanding keywords differently for
+    different programming languages, or automatically turning on
+    word wrap for text files.
+
+    This is all very good stuff as far as it goes.  However, if you're
+    like me, you'll soon start to find that many files of the same type
+    actually have different extensions in their filename.
+
+    For instance:
+
+        .txt .doc .let .asc (Text files)
+        .pl .pm .cgi .ph    (Perl files)
+        .c .cpp .h          (C language files)
+        .s .ui .si          (SAL macro files)
+
+    It can start to be a pain to maintain all the settings for all of
+    these files!  Not to mention prone to error:  when you add
+    a keyword template for files of type '.pl', you have to do so for
+    all other Perl file types as well.
+
+    CurrExt allows you to group a bunch of related extensions together
+    under a single type.  It does so by providing a replacement for the
+    builtin CurrExt() function.
+
+    Normally the CurrExt() function returns the three letter extension
+    of the current file.  So for README.TXT, CurrExt() returns '.txt'.
+    For README.DOC, Currext() returns '.doc'.
+
+    This replacement macro will return '.txt' in both cases.  In other
+    words, it lies.  But it lies in a very useful way.
+
+    The advantage of this approach is that with a few minor changes to
+    some source code, you can fool your UI and your favourite macros
+    into thinking that 'Readme.doc' actually ends in '.txt'.
+
+    Once you've done that, you can now go about happily configuring the
+    editor to handle '.txt' files exactly the way you want it to, secure
+    in the knowledge that all files ending in '.doc', '.asc', or '.let'
+    will handled properly as well.
+
+    Precisely how you want the extensions to be mapped to one another is
+    up to you.  You can configure CurrExt by making changes to TSE's
+    settings file (either TSE.INI or TSEPRO.INI, depending on your
+    version).
+
+
+    2. INSTALLATION
+    ---------------------------------------------------------------
+
+    NOTE: On TSE 2.5 (DOS) You will need to install the Profile
+    package.  See Profile.txt in that package for instructions.
+
+    Place the CurrExt.s, findprof.si and setcache.si files in
+    your macro source directory, then compile CurrExt.s.
+
+    Note that the findprof.si and setcache.si files may already have
+    been installed from another macro package. If so, you should not
+    need to install them again.  But it's worth taking a quick check
+    to see that you have the latest version of these files.
+
+    To make sure that CurrExt is available to all macros, you should
+    place it in TSE's autoload list.  Because CurrExt needs to be the
+    first macro to run when the _ON_CHANGING_FILES_ hook is called,
+    it needs to be the *last* macro loaded.  This means that it has
+    to be at the bottom of the Autoload list.  Just make sure that
+    the cursor is at the end of the Autolist before you insert CurrExt.
+
+    If you are comfortable hacking around TSE's user interface (UI)
+    files, you will get the most consistent results if you take the
+    following steps:
+
+     1) Call "CurrExt -u" from TSE's WhenLoaded() function:
+
+         ExecMacro("CurrExt", "-u")
+
+        The "-u" option stops CurrExt from trapping the
+        _ON_CHANGING_FILES_ event.
+
+     2) Run "Currext" at the top of TSE's OnChangingFiles() function:
+
+         ExecMacro("CurrExt")
+
+    Running CurrExt manually like this will allow you to comfortably
+    avoid the problems associated with macro load sequence, because
+    the UI's OnChangingFiles() function always runs before all other
+    functions that hook this event.
+
+    See "APPENDIX B - SUGGESTED CHANGES TO TSE.UI" for sample UI code.
+
+
+    2. USING CURREXT IN YOUR OWN MACROS
+    ---------------------------------------------------------------
+
+    CurrExt automatically calculates the current file's extension
+    whenever you change between files.  It puts the calculated
+    extension in the Session-Global variable 'CurrExt'.
+
+    Therefore you can generally use the following code to get the current
+    file type:
+
+        curr_ext = GetGlobalStr('CurrExt')
+
+    To be safe, you can check if the CurrExt macro is loaded, first:
+
+        curr_ext = iif(isMacroLoaded('CurrExt'), GetGlobalStr('CurrExt'), CurrExt())
+
+
+    3. CONFIGURATION - Extension Aliases
+    ---------------------------------------------------------------
+
+    CurrExt reads its settings from TSE.INI.  (It searches for this file
+    according to the rules in the FindProf package.)  A sample
+    configuration for CurrExt is included in this package as SAMPLE.INI.
+
+    To make two file types equivalent, add an entry to the
+    [Extension_Aliases] section in TSE.INI.
+
+    Each line in this section is in the form of:
+
+        <extension>=<actual type>
+
+    When the actual file extension is <extension>, CurrExt will return
+    <actual type> instead.
+
+    So, for instance, because '.s', '.si', and '.ui' are all valid
+    extensions for TSE macro files, the following lines will make them
+    equivalent:
+
+        [Extension_Aliases]
+        si=s
+        ui=s
+
+    Now, regardless of whether the file type is '.s', '.si' or '.ui',
+    CurrExt will return '.s'.
+
+    CurrExt will use the SetCache package if you have it installed.
+    This means you can tell it to reload its settings without exiting it
+    and restarting.  To do so, Edit TSE.INI, and then run the SReload macro.
+
+    4. CONFIGURATION - Files Without Extensions
+    ---------------------------------------------------------------
+
+    Certain files, especially scripts on UNIX systems, don't have
+    extensions.  Rather, the convention is to use the first line of
+    the file to indicate the file type.
+
+    For instance, a UNIX shell script might look like:
+
+        #!/bin/sh
+
+        echo 'hello world!'
+
+    And a perl script might look like:
+
+        #!/usr/bin/perl
+
+        print "hello world!\n";
+
+    In both cases the first line begins with '#!', and indicates the file
+    type.  This line is often called the 'shbang' line (from the
+    first two characters: haSH(#) and BANG(!)).
+
+    You can cause CurrExt to recognize files based on their shbang line,
+    by adding a value to the [Shbang_Aliases] section of TSE.INI.
+
+    This is similar to the [Extension_Aliases] described above.  Each line
+    in this section has the following form:
+
+        <shbang_string>=<actual_type>
+
+    When CurrExt finds <shbang_string> on the shbang line of the current
+    file, it will return <actual type> instead.
+
+    By default, CurrExt won't look at the shbang line unless the file
+    has no extension.  You can override this with the following setting:
+
+        [CurrExt]
+        Always_Check_Shbang_Line = 1
+
+    By default, CurrExt requires that the shbang line begins with '#!'.
+    You can override this with the following setting:
+
+        [CurrExt]
+        Loose_Definition_of_Shbang_Line = 1
+
+    By default, CurrExt searches for <shbang_string> within the shbang
+    line using TSE's find commmand with the options 'iw'.  You can
+    specify different options with the following setting:
+
+        [CurrExt]
+        Shbang_Match_Options = w
+
+
+    5. TROUBLESHOOTING (For Users)
+    ---------------------------------------------------------------
+
+    If you think you've set up your TSE.INI properly, but you seem
+    to be getting the wrong extension, try the follwoing debugging
+    commands:
+
+        CurrExt -v    Calculates the current file's extension and
+                      displays it on the Macro's status line.
+
+        CurrExt -d    Places CurrExt into debug mode.  In this mode,
+                      every time CurrExt determines the current file's
+                      extension, it displays the filename and the
+                      derived extension on the Macro's status line.
+
+        CurrExt -n    Places CurrExt into normal mode (i.e. turns off
+                      debug mode).
+
+
+    6. TROUBLESHOOTING (For Macro Programmers)
+    ---------------------------------------------------------------
+
+    The following issues only apply to macros that use the CurrExt and
+    Profile packages on the DOS version of TSE (2.5).
+
+    CurrExt traps the _ON_CHANGING_FILES_ hook.  Every time the file
+    changes, CurrExt tries to calculate the current file type. If it
+    encounters an extension it hasn't seen before, it looks it up in
+    TSE.INI.
+
+    However, the Profile macros under TSE 2.5 are not fully re-entrant.
+    If you write a macro that does INI file processing, and this macro
+    triggers an _ON_CHANGING_FILES_ hook (e.g. via NextFile() or PrevFile()),
+    then CurrExt will run.  And CurrExt may attempt to read from TSE.INI,
+    which could interfere with your Macro's INI file processing.
+
+    For this reason, CurrExt allows you to suspend its operation
+    temporarily while you perform critical INI file processing,
+
+        CurrExt -z
+
+    and then resume it after you are finished:
+
+        CurrExt -r
+
+    During the time that CurrExt is suspended, it will set the
+    Session-Global string 'CurrExt' to the empty string.
+
+    You can have it set 'CurrExt' to the actual extension of the
+    current file, with the following setting:
+
+        [CurrExt]
+        Return_Actual_Extension_When_Suspended
+
+
+    A. REFERENCE - Setings and Command Line Switches
+    ---------------------------------------------------------------
+
+    a) INI Settings Reference
+
+    [CurrExt]
+    Always_Check_Shbang_Line=0
+    Loose_Definition_of_Shbang_Line=0
+    Shbang_Match_Options=0
+    Return_Actual_Extension_When_Suspended=0
+
+    [Extension_Aliases]
+    <extension>=<actual_type>
+
+    [Shbang_Aliases]
+    <shbang_string>=<actual_type>
+
+    b) Command Line Summary
+
+    CurrExt       Loads CurrExt if not already loaded, then runs
+                  CurrExt.  If the file has changed since the last time
+                  CurrExt was run, it determines the file's extension,
+                  and refreshes the Session Global string 'CurrExt' with
+                  the extension.
+
+    CurrExt -f    Loads CurrExt, and refreshes the Session Global string
+                  'CurrExt', even if the file has not changed.
+
+    CurrExt -z    Suspends CurrExt.  When suspended, CurrExt will not do
+                  any lookups when it is called.  Instead it will either
+                  return '' or the actual filename extension, depending
+                  on the value of the 'Return_Actual_Extension_When_Suspended'
+                  value in the INI file.
+
+    CurrExt -r    Resumes CurrExt.
+
+    CurrExt -v    Calculates the current file's extension and displays it
+                  on the Macro's status line.
+
+    CurrExt -d    Places CurrExt into debug mode.  In this mode, every time
+                  CurrExt determines the current file's extension, it
+                  displays the filename and the derived extension on the
+                  Macro's status line.
+
+    CurrExt -n    Places CurrExt into normal mode (i.e. turns off debug
+                  mode).
+
+    CurrExt -h    Enables CurrExt's built-in _ON_CHANGING_FILES_ handler.
+
+    CurrExt -u    Disables CurrExt's built-in _ON_CHANGING_FILES_ handler.
+
+
+
+    B. SUGGESTED CHANGES TO TSE.UI
+    ---------------------------------------------------------------
+
+    GetFunctionStr()
+    OnChangingFiles()
+
+    These modifications also causes TSE to load settings from TSE.INI,
+    rather than hardcoding the settings into the UI file.  They requires
+    the FindProf.si library. Also, on TSE 2.5 (DOS), they require the
+    Profile package.
+
+    Modifications are flagged with comments containing **CURREXT**
+
+        string proc GetFunctionStr()
+            // **CURREXT**: commented out most of the old function
+            // case CurrExt()
+            //     when ".c", ".h"
+            //         return (c_fun)
+            //     when ".cpp", ".hpp"
+            //         return (cpp_fun)
+            //     when ".s", ".ui", ".si"
+            //         return (sal_fun)
+            //     when ".pas"
+            //         return (pas_fun)
+            //     when ".prg",".spr",".mpr",".qpr",".fmt",".frg",".lbg",".ch"
+            //         return (xbase_fun)
+            //     when ".bas"
+            //         return (basic_fun)
+            //     when ".ini"
+            //         return (ini_fun)
+            // endcase
+            // return ("")
+
+            string curr_ext[20]
+
+            // **CURREXT**: get file type from CurrExt package
+            curr_ext = iif(isMacroLoaded('CurrExt'), GetGlobalStr('CurrExt'), CurrExt())
+
+            // **CURREXT**: get function spec from Profile
+            return(GetProfileStr('UI_Function_specs',curr_ext[2..Length(curr_ext)],'',FindProfile()))
+
+        end
+
+        // **CURREXT**: commented out the entire old function
+        // proc OnChangingFiles()
+        //     // For 'RecentFiles' processing, only show files that are displayed
+        //     Hook(_AFTER_UPDATE_DISPLAY_, AFterUpdateDisplay)
+        //     language = FALSE
+        //     cmode = FALSE
+        //     case CurrExt()
+        //         when ".ui",".s", ".si", ".asm",".pas",".inc",".prg", ".bas"
+        //             language = TRUE
+        //         when ".c",".h",".cpp",".hpp"
+        //             language = TRUE
+        //             cmode = TRUE
+        //     endcase
+        //
+        // end
+
+        proc OnChangingFiles()
+            string curr_ext[20]
+
+            LoadUISettings()
+
+            curr_ext = CurrExt()
+
+            if isMacroLoaded('CurrExt')
+               or Length(SearchPath('CurrExt.mac', Query(TSEPath), 'mac'))
+                ExecMacro("currext")
+                curr_ext = GetGlobalStr('CurrExt')
+            endif
+
+            if Language_Extensions == ''
+                Language_Extensions = GetProfileStr('UI','language_extensions','',FindProfile()) + ','
+                Cmode_Extensions    = GetProfileStr('UI','cmode_extensions','',FindProfile())    + ','
+            endif
+
+            language = FALSE
+            cmode    = FALSE
+
+            if curr_ext <> ''
+                if Pos(curr_ext + ',',language_extensions)
+                    language = TRUE
+                endif
+                if Pos(curr_ext + ',',cmode_extensions)
+                    language = TRUE
+                    cmode    = TRUE
+                endif
+            endif
+        end
+
+
+        proc WhenLoaded()
+
+            // ... rest of WhenLoaded() function snipped ...
+
+            // **CURREXT**: disable CurrExt's _ON_CHANGING_FILES_ hook
+            ExecMacro("currext -u")
+
+            // **CURREXT**: for good measure, call this for the first
+            //              file loaded
+            OnChangingFiles()
+        end
+
+
+
+    C. SUGGESTED CHANGES TO OTHER MACROS
+    ---------------------------------------------------------------
+
+    Generally any time a macro uses either fo the following two lines:
+
+        string ext[4] = SplitPath(CurrFileName(), _EXT_)
+        string ext[4] = CurrExt()
+
+    You can replace it with the following:
+
+        string ext[4] = iif(isMacroLoaded('CurrExt'), GetGlobalStr('CurrExt'), CurrExt())
+
+    Specific examples are given below.
+
+    Modifications are flagged with comments containing **CURREXT**
+
+    Template.s:
+
+        string proc ExtensionType()
+            string ext[EXT_LEN] = SplitPath(CurrFileName(), _EXT_)
+
+            // **CURREXT** Use CurrExt macro
+            ext = iif(isMacroLoaded('CurrExt'), GetGlobalStr('CurrExt'), CurrExt())
+
+            case ext
+                when ".s", ".cfg", ".ui", ".si"
+                    return ('.s')
+            endcase
+
+            case ext[2]
+                when 'c'
+                    // check for alternatives to the 'c' extension
+                    if ext == '.c' or ext == '.cpp' or (isNumeric(ext[3]) and isNumeric(ext[4]))
+                        return ('.c')
+                    endif
+                when 's'
+                    // check for alternatives to the 's' extension
+                    if isNumeric(ext[3]) and isNumeric(ext[4])
+                        return ('.s')
+                    endif
+            endcase
+        return (ext)
+        end
+
+
+    AUTHOR, VERSION, COPYRIGHT, CONTACT
+    ---------------------------------------------------------------
+
+    CurrExt - Find out the real type of the current file
+
+    v1.1.9 - Jun 19, 2002
+
+    
+    Copyright (c) 2002 - Michael Graham <magmac@occamstoothbrush.com>
+
+    This program is Free Software - you may use it, modify it and
+    distribute it under the the terms of the Perl Artistic License,
+    which you may find at:
+
+          http://www.perl.com/CPAN/doc/misc/license/Artistic
+
+    In particular, note that you use this software at your own risk!
+
+    The latest version of my TSE macros can be found at:
+
+        http://www.occamstoothbrush.com/tsemac/
+

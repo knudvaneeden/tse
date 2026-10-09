@@ -1,0 +1,5 @@
+MAILIND1 1.0.0.0.2 indexes RFC-style plain-
+text email inside a marked TSE block. It reads
+From, To, Date, Subject, and Message-ID headers
+without scanning the remainder of the file.
+Alt-H navigates from index entries to messages.

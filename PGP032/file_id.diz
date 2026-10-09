@@ -1,0 +1,6 @@
+TSE 2.00 macro to interface with the PGP
+encryption program. Will encrypt by block
+or file; clear text sign, get a Public key,
+insert you Public key, and en-ecrypt the
+current file.  10-18-94 version 0.032
+Also contains untested TSE Jr. macros for PGP

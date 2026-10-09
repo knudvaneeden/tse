@@ -1,0 +1,27 @@
+1) Change into the TSEPro directory.
+2) Unzip the atoe.zip into the TSEPro directory.
+This should add the following files to the TSEPro directory:
+
+atoe.txt -this file
+atoe.dll -helper dll
+atoe.mac -ASCII to EBCDIC macro
+atoe.s   -source
+
+3) Move atoe.mac and atoe.s to the MAC subdirectory.
+
+4) Run the editor to install the macro, as follows:
+
+g32 -eatoe
+
+You will be prompted for the extension for EBCDIC files, and
+the record length to use for such files.
+
+Quit the editor when you have answered both questions.
+
+The macro should now be installed.
+
+5) Now, run the editor, and load an EBCDIC file.  If the
+extension matches the one you specified, the file should
+automatically be translated to ASCII.  When you save the
+file, you will be prompted as to weather you want to save it
+as EBCDIC (the default) or ASCII.

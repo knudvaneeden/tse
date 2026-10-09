@@ -1,0 +1,5 @@
+Enhanced LIST macro displays a picklist of lines containing a
+string. Plus, a second string may be specified, in which case the
+macro searches for lines containing both strings or for occurences
+of the two strings within a specified number of lines. The '|'
+character can also be used a logical 'OR'.

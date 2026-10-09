@@ -1,0 +1,24 @@
+LOADFIL1 package version 1.0.0.0.5 / 2026-09-16
+Based on LoadFile.S Version 0.8 / 1996-07-01.
+Updated for Win32 TSE with loadfil1.dll; the obsolete
+setDTA(), intr(), and FindFirst() calls were removed.
+The DLL interface uses only parameterless integer calls and
+does not write into TSE SAL string memory.
+Main() now activates the hooks. A guard prevents duplicate
+hook installation if the macro is executed more than once.
+Custom prompt and picker footers are applied by a queued
+internal key after newer TSE versions draw their defaults.
+The complete old footer is cleared first. English is now
+the default language; define _GER to build German prompts.
+This macro modifies all file entry dialog boxes, providing
+- a footer line showing command keys
+- a pick file box
+- another pick box for drives
+German and english version provided.
+
+No special preparations to the user interface are neccessary because all
+functions hook themselves into the appropriate events, making the
+macro's workings fully transparent. The additional features will be
+available automatically upon installation. The pick file list will
+always start up in the directory where the current file resides, or the
+current directory for the drive, if no file is given.

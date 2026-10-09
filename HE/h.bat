@@ -1,0 +1,4 @@
+@ECHO OFF
+CLS
+E -B16 -EHEXEDIT.MAC %1
+

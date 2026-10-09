@@ -1,0 +1,228 @@
+
+This a enhancement to the compile macro supplied in the UI.S
+
+It gives you the possibility to you jump to the next/privous
+error in the error result file and accordingliy in the
+error producing code.
+
+IT IS NOT AN EXECUTABLE MACRO.
+
+Author: Andreas Martini 20.07.93 13:48:50
+
+Routines:
+        Finderror
+                Searches in the file "$ERRORS$.TMP" for the next
+                error message. Because the Microsft compiler return
+                the full filename, including drive and path, it is
+                possible to get the filename ,where the error happend, direct
+                into the editor. This is very nice, when the error takes
+                place in an include file out of the include environment.
+
+                The Basic compiler returns error line and row, the C Compiler
+                only returns error line (hard live to be a C programmer).
+
+        Nexterror
+                Dependent on a switch TRUE/FALSE it searches for
+                NEXT / PREVIOUS Error.
+
+                This is the procedure, that must be assigned to the
+                two keys.
+
+
+WARNING:
+Because it is not a standalone macro, but different kind of
+insertions to the "MAIN" file, you should carefully read the
+installation instructions. (and hopefully know what you are doing)
+
+        Load your "UI.S" file
+        Locate the text areas:
+                "// Global variables"
+                "proc mCompile"
+
+In the area:
+"// Global variables - assumes globals initialized to 0."
+
+insert the following two constants:
+Constant
+        BASLANG = 1,
+        CLANG = 2
+and initialize the gloabal variable LANGUAGE to '99'
+integer language=99
+
+
+Before your compile macro insert the following two declarations
+        global variable REGSEARCH
+        forward proc SetLanguage()
+
+Before your compile macro insert the following four procedures
+        FindError
+        nextError
+        bcompile     //my Compile macro
+        SetLanguage
+
+
+Load your key file "UI.KEY"
+Assign keys to your NextError or PrevError functions.
+        ex.: <F3> NextError(TRUE)
+             <F4> NextError(FALSE)
+
+I assigned to f3 and f4 normaly a Nextsearch and PrevSearch function. But
+when an error file is loaded, I Perform a NextError/PrevError
+
+My Example:
+proc F3Handle()
+if GetBufferID(ExpandPath("$errors$.tmp"))   // we did a compile
+    NextError(TRUE)
+ elseif isBlockMarked()                      // search for marked text
+    Find(GetMarkedText(), Query(FindOptions))
+ else                                        // search for word at cursor
+    Find(GetWordAtCursor(), Query(FindOptions)+"+")
+ endif
+end
+
+<F3>                    F3Handle()
+
+<F4>                    if GetBufferID(ExpandPath("$errors$.tmp"))
+                            NextError(FALSE)   //Previous error
+                        elseif isCursorInblock()
+                            Find(GetWordAtCursor(), Query(FindOptions)+"b")
+                        endif
+
+
+
+/************************************************************************
+  This version assumes the compiler program is either in the current
+  directory or available via the path.
+  REmember the constants BASLANG and CLANG
+ ************************************************************************/
+string regsearch[40]
+forward proc SetLanguage()
+
+integer proc Finderror(string regsearch, string regopt, var string fn, var integer line, var integer col)
+    if lFind(regsearch,regopt)
+        Begline()
+        fn = GetTextUntil('(')
+        Right()                             // skip the comma
+        case language
+            when BASLANG
+                line = Val(GetTextUntil(','))
+                Right()                             // skip the comma
+                col  = Val(GetTextUntil(')'))
+                return(TRUE)
+            when CLANG
+                line = Val(GetTextUntil(')'))
+                col = 1
+                return(TRUE)
+        endcase
+
+    endif
+    return(FALSE)
+
+end
+proc NextError(integer direction)
+    string fn[65] = CurrFilename()
+    string errfn[65]=""
+    string regopt[3]=""
+
+    integer line, col
+    NextWindow()
+    if direction == TRUE
+       Down()
+       regopt = "IX"
+    else
+       regopt ="IXB"
+    endif
+    if Finderror(regsearch, regopt, errfn, line, col)
+        PrevWindow()
+        If errfn <> fn
+                Editfile(errfn)
+        endif
+        GotoLine(line)
+        ScrollToRow(Query(WindowRows) / 2)
+        GotoColumn(col)
+        UpdateDisplay()
+    endif
+end
+
+proc bCompile()
+    string fn[65] = CurrFilename(),
+        err_fn[12] = "$errors$.tmp"
+    integer line, col
+   if CurrExt() == ".s"
+        mCompile()
+        return()
+   endif
+   if language == 99
+        SetLanguage()
+   endif
+   if language == FALSE    // CurrExt() <> ".btl"
+        Warn("Keine Basic oder C Datei")
+        return ()
+    endif
+    OneWindow()         // Force a single window
+    if isChanged()
+        SaveFile()
+    endif
+    // Remove the error file if we're already editing it
+    AbandonFile(GetBufferId(ExpandPath(err_fn)))
+    PurgeMacro(fn)
+    EraseDiskFile(err_fn)
+
+    case language
+        when BASLANG
+            Dos("bc /Z /Fpa " + fn + ";>" + err_fn, _DONT_CLEAR_)
+            regsearch = " #: #{Error}|{Warning} #:"
+        when CLANG
+            regsearch = " #: #{Error}|{Warning} #C[0-9]#:"
+    endcase
+
+    EditFile(err_fn)
+    EraseDiskFile(err_fn)
+    //
+    // 3 cases -
+    //      1 - BC didn't run, probably not found. Identify by empty err_fn
+    //      2 - Error/Warning msg found in err_fn - position to error
+    //      3 - No Errors/Warnings!  Load/Exec the new macro.
+    //
+    if Finderror(regsearch, "IX", fn, line, col)
+        EditFile(fn)        // Programmcode where the error happend
+        HWindow()           // Error result file
+        PrevWindow()        // go back to programmcode
+        GotoLine(line)      // cursor position
+        ScrollToRow(Query(WindowRows) / 2)
+        GotoColumn(col)
+        UpdateDisplay()
+    else
+        // At this point, no error/warning messages found, in the error file
+        AbandonFile()
+        if NumLines() == 0                      // If empty, we failed
+            Warn("Error running BC.EXE")
+        else
+            UpdateDisplay()                     // Force a statusline refresh
+            fn = SplitPath(fn, _DRIVE_ | _NAME_)
+            case LoadExec("Compile successful")
+                when 1
+                    LoadMacro(fn)
+                when 2
+                    ExecMacro(fn)
+            endcase
+        endif
+    endif
+end
+
+proc Setlanguage()
+    /* Ok, on with the rest of the show */
+
+    language = FALSE
+    cmode = FALSE
+    case CurrExt()
+        when ".s",".asm",".pas",".inc",".prg"
+            language = TRUE
+        when ".bas", ".btl", ".itl"
+            language = BASLANG
+        when ".c",".h",".cpp",".hpp"
+            language = CLANG
+            cmode = TRUE
+    endcase
+end Setlanguage
+

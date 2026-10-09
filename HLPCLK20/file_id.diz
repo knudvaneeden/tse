@@ -1,0 +1,5 @@
+HlpLnClk is a small TSE add-in which makes
+the TSE help line mouse sensitive. In other
+words, as long as HlpLnClk is loaded you can
+click an item within TSE's help line to
+execute the corresponding command.

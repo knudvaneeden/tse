@@ -1,0 +1,13 @@
+KEYWS.MAC v1.0. TSE 2.0 macro to add
+keywords to recipes formatted for the
+"QBook" recipe database program by Bob
+Butler. Uses user-created lists of words
+to search for in the recipe. Displays
+list of matching words which can be
+edited before adding to recipe.
+Automatically formats keywords lines to
+correct length. Also has 'AutoScan'
+function to automatically add keywords
+based on found words. Can be recompiled
+to work with Meal-Master recipe
+database.

@@ -1,0 +1,65 @@
+
+    FindProf - Find TSE's Global Profile (TSE.INI or TSEPRO.INI)
+
+    INTRODUCTION
+    ---------------------------------------------------------------
+    This macro helps to locate TSE's preferences file.  It is
+    designed to be included in your own macros, so that you can
+    use the Profile Functions without keeping track of which INI
+    file you are using or which version of the editor:
+
+        #ifndef WIN32
+        #include ["profile.si"]
+        #endif
+
+        #include ["FindProf.si"]
+
+        GetProfileStr('My_Settings', 'My_Key', '', FindProfile())
+
+    FindProf tries first to locate an existing file named TSE.INI
+    or TSEPRO.INI.  It searches the editor's macro directories
+    (i.e. TSEPath), then the editor's load directory (i.e. LoadDir())
+
+    If that fails, it makes the following assumptions:
+
+        *  If the editor is the WIN32 version, then return 'TSE.INI',
+           which the Win32 Profile functions will resolve to the
+           correct directory (usually C:\WINDOWS, but I imagine this
+           may be a user profile directory in some setups).
+
+        *  If the editor is the DOS version, then return
+           LoadDir() + 'TSEPRO.INI', for compatibility with Chris Antos'
+           INI.* macros.
+
+    When FindProfile() finally decides on a file, it caches the filename
+    in the session global variable 'FindProfile:TSE_Global_Profile',
+    so it doesn't have to repeat the search again.
+
+    It follows the rules in the SetCache package, however.  If you run
+    the SReload macro from that package, FindProfile() will search
+    again for the proper .INI file at its next opportunity.
+
+    AUTHOR, VERSION, COPYRIGHT, CONTACT
+    ---------------------------------------------------------------
+
+    FindProf - Find TSE's Global Profile (TSE.INI or TSEPRO.INI)
+
+    v1.0.4 - Jun 19, 2002
+
+    
+    Copyright (c) 2000-2002 - Michael Graham <magmac@occamstoothbrush.com>
+
+    This program is Free Software - you may use it, modify it and
+    distribute it under the the terms of the Perl Artistic License,
+    which you may find at:
+
+          http://www.perl.com/CPAN/doc/misc/license/Artistic
+
+    In particular, note that you use this software at your own risk!
+
+    The latest version of my TSE macros can be found at:
+
+        http://www.occamstoothbrush.com/tsemac/
+
+
+

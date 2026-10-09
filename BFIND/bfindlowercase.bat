@@ -1,0 +1,13 @@
+ren BFIND.inc            bfind.inc
+ren bfind.ini            bfind.ini
+ren bFind.mac            bfind.mac
+ren bFind.s              bfind.s
+ren bfind_knud.zip       bfind_knud.zip
+ren elist.mac            elist.mac
+ren elist.s              elist.s
+ren File_id.diz          file_id.diz
+ren README.txt           readme.txt
+ren setwiyde.mac         setwiyde.mac
+ren setwiyde.s           setwiyde.s
+ren videobfind.mpg       videobfind.mpg
+ren zipinstallBFIND.bat  zipinstallbfind.bat

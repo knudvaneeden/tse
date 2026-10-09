@@ -1,0 +1,10 @@
+This macro saves the view and cursor position when each file
+unloaded and restores details when the file is next loaded.
+
+Max number of saved entries is determined by MaxHistoryPerList.
+
+Should be included in AutoLoad list for proper operation.
+
+Tested with v2.5 and v3.0.
+
+StevenSaunderson@nlc.net.au

@@ -1,0 +1,67 @@
+
+                            HexEdit.S
+
+
+A Macro that displays the hexadecimal equivalent of a screen of binary
+data.
+
+    Features:
+
+        o   Breaks up the display into convenient 16 byte chunks.
+        o   Displays each line's starting hexadecimal address.
+        o   Assigned to Alt H.
+        o   Allows single byte hexadecimal editting(via Alt E).
+        o   Includes H.BAT file which loads the binary file into the
+            the editor in binary mode, sixteen bytes per line.
+
+When H.BAT is executed with the appropriate binary file parameter,
+TSE is invoked with HEXEDIT.MAC already loaded.  However, the hex-
+adecimal display does not display until ALT H is pressed.  This
+key combination acts as a toggle, and toggles hexadecimal mode on
+and off.
+
+Once toggled on, hexadecimal mode displays each line's sixteen byte
+string to the right of the screen as the hexadecimal equivalent.
+All keys function as normally, however, the cursor will 'shadow'
+the appropriate hexadecimal byte to the right of the display.  The
+cursor will not proceed past the last line on the screen.  In order
+to proceed to the following page, use the PageUp key(conversely, to
+proceed to a previous page, use the PageDown key).  This limitation
+occurs only in hexadecimal mode.
+
+   Example of Hexadecimal Mode:
+
+-16 ASCII Bytes-    -Address- --------- Hexadecimal  Representation ---------
+
+
+
+&    0000 0000 01 02 03 04 05 06 07 08 0A 0B 0C 0D 11 0E 0F 26
+
+
+&    0000 0010 01 02 03 04 05 06 07 08 0A 0B 0C 0D 11 0E 0F 26
+
+
+&    0000 0020 01 02 03 04 05 06 07 08 0A 0B 0C 0D 11 0E 0F 26
+
+To edit a byte in hexadecimal mode, ALT E will process the current
+byte, and display a message, position the cursor on the appropriate
+hexadecimal 'byte', and prompt for hexadecimal entry.  If an invalid
+hexadecimal entry is made, an error message will display, and the macro
+will re-prompt for entry.  If a valid hexadecimal entry is made, the macro
+will display the entered value, and the cursor will automatically position
+at the following byte in the 16 ASCII Bytes display portion of the screen.
+
+Finally, ALT G will prompt for a valid hexadecimal address, and will go to
+that address.  If the Address entered is invalid, an error message will
+display.  In this manner, large files can be easily updated.
+
+This macro is presented 'as is'.  If you care to make any additions,
+changes, etc., please do.  I only ask that if you do, please communicate
+such changes to me, so that I may take advantage of them as well.
+Questions?  Please refer them to:
+
+          Frank M. Villafane
+          117 Governor's Rd.
+          Lakewood  NJ  08701
+          (908) 370-2487
+

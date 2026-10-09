@@ -1,0 +1,5 @@
+<03-11-99> - ChkSave version 4 - TSE Pro v2.5
+Checks loaded files for updates by other
+processes and supplies the user with
+appropiate actions. Version 4 solves a bug.
+Author: Carlo Hogeveen <hyphen@xs4all.nl>

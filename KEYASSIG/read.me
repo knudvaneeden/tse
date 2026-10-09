@@ -1,0 +1,96 @@
+
+Overview
+--------
+
+KeyFind.S and KeyAssgn.S are a pair of macros which allow you to search
+for key assignments and display which command is assigned to a key,
+respectively.
+
+
+Quick Start
+-----------
+
+Compile the macros (they work for both v2.5 and v2.6 of the editor) and
+put the mac files into your favorite macro directory. If you installed
+TSE using the factory defaults directory layout and if you're using
+TSE.UI, you can start using them immediately.
+
+
+Custom Installation
+-------------------
+
+Both macros work their "magic" by searching the UI file for key
+assignments. Thus, for them to work properly they must be able to find a
+file which defines your key assignments. Both macros use a pair of
+global string variables to define the placement of this file: cmd_path
+and cmd_file. The first one defines the directory where this file can be
+found (relative to the place where TSE is located) and the second one
+defines the name of that file.
+
+Let's assume, you have installed TSE using the following, fully
+customized directory structure:
+
+        c:\utils
+        |
+        +-- tse
+            |
+            +-- my_macs
+                |
+                +-- source
+                +-- ui
+
+Let's also suppose that your UI file is called my_stuff.ui. Then the two
+variables must be as follows:
+
+        cmd_path = "my_macs\ui\"
+        cmd_name = "my_stuff.ui"
+
+(Don't forget the trailing backslash in cmd_path.)
+
+If you are using the factory defaults and have deleted the UI file, you
+have to re-install the editor to get this file. The best way to do this,
+is to install TSE into some temporary directory, move the UI directory
+and its contents over to your current installation and, finally, get rid
+of the temporary directory.
+
+
+Extending the Help Menu
+-----------------------
+
+You might want to bind these macros to your help menu. Here's how to do
+this. First load both this file and your UI file into TSE. Next search
+the string "menu HelpMenu()" with the options "gi" within your UI file.
+This should located the help menu. Now copy the following lines into the
+menu definition.
+
+    "&Find Key...",             ExecMacro("keyfind")
+    "&Display Assignments...",  ExecMacro("keyassgn")
+
+Finally, re-install the UI.
+
+
+Using the Macros
+----------------
+
+This is rather simple. KeyFind displays a prompt where you can enter
+some text (or regular expression) which should be located. Press enter
+and the macro will present some key assignments which include the search
+string. You can sort this list by Key (Alt-K) and Command (Alt-C) or
+search again (Enter). As usual, the list is dismissed by pressing the
+Escape key. Using KeyAssgn is even simpler. Execute it, press some key
+(including alt-,ctrl-,shift-combinations and double keys) and the macro
+will tell you which command is assigned to that key. Again press Escape
+to close the prompt box.
+
+
+Copyright and Disclaimer
+------------------------
+
+This program is thereby donated to the public domain. Use it or even alter
+it as you see fit, but ENTER AT YOUR OWN RISK!
+
+If you should find something buggy, have a suggestions on what is
+missing or just wanted to say hello, please contact me. My e-mail
+address is DieterKoessl@compuserve.com. (Hey! They finally let you use
+your real name as an e-mail address.)
+

@@ -1,0 +1,122 @@
+File$Id: readme 0.2 1995/07/16 17:26:41 drm Exp $
+$Source: C:/USR/TSE/RCS/readme $
+
+DSPELL - An Alternative Spelling Checker Interface for TSE by
+Dave Monksfield. Comments or suggestions to: drm@myob.demon.co.uk
+
+Copyright (c) 1995  D.R.Monksfield
+
+INTRODUCTION
+
+    A while ago I got fed up with the way spell-checkers worked,
+    sequentially stepping through the 'errors' most of which are OK
+    (names or jargon or whatever).  So I put together an alternative
+    interface to the TSE spelling engine.
+
+    It scans the whole document (or selection, if there is one) then
+    pops up a scrolling window of all suspect words.  As you scroll up
+    and down it, the corresponding word is highlighted in the main
+    document window.  This makes it very easy top ignore the 95% bogus
+    errors and concentrate on the genuine mistakes.  When you ask to
+    correct a word, you get a text box with the 'suggestions' in its
+    history so they can be accessed with up/down-arrow.
+
+STATUS
+
+    This release of DSPELL (revision 0.12.0.1) is decidedly beta-ish.
+    It has only been tested by me on one TSE configuration.  It is not
+    fully complete or documented (few comments and no online help) but
+    is reasonably tidy and robust.
+
+INSTALLATION
+
+    You should have received the following files:
+
+    DSPELL.S    -- the SAL macro source file for DSPELL
+    README      -- this file
+    COPYING     -- the GPL copying, copyright and warranty rules
+
+    To install DSPELL:
+    1.  Copy DSPELL.S to the MAC subdirectory of your TSE installation
+    2.  Open it in TSE
+    3.  Compile it using <Ctrl-F9> or by selecting "Compile" from
+        the "Macro" menu
+    4.  Add the resulting DSPELL.MAC to your autoload list
+        (using "Autoload List" on the "Macro" menu) if you wish.
+
+USAGE
+
+    Press F8. If text is selected DSPELL will just check that, otherwise
+    it will check the whole file.  If DSPELL finds any potentially
+    misspelt words, a wordlist window will appear at the right of the
+    screen, in which the following commands may be used.
+
+    <CursorUp>, <CursorDown>, <PgUp>, <PgDn>, <Home> and <End> move
+    around the wordlist.
+
+    If there is more than one occurrence of the selected word in the
+    document, <n> or <CursorRight> highlights the next occurrence, <p>
+    or <CursorLeft> highlights the previous occurrence and <1> or <f>
+    highlights the first occurrence in the document window.
+
+    If the current word looks OK, <d> or <Del> will remove it from the
+    list.  This has no purpose other than to tidy up the wordlist.
+
+    To change spelling of the current word, press <c>.  An editable text
+    box pops up showing the current spelling.  At this point the
+    spelling can be manually corrected, or <CursorUp> can be used to pop
+    up a list of suggestions.  Press <Enter> to apply the change.  The
+    change will be applied to *all* occurrences of the word in the
+    document (or selection).
+
+    If the word or document needs to be edited directly, use <Enter> or
+    <tab> to switch from the wordlist to the document window.  <tab> or
+    <F8> in the document will switch back to the wordlist.
+
+    To terminate DSPELL, press <Escape> from the wordlist.  This will
+    remove the wordlist window and return to the document window.
+
+CUSTOMIZATION
+
+    The invocation key (F8) and the word-window commands can easily be
+    changed by modifying DSPELL.S and recompiling.  I'll leave the
+    details as an exercise for the reader.
+
+SUGGESTIONS
+
+    I would welcome any suggestions for improvements or reports of
+    specific bugs, particularly if accompanied by the necessary code
+    patches!  Please bear in mind that DSPELL was never intended to be
+    all-singing, all-dancing.  For example I have intentionally omitted
+    custom dictionaries - the way DSPELL works means you can easily
+    ignore specific words anyway.
+
+BUGS
+
+    I'm sure there are some, though I've been using DSPELL for some
+    months with no problems.
+
+    The most likely failing is that my code depends on something in my
+    specific TSE configuration.  This is a difficult one to test, I'll
+    just have to rely on the bug reports.
+
+COPYING
+
+(see also the file COPYING which came in this package: sorry the legal
+stuff is longer than the macro . . . it seemed to safer to attach the
+GPL rather than trying to make up my own legal statement)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+

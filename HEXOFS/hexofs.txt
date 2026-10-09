@@ -1,0 +1,32 @@
+
+                                   HEXOFS.MAC
+                                   ==========
+
+        HexOfs.Mac shows you the offset of the cursor when you're in
+        BinaryMode.  On the right end of the status line, HexOfs.Mac
+        displays the file offset of the current cursor position.  It
+        displays the offset in either hex or decimal.  To toggle between
+        hex and decimal, hit Ctrl-Shift-Enter.  To jump to a specific
+        offset, hit Ctrl-Enter and type in the offset, in either hex or
+        decimal (yep, whichever base you're currently displaying the
+        offset in -- don't worry, the prompt reminds you which mode
+        you're in).
+
+        You change the key bindings by editing HexOfs.S, of course.
+
+        The keys are set up so in BinaryMode they override whatever
+        function they were already bound to.  When not in BinaryMode,
+        they work just like however you already had them set up.  Since
+        HexOfs.Mac is so inobtrusive, I recommend sticking it in your
+        AutoLoad list.
+
+        KNOWN PROBLEMS: HexOfs assumes each line is the same length
+        (this is how BinaryMode works).  However, if you edit some line
+        so that it is longer or shorter than how long TSE thinks each
+        line should be, then HexOfs will not be able to calculate the
+        offset correctly.  Solution: BE VERY CAREFUL WHEN EDITING BINARY
+        FILES!
+
+        Enjoy!
+        chrisant@microsoft.com
+

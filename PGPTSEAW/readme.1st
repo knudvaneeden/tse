@@ -1,0 +1,77 @@
+
+... Anthony Williams, Landscape Aesthete  10/26/95 at 1719 MST
+
+-----BEGIN PGP SIGNED MESSAGE-----
+
+
+26 October 1995
+Enclosed in this package are the following:
+
+PGPAW.S -- a macro for TSE Pro (aka The Semware Editor) together with PGP,
+   the popular and secure cryptography program for email, etc.  Using this
+   macro with TSE allows one to encrypt, decrypt, sign, and add your public
+   key to messages as well as add a new key to your public keyring.
+
+HWINSIZ.S -- a TSE macro for use with mail readers like Ozcis, Tapcis,
+   KWQ/2, etc.  With the correct command line, you will end up with the
+   original message in an upper horizontal window covering one third of the
+   screen, and your reply in the bottom window.  For example, in Tapcis
+   ver. 6, use the following to setup the external editor (TSE, of
+   course):
+
+        ReplyConfig1=tse /eHwinsiz root~.tmp editor~.tmp
+
+Both of these must be compiled before use, of course, and PGPAW.S must
+first be customized for your individual paths, etc.
+
+
+I have also included a couple of files that will be useful for the new
+user of PGP:
+
+PGPALT.HLP -- A help file more useful than that included in the PGP
+   distribution package.  Just rename your PGP.HLP to PGPOLD.HLP, and
+   rename PGPALT.HLP to PGP.HLP.  This file is taken from an unofficial
+   version of PGP by John DeHaven.
+
+PGPREFCD.TXT -- A reference card of commandline options for PGP.
+
+Finally, I can recommend a frequently updated FAQ on PGP available at:
+
+  http://www.prairienet.org/~jalicqui/pgpfaq.txt
+
+
+Anthony Williams, 76655.1552@compuserve.com
+
+-----BEGIN PGP SIGNATURE-----
+Version: 2.6.2i
+
+iQCVAwUBMJAlgscsKFmWx3G1AQEuJwP9HoPXWiDxty+4iLXy6vxP5bxdcoB49ltx
+mmQtVJgAD0u0/4xN/SPFzDL/vA7dm98oUUuN46E+BZSyTEDmc6KjW9I4cR4nfnM9
+1ySprU3C2z4zlgRrx6QsPyMh41c/FPmTXjbEiqP7tg8Ppq2e9Bj8rr5XubIo/Xew
+E/ogP780vf4=
+=Ii04
+-----END PGP SIGNATURE-----
+
+=======================================================================
+
+My public key follows:
+
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: 2.6.2i
+
+mQCNAi26KJYAAAEEANMgdDQcUNJ2EtOSwL6aqhmVpJncpjMOTKkJOepznXjGQ3e2
+NQA/5Dzz2R+Itjvxh3rWB/b6Rhf3wQZXCscDRBsxjbq9MTGHWHZJZHJdy8H0h9S2
+mhAfNYP26cEUFx7wG7rxTBkie9F6ObfkCX5h6zBne9BDDJ5UrscsKFmWx3G1AAUR
+tC9BbnRob255IEYuIFdpbGxpYW1zIDw3NjY1NS4xNTUyQGNvbXB1c2VydmUuY29t
+PokAlQIFEC47TUnHLChZlsdxtQEBE44D/2vnjOrcwk3eNlb5wouEaoSQT6354xUJ
+fT9EgZdTevHyJg7qaZZpVisoC/VBL7Ts4mbVc3q9XGu29TWNCUS6b+Van0i+wSvK
+Dt8LNkCmXlxVsGzbmK4MXoawYoOipRc5chnrZlyuaA5OCjhyvutp6zZkNY0r862K
+CF7T+D8Xe75QiQCVAgUQLewXYzaGK4msuwSFAQFjKwP/RSgJ6arCJ8aXJGTaWGuc
+GUASuJyd8rUIlah3J/FSS+ALSol0JXDMV04HnTW9GBpXWHA3HnsT3Vk71QJVJW9E
+/RR7SlqXoPlCGYNEl0yzXCHQbo380XDB+NnyIb5kLmpGzXxP5MpNrFoC6MCT6TLo
+zQepioyoqH8KbMQwjAir9Pc=
+=jUL8
+-----END PGP PUBLIC KEY BLOCK-----
+
+

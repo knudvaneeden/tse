@@ -1,0 +1,15 @@
+CAPSNUMS.ZIP package includes:
+
+   CAPSNUMS.DOC; this text
+   CAPSNUMS.SCR; Debug script file to create CAPSNUMS.BIN.
+   CAPSNUMS.BIN; File containing binary procedures.
+   CAPSNUMS.S;   Example macro to demonstrate TSE procedures.
+
+The purpose of this package is to enable the user to control the
+CAPS_LOCK and NUM_LOCK keys by calling one of four procedures;
+CapsOff(), CapsOn(), NumsOff() and NumsOn().
+
+If any questions or problems arise, please leave me a message in
+Conference #4 on TSE's support BBS.
+
+Peter Granaldi

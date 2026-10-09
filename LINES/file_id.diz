@@ -1,0 +1,5 @@
+(12-29-00) - TSE Pro v2.5 and TSE Pro/32.
+Load first/last N lines or N thru M of very
+large file when memory or time is scarce.
+Needs Global.zip and MacPar3.zip.
+Author: carlo.hogeveen@xs4all.nl.

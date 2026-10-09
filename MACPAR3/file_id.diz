@@ -1,0 +1,8 @@
+<06-28-99> - TSE Pro v2.5 and Pro/32 v2.8.
+Version 3 replaces version 2.  Pass
+parameters to your macroes from the dos
+command line, from the menu, or from other
+macroes in a unified way. From other macroes
+you can pass string variables 255 characters
+long. Version 3 needs Global.zip.
+Auhor: Carlo Hogeveen (hyphen@xs4all.nl).

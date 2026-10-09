@@ -1,0 +1,2 @@
+SHORTNAME 1.0.0.0.2 - GPT-6 (OpenAI)
+Already an ASCII 8.3 filename: no generated alias is required.

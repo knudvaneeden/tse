@@ -1,0 +1,6 @@
+<06-27-99> - TSE Pro v2.5 and Pro/32 v2.8.
+Global.si is for advanced macro programmers
+only, to avoid a bug in TSE 2.5 and 2.8,
+which causes session global variables to
+disappear.
+Author: Carlo Hogeveen <hyphen@xs4all.nl>

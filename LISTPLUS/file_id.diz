@@ -1,0 +1,9 @@
+<11-17-99> - TSE Pro v2.5 and TSE Pro/32 v2.8
+Enhanced LIST macro displays a picklist of
+lines containing a string. Plus, a second
+string may be specified, in which case the
+macro searches for lines containing both
+strings or for occurrences of the two strings
+within a specified number of lines. The '|'
+character can also be used a logical 'OR'.
+Author:Jean Heroux (heroux.jean@videotron.ca)

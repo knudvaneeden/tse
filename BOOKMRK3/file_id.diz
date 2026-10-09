@@ -1,0 +1,8 @@
+Visual BookMark macros v3. This set of macros
+give one-key bookmark placement and selection
+of bookmarks from a visual buffer. The buffer
+is dynamically generated when needed, showing
+bookmark letter, filename, line# and first 56
+chars from the mark line. New:  Deletion of a
+selected bookmark, small optimizations, and a
+suggested set of menu calls.

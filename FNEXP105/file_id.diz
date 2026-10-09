@@ -1,0 +1,6 @@
+FNEXP provides filename completion in TSE
+prompt boxes, similar to the same way that
+4DOS does at the DOS prompt.  FNEXP works in
+all TSE prompts, not just the ones that
+expect filenames.  This is great especially
+for the "DOS command:" prompt.

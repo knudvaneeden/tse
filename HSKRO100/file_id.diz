@@ -1,0 +1,8 @@
+HSK Read-Only Macros 1.0 for TSE 2.0
+Features: Read Only warning if readonly
+file is loaded (a la TSE Jr. 2.x & 3.x),
+Status Line w/attribs & char @ cursor,
+enhanced ListOpenFiles macro displays
+read-only status of files, plus menus
+to configure displays, enable/disable
+status line plus more.

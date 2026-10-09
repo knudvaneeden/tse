@@ -1,0 +1,13 @@
+CodePad v1.1.4 (Jun 19, 2002):
+
+Macro to line up code nicely into
+columns, padding spaces around
+= signs and other punctuation.
+
+Platform: TSE Pro 2.x/3.x/4.x
+
+Requirements: The DOS version of TSE needs the 'Profile' package.
+
+Author: Michael Graham <magmac@occamstoothbrush.com>
+Homepage: http://www.occamstoothbrush.com/tsemac/
+

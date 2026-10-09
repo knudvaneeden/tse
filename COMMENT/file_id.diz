@@ -1,0 +1,46 @@
+(12-12-01) SAL Commenting - TSE Pro/32 v2.8+ 
+- Macro that allows you to create and        
+maintain framed comments with standard       
+entries at the top of each proc, menu, keydef
+or datadef in a SAL source code file. The    
+following features are provided:             
+* Procedure comments:                        
+  - Generation of standardized comments in   
+    front of each proc type structure in a   
+    SAL source.                              
+  - Customizable appearance of comment frame.
+  - Customizable comment frame size and      
+    positioning of all subcomments.          
+  - Comment editor to create and maintain    
+    subcomments.                             
+  - Automatic generation and update of       
+    "Called by" list.                        
+  - Automatic checks for procedures with     
+    parameters.                              
+  - Automatic checks for procedures with     
+    return values.                           
+  - Update may be automatic (silent) or      
+    interactive (query for empty items).     
+* Additional comments:                       
+  - Additional comment blocks not releated to
+    a proc can be created anywhere between   
+    procs.                                   
+  - Management of additional comments similar
+    to procedure comments.                   
+  - Arbitrary parts of the source file can be
+    blocked and put into a comment frame.    
+  - Headline comments, i.e. headline text    
+    framed by two divider lines, can be      
+    created anywhere between procs.          
+* Miscellaneous:                             
+  - Empty lines can be managed. Default      
+    behaviour is to delete all empty lines   
+    inside and duplicate empty lines outside 
+    of proc type struktures.                 
+  - The _ON_CHANGING_FILES_ hook is used to  
+    determine whether the current file is a  
+    SAL source file (extensions .s and .ui). 
+    If not, the menu key of the macro is not 
+    activated.                               
+Author: Peter Kraemer                        
+pjr-kraemer@t-online.de                      

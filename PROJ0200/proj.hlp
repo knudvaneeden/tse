@@ -1,0 +1,165 @@
+PROJ macro help file
+05/19/2002
+Actual help version: v2.00
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Index®/T¯
+
+Under construction.
+
+®L¯Projects®/L¯
+®L¯Project Files®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Welcome to PROJ®/T¯
+
+Welcome to PROJ ®R¯PROJ_Version®/R¯ for TSE Pro 2.8, 3.0, and 4.0.
+
+Note:  this help file is still under construction.
+
+
+®L {Index}¯Go to Index®/L¯
+
+
+®B¯Keys:®/B¯
+  General:
+  ®I¯<®R¯PROJECT_MENU_KEY®/R¯>®/I¯ - Show the projects menu (also works at prompts).
+  ®I¯<®R¯HEADER_FILE_KEY®/R¯>®/I¯ - Open file associated with current file.
+  ®I¯<®R¯HEADER_FILE_KEY2®/R¯>®/I¯ - Find word under cursor, in associated file.
+  ®I¯<®R¯OPEN_FILE_AT_CURSOR_KEY®/R¯>®/I¯ - Open file under cursor.
+  ®I¯<®R¯GREP_WHOLE_PROJECT_KEY®/R¯>®/I¯ - Find word/phrase in all files in project.
+
+  CTags:
+  ®I¯<®R¯TAGS_GotoTagAtCursor®/R¯>®/I¯ - Go to tag under cursor.
+  ®I¯<®R¯TAGS_TagsMenu®/R¯>®/I¯ - Show the CTags menu.
+
+
+®B¯Feature Highlights:®/B¯
+  ®B¯ù®/B¯ ®I¯NEW:®/I¯ - with TSE 3.0, also saves/restores the history lists!
+  ®B¯ù®/B¯ ®I¯NEW:®/I¯ - with TSE 3.0, supports readonly buffers.
+  ®B¯ù®/B¯ ®I¯BSC tags!®/I¯  Supports MSVC .BSC extended symbol browser files.
+  ®B¯ù®/B¯ ®I¯NEW:®/I¯  Save/load clipboard to a file.
+  ®B¯ù®/B¯ Automatically installs and configures itself.
+  ®B¯ù®/B¯ Saves/restores state of the editor, including contents
+    of the TSE clipboard.
+  ®B¯ù®/B¯ Flat file system for your project.  At the EditFile prompt,
+    you can just type the filename of any file in your project
+    and a list will show the files that match what you have typed
+    so far.  When you press <Enter>, the highlighted file is
+    opened.  You can use the arrow keys to move the highlight to
+    select from multiple matching files.
+  ®B¯ù®/B¯ ®I¯CTags!®/I¯  Uses the freeware CTags.Exe tool to generate tags files and jump
+    directly to definitions of macros, structures, classes, variables, etc.
+    Be sure to place CTags.Exe in your TSE directory.  CTags is available at
+    ®L¯http://home.hiwaay.net/~darren/ctags/®/L¯
+  ®B¯ù®/B¯ Associate paths with projects.  When you start TSE, it will check the
+    current directory and open the associated project.  Or it can open the
+    most recently used project.
+  ®B¯ù®/B¯ Use command line option -Pproject when starting TSE to load a specific
+    project (use -P to prevent loading a project, or use -P* to prompt for a
+    project to load).
+
+
+®B¯NOTE:®/B¯ PROJ.MAC is intended to be listed in your AutoLoad list.
+      However, that is only required for autoloading a project when
+      you start TSE (ie, autoloading does not occur when you load
+      PROJ.MAC after TSE has already been started).
+
+
+®L {mailto:chrisant@premier1.net?subject=PROJ for TSE32}¯mailto:chrisant@premier1.net®/L¯
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->New project®/T¯
+
+®I¯Under construction.®/I¯
+
+This command creates a new ®L¯project®/L¯.
+
+  ®B¯ù®/B¯ first asks:
+
+    Ú Close all open files? ¿
+    ³ Yes                   ³ = new project has no open files
+    ³ No                    ³ = new project remembers current files/windows
+    ³ Cancel                ³ = cancel creating new project
+    ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+  ®B¯ù®/B¯ ...then what?
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->Open project®/T¯
+
+®I¯Under construction.®/I¯
+
+
+        Õ[ş]ÍÍÍÍÍÍÍÍÍÍÍ Open Project ÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¸
+        ³My Big Project                            
+        ³A Little Project                          Û
+   ÚÄÄ ³Open other project file...                
+   ³    ÔÍÍ Del-Remove  Enter-Select  Esc-Cancel ÍÍ¾
+   ³
+   ³
+   ÀÄ By selecting this, you can enter the full filename of a ®L {Project Files}¯project file®/L¯ if
+      the project does not appear in this list.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->Save project®/T¯
+
+Saves the information about the current ®L¯project®/L¯.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->Close project®/T¯
+
+Saves the information about the current ®L¯project®/L¯, and closes the project.
+
+Closing a project does not close any files or windows that are open.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->Tags®/T¯
+
+®I¯Under construction.®/I¯
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->Refresh file list®/T¯
+
+®I¯Under construction.®/I¯
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->Project settings®/T¯
+
+®I¯Under construction.®/I¯
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->Options®/T¯
+
+®I¯Under construction.®/I¯
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Project->Help®/T¯
+
+Select the Help menu item for information on PROJ and how to use it.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+®T¯Projects®/T¯
+®T¯Project®/T¯
+
+Under construction.
+
+Project information:
+ ù open files/windows
+ ù TSE clipboard
+ ù keyboard macros
+ ù directories with files
+ ù etc
+
+®B¯®S¯Project Files®/S¯ (*.PJ)®/B¯
+A project file stores the information about a project.  Project files are
+identified by the extension .PJ.  For example, the file "My Project.pj" would
+contain the information about the project called "My Project".
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+

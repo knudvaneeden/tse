@@ -1,0 +1,7 @@
+09-21-03 - BrowsMod macro - TSE 3.0 and above.
+Configurably sets a file in and out of
+browsmode either for being a read-only
+diskfile or if a part of its
+drive/path/name/ext matches one of a
+configurable set of strings.
+Author: Carlo Hogeveen

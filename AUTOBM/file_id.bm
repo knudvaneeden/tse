@@ -1,0 +1,8 @@
+Macros to automatically add bookmarks at
+section heads, proc beginnings, or other
+searchable point. (Very effective with a
+bookmark system that includes picklists.)
+Whenever changing files to a listed file
+extension, refreshes bookmarks so that they
+are at the section/proc/whatever beginnings
+of the current file. Version 2.

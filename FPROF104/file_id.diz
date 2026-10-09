@@ -1,0 +1,14 @@
+FindProf v1.0.4 (Jun 19, 2002):
+
+Small macro to locate the
+current TSE.INI file.  Will
+return the same file for
+TSE/DOS and TSE/WIN32.
+
+Platform: TSE Pro 2.x/3.x/4.x
+
+Requirements: none
+
+Author: Michael Graham <magmac@occamstoothbrush.com>
+Homepage: http://www.occamstoothbrush.com/tsemac/
+

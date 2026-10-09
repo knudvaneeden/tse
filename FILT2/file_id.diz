@@ -1,0 +1,7 @@
+This macro will send the line(s) touched by
+any type of block to an external filter
+program. The filtered line(s) are then
+inserted back in the file, replacing the
+old line(s). This lets you filter lines
+like in UNIX editors such as vi. Version 2.
+By Bill Stewart (bstewart@iname.com).

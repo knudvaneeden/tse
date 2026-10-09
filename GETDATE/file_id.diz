@@ -1,0 +1,13 @@
+<03-31-94> Date macro -  TSE Pro, TSE Pro/32
+Macro which pops up a small window with the
+system date, and allows the user to easily
+change the date, and insert the desired date
+into text at the location of the cursor. The
+possibly unique aspect of the macro is that
+it 'knows' the day of the week of the
+particular date chosen. After the date to be
+inserted is selected, a second menu pops up
+listing several date formats to choose from,
+some of which include the day of the week.
+The chosen format is inserted into the text.
+Author: Jim Sylva <jasylva@ucdavis.edu>

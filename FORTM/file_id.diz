@@ -1,0 +1,10 @@
+<05-01-96>           TSE Pro and TSE Pro/32 -
+Collection of macros to clean up FORTRAN
+code, i.e. Indent correctly, relabel, find
+redundant subroutines, labels etc.  Macros
+were written for Semware Editor Professional
+v2.50. Based on FORTRAN 77, as used on Unisys
+1100/2200 hardware. Source code given so
+could be adapted for other versions of
+FORTRAN and other hardware.
+Author: Paul Bennett

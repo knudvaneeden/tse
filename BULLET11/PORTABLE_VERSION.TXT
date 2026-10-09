@@ -1,0 +1,9 @@
+BULLET portable package version 1.0.0.0.1
+Updated by OpenAI Codex
+
+Compile INI.S, BULLET.S, and optionally AUTOWRAP.S in this directory.
+Keep the resulting INI.MAC, BULLET.MAC, and AUTOWRAP.MAC together.
+Load BULLET.MAC, not INI.MAC.
+
+The original 1995 precompiled macros are stored in ORIGINAL_MAC and do not
+contain the portable path changes.

@@ -1,0 +1,7 @@
+OS2CMD.ZIP contains a TSE-Pro 2.5 macro with
+a utility, the combination of which allows a
+TSE-Pro user to issue an OS/2 (2.1 or higher)
+command from TSE and to return to the
+originating TSE session with the captured
+screen output from the OS/2 command in a new
+file.

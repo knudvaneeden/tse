@@ -1,0 +1,12 @@
+MAKECSV. v1.1  A TSE macro that converts a
+datafile with positionally oriented records
+to a Comma Separated Value (.CSV) file.
+Features:
+
+o   Can include a header line.
+o   Use any part or all of of the source
+    file.
+o   Output fields in a different order than
+    the source file.
+o   Does not change the source file.
+

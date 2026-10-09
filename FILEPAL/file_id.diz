@@ -1,0 +1,29 @@
+<19-Jun-2002> - TSE Pro v2.5 and TSE Pro/32 v2.8/3.x/4.x
+---  Replaces FilePal.zip dated 11-12-2001  ---
+---  or earlier                             ---
+
+FilePal will save, for a given file,
+the current position and bookmarks, plus
+editing parameters Insert, AutoIndent,
+WordWrap, Margins, TabType, TabWidth,
+ExpandTabs, EOLType and EOFType.
+
+Default values for these parameters may
+also be associated with extensions,
+directories and drives.  Put a file on
+AutoTrack and the current position,
+parameters and bookmarks will be saved
+automatically each time the file is quit
+and restored on reloading. FilePal keeps
+track of any number of files, even if
+not loaded during the previous editing
+session. FilePal also supports automatic
+execution of specific macros linked to
+filenames, extensions, directories and
+drives.
+
+This version fixes an issue with Long File Names.
+
+Author:Jean Heroux <heroux.jean@videotron.ca>
+Changes:Michael Graham <magmac@occamstoothbrush.com>
+

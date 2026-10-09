@@ -1,0 +1,7 @@
+(11-07-2003) lookup.s - TSE Pro/32 v2.6 - 4.0
+Avoid typing mistakes by using this tool to
+add one of TSE's built-in function names or
+to add one of your macro's proc names while
+editing your SAL source code. Requires file
+tse.260 be in the Editor's load directory.
+Author: Chris Shuffett

@@ -1,0 +1,6 @@
+<06-28-99> - TSE Pro v2.5 and Pro/32 v2.8.
+Version 2 replaces Clipbord.zip.
+Push and Pop the clipboard onto and from a
+clipboard stack.  Needs Global.zip and
+MacPar3.zip.
+Author: Carlo Hogeveen <hyphen@xs4all.nl>

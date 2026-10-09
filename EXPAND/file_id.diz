@@ -1,0 +1,10 @@
+A macro to expand a just-typed abbreviation
+by offering choices of words (a) from an ab-
+breviation list or (b) found in the current
+document, whose beginning matches the abbre-
+viation. 1 keystroke calls up the expansion,
+then 'N' see other possibilities or any other
+keystroke to insert it (and use that key-
+stroke in your file.) For instance, type
+'key<expandkey>s' right here and 'keystrokes'
+would be in your file. Very inobtrusive!

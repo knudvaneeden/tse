@@ -1,0 +1,3584 @@
+forward integer proc EnsureProjectDirectory()
+// PJFILE.SI --------------------------------------------------------------
+// Project management functions for PROJ macro
+
+
+#include ["defs.si"]
+
+
+constant MAX_WINDOWS = 9
+
+// projects database
+string c_stDB[] = "Proj.DB"
+
+string c_stAutoLoad[] = "[AutoLoad]"
+
+string c_stOptions[] = "[Options]"
+string c_stOpt_AutoLoad[] = "AutoLoadProject"
+string c_stOpt_LocalProjects[] = "LocalProjects"
+string c_stOpt_OpenLast[] = "OpenLastProject"
+string c_stOpt_SaveCurrDir[] = "SaveCurrDir"
+string c_stOpt_PromptForProject[] = "PromptForProject"
+
+string c_stAssociatedExtensions[] = "[AssociatedExtensions]"
+
+string c_stAllProjects[] = "[AllProjects]"
+
+integer g_fSaveCurrDir = TRUE
+
+
+// project file
+string c_stExtClip[] = ".clp"
+string c_stExtKbd[] = ".kbd"
+#ifdef PERSIST_HISTORIES
+string c_stExtHist[] = ".hst"
+#endif
+
+string c_st30div[] = " ³3.0: "
+string c_stFileIdentifier[] = ";PROJ project file"
+string c_stClipIdentifier[] = ";PROJ clipboard file"
+string c_stInfo[] = "[Info]"
+string c_stBuffers[] = "[Buffers]"
+string c_stWindows[] = "[Windows]"
+string c_stBookmarks[] = "[Bookmarks]"
+string c_stBlock[] = "[Block]"
+string c_stClip[] = "[Clipboard]"
+string c_stKeyMacro[] = "[KeyMacro]"
+#ifdef PERSIST_HISTORIES
+string c_stHistory[] = "[History]"
+#endif
+string c_stPaths[] = "[Paths]"
+string c_stFiles[] = "[FilesInProject]"
+
+string c_stVersion[] = "Version"
+string c_stCurrDir[] = "CurrDir"
+string c_stProjectName[] = "ProjectName"
+
+#ifdef CTAGS
+string c_stProjTags[] = "ProjectTags"
+string c_stTagLoc[] = "TagsLocation"
+string c_stTagsIgnoreCase[] = "TagsIgnoreCase"
+#endif
+
+#ifdef BSCTAGS
+string c_stBscFile[] = "BscFile"
+#endif
+
+string c_stUntitled[] = "(Untitled)"
+
+
+// clipboards
+#define CLIP_PROMPT_THRESHOLD 500
+
+
+// misc
+integer g_fGotoNextFile = FALSE
+integer g_fClosing = FALSE
+
+
+
+forward integer proc OpenDatabase()
+forward proc GetDatabaseOptions()
+forward proc SetDatabaseOptions()
+forward proc SaveDatabase()
+forward proc LoadClipboard(string fn, integer fRelaxed)
+forward integer proc SaveClipboard(string fn, integer fPrompt)
+forward integer proc SaveProject(integer fSilent)
+forward proc AddALP(integer fEndProcess, string _stProject)
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// DLLs
+
+#include ["projdll.si"]
+
+
+dll "<kernel32.dll>"
+	integer proc PROCCreateDirectory(string dir:cstrval, integer sa) : "CreateDirectoryA"
+end
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Include files
+
+#define NEED_DOHELP 1
+#define NEED_PJFILE_PROMPTS 1
+#define NEED_SETXY 1
+#define NEED_TOGGLEVAR 1
+#define NEED_GETPROJECTINT 1
+#define NEED_SETPROJECTINT 1
+#define NEED_SETPROJECTROOT 1
+#define NEED_CALCPROJECTROOT 1
+#define NEED_INSERTAUTOLOAD 1
+
+#include ["common.si"]
+#include ["filetypes.si"]
+#include ["stubs2.si"]
+#include ["keys.si"]
+#include ["help.si"]
+#include ["timeout.si"]
+#include ["errors.si"]
+#include ["edtassoc.si"]
+#include ["pjpublic.si"]
+
+string proc PROJ_ConfiguredProjectFilename()
+    string configuredName[255] = RemoveQuotes(PROJ_PackageSetting("projectdirectoryorfilename"))
+    if Length(configuredName)
+        if not Length(SplitPath(configuredName, _DRIVE_|_PATH_))
+            configuredName = GetFullProjDir() + configuredName
+        elseif not Length(SplitPath(configuredName, _DRIVE_)) and
+                SubStr(configuredName, 1, 1) <> "\" and SubStr(configuredName, 1, 1) <> "/"
+            configuredName = GetInstallationDir() + configuredName
+        endif
+        if Lower(SplitPath(configuredName, _EXT_)) <> c_stExt
+            configuredName = configuredName + c_stExt
+        endif
+    endif
+    return(configuredName)
+end
+
+integer proc PROJ_AskNewProjectFilename(string prompt, var string filename)
+    filename = PROJ_ConfiguredProjectFilename()
+    if Length(filename)
+        return(TRUE)
+    endif
+    return(AskFilename(prompt, filename))
+end
+
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Menus
+
+forward proc AutoLoadProjects()
+forward proc AddFilesToProject()
+
+
+helpdef epdHelp
+//$ todo: better help
+"PROJ will store its .PJ files in the directory"
+"you specify here.  The directory must be a"
+"subdirectory of the TSE load directory."
+end
+
+
+keydef epdKeys
+<F1>		DoHelp(epdHelp)
+end
+
+
+integer cepdPrompt = 0
+integer epdFMenu = FALSE
+integer epdRestore = 0
+proc epdStartup()
+	integer x, y
+
+	// fyi: you have no idea how long it took to get this to work!
+	if not cepdPrompt
+		if epdFMenu
+			x = WhereXAbs()
+			y = WhereYAbs()
+			epdRestore = SaveWindow(x-1, y-1, Query(WindowCols)+2, 3)
+			Window(x-1, y-1, x+Query(WindowCols), y+1)
+			DrawBox(1, Query(MenuBorderAttr))
+			Window(x-1, y-1, x+Query(WindowCols), y)
+		endif
+		if Enable(epdKeys)
+			WindowFooter(c_stHelpFooter)
+		endif
+		if epdFMenu
+			Window(x, y, x+Query(WindowCols), y)
+		endif
+	endif
+	cepdPrompt = cepdPrompt + 1
+end
+
+
+proc epdCleanup()
+	cepdPrompt = cepdPrompt - 1
+	if not cepdPrompt
+		Disable(epdKeys)
+		if epdFMenu
+			RestoreWindow(epdRestore)
+		endif
+	endif
+end
+
+
+proc EditProjDir(integer fMenu)
+	string st[255]
+	string stCurrDir[_MAXPATH_] = CurrDir()
+	integer fOk
+	integer fattr
+
+	CDD(GetInstallationDir())
+
+try_again:
+	st = Get_Str(iProjDir)
+	Hook(_PROMPT_STARTUP_, epdStartup)
+	Hook(_PROMPT_CLEANUP_, epdCleanup)
+	epdFMenu = fMenu
+	if fMenu
+//		Warn(WhereXAbs(); WhereYAbs(); Query(WindowCols); Query(WindowRows))
+		fOk = Read(st)
+	else
+		fOk = Ask("Enter subdirectory for "+Upper(c_stExt)+" files:", st, _EDIT_HISTORY_)
+	endif
+	UnHook(epdCleanup)
+	UnHook(epdStartup)
+
+	if fOk
+		st = Trim(RemoveQuotes(st))
+		while Length(st) and (st[1] in "\", "/")
+			st = Trim(DelStr(st, 1, 1))
+		endwhile
+		st = AddTrailingSlash(st)
+
+		fattr = FileExists(RemoveTrailingSlash(GetInstallationDir()+st))
+		if fattr and not (fattr & _DIRECTORY_)
+			Warn("File already exists.")
+			goto try_again
+		endif
+
+		if not fattr
+			//if YesNo(QuotePath(GetInstallationDir()+st)+" not found.  Create it?") == 1
+			if MsgBox(c_stTitle,
+					"Directory "+QuotePath(GetInstallationDir()+st)+" not found.  " +
+					"Would you like to create it?", _YES_NO_) == 1
+				// handle creating multiple levels of directories
+				if not PROCCreateDirectory(RemoveTrailingSlash(GetInstallationDir()+st), 0)
+					Warn("Unable to make " +
+							QuotePath(RemoveTrailingSlash(GetInstallationDir()+st)))
+					goto try_again
+				endif
+			endif
+		endif
+
+		if FileExists(RemoveTrailingSlash(GetInstallationDir()+st)) & _DIRECTORY_
+			Set_Str(iProjDir, st)
+			if not Get_Int(iFFirstRun)
+				//$ review: copy/move existing projects?
+				//$ review: better message?
+				MsgBox(c_stTitle, "Please copy any existing project files to " +
+						QuotePath(GetFullProjDir()) +
+						".  Copy sets of .PJ, .KBD, and .CLP files with " +
+						"matching names.  (Note, you don't have to copy " +
+						"them to the new directory unless you want all " +
+						"your project files to live in one place.)")
+			endif
+		endif
+	endif
+
+//Error:
+	// this is at the end so ExpandPath will work correctly, above
+	CDD(stCurrDir)
+end
+
+
+proc Read_Str(integer iStrVar)
+	string st[255] = Get_Str(iStrVar)
+
+	if Read(st)
+		Set_Str(iStrVar, st)
+	endif
+end
+
+
+// EditOpenPath()
+// edit the open path.  used by the Options menu.
+proc EditOpenPath()
+	string st[MAXPATH] = GetGlobalStr(c_stOpenPath)
+
+	if Ask("Enter search path: (eg, C:\;D:\MYFILES)", st, _EDIT_HISTORY_)
+		SetGlobalStr(c_stOpenPath, st)
+	endif
+end
+
+
+proc EditOtherTagFiles()
+	Warn("sorry, not implemented yet")
+
+	//$ todo: eventually i want to merge all the tag files in memory
+	//$ todo: eventually i want to allow case insensitive tag matching
+end
+
+
+proc PROJ_EditDefaultTypes()
+    integer currentTypes = PROJ_TypesBuffer()
+    integer originalBuffer = GetBufferId()
+    integer defaultTypes = CreateTempBuffer()
+    if defaultTypes
+        SetGlobalInt(c_stTypesBuffer, defaultTypes)
+        PROJ_LoadDefaultTypes()
+        PROJ_EditKnownTypes()
+        GotoBufferId(defaultTypes)
+        if not SaveAs(GetInstallationDir() + "proj0200_filetypes.txt", _OVERWRITE_|_DONT_PROMPT_)
+            Warn("Cannot save default file types.")
+        endif
+        SetGlobalInt(c_stTypesBuffer, currentTypes)
+        GotoBufferId(originalBuffer)
+        AbandonFile(defaultTypes)
+    endif
+end
+
+// uses same menu for TSE 2.6 and TSE 2.8
+menu ProjectSettings()
+	title = "Project Settings"
+	history
+	//checkboxes
+
+	"General",, Skip
+	"  &Known file types...", PROJ_EditKnownTypes(), DontClose, "File types recognized by this project."
+	"  &Add files or scan directories...", AddFilesToProject(), DontClose, "Add exact files or scan directories; choose whether to include subdirectories."
+	"  Associated e&xtensions...", EditAssociatedExts(FALSE), DontClose, "Edit extensions used by the Open Associated File command ("+KeyName(HEADER_FILE_KEY)+")."
+	"  &Open path...", EditOpenPath(), DontClose, "Enter search path used by the Open File At Cursor command ("+KeyName(OPEN_FILE_AT_CURSOR_KEY)+")."
+
+	#ifdef CTAGS
+	"",, Divide
+	"CTags",, Skip
+	//"  &CTags for whole project", ToggleVar(g_fProjTags), mfCheck(g_fProjTags, _MF_DONT_CLOSE_), "Generate CTags for the whole project, instead of per directory."
+	"  &CTags for whole project" [OnOffStr(Get_Int(iFProjectTags)):3], Toggle_Int(iFProjectTags), DontClose, "Generate CTags for the whole project, instead of per directory."
+	"  CTags file &location" [Get_Str(iTagsLocation):32], Read_Str(iTagsLocation), DontClose, "PROJ puts the CTags file here (your make file can build it here also)."
+	"  Othe&r CTags files...", EditOtherTagFiles(), DontClose, "Specify additional CTags files in which to search."
+	#endif
+
+	#ifdef BSCTAGS
+	"",, Divide
+	"BSC Information",, Skip
+	"  &BSC File" [Get_Str(iBscFile):32], Read_Str(iBscFile), DontClose, "PROJ will look up symbols in this BSC file."
+	#endif
+end
+
+
+proc DoProjectSettings()
+	string hlp[_MAXPATH_]
+
+	if Get_Int(iProjectId)
+		hlp = GetGlobalStr(c_stGMenuHelp)
+		SetGlobalStr(c_stGMenuHelp, c_stProjHelp)
+
+		ProjectSettings()
+		// Persist edited paths and other settings before the project is reopened.
+		if not SaveProject(TRUE)
+			Warn("Unable to save project settings.")
+		endif
+
+		Set_Str(iTagFile, "")
+		SetGlobalStr(c_stGMenuHelp, hlp)
+	else
+		Warn(c_errNoProject)
+	endif
+end
+
+
+// uses same menu for TSE 2.6 and TSE 2.8
+menu OptionsMenu()
+	title = "Options"
+	history
+
+	"Startup:",, Skip
+	"  &Open last project" [OnOffStr(Get_Int(iFOpenLast)):3], Toggle_Int(iFOpenLast), DontClose, "Open most recently used project when TSE is started."
+	"  &AutoLoad project" [OnOffStr(Get_Int(iFAutoLoad)):3], Toggle_Int(iFAutoLoad), DontClose, "Opens the project associated with the path TSE was started from."
+	"  Lo&cal projects" [OnOffStr(Get_Int(iFLocalProjects)):3], Toggle_Int(iFLocalProjects), DontClose, 'When TSE is started, first checks current directory for "local.pj"'
+	"  Auto&Load project paths...", AutoLoadProjects(), DontClose
+	"  Prompt to open project if &empty command line" [OnOffStr(Get_Int(iFPromptForProject)):3], Toggle_Int(iFPromptForProject), DontClose, "When TSE is started with an empty command line, prompt for a project to open."
+	"",, Divide
+	"Directories:",, Skip
+	"  &Restore working directories" [OnOffStr(g_fSaveCurrDir):3], ToggleVar(g_fSaveCurrDir), DontClose, "Restore working directory when opening a project."
+	"  PROJ &subdirectory" [Get_Str(iProjDir):16], EditProjDir(TRUE), DontClose
+	"",, Divide
+	"Defaults for new projects:",, Skip
+	"  &Known file types...", PROJ_EditDefaultTypes(), DontClose, "File types recognized by new projects."
+	"  Associated e&xtensions...", EditAssociatedExts(TRUE), DontClose, "Edit extensions used by the Open Associated File command ("+KeyName(HEADER_FILE_KEY)+")."
+	"",, Divide
+	"Miscellaneous:",, Skip
+	"  AutoSa&ve project" [OnOffStr(Get_Int(iFAutoSave)):3], Toggle_Int(iFAutoSave), DontClose, "Saves open project when closing or exiting."
+
+	//$ review: hm, this feature look dubious for many reasons.  better to set
+	// your StartupFlags = _STARTUP_PROMPT_ and just type the name in the prompt.
+	//"Load files from command line", MsgBox("NYI", "will compare filenames on the command line to files in project, will automatically load matching file or load as normal if no matches found"), DontClose
+end
+
+
+proc DoOptionsMenu()
+	string hlp[_MAXPATH_]
+	integer a, b, c
+	string stProjDir[255]
+
+	a = g_fSaveCurrDir
+	b = Get_Int(iFAutoLoad)
+	c = Get_Int(iFOpenLast)
+	stProjDir = Get_Str(iProjDir)
+
+	PushBlock()
+	if OpenDatabase()
+		// read options from file
+		GetDatabaseOptions()
+
+		hlp = GetGlobalStr(c_stGMenuHelp)
+		SetGlobalStr(c_stGMenuHelp, c_stProjHelp)
+
+		// options menu
+		OptionsMenu()
+
+		SetGlobalStr(c_stGMenuHelp, hlp)
+
+		// if options changed, save them
+		if a <> g_fSaveCurrDir or
+				b <> Get_Int(iFAutoLoad) or
+				c <> Get_Int(iFOpenLast)
+			SetDatabaseOptions()
+			SaveDatabase()
+		endif
+		if stProjDir <> Get_Str(iProjDir)
+			WriteProfileStr(c_stIniSection, c_stProjDir, Get_Str(iProjDir))
+		endif
+	endif
+	PopBlock()
+
+end
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Prompt User For Path
+
+constant apEXPAND		= 0x0001	// call ExpandPath
+constant apEXPANDLOOSE	= 0x0002	// call ExpandPath, but if ExpandPath fails, take what user entered
+constant apNOTEMPTY		= 0x0004	// cannot enter empty string
+
+
+integer proc AskPath(string prompt, var string path, integer hist, integer flags)
+	integer fOk
+	integer configuredInput = FALSE
+	string configuredPath[255] = ""
+	string st[_MAXPATH_] = path
+	string stExpanded[_MAXPATH_]
+
+    if prompt == "Enter directory to scan or exact filename:"
+        configuredPath = RemoveQuotes(PROJ_PackageSetting("scanpath"))
+        if Length(configuredPath)
+            configuredInput = TRUE
+            st = configuredPath
+            if not Length(SplitPath(st, _DRIVE_)) and
+                    SubStr(st, 1, 1) <> "\" and SubStr(st, 1, 1) <> "/"
+                st = GetInstallationDir() + st
+            endif
+        endif
+    endif
+TryAgain:
+	//$ review: how are these Ask() commands getting CurrDir() appended to the
+	// prompt text??
+	if configuredInput
+		fOk = TRUE
+	elseif hist
+		//fOk = Ask(prompt+" ["+CurrDir()+"]", st, hist)
+		fOk = Ask(prompt, st, _EDIT_HISTORY_)
+	else
+		//fOk = Ask(prompt+" ["+CurrDir()+"]", st)
+		fOk = Ask(prompt, st, _EDIT_HISTORY_)
+	endif
+	if fOk
+		st = Trim(st)
+
+		//$ todo: filter out illegal characters such as ">"
+
+		if (flags & apNOTEMPTY) and not Length(st)
+			goto TryAgain
+		endif
+
+		if flags & (apEXPAND|apEXPANDLOOSE)
+			if not (Pos("%", st) or Pos("@", st))
+				//while SubStr(st, 1, 1) == ">"
+				//	st = DelStr(st, 1, 1)
+				//endwhile
+				stExpanded = ExpandPath(st)
+				if SplitPath(stExpanded, _NAME_|_EXT_) == "*.*"
+					stExpanded = SplitPath(stExpanded, _DRIVE_|_PATH_)
+				endif
+				if not Length(stExpanded) and (flags & apEXPANDLOOSE)
+					stExpanded = st
+				endif
+				if (flags & apNOTEMPTY) and not Length(stExpanded)
+					Warn("Unable to resolve pathname.")
+					if configuredInput
+						return(FALSE)
+					endif
+					goto TryAgain
+				endif
+				if Pos("*", stExpanded) or Pos("?", stExpanded)
+					Warn("Path cannot contain wildcards.")
+					if configuredInput
+						return(FALSE)
+					endif
+					goto TryAgain
+				endif
+				st = stExpanded
+			endif
+		endif
+
+		if (flags & apNOTEMPTY) and not Length(st)
+			goto TryAgain
+		endif
+
+		path = st
+	endif
+	return(fOk)
+end
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Project Helpers
+
+proc InitProjectVars()
+	//$ WARNING: MAKE SURE PushProjectBuffers and PopProjectBuffers STAY IN
+	// SYNC WITH ANY CHANGES MADE HERE!
+	Set_Int(iProjectId, 0)
+	Set_Int(iPathListId, 0)
+	Set_Str(iProjectFilename, "")
+	Set_Str(iProjectTitle, "")
+	SetGlobalInt(c_stTypesBuffer, 0)
+	Set_Int(iFListEnsured, FALSE)
+	Set_Int(iFNeedToEnsure, FALSE)
+	DelGlobalVar(c_stProjectRoot)
+end
+
+
+string stChDir[_MAXPATH_] = ""
+
+proc Idle_ChDir()
+	string stCurrDir[_MAXPATH_] = "["+Lower(CurrDir())+"]"
+	string st[_MAXPATH_] = ""
+	integer i
+
+	UnHook(Idle_ChDir)
+	CDD(stChDir)
+	// update the [currdir] display if we happened in a prompt
+	if QueryEditState()
+		GetStrXY(1, 0, st, 200)
+		i = Pos(stCurrDir, Lower(st))
+		if i
+			st = "["+CurrDir()+"]"
+			PutStrXY(i, 0, Format(st:-max(Length(st), Length(stCurrDir))),
+					Query(MsgAttr))
+		endif
+	endif
+	stChDir = ""
+end
+
+
+proc HookChDir(string dir)
+	stChDir = dir
+	Hook(_IDLE_, Idle_ChDir)
+	Hook(_NONEDIT_IDLE_, Idle_ChDir)
+end
+
+
+string proc TranslateRootEx(string stPath, string stRoot, integer fMakeLocal)
+	string stReplace[_MAXPATH_]
+	integer cch
+
+	if Length(stRoot)
+		stReplace = "%@" + c_stProjectRoot + "%"
+
+		if fMakeLocal
+			cch = Length(stRoot)
+			if EquiStr(stRoot, SubStr(stPath, 1, cch))
+				return(stReplace + DelStr(stPath, 1, cch))
+			endif
+		else
+			cch = Length(stReplace)
+			if EquiStr(stReplace, SubStr(stPath, 1, cch))
+				return(stRoot + DelStr(stPath, 1, cch))
+			endif
+		endif
+	endif
+
+	return(stPath)
+end
+
+
+string proc TranslateRoot(string stPath, integer fMakeLocal)
+	string stRoot[_MAXPATH_] = GetGlobalStr(c_stProjectRoot)
+
+	if Length(stRoot)
+		return(TranslateRootEx(stPath, stRoot, fMakeLocal))
+	endif
+
+	return(stPath)
+end
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Add Files
+
+string c_afpListFooter[] = "Ins=Add Del=Remove Ctrl-S=Toggle subdirectories Ctrl-X=Exclude Enter=Save"
+
+// Full filenames remain exact entries. Directories retain the original scan behavior.
+integer proc PathAlreadyIncluded(string path)
+	string listed[_MAXPATH_]
+	integer found = FALSE
+
+	PushPosition()
+	BegFile()
+	do NumLines() times
+		listed = GetText(1, 255)
+		if Length(listed) and Asc(listed[1]) <> chExclude
+			if Asc(listed[1]) == chSubdirs
+				listed = listed[2:255]
+			endif
+			if Lower(RemoveTrailingSlash(listed)) == Lower(RemoveTrailingSlash(path))
+				found = TRUE
+				break
+			endif
+		endif
+		Down()
+	enddo
+	PopPosition()
+	return(found)
+end
+
+
+proc AddPath()
+	string scanSubdirectories[255] = Lower(PROJ_PackageSetting("scansubdirectories"))
+	integer scanRecursive = FALSE
+	string st[_MAXPATH_] = "%@" + c_stProjectRoot + "%"
+
+	if NumLines() or Lower(SplitPath(RemoveQuotes(Get_Str(iProjectFilename)), _NAME_|_EXT_)) <> Lower(c_stLocalProject)
+		st = CurrDir()
+	endif
+
+	if AskPath("Enter directory to scan or exact filename:", st, 0, apEXPAND|apNOTEMPTY)
+        if not FileExists(st)
+            Warn("File or directory not found: " + st + ". The project path list was not changed.")
+            return()
+        endif
+		if not PathAlreadyIncluded(st)
+			if FileExists(st) & _DIRECTORY_
+                case scanSubdirectories
+                    when "yes"
+                        scanRecursive = TRUE
+                    when "no"
+                        scanRecursive = FALSE
+                    when ""
+                        scanRecursive = MsgBox("Project directory scan",
+                            "Also scan subdirectories of this directory?", _YES_NO_) == 1
+                    otherwise
+                        Warn("scansubdirectories must be yes, no, or empty in proj0200.ini.")
+                        return()
+                endcase
+                if scanRecursive
+					InsertLine(Chr(chSubdirs) + st)
+				else
+					InsertLine(st)
+				endif
+			else
+				InsertLine(st)
+			endif
+		endif
+		EndProcess(-1)
+	endif
+end
+
+
+proc EditPath()
+	string st[_MAXPATH_] = GetText(1, 255)
+	string tag[1] = ""
+
+	if Asc(st[1]) in chSubdirs, chExclude
+		tag = st[1]
+		st = st[2:255]
+	endif
+
+	if AskPath("Edit directory or exact filename:", st, 0, apEXPAND|apNOTEMPTY)
+        if not FileExists(st)
+            Warn("File or directory not found: " + st + ". The project path list was not changed.")
+            return()
+        endif
+		KillLine()
+		InsertLine(tag+st)
+		EndProcess(-1)
+	endif
+end
+
+
+proc ToggleCh(integer ch)
+	integer ch2 = iif(ch == chSubdirs, chExclude, chSubdirs)
+
+	if CurrLineLen()
+		PushPosition()
+		BegLine()
+		if CurrChar() == ch
+			PushBlock()
+			UnMarkBlock()
+			MarkStream()
+			MarkStream()
+			KillBlock()
+			PopBlock()
+		else
+			InsertText(Chr(ch), iif(CurrChar() == ch2, _OVERWRITE_, _INSERT_))
+		endif
+		PopPosition()
+	endif
+end
+
+
+proc afpDrawHelper(integer nPos, string st)
+	PutLine(SqueezePath(GetText(nPos, Query(WindowCols)),
+						Query(WindowCols)-Length(st)) + st,
+						Query(WindowCols))
+end
+
+
+proc afpDraw(/*integer fCursorline*/)
+	PushPosition()
+	if CurrChar(1) == chSubdirs
+		afpDrawHelper(2, "  (includes subdirectories)")
+	elseif CurrChar(1) == chExclude
+		afpDrawHelper(2, "  (exclude)")
+	else
+		afpDrawHelper(CurrPos(), "")
+	endif
+	PopPosition()
+end
+
+
+keydef afpKeys
+<Ins>				AddPath()
+<Alt E>				EditPath()
+<Ctrl E>			EditPath()
+<Del>				Del_List()
+<Escape>			Close_List()
+<Ctrl S>			ToggleCh(chSubdirs)
+<Ctrl X>			ToggleCh(chExclude)
+end
+
+
+integer s_cafp = 0
+proc afpListStartup()
+	if not s_cafp
+		Enable(afpKeys)
+		ListFooter(c_afpListFooter)
+	endif
+	s_cafp = s_cafp + 1
+end
+proc afpListCleanup()
+	s_cafp = s_cafp - 1
+	if not s_cafp
+		Disable(afpKeys)
+	endif
+end
+
+
+proc AddFilesToProject()
+	integer cid = GetBufferId()
+	integer idTmp
+	integer n
+	integer x = WhereXAbs()-1
+	integer y = WhereYAbs()+1
+
+	if not Get_Int(iProjectId)
+		Warn(c_errNoProject)
+		return()
+	endif
+
+	// show list of paths
+	idTmp = CreateTempBuffer()
+	if idTmp
+		// copy path list to tmp buffer
+		PushBlock()
+		GotoBufferId(Get_Int(iPathListId))
+		UnMarkBlock()
+		if NumLines()
+			MarkLine(1, NumLines())
+		endif
+		GotoBufferId(idTmp)
+		if isBlockMarked()
+			Set(MsgLevel, _NONE_)
+			CopyBlock()
+			Set(MsgLevel, _ALL_MESSAGES_)
+		endif
+
+		// remove blank lines
+		BegFile()
+		repeat
+			if not CurrLineLen()
+				KillLine()
+			endif
+		until not Down()
+
+		// add blank line at end
+		EndFile()
+		AddLine()	// blank line at end
+		PopBlock()
+		BegFile()
+		FileChanged(FALSE)
+
+		// list paths
+		Hook(_LIST_STARTUP_, afpListStartup)
+		Hook(_LIST_CLEANUP_, afpListCleanup)
+		repeat
+			SetXY(x, y)
+			HookDisplay(afpDraw,,,Hilite)
+			PROJ_CenterList(78, Query(ScreenRows))
+			n = lList("Exact files and directories to scan", 78, Query(ScreenRows),
+					_ENABLE_SEARCH_|_FIXED_WIDTH_|_PRESERVE_HELPLINE_)
+			UnHookDisplay()
+		until n >= 0
+		UnHook(afpListCleanup)
+		UnHook(afpListStartup)
+
+		// accept changes
+		if n
+			PushBlock()
+			EmptyBuffer(Get_Int(iPathListId))
+			if NumLines() > 1
+				MarkLine(1, NumLines()-1)
+				GotoBufferId(Get_Int(iPathListId))
+				Set(MsgLevel, _NONE_)
+				MoveBlock()
+				Set(MsgLevel, _ALL_MESSAGES_)
+			endif
+			PopBlock()
+			Set_Int(iFNeedToEnsure, TRUE)
+			Set_Int(iFListEnsured, FALSE)
+		endif
+
+		GotoBufferId(cid)
+		AbandonFile(idTmp)
+	else
+		Warn(c_errTmpBuf)
+	endif
+end
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Projects Database
+
+menu Retry()
+	history
+
+	"&Retry"
+	"&Cancel"
+end
+
+
+// OpenDatabase()
+// open database (try to support multiple instances of TSE running
+// simultaneously).
+integer proc OpenDatabase()
+	string fn[_MAXPATH_]
+	integer fOk = TRUE
+	integer msg
+	integer id
+
+	// close database
+	if Get_Int(iDatabaseId)
+		AbandonFile(Get_Int(iDatabaseId))
+		Set_Int(iDatabaseId, 0)
+	endif
+
+	// create database buffer
+	PushPosition()
+	id = CreateTempBuffer()
+	if not id
+		KillPosition()
+		fOk = FALSE
+		goto Out
+	endif
+	Set_Int(iDatabaseId, id)
+
+	// load database from file
+	PushBlock()
+	fn = GetInstallationDir()+c_stDB
+	if FileExists(fn)
+		repeat
+			msg = Set(MsgLevel, _NONE_)
+			fOk = InsertFile(fn)
+			Set(MsgLevel, msg)
+		until fOk or Retry(c_errNoOpenProjDB) <> 1
+		FileChanged(FALSE)
+	endif
+	PopBlock()
+
+	PopPosition()
+
+Out:
+	return(fOk)
+end
+
+
+proc SaveDatabase()
+	integer cid
+	integer ml
+
+	cid = GotoBufferId(Get_Int(iDatabaseId))
+	if cid
+		if FileChanged()
+			ml = Set(MsgLevel, OFF)
+			SaveAs(GetInstallationDir()+c_stDB, _OVERWRITE_)
+			Set(MsgLevel, ml)
+		endif
+
+		GotoBufferId(cid)
+	endif
+end
+
+
+proc GetDatabaseOptions()
+	integer cid
+
+	PushBlock()
+	cid = GotoBufferId(Get_Int(iDatabaseId))
+	if MarkProjectSection(c_stOptions)
+		Set_Int(iFAutoLoad, GetProjectInt(c_stOpt_AutoLoad, TRUE))
+		Set_Int(iFOpenLast, GetProjectInt(c_stOpt_OpenLast, TRUE))
+		g_fSaveCurrDir = GetProjectInt(c_stOpt_SaveCurrDir, TRUE)
+		Set_Int(iFPromptForProject, GetProjectInt(c_stOpt_PromptForProject, FALSE))
+		Set_Int(iFLocalProjects, GetProjectInt(c_stOpt_LocalProjects, TRUE))
+	endif
+	GotoBufferId(cid)
+	PopBlock()
+end
+
+
+proc SetDatabaseOptions()
+	integer cid
+
+	PushBlock()
+	cid = GotoBufferId(Get_Int(iDatabaseId))
+	if MarkProjectSection(c_stOptions)
+		SetProjectInt(c_stOpt_AutoLoad, Get_Int(iFAutoLoad))
+		SetProjectInt(c_stOpt_LocalProjects, Get_Int(iFLocalProjects))
+		SetProjectInt(c_stOpt_OpenLast, Get_Int(iFOpenLast))
+		SetProjectInt(c_stOpt_SaveCurrDir, g_fSaveCurrDir)
+		SetProjectInt(c_stOpt_PromptForProject, Get_Int(iFPromptForProject))
+	endif
+	GotoBufferId(cid)
+	PopBlock()
+end
+
+
+proc AddProjectToDatabase(string st)
+	integer ml
+	integer cid
+	string fn[255]
+
+	fn = GetProjectFullPathname(st)
+	if Lower(SplitPath(fn, _DRIVE_|_PATH_)) == Lower(GetFullProjDir())
+		fn = SplitPath(fn, _NAME_|_EXT_)
+	endif
+
+	// important: only drop _EXT_ in one place, so we only drop the .pj, and
+	// don't incorrectly interpret periods the user used in the _NAME_ part!
+	fn = SplitPath(fn, _NAME_)
+
+	// add it to the list in the database
+	if OpenDatabase()
+		cid = GotoBufferId(Get_Int(iDatabaseId))
+		#ifdef ALLPROJECTS_MRUORDER
+		if MarkProjectSection(c_stAllProjects)
+			// project already in list, remove it so we can put it at the top
+			if lFind(fn, "^$gil")
+				KillLine()
+				MarkProjectSection(c_stAllProjects)
+			endif
+		endif
+		InsertLine(fn)
+		#else
+		if MarkProjectSection(c_stAllProjects)
+			// only add if project not in list yet
+			if not lFind(fn, "^$gil")
+				InsertLine(fn)
+				MarkProjectSection(c_stAllProjects)
+				ml = Set(MsgLevel, _NONE_)
+				Sort(_IGNORE_CASE_)
+				Set(MsgLevel, ml)
+			endif
+		else
+			InsertLine(fn)
+		endif
+		#endif
+		GotoBufferId(cid)
+		SaveDatabase()
+	endif
+end
+
+
+keydef lpidKeys
+<CursorUp> if CurrLine() > 1 Up() endif
+<CursorDown> if CurrLine() < NumLines() Down() endif
+<Del>		if CurrLine() < NumLines() KillLine() endif
+end
+
+
+proc lpidListStartup()
+	if Enable(lpidKeys)
+		ListFooter(" {Del}-Remove  {Enter}-Select  {Esc}-Cancel ")
+	endif
+end
+
+
+proc lpidListCleanup()
+    Disable(lpidKeys)
+end
+
+integer proc PROJ_IsSavedProject(string entry)
+    integer originalBuffer = GetBufferId()
+    integer checkBuffer = 0
+    integer valid = FALSE
+    string filename[255] = GetProjectFullPathname(Trim(entry))
+    if not Length(Trim(entry)) or not FileExists(filename)
+        return(FALSE)
+    endif
+    checkBuffer = CreateTempBuffer()
+    if checkBuffer
+        if InsertFile(filename, _DONT_PROMPT_)
+            BegFile()
+            valid = lFind(c_stFileIdentifier, "c^$")
+        endif
+        GotoBufferId(originalBuffer)
+        AbandonFile(checkBuffer)
+    endif
+    return(valid)
+end
+
+proc PROJ_FilterProjectList()
+    BegFile()
+    loop
+        if not PROJ_IsSavedProject(GetText(1, 255))
+            if not KillLine()
+                break
+            endif
+        else
+            if not Down()
+                break
+            endif
+        endif
+    endloop
+    BegFile()
+end
+
+string proc ListProjectsInDatabase(string title)
+	string st[255] = ""
+	string stCurrDir[255]
+	integer cid
+	integer idTmp = 0
+	integer fOther = TRUE
+	integer fSave = FALSE
+	integer ilba
+	integer cLen
+	integer selection
+
+	if not Get_Int(iFInStartup)
+		// force WhereX, etc. to get updated correctly
+		UpdateDisplay()
+	endif
+
+	PushBlock()
+	if OpenDatabase()
+		cid = GotoBufferId(Get_Int(iDatabaseId))
+		if MarkProjectSection(c_stAllProjects)
+			fOther = FALSE
+
+			// show list
+			idTmp = CreateTempBuffer()
+			if idTmp
+				CopyBlock()
+				UnMarkBlock()
+				PROJ_FilterProjectList()
+				FileChanged(FALSE)
+				EndFile()
+				AddLine("Open other project file...")
+				UnMarkBlock()
+				BegFile()
+
+                // Open/Change project uses the same centered box at startup and later.
+                cLen = Min(iif(LongestLineInBuffer() > 40, 64, 42), Query(ScreenCols) - 4)
+
+				Hook(_LIST_STARTUP_, lpidListStartup)
+				Hook(_LIST_CLEANUP_, lpidListCleanup)
+				//if List(title, iif(LongestLineInBuffer() > 40, 64, 42))
+                PROJ_CenterList(cLen, Query(ScreenRows))
+                selection = lList(title, cLen, Query(ScreenRows),
+                    _ENABLE_SEARCH_|_FIXED_WIDTH_|_PRESERVE_HELPLINE_)
+                GotoBufferId(idTmp)
+                if selection > 0
+					if CurrLine() == NumLines()
+						fOther = TRUE
+					else
+						fOther = FALSE
+						st = GetProjectFullPathname(GetText(1, 255))
+					endif
+				endif
+				UnHook(lpidListStartup)
+				UnHook(lpidListCleanup)
+				Disable(lpidKeys)
+			else
+				Warn(c_errTmpBuf)
+			endif
+		endif
+		fSave = FileChanged()
+		GotoBufferId(cid)
+
+		// save database
+		if fSave
+			GotoBufferId(Get_Int(iDatabaseId))
+			if MarkProjectSection(c_stAllProjects)
+				KillBlock()
+			endif
+			GotoBufferId(idTmp)
+			if NumLines() > 1
+				MarkLine(1, NumLines() - 1)
+				GotoBufferId(Get_Int(iDatabaseId))
+				ilba = Set(InsertLineBlocksAbove, ON)
+				CopyBlock()
+				Set(InsertLineBlocksAbove, ilba)
+			endif
+			GotoBufferId(cid)
+			SaveDatabase()
+		endif
+
+		// prompt for project filename
+		if fOther
+			stCurrDir = CurrDir()
+			CDD(GetFullProjDir())
+			if AskFilename("Project to open:", st) and Length(st)
+				st = GetProjectFullPathname(RemoveQuotes(st))
+				if not FileExists(st)
+					Warn("Project file not found.")
+					st = ""
+				endif
+			endif
+			CDD(stCurrDir)
+		endif
+	endif
+	PopBlock()
+
+	AbandonFile(idTmp)
+	return(st)
+end
+
+
+
+integer proc PROJ_CopyProjectRecord(string sourceFile, string destinationFile)
+    integer originalBuffer = GetBufferId()
+    integer copyBuffer = 0
+    integer result = FALSE
+    if Lower(sourceFile) == Lower(destinationFile)
+        return(FALSE)
+    endif
+    if not FileExists(sourceFile)
+        Warn("Project file not found: " + sourceFile)
+        return(FALSE)
+    endif
+    if FileExists(destinationFile)
+        if MsgBox(c_stTitle, "Replace project file " + destinationFile + "?", _YES_NO_) <> 1
+            return(FALSE)
+        endif
+    endif
+    copyBuffer = CreateTempBuffer()
+    if copyBuffer
+        if InsertFile(sourceFile, _DONT_PROMPT_)
+            BegFile()
+            if lFind(c_stFileIdentifier, "c^$")
+                result = SaveAs(destinationFile, _OVERWRITE_|_DONT_PROMPT_)
+            else
+                Warn("Not a PROJ project file: " + sourceFile)
+            endif
+        endif
+        GotoBufferId(originalBuffer)
+        AbandonFile(copyBuffer)
+    endif
+    return(result)
+end
+
+// 1=export one, 2=export all, 3=import one, 4=import all.
+proc PROJ_TransferProjects(integer operation)
+    integer originalBuffer = GetBufferId()
+    integer listBuffer = 0
+    integer searchHandle = -1
+    integer copied = 0
+    string sourceFile[255] = ""
+    string destinationFile[255] = ""
+    string directory[255] = ""
+    string entry[255] = ""
+    if operation == 1
+        sourceFile = ListProjectsInDatabase("Export Project")
+        if not Length(sourceFile)
+            return()
+        endif
+        if not Ask("Export project to .pj filename:", destinationFile, _EDIT_HISTORY_)
+            return()
+        endif
+        if not Length(destinationFile)
+            return()
+        endif
+        if Lower(SplitPath(destinationFile, _EXT_)) <> c_stExt
+            destinationFile = destinationFile + c_stExt
+        endif
+        if PROJ_CopyProjectRecord(sourceFile, destinationFile)
+            Warn("Project exported: " + destinationFile)
+        endif
+        return()
+    endif
+    if operation == 3
+        if not Ask("Import project from .pj filename:", sourceFile, _EDIT_HISTORY_)
+            return()
+        endif
+        if not Length(sourceFile) or not EnsureProjectDirectory()
+            return()
+        endif
+        destinationFile = GetFullProjDir() + SplitPath(sourceFile, _NAME_|_EXT_)
+        if PROJ_CopyProjectRecord(sourceFile, destinationFile)
+            AddProjectToDatabase(destinationFile)
+            Warn("Project imported: " + destinationFile)
+        endif
+        return()
+    endif
+    if not Ask(iif(operation == 2, "Export all projects to existing directory:",
+        "Import all .pj projects from directory:"), directory, _EDIT_HISTORY_)
+        return()
+    endif
+    if not Length(directory)
+        return()
+    endif
+    directory = AddTrailingSlash(RemoveQuotes(directory))
+    if not (FileExists(RemoveTrailingSlash(directory)) & _DIRECTORY_)
+        Warn("Directory not found: " + directory)
+        return()
+    endif
+    if operation == 4 and not EnsureProjectDirectory()
+        return()
+    endif
+    PushBlock()
+    if operation == 2
+        if OpenDatabase()
+            GotoBufferId(Get_Int(iDatabaseId))
+            if MarkProjectSection(c_stAllProjects)
+                listBuffer = CreateTempBuffer()
+                if listBuffer
+                    CopyBlock()
+                    UnMarkBlock()
+                endif
+            endif
+        endif
+    else
+        listBuffer = CreateTempBuffer()
+        if listBuffer
+            searchHandle = FindFirstFile(directory + "*.pj", _NORMAL_|_ARCHIVE_)
+            if searchHandle <> -1
+                repeat
+                    AddLine(directory + FFName(), listBuffer)
+                until not FindNextFile(searchHandle, _NORMAL_|_ARCHIVE_)
+                FindFileClose(searchHandle)
+            endif
+        endif
+    endif
+    if listBuffer
+        GotoBufferId(listBuffer)
+        BegFile()
+        repeat
+            entry = Trim(GetText(1, 255))
+            if Length(entry) and PROJ_IsSavedProject(entry)
+                sourceFile = GetProjectFullPathname(entry)
+                destinationFile = iif(operation == 2, directory, GetFullProjDir()) +
+                    SplitPath(sourceFile, _NAME_|_EXT_)
+                if PROJ_CopyProjectRecord(sourceFile, destinationFile)
+                    copied = copied + 1
+                    if operation == 4
+                        AddProjectToDatabase(destinationFile)
+                    endif
+                endif
+                GotoBufferId(listBuffer)
+            endif
+        until not Down()
+    endif
+    GotoBufferId(originalBuffer)
+    if listBuffer > 0
+        AbandonFile(listBuffer)
+    endif
+    PopBlock()
+    Warn(Str(copied) + " project record(s) transferred. Source files were not copied.")
+end
+
+proc ViewAllProjects()
+    integer originalBuffer = GetBufferId()
+    integer listBuffer = 0
+    integer databaseBuffer = 0
+    PushBlock()
+    if OpenDatabase()
+        databaseBuffer = GotoBufferId(Get_Int(iDatabaseId))
+        if MarkProjectSection(c_stAllProjects)
+            listBuffer = CreateTempBuffer()
+            if listBuffer
+                CopyBlock()
+                UnMarkBlock()
+                PROJ_FilterProjectList()
+                BegFile()
+                PROJ_CenterList(78, Query(ScreenRows))
+                lList("All saved projects (view only)", 78, Query(ScreenRows),
+                    _ENABLE_SEARCH_|_FIXED_WIDTH_|_PRESERVE_HELPLINE_)
+            endif
+        else
+            Warn("No saved projects are listed.")
+        endif
+    endif
+    GotoBufferId(originalBuffer)
+    if listBuffer > 0
+        AbandonFile(listBuffer)
+    endif
+    PopBlock()
+end
+
+///////////////////////////////////////////////////////////////////////////
+// Project File Persistence
+
+integer proc GetProjectVersion()
+	return(Val(GetProjectStr(c_stVersion, "0"), 16))
+end
+
+
+menu OverwriteCancel()
+	title = "File exists"
+	history
+	"&Overwrite"
+	"&Cancel"
+end
+
+
+#ifdef DEBUG
+proc CheckGoof(string st)
+	PushPosition()
+	if not Up() or GetText(1, 255) <> st
+		Warn("goofed on"; st)
+	endif
+	PopPosition()
+end
+#endif
+
+
+integer proc SaveWindowInfo(integer idBuffer)
+	if Length(CurrFilename()) == 0
+		return (FALSE)
+	endif
+	AddLine(Format(CurrLine(); CurrRow(); CurrPos(); CurrXOffset();
+			WindowId(); Query(WindowX1); Query(WindowY1);
+			Query(WindowCols); Query(WindowRows); QuotePath(TranslateRoot(CurrFilename(), TRUE))),
+			idBuffer)
+	return(TRUE)
+end
+
+
+proc mPrevFile(integer fPrev)
+	integer id = GetBufferId()
+
+	iif(fPrev, PrevFile(_DONT_LOAD_), NextFile(_DONT_LOAD_))
+	if Query(BufferFlags) & _LOADED_
+		// make sure we call the _ON_CHANGING_FILES_ hook, etc, if the buffer
+		// is loaded.
+		GotoBufferId(id)
+		iif(fPrev, PrevFile(), NextFile())
+	endif
+end
+
+
+integer proc SaveClipboard(string fn, integer fPrompt)
+	integer cid = GetBufferId()
+	integer idTmp
+	integer fRet = FALSE
+	integer umap = Set(UnMarkAfterPaste, FALSE)
+
+	if Query(ClipBoardId)
+		idTmp = CreateTempBuffer()
+		if idTmp
+			PushBlock()
+
+			// paste clipboard
+			Paste()
+			if isBlockMarked() and
+					(not fPrompt or NumLines() < CLIP_PROMPT_THRESHOLD or
+					//YesNo("Clipboard is large.  Save anyway?") == 1)
+					MsgBox(c_stTitle, "Clipboard is large.  Save anyway?", _YES_NO_) == 1)
+				BegFile()
+				InsertLine(c_stClipIdentifier)
+				AddLine()
+				InsertText(Format(isBlockMarked();
+						Query(BlockBegLine);
+						Query(BlockBegCol);
+						Query(BlockEndLine);
+						Query(BlockEndCol)))
+
+				// save clipboard
+				fRet = SaveAs(fn, _OVERWRITE_|_DONT_PROMPT_)
+			endif
+
+			PopBlock()
+			GotoBufferId(cid)
+			AbandonFile(idTmp)
+		endif
+	endif
+
+	Set(UnMarkAfterPaste, umap)
+	return (fRet)
+end
+
+
+#if 0 //#ifdef DEBUG
+menu NoDebug()
+title = "broken!"
+"&Continue"
+"&Debug"
+end
+#endif
+
+
+#if 0
+menu YesNoOnly()
+	"&Yes"
+	"&No"
+end
+#endif
+
+
+// Ensure that the configured project folder exists before asking for a .PJ name.
+integer proc EnsureProjectDirectory()
+	string projectDir[_MAXPATH_] = RemoveTrailingSlash(GetFullProjDir())
+	integer attr = FileExists(projectDir)
+
+	if attr & _DIRECTORY_
+		return(TRUE)
+	endif
+	if attr
+		Warn("Project path is a file: " + projectDir)
+		return(FALSE)
+	endif
+	if not PROCCreateDirectory(projectDir, 0)
+		Warn("Cannot create project directory: " + projectDir)
+		return(FALSE)
+	endif
+	return(TRUE)
+end
+
+
+integer proc SaveProject(integer fSilent)
+	integer cid
+	integer ilba, ml
+	string fn[_MAXPATH_] = Get_Str(iProjectFilename)
+	string fnTmp[_MAXPATH_]
+	string st[255]
+	string stName[80] = ""
+	string stTitle[80] = ""
+	string stRoot[_MAXPATH_] = ""
+	integer fOk
+	integer idRestore = 0
+	integer i
+	integer id, line, cpos, xoff, row
+	integer wid
+	integer fZoomed = FALSE
+	integer idProject
+	integer fLocal = FALSE
+
+	#ifdef DEBUG
+	if Get_Int(iCPrompts)
+		Warn("do not call SaveProject from a prompt!")
+		return(FALSE)
+	endif
+	#endif
+
+	idProject = Get_Int(iProjectId)
+	if not idProject
+		Warn(c_errNoProject)
+		return(FALSE)
+	endif
+
+	//$ todo: implement an FProjectDirty() and intelligently decide whether to
+	// save?
+
+	if not Length(fn)
+		// prompt for filename
+		if not EnsureProjectDirectory()
+			return(FALSE)
+		endif
+		st = CurrDir()
+		CDD(GetFullProjDir())
+		if PROJ_AskNewProjectFilename("Enter filename for new project" +
+					   iif(Get_Int(iFLocalProjects), ' (or "local"):', ':'),
+					   fn) and Length(fn)
+			fn = RemoveQuotes(fn)
+			fnTmp = Lower(SplitPath(fn, _NAME_|_EXT_))
+			if fnTmp == Lower(c_stLocalProject) or fnTmp == Lower(SplitPath(c_stLocalProject, _NAME_))
+				fnTmp = SplitPath(fn, _DRIVE_|_PATH_)
+				fn = iif(Length(fnTmp), fnTmp, st)
+				fn = AddTrailingSlash(fn) + c_stLocalProject
+ThinkAgain_LocalName:
+				if Ask("Enter display name for local project:", stTitle, _EDIT_HISTORY_)
+					if not Length(stTitle)
+						goto ThinkAgain_LocalName
+					else
+						Set_Str(iProjectTitle, stTitle)
+						fLocal = TRUE
+					endif
+				else
+					fn = ""
+					goto NeverMind
+				endif
+			endif
+
+			if not Length(SplitPath(fn, _DRIVE_|_PATH_))
+				fn = GetFullProjDir() + fn
+			else
+				fnTmp = ExpandPath(fn)
+				fn = SplitPath(fnTmp, _DRIVE_|_PATH_) + SplitPath(fn, _NAME_|_EXT_)
+				if Lower(fn) <> Lower(fnTmp)
+					#ifdef DEBUG
+					Warn("unable to preserve case of filename")
+					#endif
+					fn = fnTmp
+				endif
+			endif
+
+			if Length(fn)
+				// always force the .pj extension!
+				if Lower(SplitPath(fn, _EXT_)) <> c_stExt
+					fn = fn + c_stExt
+				endif
+
+				if FileExists(fn)
+ThinkAgain_Overwrite:
+					// prompt to overwrite or cancel
+					if OverwriteCancel() <> 1
+						//if Get_Int(iFAbandonEditor) and YesNoOnly(c_promptAbandonNewProject) <> 1
+						if Get_Int(iFAbandonEditor) and MsgBox(c_stTitle, c_promptAbandonNewProject, _YES_NO_) <> 1
+							goto ThinkAgain_Overwrite
+						endif
+						CDD(st)
+						return(FALSE)
+					endif
+				endif
+			endif
+		else
+NeverMind:
+			//if g_fClosing and YesNoOnly(c_promptAbandonNewProject) == 1
+			if g_fClosing and MsgBox(c_stTitle, c_promptAbandonNewProject, _YES_NO_) == 1
+				CDD(st)
+				return(TRUE)
+			endif
+		endif
+		CDD(st)
+
+		if not Length(fn)
+			return(FALSE)
+		endif
+
+		SetProjectRoot(fn)
+
+		// add to list of All Projects
+		AddProjectToDatabase(fn)
+	else
+		if Lower(SplitPath(fn, _NAME_|_EXT_)) == Lower(c_stLocalProject)
+			fLocal = TRUE
+		endif
+	endif
+
+	// construct project file
+	if not fSilent
+		idRestore = PushMessage("Saving project " + fn + "...")
+	endif
+	stRoot = CalcProjectRoot(fn)
+
+	ilba = Set(InsertLineBlocksAbove, ON)
+	PushBlock()
+	cid = GotoBufferId(idProject)
+	ml = Set(MsgLevel, _WARNINGS_ONLY_)
+
+	// file identifier
+	BegFile()
+	if not lFind(c_stFileIdentifier, "c^$")
+		InsertLine(c_stFileIdentifier)
+	endif
+
+	// general info
+	if MarkProjectSection(c_stInfo)
+		KillBlock()
+	endif
+	#ifdef DEBUG
+	CheckGoof(c_stInfo)
+	#endif
+	SetProjectStr(c_stVersion, Format(c_nVer:4:"0":16))
+	// if saving before we had a chance to switch to the correct directory
+	// (via Idle_ChDir), save the directory we were going to switch to,
+	// instead of the actual current directory.
+	SetProjectStr(c_stCurrDir, iif(Length(stChDir), stChDir, CurrDir()))
+	SetProjectStr(c_stProjectName, Get_Str(iProjectTitle))
+	SetProjectStr(c_stOpenPath, GetGlobalStr(c_stOpenPath))
+	PROJ_SaveTypesSection()
+	MarkProjectSection(c_stInfo)
+#ifdef CTAGS
+	SetProjectInt(c_stProjTags, Get_Int(iFProjectTags))
+	SetProjectStr(c_stTagLoc, Get_Str(iTagsLocation))
+	SetProjectInt(c_stTagsIgnoreCase, Get_Int(iFIgnoreCase))
+#endif
+#ifdef BSCTAGS
+	SetProjectStr(c_stBscFile, Get_Str(iBscFile))
+#endif
+
+#ifdef STATE
+	//$ review: THE FOLLOWING WILL DIE IF EXECUTED FROM A PROMPT
+
+	fZoomed = isZoomed()
+	if fZoomed
+		ZoomWindow()
+	endif
+
+	// close windows with unnamed buffers
+	GotoBufferId(cid)
+	if NumWindows() > 1
+		wid = WindowId()
+		for i = 1 to MAX_WINDOWS
+			if GotoWindow(i) and Length(CurrFilename()) == 0
+				#ifdef DEBUG
+				//Warn("closing window"; i; '"',CurrFilename(), '"')
+				#endif
+				CloseWindow()
+				if i == wid
+					wid = WindowId()
+				endif
+			endif
+		endfor
+		GotoWindow(wid)
+	endif
+	GotoBufferId(idProject)
+
+	// save buffer list and file-settings
+	if MarkProjectSection(c_stBuffers)
+		KillBlock()
+	endif
+	#ifdef DEBUG
+	CheckGoof(c_stBuffers)
+	#endif
+	Up()
+	GotoBufferId(cid)
+	PushPosition()
+	if BufferType() <> _NORMAL_
+		mPrevFile(FALSE)
+	endif
+	do NumFiles() times
+		if Length(CurrFilename()) and Pos("\", CurrFilename())
+			// execute hook to coexist with macros that track TSE settings on
+			// an individual file-by-file basis (such as FS.Mac).
+			ExecHook(_ON_CHANGING_FILES_)
+
+			// add info
+			AddLine(QuotePath(TranslateRootEx(CurrFilename(), stRoot, TRUE)), idProject)
+			st = Format(" ",
+					CurrLine(); CurrRow();
+					CurrPos(); CurrXOffset();
+					BinaryMode(); DisplayMode();
+					Query(BufferFlags)&_LOADED_
+					)
+			// these settings are normally global, unless a macro such
+			// as FS is loaded.
+			st = st + Format(" ",
+					Query(TabType);
+					Query(TabWidth);
+					Query(Insert);
+					Query(AutoIndent);
+					Query(RemoveTrailingWhite);
+					Query(WordWrap);
+					Query(EOLType);
+					Query(LeftMargin);
+					Query(RightMargin);
+					Query(MakeBackups);
+					//$ review: this doesn't support spaces in BackupExt
+					iif(Length(Query(BackupExt)), Query(BackupExt), ".")
+					)
+			#ifdef REMEMBER_ATTRS
+			st = st + Format(" ",
+					Query(TextAttr);
+					Query(CursorAttr);
+					Query(HiLiteAttr);
+					Query(BlockAttr);
+					Query(CursorInBlockAttr)
+					)
+			#endif
+			#ifdef TSE30
+			st = st + Format(c_st30div,
+							 BrowseMode()
+							 )
+			#endif
+
+			id = GotoBufferId(idProject)
+			EndLine()
+			InsertText(st, _INSERT_)
+			GotoBufferId(id)
+		endif
+		// make sure we call the _ON_CHANGING_FILES_ hook, etc.
+		mPrevFile(TRUE)
+	enddo
+	PopPosition()
+	GotoBufferId(idProject)
+
+	// save windows
+	if MarkProjectSection(c_stWindows)
+		KillBlock()
+	endif
+	#ifdef DEBUG
+	CheckGoof(c_stWindows)
+	#endif
+	if NumFiles()
+		Up()
+		wid = WindowId()
+		GotoBufferId(cid)
+		fOk = TRUE
+		AddLine(Format(wid;
+				Query(DisplayBoxed);
+				Query(ShowMainMenu);
+				Query(ShowHelpLine);
+				Query(ShowStatusLine);
+				Query(StatusLineAtTop);
+				Query(ScreenRows);
+				Query(ScreenCols);
+				Query(MouseEnabled);
+				fZoomed), idProject)
+		for i = 1 to MAX_WINDOWS
+			GotoWindow(i)
+			if WindowId() == i and WindowId() <> wid
+				fOk = fOk and SaveWindowInfo(idProject)
+			endif
+		endfor
+		GotoWindow(wid)
+		fOk = fOk and SaveWindowInfo(idProject)
+		GotoBufferId(idProject)
+
+		// if failed, erase window info
+		if not fOk
+			MarkProjectSection(c_stWindows)
+			KillBlock()
+		endif
+	endif
+
+	// save block
+	if MarkProjectSection(c_stBlock)
+		KillBlock()
+	endif
+	#ifdef DEBUG
+	CheckGoof(c_stBlock)
+	#endif
+	Up()
+	PopBlock()
+	if isBlockMarked()
+		GotoBufferId(Query(BlockId))
+		st = TranslateRootEx(CurrFilename(), stRoot, TRUE)
+		if BufferType() == _NORMAL_ and Length(st)
+			AddLine(Format(QuotePath(st); isBlockMarked();
+						   Query(BlockBegLine); Query(BlockBegCol);
+						   Query(BlockEndLine); Query(BlockEndCol)), idProject)
+		endif
+		GotoBufferId(idProject)
+	endif
+	PushBlock()
+
+	// save bookmarks
+	if MarkProjectSection(c_stBookmarks)
+		KillBlock()
+	endif
+	#ifdef DEBUG
+	CheckGoof(c_stBookmarks)
+	#endif
+	Up()
+	for i = Asc('a') to Asc('z')
+		if isBookMarkSet(Chr(i))
+			GetBookMarkInfo(Chr(i), id, line, cpos, xoff, row)
+			if GotoBufferId(id) and BufferType() == _NORMAL_
+				st = TranslateRootEx(CurrFilename(), stRoot, TRUE)
+				if Length(st)
+					AddLine(Format(QuotePath(st);
+								   line; row; cpos; xoff; Chr(i)), idProject)
+				endif
+			endif
+		endif
+	endfor
+	GotoBufferId(idProject)
+#endif
+
+	if fLocal
+		stTitle = Get_Str(iProjectTitle)
+		if not Length(stTitle)
+			stTitle = "Local"
+		endif
+	else
+		stTitle = SplitPath(fn, _NAME_)
+	endif
+	stName = SplitPath(fn, _NAME_)
+
+	// save TSE clipboard
+	if MarkProjectSection(c_stClip)
+		KillBlock()
+	endif
+	#ifdef DEBUG
+	CheckGoof(c_stClip)
+	#endif
+	Up()
+	if SaveClipboard(SplitPath(fn, _DRIVE_|_NAME_) + c_stExtClip, TRUE)
+		#ifdef DEBUG
+		Assert(SplitPath(fn, _EXT_) == c_stExt, "expected _EXT_ to be .pj!")
+		#endif
+		AddLine(stName, idProject)
+	endif
+
+	// save keyboard macros
+	if MarkProjectSection(c_stKeyMacro)
+		KillBlock()
+	endif
+	#ifdef DEBUG
+	CheckGoof(c_stKeyMacro)
+	#endif
+	Up()
+	Set(MsgLevel, _NONE_)
+	if SaveKeyMacro(SplitPath(fn, _DRIVE_|_NAME_)+c_stExtKbd)
+		#ifdef DEBUG
+		Assert(SplitPath(fn, _EXT_) == c_stExt, "expected _EXT_ to be .pj!")
+		#endif
+		AddLine(stName, idProject)
+	endif
+	Set(MsgLevel, _WARNINGS_ONLY_)
+
+	#ifdef PERSIST_HISTORIES
+	if Query(PersistentHistory)
+		// save histories
+		if MarkProjectSection(c_stHistory)
+			KillBlock()
+		endif
+		#ifdef DEBUG
+		CheckGoof(c_stHistory)
+		#endif
+		Up()
+		Set(MsgLevel, _NONE_)
+		if SaveHistory(SplitPath(fn, _DRIVE_|_NAME_)+c_stExtHist)
+			#ifdef DEBUG
+			Assert(SplitPath(fn, _EXT_) == c_stExt, "expected _EXT_ to be .pj!")
+			#endif
+			AddLine(stName, idProject)
+		endif
+		Set(MsgLevel, _WARNINGS_ONLY_)
+	endif
+	#endif
+
+	// path list
+	if MarkProjectSection(c_stPaths)
+		KillBlock()
+	endif
+	#ifdef DEBUG
+	CheckGoof(c_stPaths)
+	#endif
+	GotoBufferId(Get_Int(iPathListId))
+	MarkLine(1, NumLines())
+	GotoBufferId(idProject)
+	CopyBlock()
+
+	// file list -- this goes last for performance reasons since it is the
+	// largest section.
+	if MarkProjectSection(c_stFiles)
+		KillBlock()
+	endif
+	if Get_Int(iFListEnsured)
+		#ifdef DEBUG
+		CheckGoof(c_stFiles)
+		#endif
+		InsertFileList(TRUE)
+
+		// make PJROOT-relative if possible
+		if Length(stRoot)
+			GotoBlockBegin()
+			BegLine()
+			while lFind("^{.*}" + c_stDiv + "\c{.*}$", "lx")
+				InsertText(TranslateRootEx(GetFoundText(2), stRoot, TRUE), _INSERT_)
+				KillToEol()
+			endwhile
+		endif
+	endif
+
+	// save project file
+	fOk = SaveAs(fn, _OVERWRITE_)
+	if not fOk
+		Warn("Could not save project file: " + fn)
+		Warn("Check that its project directory still exists and is writable. It may have been deleted while TSE was running.")
+	endif
+
+	Set(MsgLevel, ml)
+	GotoBufferId(cid)
+	PopBlock()
+	Set(InsertLineBlocksAbove, ilba)
+
+	if fZoomed
+		ZoomWindow()
+	endif
+
+	PopMessage(idRestore, fOk)
+	if fOk
+		// if save was successful, keep this name
+		Set_Str(iProjectFilename, fn)
+		#ifdef DEBUG
+		Assert(SplitPath(fn, _EXT_) == c_stExt, "expected _EXT_ to be .pj!")
+		#endif
+		Set_Str(iProjectTitle, stTitle)
+		if not fSilent
+			TimeOutMessage(DEF_TIMEOUT, "Project " + Get_Str(iProjectTitle) + " saved.")
+		endif
+	endif
+
+	return(fOk)
+end
+
+
+proc RefreshAfterProjectChange()
+	UnHook(RefreshAfterProjectChange)
+	UpdateDisplay(_ALL_WINDOWS_REFRESH_)
+end
+
+
+proc lCloseProject()
+	// close project
+	Stop_Ensure()
+	AbandonFile(Get_Int(iProjectId))
+	AbandonFile(Get_Int(iPathListId))
+	if PROJ_TypesBuffer()
+		AbandonFile(PROJ_TypesBuffer())
+	endif
+	InitProjectVars()
+
+	FlatFile_Free()
+	//$ todo: not very friendly...
+	Tags_FreeAll()
+	// The project menu may still be open.  Redraw on the next editing idle.
+	Hook(_IDLE_, RefreshAfterProjectChange)
+end
+
+
+proc CloseProject(integer fSilent)
+	integer fOk
+
+	if Get_Int(iFAutoSave)
+		g_fClosing = TRUE
+		fOk = SaveProject(fSilent)
+		g_fClosing = FALSE
+		if not fOk
+			return()
+		endif
+	endif
+	lCloseProject()
+end
+
+
+proc CloseAllProjects()
+	// Only one project has active runtime state; saved records stay registered.
+	if Get_Int(iProjectId)
+		CloseProject(FALSE)
+	endif
+end
+
+
+integer proc CreateProjectBuffers()
+	PushPosition()
+	Set_Int(iProjectId, CreateTempBuffer())
+	Set_Int(iPathListId, CreateTempBuffer())
+	SetGlobalInt(c_stTypesBuffer, CreateTempBuffer())
+	PROJ_LoadDefaultTypes()
+	PopPosition()
+
+	#ifdef CTAGS
+	Set_Int(iFProjectTags, TRUE)				// default to using project-wide tags
+	Set_Str(iTagsLocation, "")
+	#endif
+	#ifdef BSCTAGS
+	Set_Str(iBscFile, "")
+	#endif
+
+	if Get_Int(iProjectId) and Get_Int(iPathListId) and PROJ_TypesBuffer()
+		return(TRUE)
+	endif
+
+	CloseProject(TRUE)
+	Warn("Unable to create project buffers.")
+	return(FALSE)
+end
+
+
+// PushProjectBuffers()
+// save off project buffers in case Open or New fails.
+integer fPushed = FALSE
+integer id1, id2, idTypes
+integer f1, f2, f3
+string st1[_MAXPATH_]
+string st2[MAXTITLE]
+string st3[255]
+string st4[_MAXPATH_]
+string st5[_MAXPATH_]
+proc PushProjectBuffers()
+	#ifdef DEBUG
+	if fPushed
+		Warn("buffers already pushed!  will leak buffers.")
+	endif
+	#endif
+	if Get_Int(iProjectId)
+		Stop_Ensure()
+	endif
+
+	fPushed = TRUE
+	id1 = Get_Int(iProjectId)
+	id2 = Get_Int(iPathListId)
+	idTypes = PROJ_TypesBuffer()
+	st1 = Get_Str(iProjectFilename)
+	st2 = Get_Str(iProjectTitle)
+	st3 = ""
+#ifdef CTAGS
+	st4 = Get_Str(iTagsLocation)
+#endif
+#ifdef BSCTAGS
+	st5 = Get_Str(iBscFile)
+#endif
+	f1 = Get_Int(iFListEnsured)
+	f2 = Get_Int(iFNeedToEnsure)
+#ifdef CTAGS
+	f3 = Get_Int(iFProjectTags)
+#endif
+	SetGlobalStr("~"+c_stOpenPath, GetGlobalStr(c_stOpenPath))
+
+	InitProjectVars()
+end
+
+
+// PopProjectBuffers()
+// restore or release pushed project buffers.
+proc PopProjectBuffers(integer fRelease)
+	if fPushed
+		fPushed = FALSE
+		if fRelease
+			// release
+			if idTypes > 0
+				AbandonFile(idTypes)
+			endif
+			if id1 > 0
+				AbandonFile(id1)
+			endif
+			if id2 > 0
+				AbandonFile(id2)
+			endif
+		else
+			// restore
+			Set_Int(iProjectId, id1)
+			Set_Int(iPathListId, id2)
+			Set_Str(iProjectFilename, st1)
+			Set_Str(iProjectTitle, st2)
+			SetGlobalInt(c_stTypesBuffer, idTypes)
+#ifdef CTAGS
+			Set_Str(iTagsLocation, st4)
+#endif
+#ifdef BSCTAGS
+			Set_Str(iBscFile, st5)
+#endif
+			Set_Int(iFListEnsured, f1)
+			Set_Int(iFNeedToEnsure, f2)
+#ifdef CTAGS
+			Set_Int(iFProjectTags, f3)
+#endif
+			SetProjectRoot(st1)
+			SetGlobalStr(c_stOpenPath, GetGlobalStr("~"+c_stOpenPath))
+		endif
+		DelGlobalVar("~"+c_stOpenPath)
+	endif
+end
+
+
+// DeferredClose_Begin()
+// close project, but caches the info until DeferredClose_End says to let go.
+// returns TRUE if succeeded, FALSE if cancelled or failed.
+integer proc DeferredClose_Begin()
+	if Get_Int(iProjectId) and Get_Int(iFAutoSave)
+		if not SaveProject(TRUE)
+			return(FALSE)
+		endif
+	endif
+	PushProjectBuffers()
+	return(TRUE)
+end
+
+
+// DeferredClose_End()
+// if fCancel is TRUE, finishes the close started by DeferredClose_Begin.  if
+// fCancel is FALSE, cancels the close and restores the current project.
+proc DeferredClose_End(integer fRelease)
+	PopProjectBuffers(fRelease)
+end
+
+
+proc MaybeAutoLoad()
+	integer cid
+	string fn[MAXPATH]
+	integer fLocal
+
+	fn = Get_Str(iProjectFilename)
+	fLocal = (Lower(SplitPath(fn, _NAME_)) == Lower(SplitPath(c_stLocalProject, _NAME_)))
+	if Get_Int(iFAutoLoad) and not fLocal
+		if MsgBox(c_stTitle, "Do you want to AutoLoad this project when the editor is started from a particular directory?", _YES_NO_) == 1
+			cid = GotoBufferId(Get_Int(iDatabaseId))
+			FindProjectSection(c_stAutoLoad)
+			AddALP(FALSE, Get_Str(iProjectFilename))
+			GotoBufferId(cid)
+			SaveDatabase()
+		endif
+	endif
+end
+
+
+forward proc DoProjectSettings()
+
+proc NewProject()
+	integer cid
+	integer fOk = FALSE
+	integer x = WhereX()
+	integer y = WhereY()
+
+	if Get_Int(iCPrompts)
+		if Get_Int(iProjectId)
+			#ifdef DEBUG
+			Warn("don't do this!")
+			#endif
+			return()
+		endif
+	endif
+
+	if not DeferredClose_Begin()
+		return()
+	endif
+
+	// create buffers
+	fOk = CreateProjectBuffers()
+	if fOk
+		Set_Str(iProjectFilename, "")
+		Set_Str(iProjectTitle, c_stUntitled)
+
+		// Creating a project keeps all document buffers and unsaved edits intact.
+
+		SetGlobalStr(c_stOpenPath, "")
+
+		if Get_Int(iDatabaseId)
+			cid = GotoBufferId(Get_Int(iDatabaseId))
+			MarkProjectSection(c_stOptions)
+			PROJ_LoadDefaultTypes()
+			GotoBufferId(cid)
+		endif
+	endif
+
+	// save project, to get a name for it
+//	GotoXY(x, y/2)
+	fOk = SaveProject(TRUE)
+
+Error:
+	DeferredClose_End(fOk)
+	if fOk
+		// show the "add files to project" list
+		GotoXY(x, y)
+		PushKey(<A>)
+		DoProjectSettings()
+
+		MaybeAutoLoad()
+
+		if not NumFiles() or Get_Int(iFDoingMenu)
+			ShowVersion(FALSE)
+			MsgBox(c_stTitle, c_msgNewProjectCreated)
+		endif
+		if NumFiles()
+			if not Get_Int(iFDoingMenu)
+				TimeOutMessage(DEF_TIMEOUT, c_msgNewProjectCreated)
+			endif
+		elseif not Get_Int(iCPrompts)
+			lShowEntryScreen()
+			SignOn()
+			ShowVersion(FALSE)
+			EditFile()
+		else
+			// nothing?
+			// unhook this otherwise the match list won't get displayed
+			// because rehooking it will fail.
+		endif
+	else
+		TimeOutMessage(ERROR_TIMEOUT, "New project NOT created.")
+	endif
+end
+
+
+proc GetFilenameAndTokens(var string fn, var string tokens, string stRoot)
+	// get filename
+	fn = GetText(1, 255)
+	fn = GetFileToken(fn, 1)
+	// get string with settings
+	GotoPos(Length(fn)+1)
+	tokens = GetText(CurrPos(), 255)
+	// translate root
+	fn = TranslateRootEx(fn, stRoot, FALSE)
+end
+
+
+integer proc SetScreenDimensions(integer rows, integer cols)
+	integer r = 0
+
+	if cols == 80
+		case rows
+			when 25 r = _25_LINES_
+			when 28 r = _28_LINES_
+			when 30 r = _30_LINES_
+			when 33 r = _33_LINES_
+			when 36 r = _36_LINES_
+			when 40 r = _40_LINES_
+			when 43 r = _43_LINES_
+			when 44 r = _44_LINES_
+			when 50 r = _50_LINES_
+		endcase
+	endif
+
+	if r
+		Set(CurrVideoMode, r)
+		if Query(ScreenRows) == rows
+			return (TRUE)
+		endif
+	endif
+
+//	if SetVideoRowsCols(rows, cols)
+		return (Query(ScreenRows) == rows and Query(ScreenCols) == cols)
+//	endif
+
+//	return (FALSE)
+end
+
+
+proc RestoreBlock(string st)
+	string tok[40] = st
+	integer marktype = ValNextToken(tok)
+	integer cpos
+
+	GotoLine(ValNextToken(tok))
+	cpos = ValNextToken(tok)
+	if marktype == _COLUMN_
+		GotoColumn(cpos)
+	else
+		GotoPos(cpos)
+	endif
+	Mark(marktype)
+
+	GotoLine(ValNextToken(tok))
+	cpos = ValNextToken(tok)
+	if marktype == _COLUMN_
+		GotoColumn(cpos)
+	else
+		GotoPos(cpos)
+	endif
+
+	if marktype == _NONINCLUSIVE_
+	   Right()
+	endif
+
+	Mark(marktype)
+end
+
+
+proc LoadClipboard(string fn, integer fRelaxed)
+	integer cid = GetBufferId()
+	integer idTmp
+
+	if Query(ClipBoardId)
+		idTmp = CreateTempBuffer()
+		if idTmp
+			PushBlock()
+
+			// load clipboard
+			if InsertFile(fn, _DONT_PROMPT_)
+				BegFile()
+
+				// verify it's our file format
+				if lFind(c_stClipIdentifier, "c^$")
+					// mark block
+					Down()
+					RestoreBlock(GetText(1, 255))
+
+					// copy to clipboard
+					Copy()
+				elseif fRelaxed
+					// just put whole file onto clipboard as a _LINE_ block
+					MarkLine(1, NumLines())
+					Copy()
+				endif
+
+				PopBlock()
+				GotoBufferId(cid)
+				AbandonFile(idTmp)
+			endif
+		endif
+	endif
+end
+
+
+proc RemoveFromList(string st, integer id)
+	integer cid
+
+	cid = GotoBufferId(id)
+	if cid
+		if lFind(st, "^$gi")
+			KillLine()
+		endif
+		GotoBufferId(cid)
+	endif
+end
+
+
+// Persistent checkpoints for project-open failures, separate from CTags.
+proc PROJ_OpenTrace(string stage)
+    integer oldBuffer = GetBufferId()
+    integer logBuffer
+    string logFile[255] = GetInstallationDir() + "proj0200_project_open_trace.txt"
+
+    logBuffer = CreateTempBuffer()
+    if logBuffer
+        if stage <> "begin"
+            if FileExists(logFile)
+                InsertFile(logFile, _DONT_PROMPT_)
+            endif
+        endif
+        EndFile()
+        AddLine(stage)
+        SaveAs(logFile, _DONT_PROMPT_|_OVERWRITE_)
+        GotoBufferId(oldBuffer)
+        AbandonFile(logBuffer)
+    endif
+end
+
+integer proc OpenProject(string fnProject)
+	integer cid = GetBufferId()
+	string fn[_MAXPATH_] = fnProject
+	string st[_MAXPATH_] = ""
+	string stFile[_MAXPATH_]
+	string stRoot[_MAXPATH_] = ""
+	string stTokens[255] = ""
+	string stNextFile[_MAXPATH_] = ""
+	integer fOk = FALSE
+	integer idRestore, idRestore2
+	integer ml
+	integer ii
+	integer idFirst = 0
+	integer line, row, cpos, xoff, bmode, dmode, loaded
+	integer widCurr, w, x1, y1, rows, cols, mouse
+	integer fZoomed = FALSE
+	integer fSingleSavedWindow = FALSE
+	integer cBuffers = 0
+	integer idCurrBuffers = 0
+	integer idProject
+	integer fLocal = FALSE
+	integer h
+	#ifdef AUTO_UPGRADE
+	// try to upgrade the project if the version is different -- discard
+	// buffer list and window list.
+	integer fUpgrade = AUTO_UPGRADE
+	#else
+	integer fUpgrade = FALSE
+	#endif
+
+	#ifdef DEBUG
+	if Get_Int(iCPrompts)
+		Warn("do not call OpenProject from a prompt!")
+		goto Out
+	endif
+	#endif
+
+	PROJ_OpenTrace("begin")
+	if not DeferredClose_Begin()
+		goto Out
+	endif
+
+	#ifdef DEBUG
+	Set(Break, ON)
+	#endif
+
+	if fn == "*"
+		// this allows the -P* option to work
+		fn = ""
+	endif
+
+	if not Length(fn)
+		fn = PROJ_ConfiguredProjectFilename()
+	endif
+	if not Length(fn)
+		fn = ListProjectsInDatabase("Open Project")
+		if not Length(fn)
+			// assert: fOk == FALSE
+			goto Close
+		endif
+
+		/*
+		// prompt for project to open
+try_again:
+		if not AskFilename("Enter filename of project to open:", fn) or
+				not Length(fn)
+			DeferredClose_End(FALSE)
+			goto Out
+		endif
+
+		if not Length(SplitPath(fn, _EXT_))
+			fn = fn + c_stExt
+		endif
+
+		if not FileExists(fn)
+			Warn("File not found:"; fn)
+			goto try_again
+		endif
+		*/
+	endif
+
+	if Pos("*", fn) or Pos("?", fn)
+		if SplitPath(fn, _EXT_) == "" or Lower(SplitPath(fn, _EXT_)) == Lower(c_stExt)
+			h = FindFirstFile(SplitPath(fn, _DRIVE_|_NAME_) + c_stExt, _NORMAL_|_ARCHIVE_)
+			if -1 <> h
+				st = FFName()
+				if not FindNextFile(h, _NORMAL_|_ARCHIVE_)
+					fn = SplitPath(fn, _DRIVE_|_PATH_) + st
+				endif
+				FindFileClose(h)
+			endif
+		endif
+	endif
+
+	fn = GetProjectFullPathname(fn)
+	if not FileExists(fn)
+		Warn("Project file not found: " + fn)
+		Warn("The project file or PJ directory may have been deleted. Restore it or create a new project. Your open source files are kept open.")
+		goto Close
+	endif
+
+	PROJ_OpenTrace("selected project: " + fn)
+	fOk = CreateProjectBuffers()
+	idProject = Get_Int(iProjectId)
+	if fOk
+		idRestore = PushMessage("Opening project " + SplitPath(fn, _NAME_) + "...")
+		ml = Set(MsgLevel, _WARNINGS_ONLY_)
+
+		fn = GetProjectFullPathname(fn)
+		stRoot = CalcProjectRoot(fn)
+
+		// get list of loaded buffers
+		cid = GetBufferId()
+		idCurrBuffers = CreateTempBuffer()
+		GotoBufferId(cid)
+		PushPosition()
+		if idCurrBuffers and NumFiles()
+			if BufferType() <> _NORMAL_
+				mPrevFile(FALSE)
+			endif
+			do NumFiles() times
+				AddLine(CurrFilename(), idCurrBuffers)
+				mPrevFile(FALSE)
+			enddo
+		endif
+		PopPosition()
+
+		// seems like a good time to free any tags information we've loaded
+		#ifdef CTAGS
+		FreeTags()
+		#endif
+		#ifdef BSCTAGS
+		CloseBrowseFile()
+		#endif
+
+		PROJ_OpenTrace("loading project file")
+		// load project file
+		cid = GotoBufferId(idProject)
+		PushBlock()
+		#ifdef TRACE
+		Message("inserting project file"; fn)
+		#endif
+		fOk = InsertFile(fn, _DONT_PROMPT_)
+		if fOk
+			BegFile()
+			if not lFind(c_stFileIdentifier, "c^$")
+				fOk = FALSE
+				TimeOutMessage(ERROR_TIMEOUT, "Selected file is not a project file.")
+				goto Error
+			endif
+
+			fLocal = (Lower(SplitPath(fn, _NAME_)) == Lower(SplitPath(c_stLocalProject, _NAME_)))
+
+			Set_Str(iProjectFilename, fn)
+			if fLocal
+				if MarkProjectSection(c_stInfo)
+					st = GetProjectStr(c_stProjectName, "")
+				endif
+				if not Length(st)
+					st = "Local"
+				endif
+			else
+				st = SplitPath(fn, _NAME_)
+			endif
+			Set_Str(iProjectTitle, st)
+
+			// add project to list of All Projects
+			if not fLocal
+				AddProjectToDatabase(fn)
+			endif
+
+			// info
+			#ifdef TRACE
+			Message(c_stInfo)
+			#endif
+			MarkProjectSection(c_stInfo)
+			if GetProjectVersion() <> c_nVer
+				if not fUpgrade
+					// version mismatch
+					Warn("Version mismatch.")
+					fOk = FALSE
+					goto Error
+				endif
+
+				#ifdef DEBUG
+				//if YesNo("Do a SAFE upgrade?") == 2
+				if MsgBox(c_stTitle, "Do a SAFE upgrade?", _YES_NO_) == 2
+					fUpgrade = FALSE
+				endif
+				#endif
+			else
+				fUpgrade = FALSE
+			endif
+			// now fUpgrade is TRUE only if we really do need to upgrade this
+			// project.
+			if g_fSaveCurrDir
+				// restore CurrDir (happens on idle, so .UI WhenLoaded can
+				// load files from the command line from correct directory)
+				HookChDir(GetProjectStr(c_stCurrDir, ""))
+			endif
+			SetGlobalStr(c_stOpenPath, GetProjectStr(c_stOpenPath, ""))
+			PROJ_LoadTypesSection()
+			MarkProjectSection(c_stInfo)
+#ifdef CTAGS
+			Set_Int(iFProjectTags, GetProjectInt(c_stProjTags, TRUE))
+			Set_Str(iTagsLocation, GetProjectStr(c_stTagLoc, ""))
+			Set_Int(iFIgnoreCase, GetProjectInt(c_stTagsIgnoreCase, TRUE))
+#endif
+#ifdef BSCTAGS
+			Set_Str(iBscFile, GetProjectStr(c_stBscFile, ""))
+#endif
+
+#ifdef STATE
+			//$ review: THIS WILL DIE IF EXECUTED FROM A PROMPT
+			// buffer list
+			#ifdef TRACE
+			Message("g_fGotoNextFile ="; g_fGotoNextFile)
+			#endif
+			if g_fGotoNextFile
+				#ifdef DEBUG
+				Assert(0, "Panic (g_fGotoNextFile)")
+				#endif
+				ii = GetBufferId()
+				NextFile(_DONT_LOAD_)
+				stNextFile = CurrFilename()
+				GotoBufferId(ii)
+			endif
+			#ifdef TRACE
+			Message(c_stBuffers)
+			#endif
+			if MarkProjectSection(c_stBuffers) and not fUpgrade
+				ii = Query(BlockEndLine) - Query(BlockBegLine) + 1
+				idRestore2 = PushMessage("Opening project " +
+						SplitPath(fn, _NAME_) + "...  (opening " +
+						Str(ii) + " file" + iif(ii == 1, "", "s") + "...)")
+				PushPosition()
+				repeat
+					GetFilenameAndTokens(st, stTokens, stRoot)
+					line = ValNextToken(stTokens)
+					row = ValNextToken(stTokens)
+					cpos = ValNextToken(stTokens)
+					xoff = ValNextToken(stTokens)
+					bmode = ValNextToken(stTokens)
+					dmode = ValNextToken(stTokens)
+					loaded = ValNextToken(stTokens)
+					// Keep an existing document buffer; never discard it to change mode.
+					if bmode and GetBufferId(st)
+						bmode = 0
+					endif
+					// add file to ring, or edit file, depending on whether it
+					// was loaded before.
+					PushPosition()
+					if FileExists(st)
+						if not loaded
+							if AddFileToRing(st, bmode, dmode)
+								RemoveFromList(st, idCurrBuffers)
+								cBuffers = cBuffers + 1
+							endif
+						else
+							Set(MsgLevel, _ALL_MESSAGES_)
+							if (EditFile(Format("-b", bmode; QuotePath(st)),
+									_DONT_PROMPT_))
+								RemoveFromList(st, idCurrBuffers)
+								cBuffers = cBuffers + 1
+								DisplayMode(dmode)
+								GotoLine(line)
+								ScrollToRow(row)
+								GotoPos(cpos)
+								GotoXOffset(xoff)
+
+								// these settings are normally global, unless
+								// a macro such as FS is loaded.
+								Set(TabType, ValNextToken(stTokens))
+								Set(TabWidth, ValNextToken(stTokens))
+								Set(Insert, ValNextToken(stTokens))
+								Set(AutoIndent, ValNextToken(stTokens))
+								Set(RemoveTrailingWhite, ValNextToken(stTokens))
+								Set(WordWrap, ValNextToken(stTokens))
+								Set(EOLType, ValNextToken(stTokens))
+								Set(LeftMargin, ValNextToken(stTokens))
+								Set(RightMargin, ValNextToken(stTokens))
+
+								Set(MakeBackups, ValNextToken(stTokens))
+								st = NextToken(stTokens)
+								if SubStr(st, 1, 1) == "."
+									Set(BackupExt, DelStr(st, 1, 1))
+								else
+									Set(BackupExt, st)
+								endif
+
+								#ifdef REMEMBER_ATTRS
+								Set(TextAttr, ValNextToken(stTokens))
+								Set(CursorAttr, ValNextToken(stTokens))
+								Set(HiLiteAttr, ValNextToken(stTokens))
+								Set(BlockAttr, ValNextToken(stTokens))
+								Set(CursorInBlockAttr, ValNextToken(stTokens))
+								#endif
+
+								#ifdef TSE30
+								if Trim(NextToken(stTokens)) == Trim(c_st30div)
+									BrowseMode(ValNextToken(stTokens))
+								endif
+								#endif
+
+								#ifdef DEBUG
+								Assert(Asc(SubStr(Query(BackupExt),
+										Length(Query(BackupExt)), 1)),
+										Format("BackupExt is hosed again: [",
+										Query(BackupExt), "]";
+										Asc(SubStr(Query(BackupExt),
+										Length(Query(BackupExt)), 1))))
+								#endif
+
+								// remember first file
+								if not idFirst
+									idFirst = GetBufferId()
+								endif
+							endif
+							Set(MsgLevel, _WARNINGS_ONLY_)
+						endif
+					endif
+					// go back to project file
+					PopPosition()
+				until not Down() or not isCursorInBlock()
+				PopPosition()
+				PopMessage(idRestore2, TRUE)
+			endif
+
+			// windows
+			//$ todo: if not g_fGotoNextFile...
+			#ifdef TRACE
+			Message(c_stWindows)
+			#endif
+			if MarkProjectSection(c_stWindows) and not fUpgrade
+				// A single saved window needs no geometry reconstruction.  Rebuilding
+				// it on TSE 4.50 can accumulate line-number gutters on reopen.
+				PushPosition()
+				if Down() and CurrLineLen()
+					fSingleSavedWindow = not Down() or not CurrLineLen()
+				endif
+				PopPosition()
+				// restore windows
+				w = CurrLineLen()
+				if fSingleSavedWindow
+					OneWindow()
+					w = FALSE
+				endif
+				if w
+					st = GetText(1, 255)
+					widCurr = ValNextToken(st)
+					Set(DisplayBoxed, ValNextToken(st))
+					Set(ShowMainMenu, ValNextToken(st))
+					Set(ShowHelpLine, ValNextToken(st))
+					Set(ShowStatusLine, ValNextToken(st))
+					Set(StatusLineAtTop, ValNextToken(st))
+					rows = ValNextToken(st)
+					cols = ValNextToken(st)
+					mouse = ValNextToken(st)
+					fZoomed = ValNextToken(st)
+					OneWindow()
+
+					w = (mouse == Query(MouseEnabled))
+				endif
+				if w and (rows <> Query(ScreenRows) or cols <> Query(ScreenCols))
+					if not SetScreenDimensions(rows, cols)
+						//Warn("Can't restore windows: unable to restore rows/cols.")
+						w = FALSE
+					endif
+				endif
+				if w
+					PushPosition()
+					ClearEditWindows()
+
+					// First pass: build window structure
+					// line-1 row-2 pos-3 xoff-4 wid-5 x1-6 y1-7 width-8 height-9 name-10
+
+					while Down() and CurrLineLen()
+						st		= GetText(1, 255)
+						w		= Val(GetToken(st, ' ', 5))
+						x1		= Val(GetToken(st, ' ', 6))
+						y1		= Val(GetToken(st, ' ', 7))
+						cols	= Val(GetToken(st, ' ', 8))
+						rows	= Val(GetToken(st, ' ', 9))
+
+						if w <> widCurr
+							x1 = x1 - 1
+							y1 = y1 - 1
+							cols = cols + 2
+							rows = rows + 2
+							if y1 + rows + 1 < Query(ScreenRows) and
+									Query(DisplayBoxed) and Query(MouseEnabled)
+								rows = rows + 1
+							endif
+						endif
+
+						MakeEditWindow(w, x1, y1, cols, rows)
+					endwhile
+
+					FinishEditWindows()
+					PopPosition()
+
+					// Second pass: Place files in windows
+					loop
+						ii = GotoBufferId(idProject)
+						if Down() and CurrLineLen()
+							st = GetText(1, 255)
+							GotoBufferId(ii)
+						else
+							GotoBufferId(ii)
+							break
+						endif
+
+						stFile = TranslateRootEx(GetFileToken(st, 10), stRoot, FALSE)
+						if Length(stFile)
+							GotoWindow(Val(GetToken(st, ' ', 5)))
+							Set(MsgLevel, _ALL_MESSAGES_)
+							if EditFile(QuotePath(stFile), _DONT_PROMPT_)
+								Set(MsgLevel, _WARNINGS_ONLY_)
+								GotoLine(ValNextToken(st))
+								ScrollToRow(ValNextToken(st))
+								GotoPos(ValNextToken(st))
+								GotoXOffset(ValNextToken(st))
+
+								cid = GetBufferId()
+								idFirst = cid
+							else
+								GotoBufferId(idFirst)
+								ExecHook(_ON_CHANGING_FILES_)
+							endif
+						endif
+					endloop
+
+					if NumWindows() and NumFiles()
+						GotoWindow(widCurr)
+						if fZoomed
+							ZoomWindow()
+						endif
+						UpdateDisplay()
+					endif
+
+					GotoBufferId(idProject)
+				endif
+			endif
+
+			// block
+			#ifdef TRACE
+			Message(c_stBlock)
+			#endif
+			if MarkProjectSection(c_stBlock) and not fUpgrade
+				GetFilenameAndTokens(st, stTokens, stRoot)
+				PushPosition()
+				Set(MsgLevel, _ALL_MESSAGES_)
+				if EditFile(QuotePath(st), _DONT_PROMPT_)
+					PushPosition()
+					PopBlock()
+					UnMarkBlock()
+					RestoreBlock(stTokens)
+					PushBlock()
+					PopPosition()
+				endif
+				Set(MsgLevel, _WARNINGS_ONLY_)
+				PopPosition()
+			endif
+
+			// bookmarks
+			#ifdef TRACE
+			Message(c_stBookmarks)
+			#endif
+			if MarkProjectSection(c_stBookmarks) and not fUpgrade
+				repeat
+					GetFilenameAndTokens(st, stTokens, stRoot)
+					line = ValNextToken(stTokens)
+					row =  ValNextToken(stTokens)
+					cpos = ValNextToken(stTokens)
+					xoff = ValNextToken(stTokens)
+					stTokens = NextToken(stTokens)
+					// set bookmark
+					PushPosition()
+					Set(MsgLevel, _ALL_MESSAGES_)
+					if EditFile(QuotePath(st), _DONT_PROMPT_)
+						PushPosition()
+						GotoLine(line)
+						ScrollToRow(row)
+						GotoPos(cpos)
+						GotoXOffset(xoff)
+						PlaceMark(stTokens)
+						PopPosition()
+					endif
+					Set(MsgLevel, _WARNINGS_ONLY_)
+					PopPosition()
+				until not Down() or not isCursorInBlock()
+			endif
+#endif
+
+			// TSE clipboard contents
+			#ifdef TRACE
+			Message(c_stClip)
+			#endif
+			if MarkProjectSection(c_stClip)
+				//LoadClipboard(AddTrailingSlash(SplitPath(fn, _DRIVE_|_PATH_))+GetText(1, 255))
+				//$ review: dont actually use the persisted filename -- this
+				// makes renaming a project easier.
+				LoadClipboard(SplitPath(fn, _DRIVE_|_NAME_) + c_stExtClip, FALSE)
+			endif
+
+			// keyboard macros
+			#ifdef TRACE
+			Message(c_stKeyMacro)
+			#endif
+			if MarkProjectSection(c_stKeyMacro)
+				Set(MsgLevel, _NONE_)
+				//LoadKeyMacro(AddTrailingSlash(SplitPath(fn, _DRIVE_|_PATH_))+GetText(1, 255))
+				//$ review: dont actually use the persisted filename -- this
+				// makes renaming a project easier.
+				LoadKeyMacro(SplitPath(fn, _DRIVE_|_NAME_) + c_stExtKbd)
+				Set(MsgLevel, _WARNINGS_ONLY_)
+			endif
+
+			#ifdef PERSIST_HISTORIES
+			if Query(PersistentHistory)
+				// histories
+				#ifdef TRACE
+				Message(c_stHistory)
+				#endif
+				if MarkProjectSection(c_stHistory)
+					Set(MsgLevel, _NONE_)
+					//$ review: dont actually use the persisted filename -- this
+					// makes renaming a project easier.
+					LoadHistory(SplitPath(fn, _DRIVE_|_NAME_) + c_stExtHist)
+					Set(MsgLevel, _WARNINGS_ONLY_)
+				endif
+			endif
+			#endif
+
+			PROJ_OpenTrace("restoring project paths")
+			// path list
+			#ifdef TRACE
+			Message(c_stPaths)
+			#endif
+			if MarkProjectSection(c_stPaths)
+				GotoBufferId(Get_Int(iPathListId))
+				EmptyBuffer()
+				MoveBlock()
+				FileChanged(FALSE)
+				GotoBufferId(idProject)
+			endif
+
+			PROJ_OpenTrace("restoring project file list")
+			// file list
+			#ifdef TRACE
+			Message(c_stFiles)
+			#endif
+			if MarkProjectSection(c_stFiles)
+				Set_Int(iFListEnsured, TRUE)
+				if FlatFile_PrepareToLoad()
+					// note, the "\c" avoid an infinite loop!
+					while lFind("^{.*}" + c_stDiv + "\c{.*}$", "lx")
+						if not FlatFile_Load(GetFoundText(1),
+											 TranslateRootEx(GetFoundText(2), stRoot, FALSE))
+							goto Error_2
+						endif
+					endwhile
+				else
+Error_2:
+					Warn(c_errFlatFileLoad)
+				endif
+			else
+				Set_Int(iFNeedToEnsure, TRUE)
+			endif
+		endif
+
+Error:
+		if not fOk
+			GotoBufferId(cid)
+			lCloseProject()
+		endif
+
+		Set(MsgLevel, ml)
+
+		if fOk
+			PROJ_OpenTrace("keeping previous document buffers open")
+
+			#ifdef TRACE
+			Message("goto first buffer (", idFirst, ",", cid,")")
+			#endif
+			GotoBufferId(iif(idFirst, idFirst, cid))
+			if cBuffers
+				#ifdef TRACE
+				Message("open first file:"; CurrFilename())
+				#endif
+				EditFile(QuotePath(CurrFilename()))
+			endif
+
+			#ifdef TRACE
+			Message("open next file:"; stNextFile)
+			#endif
+			if Length(stNextFile)
+				EditFile(QuotePath(stNextFile))
+			endif
+
+			if fUpgrade
+				RefreshFileList()
+			endif
+		endif
+
+		PopBlock()
+
+		PopMessage(idRestore, fOk)
+		if fOk
+			TimeOutMessage(DEF_TIMEOUT, "Project " + Get_Str(iProjectTitle) + " loaded.")
+		endif
+	endif
+
+Close:
+	PROJ_OpenTrace("releasing previous project")
+	DeferredClose_End(fOk)
+
+Out:
+	if idCurrBuffers > 0
+		AbandonFile(idCurrBuffers)
+	endif
+	PROJ_OpenTrace("project cleanup complete")
+
+	if fOk
+		SetProjectRoot(fn)
+		if not NumFiles() and Get_Int(iFEverIdle)
+			lShowEntryScreen()
+			SignOn()
+			ShowVersion(FALSE)
+			PROJ_OpenTrace("showing file prompt")
+			EditFile()
+			PROJ_OpenTrace("file prompt returned")
+		endif
+	elseif Length(fn)
+		Warn('Error trying to load project "', fn, '"')
+	endif
+
+	g_fGotoNextFile = FALSE
+	Hook(_IDLE_, RefreshAfterProjectChange)
+	PROJ_OpenTrace("finished, success=" + Str(fOk))
+	return(fOk)
+end
+
+
+// Remove saved project metadata; source files are never erased.
+proc DeleteProject()
+    string filename[255]
+    string tagfile[255]
+    string entry[255]
+    integer oldBuffer = GetBufferId()
+    integer checkBuffer
+    integer validProject = FALSE
+    integer firstLine, lastLine, scanLine
+
+    filename = ListProjectsInDatabase("Delete Project")
+    if not Length(filename)
+        return()
+    endif
+    filename = GetProjectFullPathname(filename)
+    if Get_Int(iProjectId) and Lower(filename) == Lower(Get_Str(iProjectFilename))
+        Warn("Close this project before deleting it, then choose Delete Project again.")
+        return()
+    endif
+    if Lower(SplitPath(filename, _EXT_)) <> Lower(c_stExt) or not FileExists(filename)
+        Warn("Saved project file not found: " + filename)
+        return()
+    endif
+    checkBuffer = CreateTempBuffer()
+    if checkBuffer
+        if InsertFile(filename, _DONT_PROMPT_)
+            BegFile()
+            validProject = lFind(c_stFileIdentifier, "c^$")
+        endif
+        GotoBufferId(oldBuffer)
+        AbandonFile(checkBuffer)
+    endif
+    if not validProject
+        Warn("Selected file is not a PROJ project file.")
+        return()
+    endif
+    if MsgBox(c_stTitle, "Delete saved project " + filename +
+              " and its adjacent .tag file? Source files are kept.", _YES_NO_) <> 1
+        return()
+    endif
+    if not EraseDiskFile(filename)
+        Warn("Unable to delete project file: " + filename)
+        return()
+    endif
+    tagfile = SplitPath(filename, _DRIVE_|_PATH_|_NAME_) + ".tag"
+    if FileExists(tagfile)
+        if not EraseDiskFile(tagfile)
+            Warn("Project deleted, but unable to delete CTags file: " + tagfile)
+        endif
+    endif
+    PushBlock()
+    if OpenDatabase()
+        GotoBufferId(Get_Int(iDatabaseId))
+        if MarkProjectSection(c_stAllProjects)
+            firstLine = Query(BlockBegLine)
+            lastLine = Query(BlockEndLine)
+            UnMarkBlock()
+            for scanLine = lastLine downto firstLine
+                GotoLine(scanLine)
+                entry = Trim(GetText(1, 255))
+                if Length(entry) and Lower(GetProjectFullPathname(entry)) == Lower(filename)
+                    KillLine()
+                endif
+            endfor
+        endif
+        if MarkProjectSection(c_stAutoLoad)
+            firstLine = Query(BlockBegLine)
+            lastLine = Query(BlockEndLine)
+            UnMarkBlock()
+            for scanLine = lastLine downto firstLine
+                GotoLine(scanLine)
+                entry = GetToken(GetText(1, 255), c_stDiv, 2)
+                if Length(entry) and Lower(GetProjectFullPathname(entry)) == Lower(filename)
+                    KillLine()
+                endif
+            endfor
+        endif
+        SaveDatabase()
+    endif
+    GotoBufferId(oldBuffer)
+    PopBlock()
+    if Lower(GetProfileStr(c_stIniSection, "LastProject", "")) == Lower(filename)
+        WriteProfileStr(c_stIniSection, "LastProject", "")
+    endif
+    Warn("Project deleted. Source files were kept.")
+end
+
+proc RenameProject()
+    integer originalBuffer = GetBufferId()
+    integer firstLine
+    integer lastLine
+    integer scanLine
+    string oldFilename[255] = Get_Str(iProjectFilename)
+    string oldTitle[255] = Get_Str(iProjectTitle)
+    string newName[255] = oldTitle
+    string newFilename[255]
+    string entry[255]
+    if not Get_Int(iProjectId) or not Length(oldFilename)
+        Warn("Open a saved project before choosing Rename project.")
+        return()
+    endif
+    if not Ask("New name for current project:", newName, _EDIT_HISTORY_)
+        return()
+    endif
+    newName = Trim(newName)
+    if not Length(newName) or Pos("\", newName) or Pos("/", newName) or
+        Pos(":", newName) or Pos("*", newName) or Pos("?", newName) or
+        Pos(Chr(34), newName) or Pos("<", newName) or Pos(">", newName) or Pos("|", newName)
+        Warn("Enter a project name without a directory or filename wildcard.")
+        return()
+    endif
+    newFilename = SplitPath(oldFilename, _DRIVE_|_PATH_) + newName + c_stExt
+    if Lower(newFilename) <> Lower(oldFilename) and FileExists(newFilename)
+        Warn("A project with that filename already exists: " + newFilename)
+        return()
+    endif
+    Set_Str(iProjectTitle, newName)
+    Set_Str(iProjectFilename, newFilename)
+    if not SaveProject(TRUE)
+        Set_Str(iProjectTitle, oldTitle)
+        Set_Str(iProjectFilename, oldFilename)
+        Warn("Rename could not save the new project file; the previous name is retained.")
+        return()
+    endif
+    if Lower(newFilename) <> Lower(oldFilename)
+        if FileExists(oldFilename) and not EraseDiskFile(oldFilename)
+            Warn("Renamed project saved, but the old project file could not be removed: " + oldFilename)
+        endif
+    endif
+    PushBlock()
+    if OpenDatabase()
+        GotoBufferId(Get_Int(iDatabaseId))
+        if MarkProjectSection(c_stAllProjects)
+            firstLine = Query(BlockBegLine)
+            lastLine = Query(BlockEndLine)
+            UnMarkBlock()
+            for scanLine = lastLine downto firstLine
+                GotoLine(scanLine)
+                entry = Trim(GetText(1, 255))
+                if Length(entry) and Lower(GetProjectFullPathname(entry)) == Lower(oldFilename)
+                    KillLine()
+                endif
+            endfor
+        endif
+        if MarkProjectSection(c_stAutoLoad)
+            firstLine = Query(BlockBegLine)
+            lastLine = Query(BlockEndLine)
+            UnMarkBlock()
+            for scanLine = firstLine to lastLine
+                GotoLine(scanLine)
+                entry = GetToken(GetText(1, 255), c_stDiv, 2)
+                if Length(entry) and Lower(GetProjectFullPathname(entry)) == Lower(oldFilename)
+                    entry = GetToken(GetText(1, 255), c_stDiv, 1) + c_stDiv + newFilename
+                    BegLine()
+                    KillToEol()
+                    InsertText(entry)
+                endif
+            endfor
+        endif
+        SaveDatabase()
+    endif
+    GotoBufferId(originalBuffer)
+    PopBlock()
+    AddProjectToDatabase(newFilename)
+    WriteProfileStr(c_stIniSection, "LastProject", newFilename)
+    Set_Str(iTagFile, "")
+    Warn("Project renamed to " + newName + ". Source files and open documents were kept. Regenerate CTags for the renamed project.")
+end
+
+proc CopyProject()
+	integer fOk = FALSE
+	string fn[_MAXPATH_]
+
+	if Get_Int(iCPrompts)
+		if Get_Int(iProjectId)
+			#ifdef DEBUG
+			Warn("don't do this!")
+			#endif
+			return()
+		endif
+	endif
+
+#if 0	// OpenProject calls this too
+	if not DeferredClose_Begin()
+		return()
+	endif
+#endif
+
+	fn = ListProjectsInDatabase("Copy Project")
+	if Length(fn) and OpenProject(fn)
+		Set_Str(iProjectFilename, "")
+		Set_Str(iProjectTitle, c_stUntitled)
+		fOk = TRUE
+
+		// save project, to get a name for it
+		//$ review: what if this is cancelled or fails?
+		if SaveProject(TRUE)
+			MaybeAutoLoad()
+		endif
+	endif
+
+#if 0	// OpenProject calls this too
+	DeferredClose_End(fOk)
+#endif
+	if fOk
+		if not NumFiles() or Get_Int(iFDoingMenu)
+			ShowVersion(FALSE)
+			MsgBox(c_stTitle, c_msgNewProjectCreated)
+			DoProjectSettings()
+		endif
+		if NumFiles()
+			if not Get_Int(iFDoingMenu)
+				TimeOutMessage(DEF_TIMEOUT, c_msgNewProjectCreated)
+				DoProjectSettings()
+			endif
+		else
+			if not Get_Int(iCPrompts)
+				lShowEntryScreen()
+				SignOn()
+				ShowVersion(FALSE)
+				EditFile()
+			else
+				// nothing?
+				// unhook this otherwise the match list won't get displayed
+				// because rehooking it will fail.
+			endif
+		endif
+	else
+		TimeOutMessage(ERROR_TIMEOUT, "New project NOT created.")
+	endif
+end
+
+
+/*
+proc RenameProject()
+	string st[MAXTITLE] = g_stProjectTitle
+
+	Read(st)
+	if Length(st) and g_stProjectTitle <> st
+		g_stProjectTitle = st
+		if Get_Int(iFDoingMenu)
+			ShowVersion(FALSE)
+		endif
+	endif
+end
+*/
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Editing
+
+string c_alpListFooter[] = " {Ins}-Add  {Del}-Remove  {Enter}-Finished  {Esc}-Cancel "
+
+
+proc AddALP(integer fEndProcess, string _stProject)
+	string stPath[_MAXPATH_] = ""
+	string stProject[_MAXPATH_] = _stProject
+
+	//$ todo: use a path browser
+	if AskPath("Enter path to associate with project:", stPath, 0, apEXPAND|apNOTEMPTY)
+		if not Length(stProject)
+			stProject = ListProjectsInDatabase("Select Project")
+		endif
+		if InsertAutoLoad(stPath, stProject) and fEndProcess
+			EndProcess(-1)
+		endif
+	endif
+end
+
+
+keydef alpKeys
+<Ins>				AddALP(TRUE, "")
+<Del>				Del_List()
+<Escape>			Close_List()
+end
+
+
+integer s_calp = 0
+proc alpListStartup()
+	if not s_calp
+		Enable(alpKeys)
+		ListFooter(c_alpListFooter)
+	endif
+	s_calp = s_calp + 1
+end
+proc alpListCleanup()
+	s_calp = s_calp - 1
+	if not s_calp
+		Disable(alpKeys)
+	endif
+end
+
+
+integer g_cxField1
+integer g_cposHi = 0
+integer g_cxHi = 0
+integer g_clnHi = 0
+proc DrawAutoLoadLine(/*integer fCursorline*/)
+	string st[255] = GetText(1, 255)
+
+	if Length(st)
+		PutLine(Format(SqueezePath(GetToken(st, c_stDiv, 1), g_cxField1):-g_cxField1:" ",
+				"  (", SqueezePath(GetToken(st, c_stDiv, 2),
+				Query(WindowCols)-g_cxField1-4), ")"), Query(WindowCols))
+	else
+		PutLine("", Query(WindowCols))
+	endif
+	if g_cposHi and g_clnHi == CurrLine()
+		if g_cposHi > Length(GetToken(st, c_stDiv, 1))
+			g_cposHi = g_cposHi -Length(GetToken(st, c_stDiv, 1))
+			g_cposHi = g_cposHi + g_cxField1 + 2
+		endif
+		VGotoXY(g_cposHi, VWhereY())
+		PutAttr(Query(MenuSelectLtrAttr), g_cxHi)
+		g_cposHi = 0
+		g_cxHi = 0
+		g_clnHi = 0
+	endif
+end
+
+
+proc UserHi()
+	g_cposHi = CurrPos()
+	g_cxHi = Length(GetFoundText())
+	g_clnHi = CurrLine()
+	UpdateDisplay(_WINDOW_REFRESH_)
+end
+
+
+proc AutoLoadProjects()
+	integer cid
+	integer idTmp
+	integer ilba = Set(InsertLineBlocksAbove, TRUE)
+	integer n
+	integer x = WhereXAbs()-1
+	integer y = WhereYAbs()+1
+
+	PushBlock()
+	// open database (try to support multiple instances of TSE running
+	// simultaneously).
+	if OpenDatabase()
+		cid = GetBufferId()
+		idTmp = CreateTempBuffer()
+		if idTmp
+			// fill temp buffer
+			GotoBufferId(Get_Int(iDatabaseId))
+			if MarkProjectSection(c_stAutoLoad)
+				GotoBufferId(idTmp)
+				Set(MsgLevel, _NONE_)
+				CopyBlock()
+				Set(MsgLevel, _ALL_MESSAGES_)
+			endif
+			GotoBufferId(idTmp)
+			EndFile()
+			AddLine()
+			UnMarkBlock()
+			FileChanged(FALSE)
+			BegFile()
+
+			// show list
+			Hook(_LIST_STARTUP_, alpListStartup)
+			Hook(_LIST_CLEANUP_, alpListCleanup)
+			repeat
+				// calc width
+				PushPosition()
+				g_cxField1 = 0
+				BegFile()
+				while CurrLineLen()
+					g_cxField1 = max(g_cxField1,
+							Length(GetToken(GetText(1, 255), c_stDiv, 1)))
+					Down()
+				endwhile
+				PopPosition()
+				g_cxField1 = min(g_cxField1, 48)
+
+				SetXY(x, y)
+				HookDisplay(DrawAutoLoadLine,,,UserHi)
+				PROJ_CenterList(78, Query(ScreenRows))
+				n = lList("AutoLoad Projects", 78, Query(ScreenRows),
+						_ENABLE_SEARCH_|_FIXED_WIDTH_|_PRESERVE_HELPLINE_)
+				UnHookDisplay()
+			until n >= 0
+			UnHook(alpListCleanup)
+			UnHook(alpListStartup)
+
+			// save changes, go back to original buffer
+			if n == 1 and FileChanged()
+				#ifdef DEBUG
+				Assert(GetBufferId() == idTmp, "current buffer is not idTmp")
+				#endif
+				MarkLine(1, NumLines())
+				GotoBufferId(Get_Int(iDatabaseId))
+
+				PushBlock()
+				if MarkProjectSection(c_stAutoLoad)
+					KillBlock()
+				endif
+				#ifdef DEBUG
+				CheckGoof(c_stAutoLoad)
+				#endif
+				PopBlock()
+
+				Set(MsgLevel, _NONE_)
+				CopyBlock()
+				Set(MsgLevel, _ALL_MESSAGES_)
+				GotoBlockEnd()
+				#ifdef DEBUG
+				Assert(CurrLineLen() == 0, "last line should be blank!")
+				#endif
+				KillLine()
+
+				SaveDatabase()
+			endif
+			GotoBufferId(cid)
+			AbandonFile(idTmp)
+		else
+			Warn(c_errTmpBuf)
+		endif
+	else
+		Warn(c_errNoOpenProjDB)
+	endif
+	PopBlock()
+	Set(InsertLineBlocksAbove, ilba)
+end
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Hooks
+
+#if 0
+// OnFirstEdit()
+// if file loaded is a project file, abandon it and call OpenProject instead
+proc OnFirstEdit()
+	string fn[MAXPATH] = CurrFilename()
+	string st[255]
+	integer cid = GetBufferId()
+	integer i
+
+	//$ todo: need a better check
+	if CurrExt() == c_stExt
+		// open the project
+		if OpenProject(fn)
+			// abandon the .pj file
+			//$ review: move this before OpenProject?
+			//$ review: if move before OpenProject, fix wrt g_fGotoNextFile...
+			AbandonFile(cid)
+
+			// remove from history list
+			//for i = NumHistoryItems(_EDIT_HISTORY_) downto 1
+			for i = 1 downto 1
+				st = Lower(GetHistoryStr(_EDIT_HISTORY_, i))
+				if Lower(QuotePath(fn)) == st
+					DelHistoryStr(_EDIT_HISTORY_, i)
+				elseif Lower(QuotePath(fn)) == st[1:Length(QuotePath(fn))]
+					st = Trim(st[Length(QuotePath(fn))+1:255])
+					//$ review: not sure how to do this when looping since i
+					// can't specify the index i want to insert it at.
+					AddHistoryStr(st, _EDIT_HISTORY_)
+				endif
+			endfor
+		endif
+	endif
+end
+#endif
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Main
+
+// Append registered saved projects without activating or restoring them.
+proc PROJ_CollectScopeProjects()
+    integer originalBuffer = GetBufferId()
+    integer outputBuffer = GetGlobalInt("PROJ_ScopeRequestBuffer")
+    integer namesBuffer = 0
+    string entry[255]
+    string activeProject[255] = ""
+    if Get_Int(iProjectId)
+        GotoBufferId(Get_Int(iProjectId))
+        activeProject = CurrFilename()
+        GotoBufferId(originalBuffer)
+    endif
+    PushBlock()
+    if outputBuffer and OpenDatabase()
+        GotoBufferId(Get_Int(iDatabaseId))
+        if MarkProjectSection(c_stAllProjects)
+            namesBuffer = CreateTempBuffer()
+            if namesBuffer
+                CopyBlock()
+                UnMarkBlock()
+                BegFile()
+                do NumLines() times
+                    entry = Trim(GetText(1, 255))
+                    if Length(entry) and PROJ_IsSavedProject(entry) and
+                       Lower(GetProjectFullPathname(entry)) <> Lower(activeProject)
+                        AddLine("P" + GetProjectFullPathname(entry), outputBuffer)
+                    endif
+                    GotoBufferId(namesBuffer)
+                    Down()
+                enddo
+                AbandonFile(namesBuffer)
+            endif
+        endif
+    endif
+    PopBlock()
+    GotoBufferId(originalBuffer)
+end
+
+proc Main()
+#ifdef DEBUG
+	EnsureMainLoaded()
+#endif
+
+	case Query(MacroCmdLine)
+		when "-OpenProject"
+			Set(MacroCmdLine, Str(OpenProject(GetGlobalStr(c_stXTALK))))
+		when "-SaveProject:0"
+			Set(MacroCmdLine, Str(SaveProject(FALSE)))
+		when "-SaveProject:1"
+			Set(MacroCmdLine, Str(SaveProject(TRUE)))
+		when "-CloseProject:0"
+			CloseProject(FALSE)
+		when "-CloseProject:1"
+			CloseProject(TRUE)
+		when "-CloseAllProjects"
+			CloseAllProjects()
+		when "-lCloseProject"
+			lCloseProject()
+
+		when "-NewProject"
+			NewProject()
+		when "-TransferProjects"
+			PROJ_TransferProjects(Val(GetGlobalStr(c_stXTALK)))
+		when "-CollectScopeProjects"
+            PROJ_CollectScopeProjects()
+		when "-ViewAllProjects"
+			ViewAllProjects()
+		when "-DeleteProject"
+			DeleteProject()
+		when "-RenameProject"
+            RenameProject()
+		when "-CopyProject"
+			CopyProject()
+		when "-DoOptionsMenu"
+			DoOptionsMenu()
+#if 0
+		when "-AddFilesToProject"
+			AddFilesToProject()
+#endif
+		when "-EditProjDir:0"
+			EditProjDir(FALSE)
+		when "-EditProjDir:1"
+			EditProjDir(TRUE)
+		when "-DoProjectSettings"
+			DoProjectSettings()
+
+		when "-OpenDatabase"
+			Set(MacroCmdLine, Str(OpenDatabase()))
+		when "-GetDatabaseOptions"
+			GetDatabaseOptions()
+		when "-SetDatabaseOptions"
+			SetDatabaseOptions()
+		when "-SaveDatabase"
+			SaveDatabase()
+
+		when "-TimeOutMessage"
+			TimeOutMessage(Val(GetToken(GetGlobalStr(c_stXTALK), ":", 1)),
+						   GetToken(GetGlobalStr(c_stXTALK), ":", 2))
+
+		otherwise
+			Warn("Do not execute PJFILE directly.  Execute PROJ instead.")
+#ifdef DEBUG
+			Warn(Query(MacroCmdLine))
+#endif
+	endcase
+end
+

@@ -1,0 +1,19 @@
+CurrExt v1.1.9 (Jun 19, 2002):
+
+System for determining current file
+type, allowing many actual file
+extensions to map to the same type.
+e.g. '.s', '.ui', '.si'
+all appear as '.s'.
+
+Also includes notes on how to
+modify standard TSE UI files
+to use CurrExt.
+
+Platform: TSE Pro 2.x/3.x/4.x
+
+Requirements: The DOS version of TSE needs the 'Profile' package.
+
+Author: Michael Graham <magmac@occamstoothbrush.com>
+Homepage: http://www.occamstoothbrush.com/tsemac/
+

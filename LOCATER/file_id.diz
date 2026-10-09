@@ -1,0 +1,17 @@
+LOCATER.zip contains two Tse macros that
+solve (at least to the extent of paragraphs)
+the age-old problem of DOS EOLs that break
+multiple-word search efforts when the target
+words are split across lines.
+LocateNextTo.mac will find words where one
+follows the other, but the first is at the
+end of one line, and the other is at the
+beginning of the next line. LocateNear.mac
+allows finding words or phrases that are in
+the same paragraph, with any number of words,
+spaces, or line-breaks between.  Tested under
+Tse 2.5 with 2032 line length, and under 4.0
+with 16000 line length.
+Author: Ed Marsh
+edmarsh@mountain.net
+

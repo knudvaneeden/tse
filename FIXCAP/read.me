@@ -1,0 +1,18 @@
+Concerning the problem (when running TSE Pro/32) of when a typed character 
+is the "opposite" case of what the keyboard CAPSLOCK light indicates it
+should be:
+
+If you are running WIN95 OSR2 or WIN98, AND CAPSLOCK is ON
+at the time you start-up a command prompt (which you then run e32.exe
+from) or you start the editor via a shortcut when CAPSLOCK is on,
+you will get this behavior in e32.exe (with these versions of the OS,
+MS introduced a bug into the API calls we access to read the 
+keyboard).  Note that if CAPSLOCK is OFF BEFORE you start the command
+line session or activate the shortcut, all will work fine and as expected.
+
+If you are running WIN95 OSR2 or WIN98, then copy fixcap.s and fixcap.mac
+into your TSE Pro/32's MACRO directory, and then add  FIXCAP  to your
+autoload macro list.
+
+See the beginning of the fixcap.s file for a full explanation of the problem
+and the workaround.

@@ -1,0 +1,7 @@
+(01-23-2003) Macro for TSE Pro v4.0 for Win
+- atoe.zip allows one to convert EBCDIC files
+to ascii, edit them, and optionally save them
+back as EBCDIC.
+- Experimental.  Use at your own risk.
+We would appreciate feedback.
+- Author: Sammy Mitchell (SemWare)

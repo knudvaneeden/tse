@@ -1,0 +1,89 @@
+1. What Is Filter.UI?
+---------------------
+
+Recently there was a discussion on SemWare's TsePro Listserver about how to
+avoid TSE's signon message and how to utilize TSE to run macros from the DOS
+command line as filters. Well, Filter.UI is sort of a solution to these
+problems: it turns TSE into a non-interactive, macro driven editor.
+
+
+2. Installation
+---------------
+
+Make a copy of TSE, e.g.,
+
+        copy e.exe filter.exe,
+
+and burn in the new UI
+
+        sc -bfilter somepath\filter.ui.
+
+
+3. Usage
+--------
+
+The command line syntax for filter.exe is quite simple
+
+        filter filter_macro [macro_cmd_line] <input [>output],
+
+                or
+
+        prog1 | filter filter_macro [macro_cmd_line] | prog2
+
+                or
+
+        some combination of the previous
+
+The first argument of filter is the name of the filter macro. The rest of
+the arguments are passed on to the filter macro (use Query(MacroCmdLine) to
+access them). What about the file redirection(s)? Well, these actually do
+not belong to the filter command, because they are stripped away by the OS
+before filter is executed.
+
+4. Examples
+-----------
+
+Filter is accompanied by two small example filter macros: Null.S and Find.S.
+Null.S does nothing (as the name implies :-)). In fact, if you start filter
+with the null macro, it simply copies stdin to stdout and, therefore, mimics
+the DOS copy command. Find.S is a simply search utility. Its command syntax
+is as follows
+
+        find [-x] search_string.
+
+It takes stdin, strips away all the lines which do not include the search
+string and copies the result to stdout. If you specify the -x switch the
+string will be interpreted as regular expression. Well, Find.s might include
+a -v switch (vice versa) and a -l switch (include line numbers), but that is
+left as an exercise for the user.
+
+
+5. Limitations
+--------------
+
+Since TSE was designed as interactive editor, there are a couple of
+limitations.
+
+þ   You cannot type the filter input at the console. (Well, actually
+    you can, but TSE closes the input after the first return :-).)
+
+þ   TSE restores the startup screen, before it terminates. Thus, filter
+    prompts you to press escape, when its output goes to the console.
+
+þ   When reading and writing files TSE shows a status report, which moves
+    the cursors. Therefore, filter clears the screen when its output goes
+    to the console.
+
+Otherwise, there are little or no limitations. You can do anything within
+the filter macro that is legal within SAL, e.g. allocating additional
+buffers, reading files, etc. But please remember, that a filter is supposed
+to be a program which is non-interactive. Thus, you shouldn't perhaps prompt
+the user for additional input ;-).
+
+
+6. Copyright and Disclaimer
+---------------------------
+
+This program is thereby donated to the public domain. Use it or even alter
+it as you see fit, but ENTER AT YOUR OWN RISK!
+

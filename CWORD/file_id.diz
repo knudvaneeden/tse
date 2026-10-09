@@ -1,0 +1,8 @@
+(05-31-01) - Cword v1.0 for Tse Pro/32 v2.8
+
+Find all words from known letters and "wild
+cards" (asterisks).  Source code included.
+Based on the Peter Birch "anagram" macro.
+
+Author:     Warren Porter
+            wbport@bellsouth.net

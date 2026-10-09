@@ -1,0 +1,8 @@
+CAL_ESP.S A pop-up calendar for TSE-Pro.
+Modified from Richard Hendricks' calendar
+that comes with TSE-Pro v2.5 by TSE user
+Miguel Farah. Features: weeks begin on
+monday! Plus some more functionality and a
+corrected IsLeapYear() function (which was
+buggy in the original).
+

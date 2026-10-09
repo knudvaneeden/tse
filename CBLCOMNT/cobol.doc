@@ -1,0 +1,25 @@
+
+If you have an older version of TSE Pro that doens't have a syntax hiliting
+file for Cobol yet (cobol.syn in TSE directory "synhi"), but your TSE Pro
+version is 2.8 or above, the this document describes how you can install the
+included cobol.txt file as a cobol.syn file.
+
+
+Start TSE with a *.cbl file, and do:
+   <escape>                            (menu)
+   <o>                                 (options or other)
+   <f>                                 (full configuration)
+   <d>                                 (display/color options)
+   <x>                                 (configure syntax hilite mapping sets)
+   Current (or Create New)
+   <o>                                 (overlay settings from mapping text file)
+   "drive:your-unzip-path\cobol.txt"
+
+If you have not done so yet, configure "associated file extensions"
+and other syntax-hiliting options, like colors.
+
+After several <escape>'s, TSE saves a cobol.syn file,
+preferably in \tse32\synhi\cobol.syn.
+
+Cobol.txt is now obsolete and can be deleted.
+

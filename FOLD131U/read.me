@@ -1,0 +1,218 @@
+Hello,
+
+(sorry for my perhaps bad english)
+
+with this macro-package, it is possible to make TSE a very simple,
+folding editor, also known as outliner. I don't want to describe, what
+the principle of folding editors in general is, that would be too
+complex here. I only want to describe shortly, how you can apply this
+macro to your own desires, and which bugs still are alive. As example,
+WHAT can be realized, you should execute the macro FOLD.MAC and then
+view the Sourcefile FOLD.S. Nice, isn't it? And easy to read...
+
+BTW: please configure the needed keys as YOU want it, I used Ctrl-F10,
+Ctrl-F11 and Ctrl-F12 and the others only as examples. Please configure
+yourself the help text. You can send your submissions regarding the
+helptext as well to me.
+
+=====================================================================
+IMPORTANT INFORMATION
+=====================================================================
+
+This macro was originally written in Germany, Europe. Since the german
+SAL-Compiler SC.EXE produces a different MAC-format, you ABSOLUTELY have
+to recompile FOLD.S and create a new FOLD.MAC. Semware did this to
+enforce recompilation and to avoid conflicts.
+
+How to configure this macro
+===========================
+Within this package, you should find a file FOLD.CFG. The name of this
+file MUST remain. But anybody programming e.g. in Pascal instead of
+TSE-Macros should change the comment-characters as follows:
+
+startcomment=(*
+endcomment=*)
+
+Watch out, that neither before nor after the "=" character spaces may
+appear. You even have to write the keywords correctly, else you would
+get a little trouble.
+
+Those who don't like, that folds are marked with "{{{" / "}}}" may use
+any characters, placed in the lines "startfold" and "endfold". Remember,
+that in ANY line not more than 6 characters are allowed.
+
+One more thing: the "space" after "closedfold=" isn't really a "space".
+It's the Character #255 (0xff), and I chose this character
+intentionally.
+
+The lines in the CFG-File may appear in any order. Side-Effect: you see,
+how to use Configuration Files without being supported directly by the
+Macro-language.
+
+KNOWN BUGS
+==========
+
+If you load another file, where one or more folds contain the same
+descriptions as in the already loaded file, the contents of the fold in
+the already loaded file will be lost without any chance of recovery.
+Until now, I don't have any idea how to prevent this.
+
+OpenAllClosedFolds doesn't work correct, if a fold is placed in the very
+first line of the text. There will be no loss of data, but the first
+line (the fold-line) might be placed in a random position inside the
+text.
+
+There is no protection for the folding-lines, thus if someone changes
+the Line starting with the <closedfold> characters, he should know, that
+TSE is perhaps not in state to find the internal buffer. The reason is,
+that the description of the fold is taken as reference-name for this
+internal system buffer. Overwriting lines starting with <startfold>
+characters is not so harmful, but I advise you, NOT to do this.
+("Enter at your own risk" - B.Simpson)
+
+Nested folds are not possible yet. But if you absolutely want it, there
+could be a dirty workaround, but I'm not sure, if it really works
+(especially while initial closing or final opening of all folds for
+saving the file): create one fold with a name, let's say "louie". Then,
+WITHIN this fold create some empty lines, and then create another fold
+with another name, let's say "foo". When you finished your work in
+"foo", close this fold, and after finishing work in "louie", close this
+fold too. Opening now must happen in reverse order: first open "louie",
+then open "foo" - voil…, it should have worked. But I recommend you,
+better NOT to do such things - leaving the editor would DEFINITELY
+destroy "foo", I think.
+
+Improvements, new versions:
+
+If I find the time, I'm surely interested in improving my macro.
+But I will no longer try to implement nested folds. David Mayerovitch
+wrote to me, that we should be happy, that we can write a macro, that
+EMULATES an outliner very close. If you really need to have nested
+folds, then go and buy a REAL outliner. But if you want to try to
+implement this - go ahead, and send me your results, if there are any ;-)
+
+If someone has suggestions or has done changes in sourcecode - please
+send them to me (see below for my email-addresses). Naturally, every
+contributor will be credited. But: I will NEVER change my mind, and will
+ALWAYS distribute this macro FREE OF CHARGE. Be aware of this, before
+you send any code to me.
+
+COPYRIGHT
+=========
+The complete archive comes with a copyright (c) 1993-1994 Dirk Wissmann.
+But you can freely redistribute this file to everyone, but only WITHOUT
+ANY FEE. Thus, $00 is the only acceptable price. That implies, that
+Shareware- and Public-Domain-Libraries, which take a small fee for
+copying files, are NOT allowed to distribute this file or portions of
+it. The ONLY exeption: costs for floppy disks, which should be max. US$
+0.75 for 5.25 inch disks, and US$ 1.75 for 3.5 inch disks.
+
+For more exceptions, I have to be asked, and I have to give them
+WRITTEN (including E-Mail), otherwise there are no exceptions.
+
+So, but this should be enough of legal stuff
+
+THE AUTHOR
+==========
+... is student in Aachen, Germany (informatics, what means, computer
+science) and can be reached as follows:
+
+1. via Semware BBS in conference TSE questions by public mail.
+I will receive this mail through a link into the German TSE Jr. support BBS
+not very often, appr. once a month.
+
+2. via the german MausNet (Dirk Wiámann @ AC3, daily mail-exchange), but
+this is not available outside germany (exc. austria), so you have to use
+the internet-address for this location (shown in 4.)
+
+3. via FidoNet:  Dirk Wissmann @ 2:2452/151.25 (daily)
+
+NOTE: GERMAN FIDONET IS BEING CHANGED AT THIS TIME! IT CAN *NOT* BE
+GUARANTEED THAT ANY MAIL ADDRESSED AS ABOVE WILL EVER REACH ME UNTIL THE
+SITUATION HAS CLEARED UP!
+
+4. via InterNet/UseNet:  dirk @ pool.informatik.rwth-aachen.de
+        (During lecture time: monday - friday only,
+         during vacation, there exists either a forwarding into MausNet
+         or a message that will tell you, when I'll be back.
+         PLEASE NO MAILS LARGER THAN 16KB PER DAY DURING VACATIONS.
+         IT WOULD BE TOO EXPENSIVE AND I WOULD HAVE TO CUT OFF THE
+         LINK INTO MAUSNET. NO COMMERCIAL MAILS ALLOWED!).
+
+    MausNet Address via Internet (REMEMBER: MAX. 16KB PER DAY! NO
+                                  COMMERCIAL MAILS!)
+                dirk_wissmann@ac3.maus.de
+
+5. I hope to be reachable via CompuServe from January on. But this
+   can not be guaranteed at this time.
+
+During the months july, august and september, the probability for being
+on holiday is a bit higher. So, if an answer from me lasts a bit longer
+than expected - don't worry, be happy ;-)
+
+Snail Mail:
+
+Dirk Wissmann
+Pley 39
+D-52146 Wuerselen
+GERMANY
+
+===============================
+THANKS TO THE FOLLOWING PEOPLE:
+===============================
+(the numbers you see here are reference numbers for the section
+IMPROVEMENTS DONE SO FAR)
+
+(01) David Mayerovitch, who gave me a small but very useful hint, how to
+     fix the problem, that the editor always thought, something in the
+     file has changed, even if there were no changes at all (caused by
+     using system buffers for cutting folds away or pasting them back).
+     His E-Mail Address: david.mayerovitch @ canrem.com
+     Additional, he has done numerous improvements. He wrote me, that I
+     can freely use and distribute his changes. I'm pleased about that,
+     because of this, all of you can profit.
+
+IMPROVEMENTS DONE SO FAR:
+=========================
+(Fixes without any reference-number were made by myself)
+
+- V1.1:
+
+ * fixed the erroneous file status (01)
+ * added mQuitFile, mSaveFile, mSaveAndQuitFile, so there normally
+   should be no more loss of data, when using the keys attached to these
+   functions (ctrl-k/d, ctrl-k/q and ctrl-k/s respectively)
+ * added the possibility to deactivate the macro. Before deactivation,
+   the macro will open all folds, so that no data will be lost.
+ * added keys to open or close all folds with one keystroke. The
+   functions already existed, but were not used with keys. They were
+   used only when a new file was loaded or a file was saved.
+
+
+- V1.2 (was never distributed)
+
+ * additional help, new helplines
+
+ * menu-driven configuration is now possible. If something was changed,
+   the whole file is changed in the appropriate way. The menu is
+   called with F12.
+
+
+-V1.3
+
+ * Removed the history when creating a new fold. This was a real bad
+   idea, because you could accidentally destroy the contents of a closed
+   fold by naming the new one identically. (01)
+ * An open fold can now be closed from anywhere within this fold, you
+   no longer need to go to the startfold (01)
+ * If the menu-driven configuration, if you didn't change anything, the
+   macro hang in an endless-loop. First, this loop was removed (I forgot
+   the Down() right at the end), and after that, it was optimized in
+   speed by doing changes (replacements) only, if they really were
+   done by the user.
+
+-V1.31
+
+ * Little adaption to make it work with TSE 2.00.
+
+wis, Dec. 08, 1994

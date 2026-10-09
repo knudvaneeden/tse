@@ -1,0 +1,504 @@
+/* Incomplete documentation for I_CMMT1.S...
+
+   Author: John D. Goodman
+
+   The I_CMMT (Intelligent Commenting) package includes macros for
+   commenting and uncommenting program source code in a variety of
+   context-sensitive and user-configurable ways.  Program commenting
+   (the 3rd most onerous and disagreeable duty of a programmer behind
+   documentation and testing)...
+
+   The macros support "in-line", "full-line", and "block" comment types.
+
+   Menu-selectable configuration options include the in-line comment
+   string used (which can include any fixed text, the current date/time,
+   and/or dynamic prompting for text), the beginning and ending strings
+   used for block comments (e.g., '/*' and '*/'), blank line handling
+   mode, and whether or not text lines are wordwrapped when commenting
+   and uncommenting. The editor's wordwrap settings (right margin, left
+   margin, autoindent, paragraph-end style, and normal wordwrap on/off
+   mode) are also displayed and can be changed using the comment options
+   menu.
+
+
+Overview
+
+   This macro package consists of a versatile set of macros for
+   commenting and uncommenting program source code.  The macros support
+   three comment types: "in-line" comments, "full-line" comments, and
+   "block" comments (these comment types are explained below). The
+   macros perform various commenting and uncommenting operations in a
+   "context-sensitive" manner based on the current cursor position,
+   whether or not blocks are marked, the type of block marked, and
+   whether or not lines of text are already commented.  Additionally, a
+   commenting options menu is provided to change several options for how
+   the macros will operate (for example, the comment string used, the
+   default comment column, and whether or not text lines are wordwrapped
+   when commenting and uncommenting).
+
+   The macro package consists of the following three user-callable
+   macros:
+
+      InLineCmmt()    // adds or removes in-line comments
+      FullLineCmmt()  // adds full-line or block comments
+      CmmtOptsMenu()  // menu of options for commenting operation
+
+   These macros are bound to the Alt-8, Alt-9, and Alt-0 keys
+   (respectively) at the end of the macro source code.  The key bindings
+   can, of course, be changed to anything you like.
+
+   The CmmtOptsMenu() macro displays a menu that is used to change
+   several options for how the commenting macros will work.  Options
+   that can be changed include the in-line comment string, the beginning
+   and ending comment strings for block comments, the default column in
+   which comments will be placed, blank line handling mode, and whether
+   or not text lines are wordwrapped when commenting and uncommenting.
+   The editor's wordwrap settings (right margin, left margin,
+   autoindent, paragraph-end style, and normal wordwrap on/off mode are
+   also displayed and can be changed using the comment options menu.
+   See "Comment Options Menu" below for further details.
+
+   InLineCmmt() is used to add or remove in-line comment strings from
+   text lines (i.e., to comment or uncomment lines of code).
+
+   In-line comments strings are generally something like '//' (for TSE,
+   C, C++, and a number of other languages), 'REM' (for DOS batch
+   files), or '&&' (for dBase III+).  The in-line comment string can be
+   set to any string of characters using the comment options menu and
+   can include indicators to dynamically fill-in the current date and/or
+   current time or to dynamically prompt the user for fill-in text when
+   comments are added.
+
+   The operation of InLineCmmt() is fairly complex but (hopefully)
+   intuitive.  In summary:
+
+   o  If the cursor is not in a marked block and is beyond the end of
+      a non-blank line, the comment string is inserted at the current
+      cursor position (an "end-line" comment).  The cursor is positioned
+      at the end of the comment string so that the end-line comment can
+      be typed.
+
+   o  Otherwise, the macro will operate on all lines delineated by a marked
+      block or on the current line if no blocks are marked (the "selected
+      line(s)").
+
+   o  If the first of the selected lines is already commented (i.e.,
+      contains the comment string at the beginning of the text portion
+      of the line), then all of the selected lines are uncommented
+      (i.e., the comment string is removed from the beginning of each
+      selected line).
+
+   o  If the first of the selected lines is not already commented, then
+      the selected lines are commented (i.e., the comment string is
+      added to the beginning of each selected line).  The column in
+      which the comment string is inserted is variable.  If the line(s)
+      are marked with a column or character block, the comment string is
+      inserted in the column corresponding to the block begin position.
+      Otherwise, comment strings are inserted at a user-defined default
+      comment column.  However -- if the column setting will result in
+      the comment string being inserted in the middle of the text of any
+      of the selected lines, then the comment column is automatically
+      set to column 1.
+
+   o  The commenting of blank lines is based on a user-selected
+      processing mode. Blank lines can be skipped entirely (never
+      commented), treated as any other non-blank line, or handled in
+      "Smart" mode (see below).
+
+   o  The selected line(s) can optionally be wordwrapped after
+      uncommenting or before commenting.  All selected text is
+      commented even if the number of lines changes due to wordwrapping.
+
+
+   FullLineCmmt() is used to add a full-line comment above the current
+   line or to add a block comment above and below one or more blocked
+   lines.  When FullLineCmmt() is invoked, the user is prompted to enter
+   a text string.
+
+General Operation
+
+   The InLineCmmt() macro can be used to comment or uncomment one or
+   more lines of text (i.e., add comment strings to or remove comment
+   strings from each line of text).  Comment strings can be any series
+   of characters, such as "// ", "REM ", "* ", etc.  See "Selecting a
+   Comment String" below for more information.
+
+   The macro operates on the current line if no blocks are marked or if
+   the cursor is outside a marked block.  If the cursor is in a marked
+   block, then the macro operates on each line of the marked block.  Any
+   type of block can be used to delineate the lines to be operated on --
+   however, the type of block *can* be significant when adding comments
+   (see "Commenting" below).
+
+   The line(s) that the macro will operate on, as described above,
+   are hereinafter referred to as the "selected line(s)".
+
+   When the macro is complete, the cursor will (usually) be positioned
+   one line below the lines acted on and in the column just below where
+   the comment string was added or deleted. Any marked blocks will be
+   unmarked.  The exception to this positioning is when the macro is
+   used to add the comment string to the end of the current line (see
+   "Commenting" below).
+
+Comment or Un-Comment?
+
+   The macro determines whether to add or remove comments based on the
+   first line of the selected line(s). If the first line is already
+   commented, then the selected line(s) are un-commented; otherwise,
+   they are commented.
+
+   The first line is considered to be commented if the comment string
+   or the comment string with trailing spaces and tabs (whitespace)
+   removed is found at the beginning of the line.  Leading whitespace
+   on the line is ignored (i.e., the comment string or the comment
+   string with whitespace removed need not be in column 1).  Also,
+   uppercase and lowercase characters in the existing comment string
+   are ignored when determining <>
+
+Un-Commenting
+
+   Un-commenting involves deleting the comment string from the beginning
+   of each selected line.  The following rules apply when un-commenting:
+
+   1. The comment strings need not be in the same position on each line.
+
+   2. The macro will only delete the first occurrence of the comment
+      string found on each line.  Thus, if you had previously commented
+      a series of lines that already contained comments, then un-comment
+      the lines, the original comments will remain.
+
+   3. For each selected line, the macro will delete the first occurrence
+      of the comment string *or* the comment string with trailing spaces
+      and tabs (whitespace) removed.  For example (comment string =
+      "// "):
+
+         original lines:        un-commented lines:
+         |                      |
+         |  // line 1           |  line 1
+         |  //line 2            |  line 2
+         |  //   line 3         |    line 3
+
+   4. The macro will also ignore uppercase and lowercase characters in
+      existing comment strings.  For example (comment string = "REM "):
+
+         original lines:        un-commented lines:
+         |                      |
+         |  REM line 1          |  line 1
+         |  rem line 2          |  line 2
+         |  rEm line 3          |  line 3
+
+   5. If the comment string (or the comment string with trailing
+      whitespace removed) is not found at the beginning of a line, then
+      the line remains unchanged.
+
+   6. If the "Wordwrap When Commenting/Uncommenting" option is set to
+      ON, the selected line(s) will be wordwrapped after the comment
+      strings have been removed.  The editor's settings for left/right
+      margin, autoindent, and paragraph-end style are used when
+      wordwrapping.
+
+   7. Upon macro completion, the cursor will be positioned one line
+      below the selected line(s) in the column where the last comment
+      string was deleted (or the last paragraph was wrapped.  The macro
+      can thus be used to un-comment a series of lines by simply
+      pressing the macro key repeatedly.
+
+   8. Note difficult to delete comments where \d, \h, or \p inserted
+      by InLineCmmt() (see below)...
+
+Commenting
+
+   The macro implements "intelligent" commenting that responds
+   differently depending on the current cursor position, whether or not
+   blocks are marked, and the type of marked block.  The following
+   pseudocode summarizes the commenting logic:
+
+      if the cursor is not in a marked block
+      then
+         if the cursor is at or beyond the end of a non-blank line
+         then
+
+            the comment string is inserted at the current cursor
+            position and the cursor placed at the end of the comment
+            string (this is useful for adding a comment to the end of
+            the current line (an "end-line" comment))
+
+         else
+
+            the comment string is inserted in the default comment column
+            and the cursor is moved down one line (this is useful for
+            commenting a series of lines by repeatedly pressing the
+            macro key)
+
+         endif
+      else  // the cursor is in a marked block
+         if the cursor is in a line block
+         then
+
+            the comment string is inserted in the default comment column
+            of each line of the block and the cursor is positioned one
+            line below the block in the default comment column
+
+         else  // the cursor is in a column or character block
+
+            for each selected line, the comment string will be inserted
+            in the column corresponding to the block begin position
+
+            (this is useful for commenting a code segment by marking a
+            column block straight down in the column that the comment
+            strings are wanted)
+
+         endif
+      endif
+
+   Additional commenting notes:
+
+   1. The "default comment column" noted above is initialized to 1 when
+      the macro is loaded and can be reset to any value using the
+      options menu.  If set to zero, the editor's current LeftMargin
+      setting will be used. The setting is ignored if a column or
+      character block is used (the column of the block begin position
+      becomes the comment column). Also, the comment column can be
+      temporarily set to 1 if the comment strings will overwrite any
+      existing text (see note 2. below).
+
+   2. With the exception of end-line comments, in no case will the macro
+      insert comment strings within the existing text of a line (i.e.,
+      after the first nonwhite character of any line).  Before inserting
+      comments, the macro checks all selected lines for any nonwhite
+      characters to the left of the column in which comment strings will
+      be inserted.  If any nonwhite characters are found to the left of
+      the comment column, all comment strings will be inserted in
+      column 1 of each selected line.
+
+   3. Blank lines are handled based on the value of the "Blank Line
+      Commenting Mode" option setting, as follows:
+
+         None   - Blank lines are never commented.  The cursor is moved
+                  to the next line if the macro is invoked on a blank
+                  line.
+
+         Normal - Blank lines are handled like any other line: the
+                  comment string is inserted in the default comment
+                  column (unless it is reset to column 1 as described
+                  above) and the cursor is moved to the next line.
+
+         Smart  - If the line immediately above the blank line is
+                  commented, the blank line is commented in the same
+                  column position and the cursor is moved to the next
+                  line.  If the preceding line is not commented, the
+                  comment string is inserted at the current cursor
+                  position and the cursor is moved to the end of
+                  the comment string (like an end-line comment).
+
+      The "Smart" blank line commenting mode is an attempt to be
+      flexible in simply wanting to start a blank line with a comment
+      and being able to invoke the macro repeatedly on a series of
+      lines, some of which may be blank.
+
+   4. If the "Wordwrap When Commenting/Uncommenting" option is set to
+      ON, the selected line(s) will be wordwrapped before the comment
+      strings are inserted on each line.  The editor's settings for
+      left/right margin, autoindent, and paragraph-end style are used
+      when wordwrapping (these can be reset using these commenting
+      options menu). Prior to wordwrapping, however, the right margin is
+      adjusted by the width of the comment string.  This is done so that
+      the post-commented lines will be wordwrapped at the correct right
+      margin setting. Also, All selected text will be commented, even if
+      the number of lines changes due to wordwrapping.
+
+
+
+In-Line Comment Strings
+
+   In-line comment strings can consist of any sequence of up to 20
+   characters.  Comment strings are normally something like "// "
+
+   \t Inserts a tab character (ASCII 009) into the comment string
+
+   \d Inserts the current system date into the comment string
+      This uses the GetDateStr() function and the
+
+   \h Inserts the current system time
+
+   \p Prompts the user for a character string each time the commenting/
+      uncommenting macro is invoked.  The user-entered character string
+      (which may be empty) replaces the \p in the comment string when the
+      comment string is inserted into the text.
+
+   \\ Inserts the backslash character ('\') into the comment string.
+      Using double-backslash is only necessary if the backslash is to be
+      followed by t, d, h, or p; otherwise, a single backslash is fine.
+
+   Note that the \d, \h, and \p special characters are dynamically
+   expanded each time the commenting/uncommenting macro is invoked (e.g.,
+   \h will insert the time that the comment is inserted into the text,
+   not the time that the comment string was set using the options menu).
+   A disadvantage of using dynamic comment strings is that it makes
+   uncommenting difficult.
+
+
+   Examples:
+
+   Comment String          Resulting Comment Inserted
+
+   '// JDG \d '            '// JDG 05/25/94 '
+   '// \p'                 '// I typed this when prompted!'
+
+Full-Line Comments and Block Comments
+
+   A full-line comment is inserted on a new line above the current line
+   and consists of the in-line comment string followed by user-provided
+   comment text.
+
+   Block comments consist of a new line inserted above a marked series of
+   lines and a new line added below
+
+   The following pseudocode summarizes the commenting logic:
+
+   if no blocks are marked or the cursor is outside a marked block
+
+      inserts a full-line comment above the current line in the
+      default comment column
+
+   else
+      if the cursor is in a column or character block
+         if only one line is marked
+
+            inserts a full-line comment above the current line in the
+            block begin position column
+
+         else   // multiple lines marked
+
+            inserts a block comment above and below the marked lines in
+            the block begin position column
+
+         endif
+      else   // cursor is in a line block
+
+         inserts a block comment above and below the marked line(s) in
+         the default comment column
+
+      endif
+   endif
+
+Block Comment Begin/End String
+
+   Block comments (normally) begin with one string of characters and end
+   with another.  Any text between these two strings is considered to be
+   "commented-out".  The most common begin and end comment strings are
+   '/*' and '*/', which are used in many languages.
+
+   The "Block Comment Begin|End String" menu option is used to set the
+   strings.  The begin and end comment strings are entered as a single
+   string of text with a '|' (vertical bar) character separating the
+   two.  If the '|' is not included in the menu entry, the begin comment
+   string is set to the entire menu entry and the end comment string is
+   set to an empty string.
+
+   The begin and end comment strings can consist of any fixed string of
+   characters and can also include the '\t', '\d', '\h', and '\\' (tab
+   character, current date, current time, and backslash) special
+   indicators described for in-line comment strings.
+
+   Examples:
+
+      '/*|*/'        (startup default)
+      '/* \d |*/'    inserts current date in comment
+
+Full-Line/Block Comment Text
+
+   The user-provided text for full-line and block comments can be
+   entered in one of two ways.  If text is entered at the "Full-Line/
+   Block Comment Text" menu option, then this text is used.  If an empty
+   string is entered for the menu option, then you will be prompted for
+   the text each time the FullLineCmmt() macro is invoked.  The former
+   method is best if you'll be using the same text repeatedly and don't
+   want to be prompted; the latter is best if you want to change the
+   text often. You can switch between the two methods at any time by
+   adding or deleting the menu option text string.
+
+   (Note that if you use the '\p' special indicator for the in-line
+   comment string, you may be prompted twice for text (once for the
+   in-line comment string text and once for the full-line comment
+   text)!)
+
+   The comment text (entered by either method) can consist of any fixed
+   string of characters. The comment text can also include the '\d',
+   '\h', and '\\' (current date, current time, and backslash) special
+   indicators described for in-line comment strings.
+
+   Additionally, the comment text can include special line drawing
+   characters.  These characters must be the first and/or the last
+   characters in the comment text string.  If the first or last
+   character is in the set "-=*^~.:+#", then a "line" will be drawn to
+   the left and/or right of any other text in the string.  The line
+   will extend from the end of the comment string to the current right
+   margin.  The comment string and comment text will always be entered
+   on the line, even if they extend beyond the right margin setting.
+   A few examples should illustrate this best.
+
+   Full-line comment examples:   (in-line comment string = '// ')
+
+   Entering '-' for the comment text results in:
+
+      // ---------------------------------------------------------------
+
+   Entering 'Added \d JDG =' for the comment text results in:
+
+      // Added 05/31/94 JDG ============================================
+
+   Entering '* DO NOT CHANGE *' for the comment text results in:
+
+      // ************************ DO NOT CHANGE ************************
+
+   Entering '. Timestamp \h' for the comment text results in:
+
+      // ............................................ Timestamp 06:10 am
+
+   Entering '^ xyz +' for the comment text results in:
+
+      // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ xyz +++++++++++++++++++++++++++++
+
+   Entering 'Text with no line' for the comment text results in:
+
+      // Text with no line
+
+   Comment text for block comments works essentially the same except
+   that the ending comment line will consist only of the line draw
+   characters; the comment text is not repeated on both the starting
+   and ending comment lines.
+
+   Block comment examples:        (intervening lines deleted)
+
+   Entering '-' for the comment text results in:
+
+      /*----------------------------------------------------------------
+      ----------------------------------------------------------------*/
+
+   Entering ' Remove for debugging =' for the comment text results in:
+
+      /* Remove for debugging ==========================================
+      ================================================================*/
+
+   Entering '* Version 3 \d *' for the comment text results in:
+
+      /*********************** Version 3 05/31/94 **********************
+      *****************************************************************/
+
+   Entering '. Copyright XYZ Corp' for the comment text results in:
+
+      /*............................................. Copyright XYZ Corp
+      ................................................................*/
+
+   Entering '- Strange! =' for the comment text results in:
+
+      /*--------------------------- Strange! ===========================
+      --------------------------------================================*/
+
+   Entering 'No Line Draw' for the comment text results in:
+
+      /*No line draw
+      */
+
+

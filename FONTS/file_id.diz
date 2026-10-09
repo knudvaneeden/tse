@@ -1,0 +1,32 @@
+(02-03-03) Two fonts (SysMono 14x6 and 18x8)
+by Andrew Clarke (based on some OS/2 fonts)
+are available from the sysmono-nt.zip link in
+the list that follows. They will work with
+TSE Pro v4.0 for Windows (any WIN9x-WINXP),
+and are also available to TSE Pro/32 under
+Windows NT/2000/XP.
+
+Fonts.zip contains 8 fonts for use
+with TSE Pro v4.0 for Windows. Contributed by
+Michael Durland (sprog*.fon), Chris Antos
+(fixedsysoem14.fon), and Karl Bochert
+(Kourier and Ksans).
+
+Kourier: a mono-spaced font patterned after
+         Courier, but with larger punctuation
+         and distinct l & 1, o & 0
+Ksans: a san-serif version of Kourier for a
+       cleaner, more modern look.
+
+A list of additional fonts that have been
+mentioned by customers as working with
+TSEPro v4.0 for Windows:
+ftp://www.hilgraeve.com/pub/vendor/hilgraeve/hyprfont.zip
+ftp://ftp.seagate.com/techsuppt/letgothl.zip
+http://www.securenetterm.com/html/downloads.html
+http://www.uwe-sieber.de
+http://www.raize.com/DevTools/Tools/RzFont.htm
+http://windowsupdate.microsoft.com (get the
+     additional web fonts - you'll get
+     something called Anadale Mono)
+http://www.ozzmosis.com/sysmono-nt.zip

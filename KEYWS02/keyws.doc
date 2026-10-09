@@ -1,0 +1,159 @@
+This is just a preliminary documentation file. Select the help item from
+the main menu for a help screen on menu items. There is also help
+available when the "Add keywords" menu item is selected, and a keywords
+list is displayed.
+
+KEYWS.MAC is a TSE 2.0 macro for adding keywords to recipes formatted for
+import into the QBook recipe database program. Because of the similar
+structure of QBook's 'Keyword:' and Meal-Master's 'Categories:', this
+macro can also be easily modified and recompiled to work with the
+Meal-Master recipe database program (though I haven't tested it with
+Meal-Master as of yet). All that should be necessary is to change the
+first 5 string declarations in the KEYWS.DAT file. Comment out these
+lines, and uncomment the 5 lines following:
+
+//variables for Meal-Master format
+
+Below those lines are the following constants... I'm not sure what
+Meal-Master uses for these, so they may have to be changed as well:
+
+//constants for QBook format
+constant MAX_KEYWLEN = 32           //maximum keyword length
+constant MAX_KEYLINE = 78           //maximum length of keyword line
+
+
+
+General notes on the "*.KEY" files used by this macro:
+
+Various keywords files can be created by the user (location and filenames
+are documented below in the 'KEYWS main menu functions' section). These
+files should contain only one keyword per line (each keyword can be more
+than word) and the keywords should start in column 1 of the line. The only
+file which will be created by the macro (if it doesn't exist) is
+"KEYWS.KEY". I also, currently, don't have a function within the macro to
+add to these files**. You will have to create/load them and add words as
+desired. A sample AUTOSCAN.KEY file is included with this macro.
+
+**Added ability to add words to the KEYWS.KEY file. Pressing F2 from
+within the list displayed by the "Add Keywords" function allows adding,
+deleting, selecting words from the KEYWS.KEY file list. Changes are
+automatically saved.
+
+Special notes on the "KEYWS.KEY" file used by the 'Add Keywords' and
+the "AUTOSCAN.KEY" file used by the 'AutoScan' functions:
+
+I'm still working on the best way to do searches for matching words in the
+recipe which will find the most "valid" matches, without erroneously
+matching undesired words. I wanted to be able to, for example, search for
+'Raspberry' and match either 'Raspberry' or 'Raspberries'. To do this, the
+search procedure drops the last letter of the keyword (but only if the
+keyword is longer than 4 characters, to avoid some errors). I found that I
+was still getting too many mismatches, so I added a check for a "~" ***
+character at the end of the keywords contained in the KEYWS.KEY file. This
+makes it possible to put a "~" character at the end of a word which will
+force an exact match, as the "~" is dropped instead of the last letter of
+the keyword. The check for the "~" ensures that it will also be dropped
+from the short (<5 char) keywords. The search in 'Add Keywords' is done in
+such a way that the keyword must match the found text only at the
+beginning of the word (ie: a search for 'berry' will not match
+'raspberry'. This, again, was done to avoid excessive mismatches. These
+methods work fairly well, but I'm still working on them.
+
+The 'AutoScan' function allows you to choose whether the search should be
+"whole word" or not. Since it automatically adds keywords to all recipes
+in the file, you may wish to be "safe" and select the ***whole word match.
+The manual 'Add Keywords' function does not use a whole word match.
+
+*** The "~" character can be used in the AUTOSCAN.KEY file, as well. This
+will force a "whole word match" even if whole word match is not selected.
+
+
+Other keywords files (not documented below):
+COUNTRY.KEY - must be located in the same directory as KEYWS.MAC
+    List of country names which can be added as keywords
+MAINCAT.KEY - must be located in the same directory as KEYWS.MAC
+    List of main categories which can be added as keywords
+I'm still working on the functions which use these files, so for now see
+the help screen available from the 'Add Keywords' function for
+documentation. You can put anything you want for keywords in these files.
+They are not used in any search functions (as of yet, at least). Two
+small sample files are included with the macro.
+
+
+
+KEYWS main menu functions:
+
+NOTE: the 'Add Keywords', 'AutoScan', and 'Global Add' functions all
+perform checks for duplicate keywords so that no dupes will be added. All
+searches are case insensitive.
+
+'Add Keywords' menu function:
+
+This function creates a popup list of keywords for the recipe. The list
+includes the following:
+
+1. keywords from the original recipe
+2. words from the KEYWS.KEY file which match words in the recipe.
+
+Help for functions available while viewing the list is available by
+pressing F1 while the list is displayed.
+
+The KEYWS.KEY file must be located in the same directory as this macro. If
+it doesn't exist, a small file will be created.
+
+
+'Go to next recipe' menu function:
+This function merely advances the screen display to the next recipe
+contained in the file being edited.
+
+
+'Autoscan' menu function:
+
+This function automatically adds keywords to each recipe in the file which
+is loaded. You will be prompted whether to match 'whole words' or not. If
+you respond 'No', more matches will probably be found. For example, if you
+have 'Game hen' in your AUTOSCAN.KEY file and you say 'No' to the match
+whole words prompt, 'Game hens' will be found as a match, whereas it would
+not match if you chose whole word matches only.
+
+The following files (if they exist) are used to provide the keywords for
+AutoScan:
+
+In the same directory as this macro:
+1. AUTOSCAN.KEY - list of words to search for in the recipe. If a match
+   is found, the word will be added as a keyword.
+2. ALLREC.KEY - list of words to add to ALL recipes in any file that
+   AutoScan is run on. This could be used, for example, by a BBS sysop to
+   add their BBS name, as a keyword, to all recipes.
+
+In the current directory:
+1. ALLDIR.KEY - list of words to add to ALL recipes in all files in the
+   current directory.
+2. (filename).KEY - where '(filename)' is the name of the recipe file
+   being edited. These words will be added only to recipes in a file if
+   the filenames match. For example, if you are editing a file named
+   'SWEDISH.QBF', any words found in a file named 'SWEDISH.KEY' will be
+   added as keywords.
+
+
+'Global Delete' menu function:
+
+This function will prompt you for a keyword to delete from ALL recipes in
+the file being edited. The search for keywords to delete is not case
+sensitive, but the word must otherwise match exactly or it will not be
+deleted.
+
+
+'Global Change' menu function:
+
+This function will prompt you for a keyword to change, and for the word to
+replace it with. I tried to be sure that only exact matches would be
+changed. For example, if you want to change all occurrances of the keyword
+'main' to 'Main dish', other keywords containing the word 'main' (as 'Main
+course') will not be changed. The search is not case sensitive, however.
+
+Addendum:
+I've tried to ensure that duplicate keywords will not be added to recipes.
+However, if the recipe already contains duplicate words, they will not be
+deleted.
+

@@ -1,0 +1,4 @@
+(10-11-00) TSE Pro/16/32 macro to convert Cobol 74/85 programs to
+upper/lower/mixed case, without changing comments and quoted text.
+It might work for Fortran programs too.
+Author: carlo.hogeveen@xs4all.nl.

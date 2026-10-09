@@ -1,0 +1,7 @@
+TSE Macro mSort v1.3. Uses external sort
+program FSORT10.ZIP to sort large files.
+Integrates with TSE's internal sort for
+automatic or menu selection of internal or
+external sort. Uses TSE's case and ascending/
+descending parameters. Also provides decimal
+sort and duplicate entry elimination.

@@ -1,0 +1,26 @@
+Enhanced version of the CmpFiles macro 
+that comes with TSE Pro v2.5e version.
+
+NEW procedure mCompLines(), that compares
+250 characters of current lines at a time,
+starting at column 1 or the first visible
+on each window, showing where are the
+differences (based on the procedure 
+CompLines() in the TSEComp macro).
+
+NEW feature:  Left/Right scroll for each 
+window.
+
+NEW option:  Ignore case.
+
+Help window updated.
+
+Added code to work also in v4 Test Drive 
+version.
+
+Tested only in TSE Pro v2.5e and v4 Test 
+Drive versions.
+
+Author: 
+Flavio Su rez
+flaviosuarez@ig.com.br

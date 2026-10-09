@@ -1,0 +1,9 @@
+(05-19-02) v4 - All TSE Pro/32 and TSE Pro v4
+*   Replaces gethlp28.zip dated 05-06-98    *
+Latest version of GetHelp macro, enhancements
+to TSE's built in help, and provides context
+sensitive help from a user-specified set of
+help files based on the current file's
+extension.  You can write custom help for
+menu items now!
+Author: Chris Antos

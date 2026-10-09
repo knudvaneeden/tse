@@ -1,0 +1,9 @@
+CmdLine version 3: Two helper macros to
+facilitate user-created command line options.
+Makes it easy!! File includes complete
+instructions for creating your own TSE
+command line options or reinter- preting
+standard options. Examples include an option
+for going to line,column of the first file
+loaded and one for printing files from the
+command line.

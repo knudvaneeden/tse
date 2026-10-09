@@ -1,0 +1,5 @@
+<02-22-99> v2 - TSE Pro v2.5 and Pro/32 v2.8
+Maxhist - Optimize history list sizes to such
+a maximum, so that history lists don't push
+each other's elements out.
+Author: Carlo Hogeveen <hyphen@xs4all.nl>

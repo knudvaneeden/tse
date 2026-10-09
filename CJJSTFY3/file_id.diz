@@ -1,0 +1,8 @@
+Improved Full-Justify macro for TSE 2.00
+to replace the one that comes with TSE.
+This version removes spaces added by previous
+justify before rewrapping and rejustifying a
+paragraph.  It is used as a substitute for
+TSE's WrapPara() function.  Installation
+instructions are given as comments in the
+macro code.

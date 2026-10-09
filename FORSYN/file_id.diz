@@ -1,0 +1,25 @@
+(12-03-01) SyntaxHilite files for TSE Pro/32
+Three SyntaxHilite Mapping files (.SYN) to
+support Fortran source files for TSE Pro/32:
+
+FOR.SYN     For FORTRAN-77  (.for or .f ext)
+F90.SYN     For Fortran-90  (.f90 ext)
+F95.SYN     For Fortran-95  (.f95 ext)
+
+FOR.SYN requires TSE Pro/32 v3.0 or later,
+since it uses the column-dependent comment
+feature.  This file is also suitable for use
+with FORTRAN-66 source files.
+
+Files F90.SYN and F95.SYN (for Fortran-90 and
+Fortran-95, respectively) should work with
+TSE Pro/32 version 2.8 or later. They support
+Fortran-90/95 free-format source code.  Files
+F90.SYN and F95.SYN are identical, except
+that F95.SYN includes the new Fortran-95
+keywords ELEMENTAL, FORALL, and PURE.
+
+See read.me file for instructions.
+
+Author:  David G. Simpson
+(SimpsonDG1325@aol.com)

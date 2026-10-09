@@ -1,0 +1,15 @@
+(Mar 7, 2006) - bFind 1.02 for TSE Pro 2.5e upwards.
+&nbsp;
+A boolean/logical Find command.
+&nbsp;
+Find all lines containing a logical combination of quoted search-strings.
+&nbsp;
+Search-strings can be logically combined with the boolean operators AND, OR,
+NOT and brackets.
+&nbsp;
+Simple uses: Find lines not containing a string. Find lines that contain two
+strings in no particular order.
+&nbsp;
+Complex uses: no limit on nesting AND, OR and NOT with brackets.
+&nbsp;
+Author: Carlo Hogeveen

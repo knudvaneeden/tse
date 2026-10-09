@@ -1,0 +1,140 @@
+CHGNOTIF macro
+--------------
+
+This macro requires TSE 2.6 or higher.
+
+To use the macro, you must first compile it and load it.  For example,
+open the ChgNotif.s file in TSE, and then use the Macro->Compile command.
+
+
+
+Description ---------------------------------------------------------------
+
+If you ever use two editors (even two copies of TSE) to edit the same
+file, this macro is for you.  This macro will notify you if a file in
+TSE has been changed by some other application.  If TSE is not active
+when the file is changed, this macro will wait to notify you until TSE
+becomes active.
+
+For instance:  Say you have "MyFile.Txt" open in TSE.  For one reason or
+another, you use NotePad to edit the same file, make some changes, and
+save the file.  If you forget to reload MyFile.Txt, when you go back to
+TSE you're probably going to lose the changes you just made with
+NotePad.  However, as soon as you go back to TSE, this macro will notify
+you that MyFile.Txt was changed and ask you if you'd like to reload it.
+
+
+
+How to Use ----------------------------------------------------------------
+
+Just load the macro!
+
+It will automatically configure itself the first time you load it.
+
+
+
+For Macro Programmers -----------------------------------------------------
+
+ù If you want CHGNOTIF to refrain from notifying you of some change made
+  by your macro, it's easy.  For example, suppose your macro changes the
+  attributes of the current file.  Normally, CHGNOTIF would notify you
+  that the file has changed.
+
+  Near the top of your macro, include the following:
+
+      dll "chgnotif.dll"
+          proc ChangeExpected(string stFilename:cstrval,
+                              integer fExpected)
+      end
+
+  Suppose you have a procedure called ChangeFileAttributes.  You could
+  tell CHGNOTIFY to ignore changes you make by doing the following:
+
+      ChangeExpected(CurrFilename(), TRUE)
+      ChangeFileAttributes(CurrFilename())
+      ChangeExpected(CurrFilename(), FALSE)
+
+  Note, if you call ChangeExpected with TRUE on a filename, but do not
+  later call it a second time with FALSE for the same filename, you will
+  no longer get notifications for that filename (for advanced macro
+  writers, there could conceivably be a time when this is desirable,
+  even).
+
+
+ù If you use EraseDiskFile(), you can use the above method to avoid
+  getting a notification.  OR, if you're erasing a temporary file that
+  you just loaded using EditFile, you may prefer to use this combination
+  since it's probably more precisely what you wanted anyway.
+
+      EditBuffer("tempfile.tmp", _NORMAL_)
+      EraseDiskFile("tempfile.tmp")
+
+  This will avoid the notification, will avoid calling any TSE hooks
+  when loading tempfile.tmp, and will also create a new buffer called
+  "tempfile.tmp" even if a file by that name is already in the ring.
+  This lets you really do temporary file processing without conflicting
+  with anything the user is doing, or with other macros.
+
+
+
+History -------------------------------------------------------------------
+
+v1.6
+ù Windows XP (or eTrust?) has an issue that fools Chgnotif into thinking 
+  the file attributes have temporarily changed, and we work around this 
+  by simply ignoring the file attributes.
+
+v1.5
+ù added public macro CHGNOTIF_DontWatch() to turn off change 
+  notifications permanently (during the current editing session) for the 
+  current file.
+ù added public macro CHGNOTIF_ForceChanged() to mark a file as changed.
+ù added public macro CHGNOTIF_ForceGone() to mark a file as gone 
+  (deleted).
+ù added public macro CHGNOTIF_ForceNotChanged() to mark a file as not 
+  changed.
+ù added public macro CHGNOTIF_GetVersion() to return the version of 
+  CHGNOTIF; note that the version is base-16 internally, but is returned 
+  as base-10.
+ù since more than one macro can hook _AFTER_FILE_SAVE_, it is not that 
+  helpful, has been replaced by _AFTER_COMMAND_ and 
+  _AFTER_NONEDIT_COMMAND_.
+ù added public macro CHGNOTIF_ChangeExpectedReset() to reset whether a 
+  file expects changes.  CHGNOTIF_ChangeExpectedYes and 
+  CHGNOTIF_ChangeExpectedNo can be nested now, but are reset on idle or 
+  before a command.
+
+v1.4
+ù NEW: updated to use TSE 3.0's new _AFTER_FILE_SAVE_ hook.
+
+v1.3
+ù BUG: finally figured out why every once in a while notifications would
+  stop happening.  When TSE saved a file, I was recording the current
+  filename for later use...but I had just switched to an unnamed buffer.
+  So the file never got notifications reenabled.  Fixed, and now saving
+  a file doesn't turn off notications for that file.
+
+v1.2
+ù BUG: I was using named Win32 events, so if you used ChgNotif with
+  multiple instances of TSE, one or more instances of TSE would hang
+  when trying to exit.  Fixed by using unnamed events.
+ù Autoreload is now off by default.  If you've used v1.1 before, your
+  setting is retained when you switch to v1.2.
+ù Automatically configures itself the first time you load it.
+
+v1.1
+ù When editing a new file that had not been saved yet, was reporting
+  "file not found" whenever any file in the same directory was changed.
+ù BUG: due to a typo, only the first file loaded from a directory
+  detected file changes.  Now it works for unlimited files in the same
+  directory, and for unlimited directories, too.
+ù BUG: could become slow and eventually hang when closing the last file
+  in a directory and later receiving file change notifications on any
+  file (it's a little more obscure than that, even, but it gets too hard
+  to explain).  (file change notifications are sent on a per-directory
+  basis, not a per-file basis, so it has to keep track of all the
+  directories TSE has files loaded from; when the last file from a
+  directory is closed.  i defer releasing the notification handle until
+  later, and my loop to do the deferred release had a bug when removing
+  the last notification handle in the linked list).
+

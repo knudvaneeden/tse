@@ -1,0 +1,4 @@
+Fix for TSE 2.5a to TSE 2.5e:
+Macro Edebug also debugs macroes
+that use #include files.
+Version 2 fixes a bug in Edebug.

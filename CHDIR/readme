@@ -1,0 +1,15 @@
+/************************************************************************
+If you choose to install this in a file containing other procedures or macros
+(e.g.) one of the startup macros you MUST place the code between the dashed
+line *before* any other macro definition or procedure . In addition, replace
+the "??" in the line beginning "binary '??:\..." with drive containing TSE.EXE
+on your system.
+
+Executing the macro will produce a small box with the question "New Directory"
+You may enter any pathname or portion thereof in that box, including "\" and a
+simple "x:" (to change drives).  A list of files in the new directory will be
+displayed after the pathname is accepted.
+
+Walter Metcalf
+72060,517
+***************************************************************************/

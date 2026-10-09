@@ -1,0 +1,56 @@
+Put mswheel.mac and mswheel.s in the tse32\mac directory.
+Put mswheel.dll in the tse32 directory.
+
+To use the macro, simply load it.
+
+To configure it, execute the macro, passing -menu as a parameter
+to the macro.  e.g., From a "Execute macro:" prompt, type:
+
+mswheel -menu    <return>
+
+To have it available all the time, add it to the autoload list.
+
+
+The AutoLoadList Command
+
+You may wish to have certain external Compiled Macro files loaded
+automatically each time you start the editor.  To accomplish this, you can
+maintain a list of those macro files in a special autoload file, named
+TSELOAD.DAT, using the AutoLoadList command.
+
+
+þ AutoLoadList  ("AutoLoad List" under Macro Menu)
+
+  This command allows you to maintain a list of external Compiled Macro files
+  to be automatically loaded on editor startup.  When you execute this
+  command, the editor displays the current list of macro files in the autoload
+  file (TSELOAD.DAT).  Press <Ins> to add a macro file to the list; press
+  <Del> on an entry to delete it from this list.
+
+To add a new macro file to the autoload list, execute AutoLoadList.  Once the
+current list of macro files is displayed, position the cursor bar on the
+existing macro filename after which you want the new macro file to be loaded.
+Then press <Ins>.  The editor issues the prompt, "Macro filename:", for the
+name of the macro file you want to add.  Enter the name of the Compiled Macro
+file, including any necessary path information. The editor assumes an
+extension of ".MAC", so it is not necessary to enter the extension.  When
+your response is complete, press <Enter>.  The editor then updates the
+autoload file to include the indicated macro file.
+
+To remove a macro file from the autoload list, move the cursor bar to the
+macro file entry in the list, and press <Del>.  The editor prompts you to
+confirm that you want to delete that macro file.  Upon your confirmation, the
+editor removes that macro file from the autoload list.
+
+The autoload file, TSELOAD.DAT, is maintained in the editor load directory.
+The macro files included in this file are automatically loaded each time you
+start the editor.  The editor loads the macro files, in the order in which
+they are listed, by issuing the LoadMacro command for each macro file.  If
+path information is included as part of a macro file entry, the editor
+searches for that macro file in the indicated directory when it attempts to
+load it.  If path information is not included in the entry, the editor
+successively searches directories according to the "macro file search order"
+described in an earlier section, "Creating and Using Compiled Macros."  For
+any macro file that the editor cannot locate, the editor skips any further
+processing of that file, and attempts to load the next macro file in the list.
+

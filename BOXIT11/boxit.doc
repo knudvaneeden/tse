@@ -1,0 +1,397 @@
+                                 BoxIt!
+                              Version 0.11
+
+                       For The SemWare Editor 2.00
+
+                           George J. De Bruin
+
+                          ีอออออออออออออออออธ
+ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤดTable Of Contentsรฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤ
+                          ิอออออออออออออออออพ
+
+    Introduction
+    Installing BoxIt!
+    Using BoxIt!
+        Side Toggles
+        Gap Settings
+        Line Settings
+    Quick Key Reference
+    Error Messages
+    History
+    Author Bio. & Contacting
+        Contact Points
+        BoxIt Releases
+        Remuneration / Donations
+    Future Versions
+ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤ
+
+   ีออออออออออออธ
+อออตIntroductionฦออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+   ิออออออออออออพ
+
+    Many of the editors available in both the shareware and commercial
+    markets today have a line drawing facility.  A number of popular
+    editors have extended this to a box drawing facility.
+
+    This macro serves two purposes:
+
+        (1) To implement a box drawing facility for TSE that is
+            integrated closely with the editor.
+
+        (2) To provide a well documented example of a macro written in
+            the SAL macro language.
+
+    Permission is granted to the user of this macro to modify and
+    distribute modified versions of BoxIt!  See source code for
+    conditions applying to modified versions of BoxIt!
+
+    ีออออออออออออออออธ
+ออออตInstalling BoxItฦอออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+    ิออออออออออออออออพ
+
+    Installation is easy.
+
+    Place the BOXIT.S file in your \TSE\MAC direcotry.  Compile the
+    BOXIT.S file using TSE.  To execute the macro select Macro, Execute
+    from the menus.
+
+    If you want to have BoxIt! loaded each time you start TSE, add it to
+    the AutoLoad List by selecting Macor, AutoLoad List from the menus
+    and inserting BoxIt in the list.
+
+    BoxIt uses the <F12> and <Alt F12> keys by default.  If you wish to
+    assign it to different keys, edit the BOXIT.S file, and then
+    recompile it.
+
+       ีออออออออออออธ
+อออออออตUsing BoxIt!ฦอออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+       ิออออออออออออพ
+
+Using BoxIt! is easy.  Just follow these steps:
+
+    (1) Column mark where you want the box.
+
+    (2) Pull up the BoxIt! Menu (<ALT F1>).
+
+    (3) Set the Side Toggles, Gaps Settings, and Line Type to your
+        preferences.
+
+    (4) Select BoxIt! from the menu.
+
+To draw another box using the same settings:
+
+    (1) Column mark where you want the box.
+
+    (2) Press <Ctrl F1>.
+
+More information on specific options can be found in the next sections
+of the documentation, or the help system.
+
+       ีออออออออออออธ
+อออออออตSide Togglesฦอออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+       ิออออออออออออพ
+
+The Side Toggles menu is used to turn each side of the box On or Off.
+Each side may be set individually using the Top, Bottom, Left and Right
+toggles. Additionally, all sides may be set at the same time using the
+Global selection.
+
+The Global selection has an extra option: Invert. Inverting the sides
+changes all settings that were On to Off, and vice versa. For example,
+if the toggles were set like this:
+
+                           ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+                           ณ Global [  On] ณ
+                           รฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤด
+                           ณ Top     [Off] ณ
+                           ณ Bottom  [Off] ณ
+                           ณ Left    [ On] ณ
+                           ณ Right   [ On] ณ
+                           ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+After selecting the Global, Invert option, the menu would look like
+this:
+
+                           ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+                           ณ Global [ Inv] ณ
+                           รฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤด
+                           ณ Top     [ On] ณ
+                           ณ Bottom  [ On] ณ
+                           ณ Left    [Off] ณ
+                           ณ Right   [Off] ณ
+                           ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+The top and bottom sides have been turned on, while the left and right
+sides have been turned off.  Note that the Global selection now says
+'Inv' next to it, indicating that you selected the inversion operation.
+
+This is useful if you want to quickly draw a box where two sides have
+one type of line (say the top and right sides), while the other sides
+have a different type of line.  For example:
+
+                              ึฤฤฤฤฤฤฤฤฤฤฟ
+                              บ          ณ
+                              ศออออออออออพ
+
+Combining this feature with the user defined line type opens many
+possibilities.
+
+       ีออออออออออออธ
+อออออออตGap Settingsฦอออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+       ิออออออออออออพ
+
+The Gap Settings menu is used to adjust the amount of space between your
+marked block and the box BoxIt will draw for you.  Each side may be set
+individually using the Top, Bottom, Left and Right options.
+Additionally, the gap may be set for all sides at once using the Global
+option.
+
+For example, if the Gap Settings menu looked like this:
+
+                            ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+                            ณGlobal [    0]ณ
+                            รฤฤฤฤฤฤฤฤฤฤฤฤฤฤด
+                            ณTop    [    2]ณ
+                            ณBottom [    2]ณ
+                            ณLeft   [    1]ณ
+                            ณRight  [    1]ณ
+                            ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+You would get a box that looks like this (assuming the inner box was the
+column block):
+
+                            ษออออออออออออออป
+                            บ              บ
+                            บฺฤฤฤฤฤฤฤฤฤฤฤฤฟบ
+                            บณ            ณบ
+                            บณ            ณบ
+                            บณ            ณบ
+                            บภฤฤฤฤฤฤฤฤฤฤฤฤูบ
+                            บ              บ
+                            ศออออออออออออออผ
+
+Not that there is only 1 space between the block and the box.  This is
+the way BoxIt! works.  Just remember this short table:
+
+                        ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+                        ณ        Lines Betweenณ
+                        ณGap     Box and Blockณ
+                        รฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤด
+                        ณ 0      Within Block ณ
+                        ณ 1           0       ณ
+                        ณ 2           1       ณ
+                        ณ 3           2       ณ
+                        ณ...         ...      ณ
+                        ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+Now, assuming we wanted all of the gaps set to 1, we would use the
+global option to set them:
+
+                            ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+                            ณGlobal [    1]ณ
+                            รฤฤฤฤฤฤฤฤฤฤฤฤฤฤด
+                            ณTop    [    1]ณ
+                            ณBottom [    1]ณ
+                            ณLeft   [    1]ณ
+                            ณRight  [    1]ณ
+                            ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+And our box would look like this (again, assuming the inner box was our
+block):
+
+                            ษออออออออออออออป
+                            บฺฤฤฤฤฤฤฤฤฤฤฤฤฟบ
+                            บณ            ณบ
+                            บณ            ณบ
+                            บณ            ณบ
+                            บภฤฤฤฤฤฤฤฤฤฤฤฤูบ
+                            ศออออออออออออออผ
+
+       ีอออออออออออออธ
+อออออออตLine Settingsฦออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+       ิอออออออออออออพ
+
+The Line Settings menu allows you to chose the style of line that you
+want to draw your box with. This features uses the standard line type
+settings supported by TSE:
+
+    Single:       ฺฤฤฤฤฟ
+
+    Double Top:   ีออออธ
+
+    Double Side:  ึฤฤฤฤท
+
+    Double Both:  ษออออป
+
+    ASCII:        +-|
+
+    Eraser
+
+    User-defined: [þ]
+
+The user defined selection can be set to any character you wish to draw
+your box with.
+
+You can use the Eraser option to remove boxes that you have drawn.  The
+easiest way to accomplish this is to
+
+    (1) Select the box with a column block.
+    (2) Set the Line Type to Eraser.
+    (3) Set Global Gaps to 0.
+    (4) Set Global Side Toggles ON.
+
+Then execute BoxIt.
+
+       ีอออออออออออออออออออธ
+อออออออตQuick Key Referenceฦออออออออออออออออออออออออออออออออออออออออออออออออออ
+       ิอออออออออออออออออออพ
+
+Below is a short chart of the keys used by BoxIt:
+
+<Alt F12>        BoxIt! Menu Bar
+<F12>            Execute BoxIt! (Draw Box)
+
+These keys are provided as short-cuts to navigating the menus:
+
+<Ctrl G><G>      Set Global Gap
+<Ctrl G><T>      Set Top Gap
+<Ctrl G><B>      Set Bottom Gap
+<Ctrl G><L>      Set Left Gap
+<Ctrl G><R>      Set Right Gap
+
+<Ctrl S><G>      Side Global Setting
+<Ctrl S><T>      Side Top Toggle
+<Ctrl S><B>      Side Bottom Toggle
+<Ctrl S><L>      Side Left Toggle
+<Ctrl S><R>      Side Right Toggle
+
+       ีออออออออออออออธ
+อออออออตError Messagesฦอออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+       ิออออออออออออออพ
+
+BoxIt! has a grand total of 3 error messages. Below is a short
+explanation of them:
+
+No Column Block In File
+อออออออออออออออออออออออ
+    Currently BoxIt! only supports column blocks (<ALT K> in TSE's
+    standard interface).
+
+    This message appears when there is either no column block in the
+    current file, or if there is no block in the current file.
+
+    BoxIt aborts in this condition.  All settings are left as they were,
+    and the block (if there was one) is still marked.
+
+
+Cursor Not In Block
+อออออออออออออออออออ
+    The cursor needs to be placed somewhere inside the marked area.
+
+    This is an adopted standard among the TSE Beta testers and macro
+    authors.  It's primary purpose is to keep users from accidentally
+    performing an action they didn't mean to.
+
+    BoxIt aborts in this condition.  All settings are left as they were,
+    and the block is still marked.
+
+
+Cannot Insert Box At or Before Beginning of Line
+อออออออออออออออออออออออออออออออออออออออออออออออ
+    This error occurs most often when the left column of the block -
+    left gap is < 1. Currently, BoxIt! does *not* insert spaces at the
+    beginning of a line if it needs to.
+
+    A later version may support this.
+
+    BoxIt aborts in this condition.  All settings are left as they were,
+    and the block is still marked.
+
+
+
+    ีอออออออธ
+ออออตHistoryฦออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+    ิอออออออพ
+
+Version     Date        Comments
+ฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤ
+0.01        03/22/93  ๙ Initial coding of macro.  Very simple implementation.
+0.02        03/24/93  ๙ Fixed bug that affects using macro in overwrite
+                        mode.  Insert is now set to On when macro is
+                        executed, and reset on exit.
+                      ๙ Added: Side Toggles for Top, Bottom, Left and
+                        Right sides.
+                      ๙ Added: Box Gap to all adjusting space between
+                        the block and the box.
+                      ๙ Added: Menu.  Allows setting all of the options,
+                        including the line pattern.  Also allows calling
+                        BoxIt.
+                      ๙ Added: Global Variables for Box edge toggles and
+                        Box gap.
+0.03        06/10/93  ๙ First public release of BoxIt!
+                      ๙ Changed names of several procedures to resolve
+                        conflicts with internal TSE procedures.
+
+0.04 - 0.09 Were not released.
+
+0.10        06/24/93  ๙ Fixed bug that caused total lock-up of TSE when
+                        current row - gap < 1.
+                      ๙ BoxIt! now inserts as many lines as needed at
+                        the beginning and end of a buffer.
+                      ๙ Fixed bug that caused total lock-up of TSE when
+                        current column - gap < 1.  Boxit! now returns
+                        an error message "Cannot Insert Box At or Before
+                        Beginning of Line."
+                      ๙ Changed to menu-bar structure.
+                      ๙ All menu items have a help line message attatched.
+                      ๙ Added: About menu.  Select '๐' from menu bar.
+                      ๙ Added: Help screen(s).  Select 'Help' from menu
+                        bar.
+                      ๙ Added: Gap settings for each side of box.
+                      ๙ Added: Global gap setting.
+                      ๙ Added: Global sides on/off toggle.
+                      ๙ Documentation over-haul. <g>
+                      ๙ Source code split into four files:
+                         BOXIT.S  : The main source code.
+                         BOXIT.MNU: The menus.
+                         BOXIT.HLP: Help Screens.
+                         BOXIT.KEY: Key Bindings.
+
+0.11        11/23/94  ๙ Quick patch up for TSE 2.0
+
+       ีอออออออออออออออออออออออออธ
+อออออออตAuthor: Bio. & Contactingฦออออออออออออออออออออออออออออออออออออออออออออ
+       ิอออออออออออออออออออออออออพ
+
+George J. De Bruin was a beta tester for The SemWare Editor for over a
+year and a half before releasing the first version of BoxIt for TSE in
+Macrch of 1993.
+
+During the summer of 1993 George joined the staff of SemWare in their
+Technical Support Department.
+
+    ีอออออออออออออออธ
+ออออตFuture Versionsฦออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+    ิอออออออออออออออพ
+
+
+    Below is a list of the features that are planned for future
+    versions. Features will be added to the list as they are suggested.
+    All features will be implemented as time permits.
+
+        þ Line marking.  Calculate longest line, and check for ample
+          left margin space.
+
+        þ Block history.  Allow user to restore block from a scroll-back
+          stack to ease making changes to existing boxes. (??????)
+
+        þ Overwriting text warning.
+
+        þ Inserting blank lines warning(s).
+
+        þ Quick Keys.  Menus will probably become cumbersome to some.
+          Need quick way to set options on the fly. (Partially
+          implemented now...not too well thought out, IMO).
+
+        þ Insert mode.  Allow text around box to be pushed left / right
+          and create blank lines for box where necessary.

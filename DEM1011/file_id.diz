@@ -1,0 +1,17 @@
+dem.s - Designer Enclosures - Version 1
+Revision 11 - a macro written with TSE-PRO
+GUI 4.0. This macro provides the convenience
+of surrounding text with several standard
+enclosure sets, like double/single quotes,
+brackets, etc., as well as custom designed
+enclosure sets that you can choose from an
+ASCII chart, or type in manually (see the
+help screen). You can put these enclosures
+around all lines in a file, all lines in a
+line-block, or on the left-right boundaries
+of a column block. You can also select
+whether to enclose blank lines. Great for
+doing columns of data. Contact the author or
+get the latest revision at:
+http://groups.msn.com/asemwareusersgroup
+Author: Hayes Smith

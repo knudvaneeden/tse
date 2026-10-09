@@ -1,0 +1,110 @@
+                                    INI.MAC
+                                    -------
+
+
+        SUMMARY
+        ---------------------------------------------------------------
+
+            This macro allows several macros to share a single common
+        .INI file. Each macro can have its own section in the .INI file,
+        and can update its settings indenpendent of other macros'
+        settings.
+
+            A section in the .INI file begins with a marker string
+        between brackets. For example, a section might begin like this:
+        "[Bullet]". The marker string can be the name of the macro, or
+        something more elaborate like "[Bullet - bullet and outlining
+        macro]".
+
+            A section ends either at the end of the file, or at the
+        beginning of the next section.
+
+            Each line in a section can either be a comment line (comment
+        lines start with a semicolon, ";") or a key line. A key line
+        consists of a keyname followed by an equal sign, followed by a
+        value. An example section for a macro might look like this:
+
+            [AutoSignature]
+            UserName=Eric Frank Russell
+            Initials=er
+            Signatures=3
+            Signature1=Yours Truly,
+            Signature2=Best Wishes,
+            Signature3=Thank You For Your Time,
+
+     ** NOTE: Section names and keynames are not case sensitive and may
+        only contain letters, digits, spaces, and the underscore; other 
+        characters may generate unpredictable results. Values may 
+        contain any characters except the linefeed character (Chr(10)), 
+        the carriage return (Chr(13)), or the NUL character (Chr(0)).
+
+
+
+        USING INI IN YOUR MACROS
+        ---------------------------------------------------------------
+
+            To use INI, you'll need to include INI.SI in your macro.
+        Then you'll be able to use the following functions:
+
+
+        GetIniStr, GetIniInt ------------------------------------------
+
+        string proc GetIniStr(string section, string keyname)
+        integer proc GetIniInt(string section, string keyname)
+
+            To get a keyname's value, use these functions. You can get
+        string and integer values using these functions. If a keyname
+        cannot be found, an empty string or 0 is returned. Example:
+
+            string section[] = "AutoSignature"
+            string s[80]
+            integer numsigs
+            s = GetIniStr(section, "UserName")
+            numsigs = GetIniInt(section, "Signatures")
+
+
+        SetIniStr, SetIniInt ------------------------------------------
+
+        proc SetIniStr(string section, string keyname, string value)
+        proc SetIniInt(string section, string keyname, integer value)
+
+            To set a keyname's value, use these functions. You can set
+        string and integer values using these functions. (If a keyname
+        does not exist, it is automatically added at the end of the
+        section.) Example:
+
+            string section[] = "AutoSignature"
+            if LoadIniSettings()
+                SetIniStr(section, "UserName", "Joe Cool")
+                SetIniInt(section, "Signatures", 5)
+                SaveIniSettings()
+            endif
+
+
+        SaveIniSettings -----------------------------------------------
+
+        proc SaveIniSettings()
+
+            Changes are automatically saved when you exit TSE or
+        when INI.MAC is purged. However, you can also force the
+        changes to be saved by calling SaveIniSettings() directly.
+
+
+
+        TECHNICALITIES
+        ---------------------------------------------------------------
+
+        ù The settings are all stored in a file called TSEPRO.INI in the
+          TSE Pro directory, but you don't need to know that; INI takes
+          care of it for you.
+        ù The TSEPRO.INI file can be edited by hand, too. It is stored
+          as a readable text file.
+        ù INI was specially written so that two macros that are both in
+          use can access their settings without conflicting with each
+          other.
+
+
+        ---------------------------------------------------------------
+        Use this macro at your own risk!!
+        Enjoy!
+        Chris Antos, chrisant@microsoft.com

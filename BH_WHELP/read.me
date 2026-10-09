@@ -1,0 +1,137 @@
+
+                   ษอออออออออออออออออออออออออออออป
+                   บ             BH              บ
+                   บ  (c) German Salvador  1995  บ
+                   บ        BH is freeware       บ
+                   ศอออออออออออออออออออออออออออออผ
+
+Note:   I am not an English speaker, so please be forgiving with my
+gramatics , spelling and unclear sentences.
+
+BH is a small utility created to ease searching for words in Windows
+Help files from a DOS session running under Windows, for example, from
+a DOS editor like TSE Pro.
+
+Installation
+============
+BH is a Windows program, to be able to run it from a DOS session it is
+need some way to run Windows apps from the command line.
+In Windows 95 and Windows NT this is not a problem, the system allows
+this without any help, but under Windows 3.1 or 3.11 some external
+utility is needed, I am using some programs included in
+Microsoft C/C++ 7.0: WX.EXE, WXSRV.EXE and VMB.386,these programs aren't
+supplied with Microsoft Visual C++, I don't know if they can be freely
+copied (I don't think so), maybe some shareware/freeware utility exist
+to do this task.
+
+    Windows 3.1 or 3.11
+    --------------------
+        Copy BH.EXE, WX.EXE and WXSRV.EXE to a directory accessible via
+        PATH enviroment variable. Add VMB.386 to the [386Enh] section of
+        SYSTEM.INI:
+
+        [386Enh]
+        ...
+        device=c:\path\vmb.386
+        ...
+
+        It is also convenient to include WXSRV in the Program Manager
+        start up group.
+        If DOS prompt is configured to exclusive execution, change it
+        to non-exclusive.
+        Restart Windows.
+
+    Windows 95 o Windows NT
+    -----------------------
+        Copy BH.EXE to a directory accessible via PATH enviroment variable.
+
+Configuring BH
+==============
+    Use File/Run from Program Manager to run BH, or, under Windows 95 or
+    WinNT, you can use the DOS command line.
+    The first time you run BH it won't be yet configured and it won't
+    know what .HLP file it should search. Open the system menu (in
+    Windows 95 right-click in the caption bar), and select "Install
+    files", add as many HLP files as you want, I recommend to first
+    select the most important Help file, the one where BH can find more
+    often what you usually search.
+
+    Now type something in the Search Dialog-Box and push the "Start"
+    button (or press ENTER), if there is only one HLP file installed, BH
+    will open it ,search for the word you asked, and close itself. If
+    there are more than one file, BH will show a list box with the
+    installed files, open the first one and search, to search other file
+    just click it.
+
+Running BH from a DOS session
+=============================
+
+    BH has a simple command-line format:
+
+        BH word_to_search
+
+    From Windows 95 or Windows NT it is so easy, from Windows 3.1 or
+    3.11 it is a little more difficult, for example, using WX:
+
+        wx /A bh word_to_search
+
+    In this case you should have DOS sessions configured as
+    non-exclusive executing.
+    If you use another utility to run Windows programs from a DOS
+    session, the command line will change, but BH should get
+    anyway word_to_search as a command line parameter.
+
+
+Running BH from TSE Pro.
+========================
+
+Add this small macro to your TSE configuration files:
+
+Windows 3.1 or 3.11, using WX
+
+    proc mWinHelp()
+        string sWord[80]=""
+        sWord = GetWordAtCursor()            // In TSE.UI
+        Dos("wx /A bh "+sWord,_DONT_PROMPT_)
+    end
+
+Windows 95 or NT
+
+    proc mWinHelp()
+        string sWord[80]=""
+        sWord = GetWordAtCursor()
+        Dos("bh "+sWord,_DONT_PROMPT_)
+    end
+
+and assign it to the key you prefer.
+
+Doing this, TSE will call BH.EXE with the word under cursor as a command
+line parameter, and BH will search the HLP files you previously
+installed. If you invoke the macro in a blank zone, BH will ask you for
+the word to search.
+
+Notes:
+======
+
+BH use the Windows Help System, this behaves differently in Windows
+3.1 and in Windows 95, for example, when searching for a topic that the
+Help file doesn't contain, Win 3.1 shows you an error message while Windows
+95 shows you the topic list.
+Also, the Windows 95 help system changes from a Win95 build to another,
+so it is possible BH doesn't work properly under some Windows 95 beta
+buid. I am using it under Windows 95 build 490 and under Windows for
+Workwroups 3.11.
+Windows 95 final release has already been released, but I don't have it
+yet, and so , I haven't tested BH. If there is something to change I
+will do it as soon as I can.
+
+
+    E-Mail, Comments, suggestions, complains, insults, questions to:
+            
+                German Salvador Garcia-Cano
+                Marques de Pico Velasco 54, 1
+                28027 Madrid (SPAIN)
+                Internet:       germans@ran.es
+                Compuserve ID:  100131,2037
+
+

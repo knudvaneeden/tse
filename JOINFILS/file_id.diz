@@ -1,0 +1,14 @@
+<08-22-98>       TSE Pro v2.5 and Pro/32 v2.8
+This macro joins two ascii files together,
+which have a key in common on certain column
+positions.
+
+See the macro source for a more detailed
+description.
+
+Note to TSE 2.80 users: If you have a sort
+macro that is older than 17 august 1998, then
+you need to update your sort macro with the
+included sort macro.
+
+Author: Carlo Hogeveen (hyphen@xs4all.nl)

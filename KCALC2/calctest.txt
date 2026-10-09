@@ -1,0 +1,93 @@
+This is a test file for KCALC.S:
+
+    Expression                  Actual Result          KCALC.S Result
+
+Simple Forms:
+    23+45.5                     68.5                --> 68.5
+    45.5 + 23                   68.5                --> 68.5
+    133.2-20                    113.2               --> 113.2
+    33-43.5                     -10.5               --> -10.5
+    2.1*43.23                   90.783              --> 90.783
+    10/3.0                      3.3333              --> 3.33333
+    100/30                      3.3333              --> 3.33333
+    100%30   modulo division    10                  --> 10
+
+Column Form: (implied + operator)
+     123
+     456
+    -234.12                     344.88              --> 344.88
+
+Negative Numbers: (1st number is an implied 0)
+    -123+45.66                  -77.34              --> -77.34
+
+Simple Parentheses:
+    (2+3)*5                     25                  --> 25
+    (2+3)*(5.1+0.9)             30                  --> 30
+    (-123)*45                   -5535               --> -5535
+
+Complex Parentheses:
+    Implied * between parentheses
+        (4+2)(3+5)              48                  --> 48
+    Implied * after 23
+        23(145+2)               3381                --> 3381
+    Messy
+        (4+(2*3))-2             8                   --> 8
+    Missing Trailing )s
+        (4+(2*3.1               10.2                --> 10.2
+
+Binary:
+    1010b > 1   shift right     101b                --> 101b
+    0101b < 1   shift left      1010b               --> 1010b
+    101b & 111b bitwise AND     101b                --> 101b
+    101b | 111b bitwise OR      111b                --> 111b
+    101b ^ 110b bitwise XOR     011b                --> 11b
+
+Mixed Numbers:
+    12 + 11b + 0Ah  (12+3+10)   25                  --> 25
+    12 + 11b - 0Ah              5                   --> 5
+    12.5 + 11b + 0Ah            25.5                --> 25.5
+    0FFFFh + 1                  10000h              --> 10000h
+
+Potential Overflow:
+    123.456 * 789.012           97408.265472        --> 97441.5
+     (the difference is due to rounding, proof follows)
+    123.46 * 789.01             97411.1746          --> 97441.5
+
+    123456.78 * 22.01           2717283.7278        --> 2717354.6
+
+Large Division:
+    45,203,308 / 850            53180.36235         --> 53180.362
+
+Long numbers (MAXINT <= 2,147,483,647):
+  Addition:
+    5,147,483,647 + 25          5,147,483,675       --> 5147483680
+     (the difference is due to rounding, proof follows)
+    5,147,483,647 --> 514748365 E1
+               25 -->         3 E1 (conversion to same exp)
+                      514748368 E1 (0 added for result display)
+
+  Multiplication:
+    230,456,789 * 100.588       23,181,187,491.932  --> 23,184,276,000
+    (again, rounding for integers causes the difference)
+    23046 E4 * 1006 E-1 = 23184276 E3
+
+  Division:
+    230,456,789 / 100.588       2,291,096.244       --> 2291096.2
+
+
+Bug Reports:
+
+1. Problem when divisor > dividend.  Problem proved to be where numbers
+    with negative exponents were converted into strings.  Test cases and
+    bug notification credited to "David C. Treibs" <sirdavid@ktc.com>
+    (thanks David!).
+
+    Expression                     Desired Result     KCALC.S Result
+    3/4                             0.75                --> 0.75
+    (4+2)/(3+5)                     0.75                --> 0.75
+    6/8                             0.75                --> 0.75
+    100,000,999/1,000,000,000       0.100000999         --> 0.100000999
+    100,000,999/10,000,000,000      0.0100000999        --> 0.0100000999
+    100,000,999/100,000,000,000     0.00100000999       --> 0.00100000999
+    100,000,999/1,000,000,000,000   0.000100000999      --> 0.000100000999
+    6/11                            0.54545454          --> 0.545454

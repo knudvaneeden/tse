@@ -1,0 +1,17 @@
+/*****************************************************************************
+   The macros and variables in LOPENFIX.S:
+      - Cause a "beep" to sound whenever NextFile or PrevFile move you
+        to the first file that was loaded
+      - Change ListFiles so that the first file loaded is always at the
+        top of the list
+      - The procedure MakeFirst allows you to assign any file as the
+        "first" file for the above
+
+ NOTE:  This is not a stand-alone macro file.  At lease the global integer
+        declaration and the OnFirstEdit procedure must be included in the
+        User-Interface macro file.  I recommend including all of this,
+        unless you desire the above effects only for certain editing
+        purposes
+
+ *****************************************************************************/
+

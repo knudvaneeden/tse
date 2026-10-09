@@ -1,0 +1,300 @@
+                          CmdLine, Version 3
+                                9-13-93
+                              David Marcus
+
+Helper macros to facilitate user-created command line options. Includes
+complete instructions for creating your own TSE command line options or
+reinterpreting standard options.
+
+This document is divided into three sections:
+
+þ TSE-like doc explaining the two macros in the package.
+þ Additional usage notes and examples.
+
+Copyright (c) 1993 David Marcus
+
+  Permission is granted to all persons for non-commercial distribution
+  of this file and the macros and ideas contained herein provided (a)
+  credit is given to the author and (b) all changes not made by the
+  author are attributed.
+
+  Permission is granted to SemWare for commercial distribution provided
+  (a) and (b) above.
+
+Contacting The Author
+
+  You can contact David Marcus
+     ù on the SemWare BBS
+     ù via CompuServe EMail (76300,3204)
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+þ CmdLineOptionUsed
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+          Tests for the presence of a command line option. Sets a global
+          string with any argument used for the option. Removes the
+          option and argument from the command line.
+
+Syntax:   INTEGER CmdLineOptionUsed(STRING ®option¯)
+
+          ù ®option¯ is the option for which to test. May be a standard
+            TSE option or a user-defined option. May be multi-character.
+            Should be option only; no leading '-'.
+
+Returns:  TRUE or FALSE, depending on whether the option is present.
+
+Notes:    CmdLineOptionUsed sets a a unique global string variable to
+          the argument used for the option. The name of this variable is
+          constructed as follows:
+
+                      'CmdLineArgFor' + option
+
+          This allows a separate variable for each option you create.
+
+Usage:    1. Test for the presence of the command line option like this:
+
+               if CmdLineOptionUsed(X)        // test for -X on cmd line
+
+          2. (optional) Test for the presence of an argument for it:
+
+               if Length( GetGlobalStr('CmdLineArgForX') )
+
+          3. (optional) Retrieve the argument used for the option, and
+          use it as desired.
+
+               Xarg = GetGlobalStr('CmdLineArgForX')
+
+          For example:
+
+          proc WhenLoaded()
+               string xarg[24]=''
+               ...
+               if CmdLineOptionUsed(X)        // test for -X on cmd line
+                    if not Length(GetGlobalStr('CmdLineArgForX'))
+                         warn('-X require an argument')
+                    else
+                         xarg = GetGlobalStr('CmdLineArgForX')
+                         DoWhatXMeans(xarg)  // if present ...
+                    endif
+               endif
+               ...
+          end
+
+          The same thing can be done more simply (but less readably) and
+          without the warning:
+
+          proc WhenLoaded()
+               ...
+               if CmdLineOptionUsed(X)
+                         and Length(GetGlobalStr('CmdLineArgForX'))
+                    DoWhatXMeans(GetGlobalStr('CmdLineArgForX'))
+               endif
+               ...
+          end
+
+          If no argument is required:
+
+          proc WhenLoaded()
+               ...
+               if CmdLineOptionUsed(X)
+                    DoWhatXMeans()
+               endif
+               ...
+          end
+
+          If you use a multi-character option, make sure that its first
+          character is not the same as any other option, and that its first
+          n characters are not the same as any other option.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+þ CmdLineFiles()
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+          Returns all files used on the command line. Removes them
+          from the command line.
+
+Syntax:   STRING CmdLineFiles()
+
+Returns:  All filespecs from the command line are returned.
+
+Notes:    CmdLineFiles should be used in TSE's WhenLoaded() macro as
+          follows:
+
+             proc WhenLoaded()
+                  FancyLoadFiles( CmdLineFiles() )
+             end
+
+          In this example,
+
+            ù No new option is being created.
+            ù The macro being executed is FancyLoadFiles.
+            ù Any file names on the command line are used as the
+              argument for FancyLoadFiles().
+            ù The file names are then deleted from the command line.
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+þ Additional Notes
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+þ Making These Macros Part of TSE
+
+  To use these macros, move the macro file into the directory with your
+  TSE configuration files.  Add this line to your main configuration file
+  at any point before your WhenLoaded macro:
+
+     #INCLUDE ['cmdline.s']
+
+  In the standard TSE configuration file for TSE v1.00a, WhenLoaded
+  appears in the file TSE.S at line 1202.
+
+  See the examples in this file for usage information.
+
+þ Adding a New Option
+
+  Adding a new command line option to TSE is very easy. To use
+  CmdLineOptionUsed() to do it, all you have to do is:
+
+     (a) Pick an option. Options can be >1 character and can duplicate
+         existing TSE options but this may be confusing. In this
+         discussion, we'll use ABC as the option.
+
+     (b) Add this to your main configuration file:
+
+         #include ['cmdline.s']
+
+     (c) Create a procedure in your main TSE configuration file that
+         does whatever you want the option to do. You don't need to pass
+         it a value, even if you want to use an argument with the option.
+
+               proc OrderLunch()
+                    ...
+               end
+
+     (d) If you want to use an argument for your options, add a statement
+         to the procedure to retrieve the argument:
+
+               proc OrderLunch()
+                    string type[24] = GetGlobalStr('CommandLineArgForABC')
+                    ...
+               end
+
+     (e) If you want the argument to be required, add a test to check the
+         length of the argument:
+
+               proc OrderLunch()
+                    string type[24] = GetGlobalStr('CommandLineArgForABC')
+                    if Length(type)
+                         warn('-ABC requires an argument')
+                         return()
+                    endif
+                    ...
+               end
+
+     (f) Add a section to the WhenLoaded proc of your main TSE
+         configuration file to test for the option and activate the
+         procedure designed for it.
+
+          WhenLoaded()
+               ...
+               if CmdLineOptionUsed('ABC')
+                    OrderLunch()
+               endif
+               ...
+          end
+
+þ Passing the Argument to an External Macro
+
+  An external macro is one executed via an ExecMacro() command.
+
+  1. If you are writing the external macro, all you have to do is to
+  make it read the global string set by CmdLineOptionUsed. For instance,
+  if the option is X, used
+
+          variable = GetGlobalStr("CmdLineArgForX")
+
+  2. To pass an option's argument to a pre-existing external macro that
+  you do not want to or cannot change, use a construct like this:
+
+     proc WhenLoaded()
+       ...
+       if CmdLineOptionUsed('f')
+            SetGlobalStr( "LoadFilesArgument",
+                           GetGlobalStr("CmdLineArgForf") )
+            ExecMacro('loadfile')
+       endif
+       ...
+     endif
+
+  And (in a separate file called "loadfile"):
+
+     proc main()
+          STRING
+               foo = GetGlobalStr( GetGlobalStr('LoadFilesArgument') )
+          .... stuff ....
+     end
+
+  In this example,
+
+     ù The option being created is -f.
+     ù The macro being execute is loadfile.
+     ù LoadFile gets the argument via the global string LoadFilesArgument.
+
+þ Reinterpreting Standard TSE Options
+
+  You can use these macros to "intercept" standard TSE command line options.
+  For instance, to reinterpret the -N (go to line number) option and use its
+  argument to feed your own goto command, do this:
+
+  proc WhenLoaded()
+     if CmdLineOptionUsed('N')
+        AND Length( GetGlobalStr('CmdLineArgForN') )
+               mGotoRowCol( GetGlobalStr('CmdLineArgForN') )
+     endif
+  end
+
+  In this example, we are:
+
+    ù Checking is done to see if the -N option was used.
+    ù Checking is done to see if that there was an argument used.
+    ù If so, the argument is used to feed the mGotoRowCol()
+      macro, presumably a macro that accepts a line and a column as its
+      argument.
+    ù -N and its argument are deleted from the command line so that
+      TSE does not act on it.
+
+þ Order
+
+  Note that the order in which you do things in whenloaded() is important.
+  In particular, if your command line option acts on a file or requires
+  that one of your files be loaded, YOU must load that file. Doing so
+  may require that you have LoadWild... set correctly. Here's an example
+  of doing all this:
+
+proc WhenLoaded()
+
+     string files[75]
+
+  /* GotoLine,Column */
+     if (CmdLineOptionUsed('N')
+         AND Length(GetGlobalStr('CmdLineArgForN'))
+
+          /* Set proper wildcard loading for the "manual" file
+             file we are about to do.
+          */
+          LWFI = Set(LoadWildFromInside, Query(LoadWildfromDOS))
+          files = CmdLineFiles()
+
+          /* Attempt to load files -- we need them loaded! */
+          if EditFile( files )
+               LineColumn(GetGlobalStr('CmdLineArgForN'))
+          else
+
+               /* if could not load, restore the files to the CmdLine() */
+               Set(DOSCmdLine, Query(DOSCmdLine) + ' ' + files)
+          endif
+
+          /* restore normal setting */
+          Set(LoadWildFromInside, LWFI)
+     endif
+
+end

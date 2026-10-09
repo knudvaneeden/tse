@@ -1,0 +1,3 @@
+KeyFind.S and KeyAssgn.S are a pair of macros which allow you to search
+for key assignments and display which command is assigned to a key,
+respectively.

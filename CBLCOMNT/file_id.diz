@@ -1,0 +1,19 @@
+TSE Pro/32 v2.8 upwards:
+This macro remedies three potential Cobol
+issues:
+-  All TSE Pro versions are not capable of
+   coloring columns, neither column 1 thru 6
+   nor column 73 thru the end of line.
+-  Cobol versions up to and including
+   Cobol-85 indicate comments by putting an
+   asterisk or a slash on column 7.
+   Since version 3.0 TSE Pro supports this
+   with to-end-of-line syntax hiliting if a
+   configurable character is present at a
+   configurable column.
+   TSE Pro 2.8 users need this macro to do
+   the same.
+-  For older versions of TSE you can also
+   install a Cobol syntax-hiliting file.
+The macro can also be configured for
+syntax-hiliting Fortran comments.

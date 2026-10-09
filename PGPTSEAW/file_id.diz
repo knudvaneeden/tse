@@ -1,0 +1,16 @@
+PGPTSEAW.ZIP -- 26 Oct. 1995
+PGPAW.S--a TSE Pro macro to use PGP to
+encrypt, decrypt, sign, insert public
+key, and sign messages, etc. for email.
+Based on PGP032.S by Tom Klein, but
+greatly changed by Anthony Williams.
+Includes some added helps for using PGP
+and a macro to produce two windows in
+TSE when invoked from the command line.
+Requires TSE Pro (aka The Semware
+Editor) 2.5 (2.0 with modification) and
+PGP (Pretty Good Privacy).  Ideal for
+use with Tapcis, Ozcis, KWQ/2, etc.
+
+
+

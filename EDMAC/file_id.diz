@@ -1,0 +1,6 @@
+(11-07-2003) EditEDI.s -TSE Pro/32 v2.6 - 4.0
+Unwrap/edit X12 EDI.  To edit EDI open the
+file in binary mode. Run this macro to place
+each segment on a separate line.  Make your
+changes and save.
+Author: Chris Shuffett

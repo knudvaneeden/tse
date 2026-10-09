@@ -1,0 +1,12 @@
+(08-28-01) TSE Pro/32 v3.0 (v2.6/2.8 partial)
+These macros add two buttons to TSE's user
+interface emulating some of the mouse
+interfaces which work for GUI application but
+usually do not work for console applications.
+The X-button, when clicked, closes TSE by
+calling the quickxit macro. The S-button
+allows you to resize TSE in terms of rows and
+columns using a mouse and to quickly
+minimize, maximize and restore it. Note: SBTN
+only works for TSE-Pro32 v3.0.
+Author: Dieter Koessl

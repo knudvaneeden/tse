@@ -1,0 +1,10 @@
+<11-09-99> - TSE Pro v2.5 and TSE Pro/32 v2.8
+LINEPRO.ZIP replaces LINEPR.ZIP (of 03-21-97)
+ ----- MULTI-FUNCTION LINE PROCESSOR -------
+Has 13 functions, selected from a menu: cut
+blank or contiguous duplicate lines, cut or
+keep lines containing a string (string lists
+may be specified), double space lines, insert
+string, append string, flush, squeeze and
+number lines. Maximum line length=255 chars.
+Author:Jean Heroux (heroux.jean@videotron.ca)

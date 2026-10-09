@@ -1,0 +1,9 @@
+LIBRARY CAPSNUMS
+
+DESCRIPTION "CAPSNUMS 1.0.0.0.3 - Caps Lock and Num Lock control for TSE"
+
+EXPORTS
+    CapsOff=_CapsOff
+    CapsOn=_CapsOn
+    NumsOff=_NumsOff
+    NumsOn=_NumsOn

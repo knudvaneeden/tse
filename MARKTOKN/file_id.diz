@@ -1,0 +1,7 @@
+(05-25-2004) MarkTokn.s for TSE Pro v2.5+
+Marks and unmarks consecutive tokens (whole
+words or single non-word characters) in both
+directions. Intended as a handier way for the
+way Windows or CuaMark mark consecutive words
+with the Ctrl Shift Left and Right keys.
+Author: Carlo.Hogeveen@xs4all.nl.

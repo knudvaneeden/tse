@@ -1,0 +1,49 @@
+1. Synopsis
+-----------
+
+HlpLnClk is a small TSE add-in which makes the TSE help line mouse
+sensitive. In other words, as long as HlpLnClk is loaded you can click
+an item within TSE's help line to execute the corresponding command.
+
+
+2. Installation
+---------------
+
+Compile the macro and put the mac file into TSE's macro directory (on
+default c:\os\mac). Next enter TSE editing an arbitrary file and add
+HlpLnClk to the autoload list. Press <F10> <M> <A> to open the autoload
+list. Then press <INS> and enter "hlplnclk". Now press <Enter> twice and
+quit the editor. From now on, HlpLnClk will be loaded automatically
+whenever you use TSE.
+
+
+3. Usage
+--------
+
+Using HlpLnClk is very simple: Whenever you want to execute a command
+displayed in the help line you can do so by simply clicking it with the
+mouse. This also works for the commands displayed when you press any
+combination of the shift (ctrl, alt) keys. Moreover, it also works for
+any help line displayed by an interactive stand alone macro, as long as
+the latter uses standard TSE keydefs to get its input. It doesn't work
+with macros which define their own message loops and retrieve input via
+GetKey (dialogs are an example for these kind of macros).
+
+There is one limitation, though. HlpLnClk only understands helpline
+entries which are of the format <key><dash><description>, e.g.
+
+        F10-Menu
+
+If HlpLnClk cannot figure out what the string you just clicked is all
+about, it will beep and do nothing.
+
+
+4.) Disclaimer
+--------------
+
+This program is thereby donated to the public domain. Use it or
+even alter it as you see fit, but ENTER AT YOUR OWN RISK!
+
+If you should find any bug or just wanted to say hello, feel free to
+contact me. My name is Dieter K”ssl and my e-mail address is
+100517.1221@compuserve.com.

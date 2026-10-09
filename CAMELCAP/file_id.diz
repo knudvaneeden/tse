@@ -1,0 +1,7 @@
+CamelCaps for TSE Pro 2.5e and above.
+Replacement macros for 
+WordLeft and WordRight.
+Considers change of case *within*
+a word and does *not* consider
+end of line as a word.
+Author: retrolite@comcast.net

@@ -1,0 +1,16 @@
+Profile v1.3.5 (Dec 12, 2001):
+
+Macro for reading and writing INI files.
+Based on Chris Antos INI.MAC (INI110.ZIP),
+but it has been modified to use the
+same syntax and functionality as the
+(undocumented) GetProfile* commands now
+provided by TSE/32.
+
+Platform: TSE 2.5 (DOS) Only
+
+Requirements: none
+
+Author: Chris Antos <chrisant@microsoft.com>, Michael Graham <magmac@occamstoothbrush.com>
+Homepage: http://www.occamstoothbrush.com/tsemac/
+

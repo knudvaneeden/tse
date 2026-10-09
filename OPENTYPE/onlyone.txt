@@ -1,0 +1,275 @@
+
+Quick Start: Place onlyone.s in your macro directory, compile it,
+and then add it to your autoload list (Macro->AutoLoad List)
+
+ ----
+
+There are now many options for handling the keyboard focus
+issues, and how the client and server interact.  See below.
+
+ ----
+
+OnlyOne can now be used with programs that expect TSE to exit when
+the file being edited is quit.  For instance, if your email client
+allows you to edit files with an external editor, it expects that when
+TSE exits, you are done editing the message.  The '+f' switch makes
+OnlyOne keep open a hidden instance of TSE in the background until you
+quit the requested file.
+
+So you will normally use TSE and OnlyOne as follows:
+
+    g32 readme.txt      - edit 'readme.txt' normally
+
+    g32 +f readme.txt   - "edit and hold" 'readme.txt', returning
+                          control to the calling app when 'readme.txt'
+                          is quit.
+
+These are probably the only two ways you will need to use OnlyOne.  There
+are other switches available, but they are not required for normal use.
+
+See below under "Technical Notes" for all sorts of interesting arcana,
+including descriptions of the complex focus issues that OnlyOne tries to
+solve.
+
+ ----
+
+OnlyOne has been updated to work properly with the Becky Mail Client:
+to let you use TSE as the external editor for Becky.
+
+In Becky's "External Editors" dialog box, specify the full path to
+TSE, followed by the "+f" flag, e.g.:
+
+    C:\Program Files\tse32\g32.exe +f
+
+Also check the "MDI" checkbox and the "Start Automatically" checkbox.
+
+Known Issue:
+
+If you use Becky to compose a message, and TSE is not already running,
+control will not return to Becky until you exit TSE.  That means
+that if you open other files after you start composing your message,
+you'll have to close those too, when you finish with your message.
+
+ ----
+
+There are four settings you can change in onlyone.s, near the top of
+the source file:
+
+    #define SAVE_FILES_ON_LOSING_FOCUS      FALSE
+    #define SHOW_TSE_WINDOW_RESTORED        FALSE
+    #define USE_AS_STANDALONE_MACRO         TRUE
+    #define DEFAULT_CLIENT_SERVER_BEHAVIOUR FLAG_WAIT_FOR_PARENT_FOCUS
+
+For the first three, there are comments in the source code (above each
+setting), describing what they do, and what your options are.
+
+The last one (DEFAULT_CLIENT_SERVER_BEHAVIOUR) is tricky.
+See the "Technical Notes" section below for details.
+
+Technical Notes
+---------------
+
+Background
+==========
+OnlyOne works by maintaining a primary editing session at all times.
+This editing session is called the "Server".  If the Server
+is running already and you start a new TSE process, this process
+becomes a "Client".  The Client has to do three things:
+
+    1) tell the Server what file(s) to edit
+    2) bring the Server window to the foreground
+    3) exit gracefully
+
+Meanwhile, in the background, the Server is spends some of its idle time
+waiting for messages from the Client.  When it discovers one, it loads
+any requested files into your editing session.
+
+This process is simple in concept, but surprisingly tricky in execution,
+particularly because of how modern versions of Windows handle
+application focus issues.
+
+For instance, in earlier versions of OnlyOne, the Server would attempt
+to bring its own window into focus.   This technique no longer works,
+because modern versions of Windows don't allow an application running in
+the background to bring itself to the foreground.
+
+The rationale behind this is actually quite sensible:  Windows doesn't
+want arbitrary background apps coming to the foreground and interrupting
+what the user is doing.  For instance, if a virus scanner pops up an
+alert while you're typing a letter, you don't want the alert to gain
+focus. For one thing, it would interrupt your concentration.  For
+another thing, if you happen to be in the middle of pressing "Enter" in
+your word processor when the alert appears, you could accidentaly
+dismiss the virus alert before you even have a chance to read it.
+
+So these days, when a background app wants focus, Windows doesn't bring
+the app to the foreground.  Instead it flashes the app's button on the
+task bar, letting the user know in a (mostly) unobtrusive way that
+something needs his or her attention.
+
+Older versions of OnlyOne worked like this:
+
+    1) User has TSE session running with some open files
+    2) User leaves TSE session, goes to Explorer and
+       double-clicks on a file called 'readme.txt'
+    3) TSE runs OnlyOne macro, becomes Client, tells Server to load
+       'readme.txt'
+    4) TSE Server gets the message, loads 'readme.txt', then tries
+       to bring its own window into focus.
+    5) Windows detects that a background app wants focus.  It starts the
+       TSE Server taskbar button blinking
+    6) The TSE Client terminates
+    7) Windows returns focus to Explorer
+
+The problem is in step 4.  Since the TSE Server is in the background,
+Windows won't allow it to bring itself to the foreground.  So it blinks
+some buttons, and the user curses.
+
+In the current version of OnlyOne, the Client brings the Server to the
+foreground.  Since the Client is still in the foreground when it does
+this, Windows allows it.  But unfortunately, there's still a problem.
+
+The new "Flashing Button" problem
+=================================
+In the current version of OnlyOne the simplest available focus-handling
+behaviour is for the Client to exit immediately after it brings the
+Server to the foreground.  (You can achieve this behaviour with the '+n'
+switch.)  In this scenario, the sequence of events is:
+
+    1) User has TSE session running with some open files
+    2) User leaves TSE session, goes to Explorer and
+       double-clicks on a file called 'readme.txt'
+    3) TSE runs OnlyOne macro, becomes Client, tells Server to load
+       'readme.txt'
+    4) TSE Server gets the message, loads 'readme.txt'
+    6) The TSE Client brings the Server window into focus
+    7) The TSE Client terminates
+    8) Windows returns focus to Explorer
+
+Oops!  Now we have a more subtle problem!  It's that pesky Step 8!
+When the TSE Client terminates, Windows returns control to the application
+that started it (in this case Windows Explorer).
+
+This happens even though the Client just put the Server in the
+foreground! On my computer (Win 98) this results in a strange situation:
+the TSE Server remains the active application, but the Explorer window
+moves to the top, and the button for Explorer starts flashing in
+the taskbar. Bleah!
+
+The trick is to keep the Client running hidden in the background
+until it is safe for it to exit.
+
+OnlyOne provides several strategies to achieve this.  You can choose a
+strategy at runtime using a command-line switch.  You can change the
+default strategy by changing the value of
+DEFAULT_CLIENT_SERVER_BEHAVIOUR in OnlyOne.s and then recompiling.
+
+These are the available strategies:
+
+    i) The Client never exits.  It just stays hidden in the background
+       forever, and so Step 8 never happens.  While this solves the focus
+       problem, it spawns a lot of hidden instances of TSE which never
+       disappear.  So memory slowly evaporates as you edit more files this
+       way. Nevertheless, if you really want it, you can enable this
+       strategy with the '+P' switch, or the FLAG_PERSIST_HIDDEN flag.
+
+   ii) The Client runs hidden in the background until the user brings to
+       the foreground the app that started the Client in the first
+       place.  Then the Client safely exits.  The reason it it is now
+       safe for the Client to exit is because Windows will now try to
+       bring focus to the app that called the Client (Step 8), and the
+       app already has focus.  So no strange focus issues will take
+       place.  You can get this behaviour with the '+W' switch, or a
+       combination of the FLAG_WAIT_FOR_FILE_QUIT and
+       FLAG_WAIT_FOR_PARENT_FOCUS flags
+
+  iii) The Client runs hidden until you quit the file.  Then the Server
+       gives focus to the Client, and the Client exits.  This brings
+       focus to the app that called the client.  You can get this
+       behaviour with the '+f' switch, or a combination of the
+       FLAG_WAIT_FOR_FILE_QUIT and FLAG_RETURN_FOCUS flags.
+
+Flags
+=====
+The DEFAULT_CLIENT_SERVER_BEHAVIOUR specify the default behaviour.
+
+    FLAG_WAIT_FOR_FILE_QUIT     -  Client waits (hidden) until
+                                   the Server quits the file.
+
+    FLAG_WAIT_FOR_PARENT_FOCUS  -  Client waits (hidden) until
+                                   the program that called the client
+                                   becomes the foreground app.
+
+    FLAG_RETURN_FOCUS           -  Client returns focus to itself
+                                   before quitting.
+
+    FLAG_PERSIST_HIDDEN         -  Client waits forever (hidden)
+                                   in the background.
+
+
+Normally, DEFAULT_EDITFILE_FLAGS is set to FLAG_WAIT_FOR_PARENT_FOCUS.
+
+This default is suitable for editing files from applications that don't care
+when you quit the file.
+
+You can choose combinations of flags, e.g:
+
+    constant DEFAULT_CLIENT_SERVER_BEHAVIOUR = FLAG_RETURN_FOCUS
+                                             | FLAG_WAIT_FOR_FILE_QUIT
+
+Command-Line Switches
+=====================
+
+  Switch  Equivalent to Flags           Action
+  ======  =======================       ======
+
+  +w      FLAG_WAIT_FOR_FILE_QUIT       Client tells Server to load file.
+          FLAG_WAIT_FOR_PARENT_FOCUS    Then it waits (hidden) in the
+                                        background until the Server quits
+                                        the file.  Then the Client waits
+                                        (hidden) until the application it
+                                        was called from has focus.  At that
+                                        point, the Client exits.
+
+  +f      FLAG_WAIT_FOR_FILE_QUIT       Client tells Server to load file.
+          FLAG_RETURN_FOCUS             Then it waits (hidden) in the
+                                        background until the Server quits
+                                        the file.  Then the Server gives
+                                        focus to the Client.  Finally
+                                        the Client exits.  This sequence
+                                        of events means that the
+                                        application that called the Client
+                                        gets focus when the user is
+                                        finished editing the file.
+
+  +P      FLAG_PERSIST_HIDDEN           Client tells Server to load file.
+                                        Then it waits (hidden) forever.
+                                        This strategy eats memory and is
+                                        is therefore not recommended.
+
+  +W      FLAG_WAIT_FOR_FILE_QUIT       Client tells Server to load file.
+                                        Then it waits (hidden) in the
+                                        background until the Server quits
+                                        the file.  Then the Client exits.
+                                        This strategy does not handle
+                                        all focus issues cleanly and
+                                        is therefore not recommended.
+
+  +N      FLAG_NONE                     Client tells Server to load file.
+                                        Then it exits immediately.
+                                        This strategy does not handle
+                                        all focus issues cleanly and
+                                        is therefore not recommended.
+
+
+Examples of calling g32 with and without OnlyOne switches:
+
+  g32 readme.txt
+  g32 +w readme.txt
+  g32 +f readme.txt
+
+Examples of calling e32 with and without OnlyOne switches:
+
+  e32 readme.txt
+  e32 +w readme.txt
+  e32 +f readme.txt
