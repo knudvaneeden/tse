@@ -1,157 +1,161 @@
 # PROJ v2.00 for TSE
 
-Package version: **1.0.0.0.227**  
+Package version: **1.0.0.0.228**  
 Prepared: **2026-10-11 22:34**  
 Original author: **Chris Antos**  
 Package update: **OpenAI Codex (GPT-6)**
 
-## Project picker filename cancellation - version 1.0.0.0.227
+## Change and Get projects hotkeys - version 1.0.0.0.228
+
+Change projects: C = Change project. Get projects: R = Get all project names; N = Get all filenames in the TSE ring.
+
+## Project picker filename cancellation - version 1.0.0.0.228
 
 Escape explicitly cancels the saved-project list. Cancelling its alternate filename prompt now discards the history suggestion, so Copy, Change and Delete do not continue with that unaccepted filename or show a project-file-not-found warning.
 
-## Shared menu cancellation handling - version 1.0.0.0.227
+## Shared menu cancellation handling - version 1.0.0.0.228
 
 Cancelled named text/filename prompts and project-name/filename lists now request a return to the main project menu. Cancelling a saved-project picker no longer opens the alternate filename prompt. Submenus retain their existing parent-menu navigation. Runtime verification in TSE is still required.
 
-## Cancel Copy project - version 1.0.0.0.227
+## Cancel Copy project - version 1.0.0.0.228
 
 Escape in the source-project picker or destination filename prompt returns to the main project menu. A cancelled save no longer reports successful creation or opens project settings; the source project name and filename are restored.
 
-## Cancel New project filename - version 1.0.0.0.227
+## Cancel New project filename - version 1.0.0.0.228
 
 Escape at the new-project filename prompt clears the unaccepted suggested name, stops creation, and returns to the main project menu. No Add files screen or successful creation message follows.
 
-## View projects hotkeys - version 1.0.0.0.227
+## View projects hotkeys - version 1.0.0.0.228
 
 In View projects, C selects View current active project and A selects View all projects.
 
-## Click to add project files or directories - version 1.0.0.0.227
+## Click to add project files or directories - version 1.0.0.0.228
 
 The New project path list displays a clickable [ Add files or directories... ] row at its end. Click it or press Ins to open the existing add prompt. The action row is never saved as a path.
 
-## Cancel Open project returns to the main menu - version 1.0.0.0.227
+## Cancel Open project returns to the main menu - version 1.0.0.0.228
 
 Escape in the Open/Change project picker returns to the main project menu. Escape in the main menu still returns to the editor.
 
-## Mouse confirmation for saved lists - version 1.0.0.0.227
+## Mouse confirmation for saved lists - version 1.0.0.0.228
 
 In project-name and filename lists, click a list row or press Enter to open the save filename prompt. Scrollbars and the close button retain their normal behavior. The entire list is saved.
 
-## Get projects menu divider - version 1.0.0.0.227
+## Get projects menu divider - version 1.0.0.0.228
 
 A divider separates Get all project names from the filename-list options.
 
-## All-project name-list scope correction - version 1.0.0.0.227
+## All-project name-list scope correction - version 1.0.0.0.228
 
 The project-name menu now requests scope 3 (all registered projects), matching the transfer worker scope used to retrieve its request buffer. The previous scope 0 caused the worker to receive no saved-project records. Imported project names are included, duplicate names are retained, and Enter offers saving the list.
 
-## Project-name worker compiler correction - version 1.0.0.0.227
+## Project-name worker compiler correction - version 1.0.0.0.228
 
 Replaced the unavailable RemoveQuotes helper with local removal of paired surrounding double quotes. Duplicate names remain preserved and the list can be saved to a file.
 
-## Get all project names - version 1.0.0.0.227
+## Get all project names - version 1.0.0.0.228
 
 Get projects > N: Get all project names lists all registered saved projects plus the active in-memory project. Names are sorted and duplicate names are retained in both the displayed list and saved file. Press Enter to choose a file and save the list; Escape returns. The save destination has its own named history. Open destination files are protected and existing files require overwrite confirmation. Projects are not switched or saved by this action.
 
-## Calculator error logs and clipboard - version 1.0.0.0.227
+## Calculator error logs and clipboard - version 1.0.0.0.228
 
 Calculator failures retain a .log file and offer to copy its full filename to the Microsoft Windows clipboard. If PowerShell produces no marked result, the log contains the generated expression, Dos return, and script/batch paths as well as captured output. Failed .ps1 and .bat files are retained beside the macros. Two final empty input lines complete PowerShell's multiline stdin block, addressing a possible cause of empty output. Runtime verification remains required.
 
-## Calculate projects hotkey - version 1.0.0.0.227
+## Calculate projects hotkey - version 1.0.0.0.228
 
 Press 5 in the Project menu to open Calculate projects. Its submenu still uses C for Floating point calculator.
 
-## Calculator PowerShell integration - version 1.0.0.0.227
+## Calculator PowerShell integration - version 1.0.0.0.228
 
 The calculator retains the supplied expression parser. Its private batch now invokes PowerShell synchronously using stdin (-Command -), and searches all output for the result marker. Failure messages include the PowerShell error when available and the diagnostic filename. Failed script, batch and output files remain beside the macros for inspection; successful runs clean up their private files. Test 1+sin(2)*cos(3), expecting approximately 0.0998023702644826. Windows runtime verification remains required.
 
-## Browser help menu option - version 1.0.0.0.227
+## Browser help menu option - version 1.0.0.0.228
 
 Choose Help > B: Read package help in browser to open the bundled proj0200_readme.html in your default browser. It uses the PROJ0200 installation directory and closes the Project menu before launching. Missing files or browser launch failures produce an explanatory message. Help > R retains the resizable wrapped TSE viewer. Rebuild with build.bat.
 
-## Resizable README window - version 1.0.0.0.227
+## Resizable README window - version 1.0.0.0.228
 
 The README now opens in a window of 100 columns by 30 rows, limited to the available TSE screen. Press F4 to choose width and height; each value has a separate named history and is reused next time. Values are limited to at least 40 columns and 8 rows when the screen permits. Prose is rewrapped from the original file after resizing, while code and table lines retain horizontal scrolling. F4 changes the help window, not the outer Windows application window.
 
-## Wrapped README navigation and display - version 1.0.0.0.227
+## Wrapped README navigation and display - version 1.0.0.0.228
 
 Help > R opens a temporary wrapped README view using your editor's text and highlight colors. The Help entry now closes the outer Project menu after its submenu returns, allowing the deferred README action to run immediately. UpdateDisplay() refreshes the help buffer after loading/wrapping and before displaying it. The original README is unchanged.
 
 Navigation: Up/Down and PgUp/PgDn scroll; F3 searches; Alt+F3 finds the next match; Enter opens a link on the selected line; F2 lists links; Alt+Left goes back to the previous help document; Escape closes the viewer. The viewer title shows the action keys. Code blocks, tables, headings and links are not wrapped. Margin and menu-color settings are restored.
 
-## README menu handoff correction - version 1.0.0.0.227
+## README menu handoff correction - version 1.0.0.0.228
 
 Help > R now schedules the README to open after the Project menu loop and cleanup finish. This prevents the menu from immediately reopening over the README. The separate projreadme.mac is compiled and copied by build.bat; if missing, the launcher displays a rebuild message.
 
-## Guided Mermaid steps - version 1.0.0.0.227
+## Guided Mermaid steps - version 1.0.0.0.228
 
 Creating a Mermaid prompt now pauses at each manual ChatGPT step. Press OK when ready to continue: paste the prompt, attach the generated source ZIP (its exact location is displayed), send and wait for the reply, copy the Mermaid source, then return to Draw projects > Save returned Mermaid script from Windows clipboard. You can switch between TSE and ChatGPT while a step message is displayed.
 
 The Save action pauses before reading the clipboard, after saving the script and before opening it, and after opening it with instructions to run the configured Mermaid compiler. Close the final message before invoking the compiler. The default output is ddd.mmd beside the PROJ0200 macros; existing filename history can override that default. No machine-specific output path is hardcoded.
 
-## Normal editor for package help - version 1.0.0.0.227
+## Normal editor for package help - version 1.0.0.0.228
 
 Help > R uses EditFile() to open proj0200_readme.md as a normal file. Your editor colors, keys and Markdown highlighting apply automatically. The custom list viewer and its temporary wrapping are removed. Opening the file does not change its contents. Rebuild with build.bat.
 
-## Mermaid menu descriptions - version 1.0.0.0.227
+## Mermaid menu descriptions - version 1.0.0.0.228
 
 Both Mermaid creation options now end with `(this needs ChatGPT AI)` to make the manual ChatGPT step explicit.
 
-## Drawing menu grouping - version 1.0.0.0.227
+## Drawing menu grouping - version 1.0.0.0.228
 
 The three Mermaid options are grouped together, followed by a menu divider and the Visustin option. The user confirmed that version 199 transfers the marked block to Visustin and displays a flowchart.
 
-## Original working Visustin block-save sequence - version 1.0.0.0.227
+## Original working Visustin block-save sequence - version 1.0.0.0.228
 
 The supplied `runblclj.s` confirms a direct `SaveBlock(QuotePath(filename))` between `PushBlock()` and `PopBlock()`. PROJ's Visustin worker now uses this sequence rather than copying into another buffer. The temporary filename still retains the current source extension and is removed after Visustin is closed and cleanup is confirmed.
 
 PROJ now preserves the block while its WhenLoaded initialization runs, and preserves both position and block around startup preparation and first-run handling before opening the Project menu. This extends protection to the earlier INI/temp-buffer work that executes before the recorded menu-entry diagnostic. Menu and picker preservation remain in place. Static checks passed; the block-detection fix and native SaveBlock behavior still require Windows testing.
 
-## Preserve selection before the main menu - version 1.0.0.0.227
+## Preserve selection before the main menu - version 1.0.0.0.228
 
 The user's diagnostic showed the correct source file but `BlockId=0` and block type zero at Visustin entry. The Project menu now saves the block before it opens. Before the deferred Draw action it explicitly returns to the captured source buffer and restores that saved block. When Draw returns, the block is saved again while the Project menu loops, then restored on final menu exit. The Draw picker's own preservation remains in place.
 
 If detection still fails, the warning also reports the block type recorded before the Project menu opened. This distinguishes a selection already absent at menu entry from one lost later. The source is not reopened with EditFile or saved to disk. Static control-flow and ZIP checks passed; Windows testing remains necessary.
 
-## Visustin block-type and picker preservation - version 1.0.0.0.227
+## Visustin block-type and picker preservation - version 1.0.0.0.228
 
 The Visustin check now explicitly uses `isBlockInCurrFile() == 0` to reject an absent selection. Nonzero values represent character, line or column block types. The Draw worker wraps its picker in `PushPosition()` / `PushBlock()` and restores the source buffer, then calls `PopBlock()` / `PopPosition()` before dispatching the action. The main Project-menu deferred handoff remains in place.
 
 If detection still fails, the warning reports the current buffer ID, `BlockId` and the result of `isBlockMarked()` so the next test identifies the actual block context. The marked source is still copied without saving its original file. Static routing and package checks passed; this correction requires Windows compilation and runtime testing.
 
-## Visustin marked-block menu handoff - version 1.0.0.0.227
+## Visustin marked-block menu handoff - version 1.0.0.0.228
 
 Draw projects now schedules its worker after the main Project menu returns, matching the established Session tools handoff. This avoids checking the source block while the outer menu is still active. The Draw picker also returns before invoking Visustin. Mark the block in the source file, open Draw projects, then choose V. On leaving Draw, the Project menu is shown again; Escape returns to editing.
 
 Version 195's complete package was successfully compiled by the user. This handoff correction passed static routing and packaging checks; detection and preservation of the marked block still require a Windows test.
 
-## Drawing-menu compiler correction - version 1.0.0.0.227
+## Drawing-menu compiler correction - version 1.0.0.0.228
 
 The diagram-type picker and Draw worker menu now use procedure calls for selection actions instead of inline assignments, with explicit close-after flags. Diagram selection and the Draw menu loop remain the same. Version 194 successfully compiled the main macro, README viewer, Visustin worker, tooltip worker and scoped search/reload worker with SAL Compiler V4.50.rc23. The drawing worker and remainder of the full build still need confirmation.
 
-## README viewer key correction - version 1.0.0.0.227
+## README viewer key correction - version 1.0.0.0.228
 
 The Markdown viewer's Back key now uses SAL's `<Alt CursorLeft>` key name rather than the invalid `<Alt Left>`. The physical shortcut remains Alt+Left Arrow. Version 193's main `proj.mac` compiled successfully with SAL Compiler V4.50.rc23; this confirms the main macro size error has been resolved. The remaining full build and worker execution still require testing.
 
-## Scoped search and reload worker - version 1.0.0.0.227
+## Scoped search and reload worker - version 1.0.0.0.228
 
 Scoped search, archive-result handling and disk reload operations now run in the separate `projscope.mac`. Only project/ring request collection, menu entries and the launch bridge remain in `proj.mac`. This provides another substantial size reduction after version 192 still exceeded the SAL macro limit. The Draw and mouse-tooltip workers remain separate too.
 
 The worker receives the existing scope request buffer; it does not switch projects or invent another directory scope. Search histories and reload confirmation rules are unchanged. Request buffers are cleaned up when prompts are cancelled and when current-buffer searching bypasses archive handling. `build.bat` compiles and copies the new worker. Recompile the full package; SAL compilation and Windows behavior still require testing.
 
-## Additional main-macro size reduction - version 1.0.0.0.227
+## Additional main-macro size reduction - version 1.0.0.0.228
 
 The complete mouse-hover tooltip implementation now resides in the separately compiled `projtooltip.mac`. It registers its own idle and after-command hooks when PROJ starts and is purged before PROJ releases its DLL state. The tooltip worker reads the same project and CTags state from ProjDLL. F12 navigation remains in the main macro. The Draw menu remains in `projdraw.mac`.
 
 This removes the 300-plus-line tooltip implementation from `proj.mac`, providing a larger reduction after version 191 still reported compiler error 2332. `build.bat` compiles and copies the new worker. Recompile the entire package before running it. Static dependency and package checks passed; the actual compiled size and Windows tooltip behavior require testing on your machine.
 
-## Main macro size correction - version 1.0.0.0.227
+## Main macro size correction - version 1.0.0.0.228
 
 The Draw projects submenu now runs inside `projdraw.mac` instead of being compiled into `proj.mac`. This removes its menu strings and action code from the main macro after compiler error 2332 (Macro too long). Mermaid and Visustin options remain available; after an action the Draw menu remains open until Escape. Missing workers produce an explanatory message.
 
 Recompile the complete package with `build.bat`. Source synchronization, menu routing and ZIP integrity checks passed. The actual SAL macro size and Windows execution still need verification with your compiler.
 
-## Visustin marked-block flowcharts - version 1.0.0.0.227
+## Visustin marked-block flowcharts - version 1.0.0.0.228
 
 Mark a block in a named source file, then choose **Draw projects > V: Draw a Visustin flow chart diagram of the current file**. Enter the Visustin language switch, such as `/C`, `/CPP`, `/JAVA` or `/PYTHON`; this input has its own named history. The marked block is copied to a unique temporary file beside the installation, retaining the current extension. The original file, unsaved contents, cursor and block are retained.
 
@@ -161,7 +165,7 @@ The launch waits for the process. Afterwards TSE additionally asks you to close 
 
 Recompile with `build.bat`; the separate `projvisustin.mac` keeps the main macro below its size limit. Static packaging checks passed; Windows SAL compilation and Visustin execution remain to be tested.
 
-## Optional source ZIP for Mermaid drawing - version 1.0.0.0.227
+## Optional source ZIP for Mermaid drawing - version 1.0.0.0.228
 
 Both **Draw projects > Create a Mermaid diagram of the current file** and **Create a Mermaid diagram of the current project** now offer to create an additional ZIP attachment for ChatGPT. Answer **Yes**, then choose its output filename. The archive contains the current file, or the exact current-project file list. It does not scan parent directories or unrelated directories.
 
@@ -173,7 +177,7 @@ ZIP creation uses Windows PowerShell and its built-in .NET ZIP support; no separ
 
 The ZIP destination has its own named history (`PROJ0200:projdraw:sourcezip`). Recompile with `build.bat`. Package and archive-request checks passed; Windows PowerShell ZIP creation and TSE execution still need testing.
 
-## Draw projects with Mermaid - version 1.0.0.0.227
+## Draw projects with Mermaid - version 1.0.0.0.228
 
 Open **D: Draw projects >** and choose **F: Create a Mermaid diagram of the current file** or **P: Create a Mermaid diagram of the current project**. The type picker offers:
 
@@ -194,7 +198,7 @@ Run the script through your `.mmd` compiler rule, or **Run projects > Run the cu
 
 The type choice and output filenames use separate named histories. Existing output files require overwrite confirmation, and currently open output destinations are protected. **Session tools** now uses **2**, freeing **D** for drawing. Recompile with `build.bat`. Package checks passed; Windows SAL compilation and the complete handoff/rendering flow still need testing.
 
-## Separate named input histories - version 1.0.0.0.227
+## Separate named input histories - version 1.0.0.0.228
 
 The input-prompt audit found that the README search and calculator already used named histories, while other prompts still shared the editor history. Applicable `Ask()` and `AskFilename()` prompts now use **GetFreeHistory()** with a stable name for their input and restore **GetHistoryStr(historyId, 1)** before displaying the prompt.
 
@@ -202,7 +206,7 @@ This covers project names and paths, import/export locations, filename-list load
 
 The shared implementation is `SRC/MAC/projhistory.si`. The prompt-to-history audit is included in `proj0200_histories.md`. Editor-owned file-opening history bookkeeping remains separate from these prompt histories. Recompile with `build.bat` and restart TSE. Package and prompt checks passed; Windows compilation and prompt-history behavior still need testing.
 
-## Load filenames from a file - version 1.0.0.0.227
+## Load filenames from a file - version 1.0.0.0.228
 
 Under **Load projects >**, choose one of the two new options:
 
@@ -215,7 +219,7 @@ Only existing files are accepted; directories, missing files, and lines longer t
 
 Recompile with `build.bat`. Package and menu checks passed; compilation and runtime behavior still need testing in Windows TSE.
 
-## Get filename lists - version 1.0.0.0.227
+## Get filename lists - version 1.0.0.0.228
 
 Open **3: Get projects >** and choose:
 
@@ -230,7 +234,7 @@ Lists are sorted without changing filename case, and duplicate Windows paths are
 
 Recompile using `build.bat` and restart TSE. Menu and package checks passed; Windows SAL compilation and runtime behavior still need testing.
 
-## Floating point calculator - version 1.0.0.0.227
+## Floating point calculator - version 1.0.0.0.228
 
 Choose **M: Calculate projects >**, then **C: Floating point calculator ...**. This integrates Knud van Eeden's supplied `getstemk.s` expression parser and evaluates the resulting mathematical expression with Windows PowerShell.
 
@@ -240,21 +244,21 @@ Run `build.bat` with your SAL compiler path to compile the separate `getstemk.ma
 
 Package structure and menu wiring were checked; SAL compilation and numerical behavior still need testing in TSE on Windows.
 
-## Named search histories and Alt+F3 - version 1.0.0.0.227
+## Named search histories and Alt+F3 - version 1.0.0.0.228
 
 In the README help viewer, F3 starts Search and Alt+F3 finds the next match (replacing Shift+F3). The viewer shows both keys in its title. The prompts use separate histories allocated by GetFreeHistory("projreadme:searchtext") and GetFreeHistory("projreadme:searchoptions"). At viewer startup, GetHistoryStr(history, 1) restores each prompt's most recent value. Empty options default to i (ignore case). These dedicated histories replace the shared edit history for these two prompts, preventing the search text and options from mixing. Cancel returns to help without exiting TSE.
 
 Rebuild and restart TSE. Viewer-specific keys are active only in the README help list. Source and ZIP checks passed; SAL compilation and interactive history behavior still need testing.
 
 
-## Search in README help - version 1.0.0.0.227
+## Search in README help - version 1.0.0.0.228
 
 The Markdown help viewer now offers F3: Search and Shift+F3: Search next. Search asks for text and options with edit history; i ignores case and x enables TSE regular expressions. F3 begins at the start of the displayed help document. Search next continues from the selected line/cursor and wraps to the beginning when necessary. Matching lines are selected in the read-only help list. A missing match shows a message and keeps the previous position. This searches the currently displayed help document only; link navigation and Escape behavior are retained.
 
 Rebuild and restart TSE. Source structure and ZIP checks passed; SAL compilation and interactive search require testing on Windows.
 
 
-## Help submenu and Markdown navigation - version 1.0.0.0.227
+## Help submenu and Markdown navigation - version 1.0.0.0.228
 
 Help / F1 now opens a submenu: H keeps the existing project help, and R displays proj0200_readme.md in a read-only text list. Enter on a line offers its links; F2 offers links throughout the displayed document. Select a link and press Enter to open it. Alt+Left goes back through local document/heading navigation; Escape returns to the original editing file. Viewer keys are enabled only during the help list. Horizontal scrolling exposes long lines.
 
@@ -263,52 +267,52 @@ Supported links are inline Markdown `[label](target)` and bare/angle-bracket HTT
 The separately compiled projreadme.s worker is built and copied by build.bat. Rebuild and restart TSE. Source structure and ZIP integrity are checked; Windows SAL compilation and interactive navigation need testing.
 
 
-## Reload projects under Load projects - version 1.0.0.0.227
+## Reload projects under Load projects - version 1.0.0.0.228
 
 Reload projects now appears inside Load projects, retaining hotkey P and the submenu indicator. Its reload-file-list and file-reload actions are unchanged. Open the main project menu, choose L: Load projects, then P: Reload projects. The former top-level Reload projects entry has been removed.
 
 Menu placement, unique submenu hotkeys and ZIP integrity were checked. Rebuild and restart TSE to test this version.
 
 
-## Display the loaded example immediately - version 1.0.0.0.227
+## Display the loaded example immediately - version 1.0.0.0.228
 
 All six example-loading options now call UpdateDisplay() immediately after EditFile() succeeds, so the newly loaded example is drawn immediately. Failed loads retain their explanatory warning. The user confirmed successful compilation of version 1.0.0.0.178; this display change still needs testing in TSE.
 
 
-## Built-in QuotePath fix - version 1.0.0.0.227
+## Built-in QuotePath fix - version 1.0.0.0.228
 
 Removed the example worker's duplicate QuotePath procedure declaration. The worker now uses TSE SAL's built-in QuotePath. The user confirmed successful compilation of proj.mac and projbuffersearch.mac with SAL V4.50.rc23 in the preceding release, resolving the main macro size error. Compilation stopped at the example worker's reserved-keyword error; rebuild this version to verify the remaining workers and complete copying.
 
 
-## Startup code moved out of the main macro - version 1.0.0.0.227
+## Startup code moved out of the main macro - version 1.0.0.0.228
 
 Startup-message settings and initial menu selection now run in the existing projexamples worker. The main macro receives the initial menu selection and keeps its project initialization and menu loop. The silent/showbeginmessage and New/Open Project settings retain their behavior. This removes another complete section of code from proj.mac after the compiler reached line 700 but still exceeded its size limit. No additional build target is needed.
 
 Rebuild with build.bat and restart TSE. Source linkage and ZIP integrity were checked; SAL compilation remains to be confirmed in Windows.
 
 
-## Directory-loader macro split - version 1.0.0.0.227
+## Directory-loader macro split - version 1.0.0.0.228
 
 The directory enumeration and non-binary-file loader now run in projexamples.mac, alongside the example-file loader. The main project macro keeps only a small launcher. The worker reads the existing binary-extension exclusions beside the macros, asks for a directory with edit history, and retains the existing non-recursive loading behavior. This further reduces proj.mac after compiler error 2332 persisted in the previous release. The existing build script already compiles and copies the worker.
 
 Rebuild all macros and restart TSE. ZIP and source structure checks passed. The Windows SAL compiler must still confirm that the main macro is now within its limit.
 
 
-## Further main-macro size reduction - version 1.0.0.0.227
+## Further main-macro size reduction - version 1.0.0.0.228
 
 Current-buffer and TSE-ring searches now compile in projbuffersearch.s, alongside the separately compiled example loader. The main project macro calls these workers through small launchers. build.bat compiles and copies both workers. The search behavior and menu options remain the same. This removes additional search implementation code from proj.mac after the previous split still exceeded the older SAL compiler limit. The unused ringIndex declaration has also been removed from the moved function.
 
 Rebuild all macros and restart TSE. Static structure and ZIP checks passed; compilation with the Windows SAL compiler still needs confirmation.
 
 
-## Example-loader macro size fix - version 1.0.0.0.227
+## Example-loader macro size fix - version 1.0.0.0.228
 
 The example lookup and file-loading code now compiles separately as projexamples.s. The project menu invokes projexamples.mac through a small launcher, reducing the size of proj.mac. build.bat compiles and copies the new worker automatically. Rebuild all macros and restart TSE. This addresses the reported Macro too long error; SAL compilation remains to be confirmed on Windows.
 
 COMASP.BAT locates its PowerShell helper beside itself through %~dp0COMASP.ps1; the helper is supplied in PROJ0200COMPILERS. The example loader uses its own macro directory for all supplied examples and does not depend on the working directory.
 
 
-## Language example files - version 1.0.0.0.227
+## Language example files - version 1.0.0.0.228
 
 **Load projects >** now offers six example loaders: helloworld, compiler, compiler rule, error test, syntax highlight, and CTags. Select an option while editing a source file; its extension determines the matching example. For example, `.md` loads `helloworld.md`, `COMMARKDOWN.BAT`, `commarkdownbatcompilersetting_md.txt`, `errorstest.md`, `markdown.txt`, or `ddd.md`, respectively. Compiler BAT files and compiler-rule files also resolve through their associated source extension (for example COMMARKDOWN.BAT resolves as Markdown).
 
@@ -319,12 +323,12 @@ The five uploaded archives are unpacked beside CTAGSEXAMPLES into PROJ0200HELLOW
 Rebuild using `build.bat "path\to\sc32.exe"` and restart TSE. Package contents, mapping targets, menu hotkeys and ZIP integrity have been checked. SAL compilation and interactive behavior still need testing in TSE on Windows.
 
 
-## Change projects hotkey - version 1.0.0.0.227
+## Change projects hotkey - version 1.0.0.0.228
 
 **Change projects** now uses **C** in the main menu. **Copy project...** uses **G** to avoid a duplicate C hotkey.
 
 
-## Run projects and Change projects - version 1.0.0.0.227
+## Run projects and Change projects - version 1.0.0.0.228
 
 **R: Run projects** contains ten options: marked block, current file, current project files, all projects, and TSE ring files, each with or without pause. Each invokes `compile "filename"`; your installed compile macro, extension rule and COM...BAT command determine compilation and execution. No language-specific compiler commands are duplicated. Install/configure those rules before using Run projects.
 
@@ -337,118 +341,118 @@ With pause asks Continue after each compile call; No stops further calls. Withou
 **C: Change projects** now contains **Change project...** and **Rename project...**. Their existing actions and help text are retained.
 
 
-## Delete projects hotkey - version 1.0.0.0.227
+## Delete projects hotkey - version 1.0.0.0.228
 
 **Delete projects** now uses **J** in the main menu. **Session tools** uses **D** to keep main menu hotkeys unique. Submenu actions are unchanged.
 
 
-## Automatic Subversion ring-upload hotkey - version 1.0.0.0.227
+## Automatic Subversion ring-upload hotkey - version 1.0.0.0.228
 
 **Upload all files in the TSE ring to Subversion - automatic** now uses **S** in the Subversion submenu. Its upload behavior is unchanged. The automatic Git ring upload still uses U.
 
 
-## File version control hotkey - version 1.0.0.0.227
+## File version control hotkey - version 1.0.0.0.228
 
 **File Version Control of projects** now uses **F** in the main menu. Subversion and Git submenu actions are unchanged.
 
 
-## Git ring upload options - version 1.0.0.0.227
+## Git ring upload options - version 1.0.0.0.228
 
 **File Version Control of projects > Git options** now includes **N: Upload all files in the TSE ring to Git - with notes...** and **U: Upload all files in the TSE ring to Git - automatic**. With notes confirms each named open document and asks for its change notes. Automatic uses one shared configured change message without per-file questions; if empty, Ask requests the message once. Both use the existing Git executable, working directory, push and unsaved-content settings. Temporary and unnamed buffers are excluded, and project directories are not scanned. Current-file automatic upload now uses **F** to keep submenu hotkeys unique.
 
 
-## Subversion ring upload options - version 1.0.0.0.227
+## Subversion ring upload options - version 1.0.0.0.228
 
 Both ring uploads now appear under **File Version Control of projects > Subversion options**: **N: Upload all files in the TSE ring to Subversion - with notes...** and **U: Upload all files in the TSE ring to Subversion - automatic**. With notes retains per-file confirmation and notes. Automatic uploads the collected named open documents without per-file questions, using the configured shared change message; if that message is empty, Ask requests it once. Current-file automatic upload now uses **F** to avoid a duplicate N hotkey. Both options use the existing Subversion settings and unsaved-content snapshot policy.
 
 
-## Search the TSE ring - version 1.0.0.0.227
+## Search the TSE ring - version 1.0.0.0.228
 
 **Search projects > A: Search in all files in the TSE ring** searches the current contents of normal open buffers, including unsaved edits and unnamed documents. Temporary buffers are excluded. Search text and i/x options use edit history. Results show filename, line, column and matching text. It does not scan project directories, extract archive files or load/close source documents. Existing cursor positions and marked blocks are restored. The all-projects archive search now uses **G** to avoid a duplicate A hotkey.
 
 
-## Backup hotkey - version 1.0.0.0.227
+## Backup hotkey - version 1.0.0.0.228
 
 **Backup projects** now uses **B** in the main menu. **Clipboards** uses **K** to keep the main menu hotkeys unique.
 
 
-## Backup the TSE ring - version 1.0.0.0.227
+## Backup the TSE ring - version 1.0.0.0.228
 
 **Backup projects > R: Backup all files in the TSE ring** backs up normal named documents already open in TSE, independent of project membership. Temporary and unnamed buffers are excluded. It uses the existing destination list, ordinary-copy/ZIP mode, ZIP executable and command settings. Unsaved-content handling follows `backupsnapshotunsaved`; original documents remain open and are not saved or closed by this action. No additional project directories are scanned.
 
 
-## Load directory files into the ring - version 1.0.0.0.227
+## Load directory files into the ring - version 1.0.0.0.228
 
 **Load projects > N: Load all non-binary files from a given directory into the TSE ring** adapts `loadfifa.s`. Ask offers the current directory and edit history. Only that directory is scanned, without subdirectories. Files with extensions listed in `proj0200_binarytypes.txt` are excluded; all other extensions, including those outside Known file types, are eligible. This is an extension-based filter, not a binary-content detector. Existing documents and unsaved edits remain open, and project membership does not change. No files are deleted or saved. The operation stops without loading files if the binary exclusion list cannot be read.
 
 
-## Delete projects submenu - version 1.0.0.0.227
+## Delete projects submenu - version 1.0.0.0.228
 
 **D: Delete projects** contains **D: Delete project...** and **N: Delete all saved files in the TSE ring without asking**. Delete project retains its existing confirmation and removes a project record without deleting source files. The ring option adapts the supplied `remofibc.s`: it unloads saved documents from the editor ring without per-file questions, while retaining the current document, modified/unsaved documents and unnamed buffers. Disk files and project membership remain unchanged. A completion summary reports the files closed. It uses the package implementation and does not require an external unload macro or add the attachment's F12 binding.
 
 
-## Subversion upload of the editor ring - version 1.0.0.0.227
+## Subversion upload of the editor ring - version 1.0.0.0.228
 
 **File Version Control of projects > N: Upload all files in the TSE ring to Subversion - with notes...** uses the ring-walking approach from the supplied `savefifa.s`. It collects named normal documents already open in TSE, independent of project membership, without scanning project directories or loading other files. Temporary and unnamed buffers are excluded. For each collected file, YesNo asks whether to upload it; accepted files prompt for change notes with edit history. The existing Subversion executable, working directory and unsaved-content snapshot settings in `proj0200.ini` apply. Original documents remain open and their contents are not saved or closed by this action. This integrated option does not require the external updafisc macro.
 
 
-## Load and reload menu order - version 1.0.0.0.227
+## Load and reload menu order - version 1.0.0.0.228
 
 **P: Reload projects** now appears directly below **L: Load projects** in the main menu. Their hotkeys and submenu actions are unchanged.
 
 
-## Change project - version 1.0.0.0.227
+## Change project - version 1.0.0.0.228
 
 **G: Change project...** switches the active project to one selected project at a time. Open documents and unsaved edits are retained. The singular label replaces Change projects.
 
 
-## Reload file list - version 1.0.0.0.227
+## Reload file list - version 1.0.0.0.228
 
 **F: Reload file list** is now inside **P: Reload projects**, above the file reload operations. Its existing file-list action and active-project requirement are retained. The main menu now displays **C: Copy project...**.
 
 
-## Load projects submenu - version 1.0.0.0.227
+## Load projects submenu - version 1.0.0.0.228
 
 The main menu contains **L: Load projects**, with **Load all files in current project** inside its submenu. Its existing action is unchanged. The other main menu labels now read **View projects**, **Import projects**, **Export projects**, and **Close projects**.
 
 
-## Main menu order - version 1.0.0.0.227
+## Main menu order - version 1.0.0.0.228
 
 **Close Projects** now appears directly below **Rename project**. Its Z hotkey and submenu actions are unchanged.
 
 
-## Project menu labels - version 1.0.0.0.227
+## Project menu labels - version 1.0.0.0.228
 
 **Reload projects** uses **P**. **Project settings** uses **Y** to keep the hotkeys unique. The submenu entries use plural **View Projects**, **Import Projects**, and **Export Projects**.
 
 
-## Main menu labels and hotkeys - version 1.0.0.0.227
+## Main menu labels and hotkeys - version 1.0.0.0.228
 
 The main menu now shows **Reload projects**, **S: Search projects**, **Z: Close projects**, and **C: Copy project**. **Save projects** uses **A** to avoid a duplicate S hotkey. Reload projects retains the existing refresh actions.
 
 
-## Project submenus - version 1.0.0.0.227
+## Project submenus - version 1.0.0.0.228
 
 The main menu groups project operations under **View Project**, **Close Project**, **Import Project**, and **Export Project**. Each entry shows the submenu arrow. Their existing actions and help descriptions are retained. Import all projects uses **I** inside the Import Project submenu; import one project uses **M**. Closing saved files keeps unsaved files and project membership. Export copies project records, not source files.
 
 
-## Known file types initialization — version 1.0.0.0.227
+## Known file types initialization — version 1.0.0.0.228
 
 New projects first read the editable `proj0200_filetypes.txt` beside the installed macros. If that read fails, they now load the complete bundled default extension list directly into the types buffer, rather than issuing the misleading “defaults not found” warning and leaving an empty list. The external defaults file remains included and can still be customized. A failed read uses built-in defaults, not unread customizations.
 
 Static checks confirm that the fallback contains every extension from the supplied defaults file. Rebuild and restart TSE; Windows runtime verification remains required.
 
-## Reject nonexistent project paths — version 1.0.0.0.227
+## Reject nonexistent project paths — version 1.0.0.0.228
 
 Adding a scan directory or exact filename with Insert now checks that it exists before inserting it. A nonexistent path produces a warning and leaves the project path list unchanged. Editing an entry uses the same check and preserves the original entry when the replacement does not exist. Existing saved paths are not automatically removed; remove unwanted entries explicitly in project settings.
 
 Rebuild with `build.bat` and restart TSE. Static checks confirm validation precedes insertion or deletion; Windows compilation/runtime testing remain necessary. Test by inserting a nonexistent directory, then saving/exporting the project and verifying it is absent from `[Paths]`.
 
-## Browser output-file correction — version 1.0.0.0.227
+## Browser output-file correction — version 1.0.0.0.228
 
 Fixed the reported Subversion browser startup warning: an unnamed temporary buffer was incorrectly saved using its empty current filename. Both Subversion and Git browsers now save to their explicit output filenames. Rebuild the complete package and restart TSE. Static checks confirm both initialization routines use the explicit path; Windows runtime verification remains necessary.
 
-## Bundled Git browser — version 1.0.0.0.227
+## Bundled Git browser — version 1.0.0.0.228
 
 The supplied **git.s** by **Knud van Eeden**, adapted from Carlo Hogeveen's SVN browser, is now bundled in `SRC/MAC`. `build.bat` compiles it as the ninth entry macro and copies `git.s` and `git.mac` to the installation directory. **Git options > R: Browse Git repository** now defaults to `gitbrowsermacro=git.mac`; a configured external macro is still supported.
 
@@ -458,7 +462,7 @@ Enter browses directories/reads files; Enter from a read view opens an editable 
 
 The browser retains its historical filename-case lookup logic. Repository browsing does not commit or push; the existing upload options handle those operations separately. Rebuild and restart TSE. Static build/configuration checks passed; Windows SAL compilation and Cygwin/Beyond Compare runtime testing remain required. Very long commands remain subject to SAL's 255-character string limit.
 
-## Git browser launcher — version 1.0.0.0.227
+## Git browser launcher — version 1.0.0.0.228
 
 Open **Alt+[ > File Version Control of projects > Git options > R: Browse Git repository**. This implements the load-and-execute functionality of the supplied **runprcgj.s**, keeping the launched macro loaded for reuse. Existing Git upload options remain available.
 
@@ -466,7 +470,7 @@ Set `gitbrowsermacro=git\git` in `proj0200.ini`, or supply a full filename for y
 
 The original launcher's F12 binding is omitted so CTags keeps F12. No additional build target is needed. Rebuild with `build.bat` and restart TSE. Static launcher/menu checks passed; compilation and testing with your external Git macro remain necessary.
 
-## Subversion repository browser — version 1.0.0.0.227
+## Subversion repository browser — version 1.0.0.0.228
 
 Adapted the supplied `svn.s` by **Carlo Hogeveen** into the separately compiled **projsvnbrowse.s**. Open **Alt+[ > File Version Control of projects > Subversion options > R: Browse Subversion repository**. Existing upload options remain available. `build.bat` now compiles eight entry macros.
 
@@ -481,15 +485,15 @@ The browser asks for a repository URL or checkout location, initially `svnbrowse
 
 Repository queries are read operations. Explicit editing opens a new copy; existing document contents are retained. The original macro's editor-exit action was removed and its file-node detection corrected. Static integration checks passed; Windows SAL compilation and Cygwin/Beyond Compare runtime testing are still required. SAL's 255-character strings limit very long repository URLs and commands.
 
-## Active project menu label — version 1.0.0.0.227
+## Active project menu label — version 1.0.0.0.228
 
 Renamed the main menu option to **A: View current active project**. Its hotkey and behavior remain unchanged: it displays the active project name and saved project filename. Rebuild with `build.bat`, then restart TSE.
 
-## Import hotkeys — version 1.0.0.0.227
+## Import hotkeys — version 1.0.0.0.228
 
 The main project menu now uses **I: Import All projects** and **M: Import project**. Rebuild with `build.bat`, then restart TSE to activate the revised menu.
 
-## Close all projects — version 1.0.0.0.227
+## Close all projects — version 1.0.0.0.228
 
 Open **Alt+[**, then **3: Close all projects**. Only one project can be active at a time, so this closes its runtime state using the same project-metadata autosave setting as **Close project**. Saved projects remain registered and can be reopened. Open documents, unsaved document edits, source files, and project membership are retained. The option is disabled when no project is active; the project menu remains available until Escape.
 
@@ -497,7 +501,7 @@ Recompile with `build.bat "path\to\sc32.exe"`, restart TSE, and run `projstart`.
 
 Ordinary-copy and PKZIP backups of PROJ0200 were verified by the user in version 142: 26 files, one destination, zero failures in each mode, with a readable ZIP archive.
 
-## Backing up the PROJ0200 installation â version 1.0.0.0.227
+## Backing up the PROJ0200 installation â version 1.0.0.0.228
 
 Backup now skips its own generated request/settings/status/log files, batch wrappers, temporary snapshots, and scope manifests/wrappers **when they are beside the installed helper**. These files can change or be removed during the backup operation. This fixes the reported missing `proj0200_backup_status.txt` failure when backing up the PROJ0200 project itself, and avoids copying the actively written log.
 
