@@ -1,0 +1,7 @@
+LIBRARY utf8short
+DESCRIPTION 'UTF8SHORT 1.0.0.0.4 - OpenAI Codex GPT-6'
+EXPORTS
+    UniSelect
+    UniFromUtf8
+    UniByte
+    UniError
