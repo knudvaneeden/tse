@@ -1,0 +1,1754 @@
+// SYNCFG2 KNUD version 1.0.0.0.8
+// Based on Knud's supplied syncfg2knud1.0.0.0.0 package.
+// Filename/directory commands: OpenAI ChatGPT (GPT-6), 2026-10-16.
+// Compile: sc32b syncfg2.si
+// Usage: syncfg2 filetexttobinary "input.txt" "output.syn"
+// Reverse: syncfg2 filebinarytotext "input.syn" "output.txt"
+// Directory commands: directorytexttobinary, directorybinarytotext.
+// Each command takes an input path and an output path.
+// Command names and the leading -batch option are case-insensitive.
+// files/directories aliases and unnamed invocation forms remain supported.
+// Reverse: syncfg2 "input.syn" "output.txt"
+// Two filenames: convert and save. One filename: leave output unsaved.
+// Original no-argument and buffer-ID interfaces remain available.
+
+/**************************************************************************
+
+04/24/97 01:39 pm   ??? problem:  If hilite_if_0_comments is true, then we need at
+                        least one free multiline comment bin.  That is not currently
+                        checked here...
+
+    Change log:
+        Sep 18, 2000 SEM
+                - Allow -1 as valid to-eol comment start column, which signifies
+                  using first non-white char.
+        05/26/98 SEM
+                - Fully use the new wordset capability, by reading it from the .txt
+                  file, if found.
+
+        04/20/98 SEM
+                - allow comments ("//") in .txt files.
+        02/03/98 11:41 am SEM
+                - in v000c, there is a new line in the binary, the wordset line.
+                  This line throws off the constant line numbers used in the
+                  decoding process.  Therefore, those constants should not
+                  be used in the decoding process.
+
+        11/13/97 10:22 am SEM
+                - now support version 'b' and 'c'.
+                - if keywords are alphanumeric, and contain embedded '-',
+                  make '-' a wordset char, and place the keywords in the
+                  wordset group (rather than in the symbol group, as was
+                  done previously).  This fixes problems with languages that
+                  use '-' as a keyword, and there are many, many keywords.
+                - if the keyword is alphanumeric except for the first
+                  character, go ahead and place it in the keyword group
+                  (rather than the symbol group).
+                - call sort macro instead of internal sort, to speed up
+                  sorting of large numbers of keywords
+
+For now, files are stored in "." or LoadDir() + "\color\"
+
+ string: array of chars
+ tok-str: len-byte, group-byte, flag-byte, followed by array of chars
+
+ version:len-word, string
+ [ if version 000c:
+    array 0..255 of wordset chars, 1=on, 0=off
+ ]
+ first-chars: 512 array of words (Or'ed in: MULTILINEDELIMITED TILLEOL QUOTE DIRECTIVE KEYWORD WHITESPACE NUMERIC, etc)
+ min-max lens: 512 byte array of min-max char pairs, one for each of the 256 possible characters.
+ options:len-word, [if 000c: word:new-numeric-flag] string (1 byte for each option defined) hilite_incomplete_quotes,
+        ignore_case, Hilite_if_0_cmts, transparent, cursor_line_flag(0=curline,1=synhi,2=synhi fg/cur bg),
+        numeric(0=no,1=0-9,2=c,3=sal,4=[,0-9]
+ multi line delimited:
+    len-word, beg1:tok_str, end1:tok-str, ...
+    !!!notes!!! 0 len byte signifies end-of-tokens
+ single line delimited:
+    len-word, beg1:tok_str, end1:tok-str, ...
+    !!!notes!!! 0 len byte signifies end-of-tokens
+ till end of line:
+    len-word, tok-str ??? v000d adds NUM_TOKENS bytes at end, signifying column start position, then another 0.
+    !!!notes!!! 0 len byte signifies end-of-tokens
+    !!!notes!!! valid starting columns are -1..254.  255 gets translated to -1.
+ quotes:
+    len-word, quote1:tok-str, quote2:tok-str,
+    !!!notes!!! 0 len byte signifies end-of-tokens
+ quoteescape:
+    len-word, escape1:tok-str, escape2:tok_str
+    !!!notes!!! 0 len byte signifies end-of-tokens
+ directives:
+    len-word, tok-str
+    !!!notes!!! 0 len byte signifies end-of-tokens
+ [symbols] word:num-symbols, tok-str1, tok-str2, ...
+ [keywords]
+ len-word, word:hash_table_size
+ len-word, word:hash, byte:num-tok-strs, tok-str1, tok-str2, ...
+ len-word of 0 signifies end-of-list
+
+ Additional notes:
+    The keyword group is stored in 0..n.
+
+ **************************************************************************/
+
+#include ["common.h"]
+#include ["syncfg.inc"]
+
+constant
+    MAXPATH = _MAXPATH_,
+    MAX_SCREEN_WIDTH = 255
+
+// These are constant strings, and are not intended to be changed
+string
+    version_str_b[] = "000b",
+    version_str_c[] = "000c",
+    version_str_d[] = "000d"
+
+constant
+// line numbers where the item occurs in the binary data buffer
+    VERSION_LINE =              1,
+    WORDSET_LINE =              2,
+    FIRST_CHARS_LINE =          2,  // these line numbers are not valid for decoding
+    MINMAX_LINE =               3,  // process in version 000c.
+    OPTION_LINE =               4,
+    MULTILINE_DELIMITED_LINE =  5,
+    SINGLELINE_DELIMITED_LINE = 6,
+    TILL_END_OF_LINE_LINE =     7,
+    QUOTE_LINE =                8,
+    QUOTE_ESCAPE_LINE =         9,
+    DIRECTIVE_LINE =            10,
+    SYMBOLS_LINE =              11,
+    KEYWORD_HEADER_LINE =       12,
+    KEYWORD_DATA_LINE =         13,
+
+    HIGHEST_LINE =              13,
+
+// positions of various flags on the OPTION_LINE
+    HILITE_INCOMPLETE_QUOTES =      1,
+    IGNORE_CASE_OF_KEYWORDS =       2,
+    HILITE_IF_0_STYLE_COMMENTS =    3,
+    TRANSPARENT =                   4,
+    CURSOR_LINE_FLAG =              5,
+    NUMERIC_FLAG =                  6,
+
+    TOKEN_OTHER_SIZE            =   3       // size of junk stored before a token
+
+string
+    version_str[4],                         // this string can be changed by the version recognizer
+    word_set[255]                           // only stores chr(1).. chr(255).  chr(0) should not be used...
+integer
+    version_num,
+    batch                                   // are we running in batch mode?
+
+
+/**************************************************************************
+  Common subroutines...
+ **************************************************************************/
+
+// Test string for non-alpha characters. Returns FALSE if non-alpha characters
+// found.
+integer proc isSynWordSet(string s)
+    integer i
+
+    for i = 1 to Length(s)
+        if word_set[Asc(s[i])] == Chr(0)
+            return (FALSE)
+        endif
+    endfor
+    return (TRUE)
+end
+
+/**************************************************************************
+  Return TRUE if word is alphanumeric, and dash would be set to TRUE
+
+  Only set dash if:
+
+  -there is a dash
+  -rest of word is alphanumeric
+  -must be at least 1 alpha
+ **************************************************************************/
+integer proc isAlphaNumDash(string s, var integer dash)
+    integer i, maybe_dash, alpha
+
+    maybe_dash = FALSE
+    dash = FALSE
+    alpha = FALSE
+    for i = 1 to Length(s)
+        if word_set[Asc(s[i])] == Chr(0)
+            if s[i] == '-'
+                maybe_dash = TRUE
+            else
+                return (FALSE)
+            endif
+        elseif s[i] in 'a'..'z', 'A'..'Z', '0'..'9'
+            alpha = TRUE
+        endif
+    endfor
+    if maybe_dash
+        if alpha
+            dash = TRUE
+            return (TRUE)
+        endif
+        return (FALSE)
+    endif
+    return (TRUE)
+end
+
+/**************************************************************************
+  Convert an integer to a binary WORD-length string
+ **************************************************************************/
+string proc WordStr(integer n)
+    string s[2]
+
+    s[1] = Chr(LoByte(n))
+    s[2] = Chr(HiByte(n))
+    return (s)
+end
+
+/**************************************************************************
+  Convert a binary WORD-length string to an integer
+ **************************************************************************/
+integer proc StrWord(string s)
+    return (Asc(s[2]) * 256 + Asc(s[1]))
+end
+
+proc KillToEOF()
+    PushBlock()
+    MarkLine(CurrLine(), NumLines())
+    KillBlock()
+    PopBlock()
+end
+
+proc KillEmptyLines()
+    PushPosition()
+    BegFile()
+    do NumLines() times
+        if PosFirstNonWhite() == 0
+            KillLine()
+        else
+            Down()
+        endif
+    enddo
+    PopPosition()
+end
+
+/**************************************************************************
+  Return smallest prime GREATER than n
+ **************************************************************************/
+integer proc ComputeTableSize(integer n)
+    constant maxprime = 65521
+    integer i, j, candidate, start
+    string primes[255] = "101 211 307 401 509 601 701 809 907 1009 2003 3001 4001 5003 6007 7001 8009 9001 10007 20011 30011 40009 50021 60013 65521"
+
+    if n <= 2
+        return (3)
+    endif
+
+    if n >= maxprime
+        return (maxprime)
+    endif
+
+    start = 3
+    for i = 1 to NumTokens(primes, " ")
+        candidate = Val(GetToken(primes, " ", i))
+        if candidate > n
+            break
+        endif
+        start = candidate
+    endfor
+
+    for i = start to MAXINT by 2
+        for j = 2 to i / 2
+            if i mod j == 0
+                goto continue_outer
+            endif
+        endfor
+
+        if i > n
+            return (i)
+        endif
+
+        continue_outer:
+    endfor
+
+    return (i)
+end
+
+/**************************************************************************
+  Extend (or compress) a file to be n lines in length
+ **************************************************************************/
+proc AddThisManyLines(integer n)
+    BegFile()
+    while NumLines() < n
+        AddLine()
+    endwhile
+
+    BegFile()
+    while NumLines() > n
+        KillLine()
+    endwhile
+end
+
+/**************************************************************************
+  Goto the beginning of the indicated line
+ **************************************************************************/
+proc GotoLineBegin(integer n)
+    GotoLine(n)
+    BegLine()
+end
+
+/**************************************************************************
+  Decode the binary wordset (from the .syn file - 256 char array on/off)
+  into the text format. Only 1..255 are converted, 0 is ignored.
+ **************************************************************************/
+string  code[]   = "dxoxxxabtnvfr",
+        base[]   = Chr(10)+Chr(16)+Chr(8),
+        digits[] = Chr(3)+Chr(2)+Chr(3)
+
+constant
+    DQUOTE = 34,
+    DASH = 45,
+    BACKSLASH = 92
+
+string proc mChr(integer i)
+    case i
+        when 0..6, 14..31, 255      // ctrl chars
+            return (Format('\d',i:3:'0'))
+        when 7..13                  // bell, backspace, tab, lf, vtab, ff, cr
+            return ('\'+code[i])
+        when DQUOTE, DASH, BACKSLASH    // ", -, \
+            return ('\'+Chr(i))
+    endcase
+    return (Chr(i))
+end
+
+integer proc ValidateBuffers(integer buf1, integer buf2)
+    integer ok
+
+    PushLocation()
+    ok = (GotoBufferId(buf1) and GotoBufferId(buf2))
+    PopLocation()
+    return (ok)
+end
+
+integer proc ClearBuffer(integer buf)
+    integer curbuf, ok
+
+    ok = TRUE
+    curbuf = GetBufferId()
+    if GotoBufferId(buf) and NumLines()
+        if MsgBox("", "Ok to empty buffer " + CurrFilename() + "?", _YES_NO_CANCEL_) == 1
+            EmptyBuffer()
+        else
+            ok = FALSE
+        endif
+    endif
+    GotoBufferId(curbuf)
+    return (ok)
+end
+
+/**************************************************************************
+  return ".syn file" if extension not .syn, else return fn.ext.
+ **************************************************************************/
+string proc SynName()
+    return (iif(Lower(SplitPath(CurrFilename(), _EXT_)) == ".syn", SplitPath(CurrFilename(), _NAME_|_EXT_), " .syn file"))
+end
+
+string proc MakeWordSetText(string bin_wordset)
+    string  ws[255] = ''
+    integer i, n
+
+    i = 1
+    while i < 256
+        if bin_wordset[i] <> Chr(0)
+            ws = ws + mChr(i)
+            n = i + 1
+            while n < 256 and bin_wordset[n] <> Chr(0)
+                n = n + 1
+            endwhile
+            n = n - 1
+            if n - i > 1
+                ws = ws + '-' + mChr(n)
+                i = n
+            endif
+        endif
+        i = i + 1
+    endwhile
+    // check for '-' at beginning and remove the '\' from before it
+    if ws[1:2] == "\-"
+        ws = DelStr(ws, 1, 1)
+    endif
+    return (ws)
+end
+
+integer proc ChrSetChar(string s, var integer i)
+    integer p, m = i
+    string  ch[1]
+
+    i = i + 1
+    if s[m] == '\'
+        ch = Lower(s[i])
+        p = Pos(ch, code)
+        if p
+            m = p
+            if p < 4
+                m = Val(SubStr(s,i + 1,Asc(digits[p])),Asc(base[p]))
+                i = i + Asc(digits[p])
+            endif
+            i = i + 1   // to account for the special char
+            return (m)
+        endif
+        i = i + 1
+        return (Asc(s[i - 1]))
+    endif
+    return (Asc(s[m]))
+end
+
+/**************************************************************************
+  Convert an ASCII wordset string (in display format) to the binary format
+  used by .syn files.
+ **************************************************************************/
+string proc MakeWordSetBinary(string s)
+    integer m, n, p = 1, q = Length(s), negate = (s[1] == '~')
+    string  ws[255]
+
+    ws = Format('':255:Chr(iif(negate,255,0)))
+    p = p + negate
+    while p <= q
+        m = ChrSetChar(s, p)
+        n = m
+        if (s[p] == '-') and (p < q)
+            p = p + 1
+            n = ChrSetChar(s, p)
+        endif
+        if m >= 0 and n >= 0
+            while m <= n
+                if negate
+                    ws[m] = Chr(0)
+                else
+                    ws[m] = Chr(255)
+                endif
+                m = m + 1
+            endwhile
+        endif
+    endwhile
+    return (ws)
+end
+
+//******* end of wordset conversion routines ********************************
+
+/**************************************************************************
+  go to the beginning of the next line without a comment on it
+ **************************************************************************/
+integer proc mDownSkipComments()
+    loop
+        if not Down()
+            return (FALSE)
+        endif
+        BegLine()
+        if GetText(1, 2) <> "//"
+            return (TRUE)
+        endif
+    endloop
+    return (TRUE)
+end
+
+proc mSort(integer line1, integer col1, integer lines, integer cols)
+    integer msglevel
+
+    PushBlock()
+    MarkColumn(line1, col1, line1 + lines - 1, col1 + cols - 1)
+    msglevel = Set(MsgLevel, _NONE_)
+    if not ExecMacro("sort -i -k")
+        MsgBox("Error", "Sort macro not found")
+    endif
+    Set(MsgLevel, msglevel)
+    PopBlock()
+end
+
+/**************************************************************************
+  return the next token from the current position.
+  A token is delimited by space or tab 08/24/1999  - was less than 33
+  This routine does NOT cross line boundaries
+ **************************************************************************/
+string proc ReadStrCfgItem0()
+    integer i
+    string s[255]
+
+    s = ""
+    loop
+        if CurrChar() < 0
+            return ("")
+        endif
+        if not (CurrChar() in 9,32)
+            break
+        endif
+        if not Right()
+            return ("")
+        endif
+    endloop
+
+    for i = 1 to sizeof(s)
+        s[i] = Chr(CurrChar())
+        if not Right()
+            break
+        endif
+        if not (CurrChar() in 1..8, 10..31, 33..254)
+            break
+        endif
+    endfor
+
+    return (Trim(s))
+end
+
+/**************************************************************************
+ Get the value from:    key=value
+ Return FALSE if value is empty
+ **************************************************************************/
+integer proc ReadStrCfgItem(var string s, string key)
+    s = ""
+    if lFind(key, "gi^")        // @@@review: "w" was here, does not seem to be needed
+        if lFind("=", "c")
+            Right()
+            s = ReadStrCfgItem0()
+        endif
+    endif
+    return (s <> "")
+end
+
+/**************************************************************************
+  Or in the appropriate bit flags - this is the first chars word array.
+
+  i is an index into the bit table.
+ **************************************************************************/
+proc OrIn(integer databuf, integer i, integer x)
+    PushPosition()
+
+    GotoBufferId(databuf)
+    GotoLine(FIRST_CHARS_LINE)
+    GotoPos(i * 2 + 1)
+    InsertText(WordStr(StrWord(GetText(CurrPos(), 2)) | x), _OVERWRITE_)
+
+    PopPosition()
+end
+
+/**************************************************************************
+  Update the min-max array, which is an array of the min/max lengths of
+  words starting with each character.
+ **************************************************************************/
+proc UpdateMinMax(integer databuf, string s)
+    PushPosition()
+
+    GotoBufferId(databuf)
+    GotoLine(MINMAX_LINE)
+    GotoPos(Asc(s[1]) * 2 + 1)
+    InsertText(Chr(Min(CurrChar(), Length(s))) + Chr(Max(CurrChar(CurrPos() + 1), Length(s))), _OVERWRITE_)
+
+    PopPosition()
+end
+
+/**************************************************************************
+  Create a token to store in databuf
+  Tokens are composed of:
+  length-byte, color-group, flag, char-string
+ **************************************************************************/
+string proc MakeToken(string s, integer group, integer flag, integer databuf)
+    integer tok_type
+
+    if flag
+        OrIn(databuf, Asc(s[1]), flag)
+        if flag & (SYMBOL_FLAG|KEYWORD_FLAG)
+            UpdateMinMax(databuf, s)
+        endif
+    endif
+
+    // determine if the token is alphanum
+    tok_type = 0
+    if isSynWordSet(s)
+        tok_type = TOK_ALPHANUM
+    else
+        if isSynWordSet(s[1])
+            tok_type = tok_type | TOK_ALPHANUM_BEGIN
+        endif
+        if isSynWordSet(s[Length(s)])
+            tok_type = tok_type | TOK_ALPHANUM_END
+        endif
+    endif
+
+    return (Chr(Length(s)) + Chr(group) + Chr(tok_type) + s)
+end
+
+//************ end of common routines *******************************
+
+/**************************************************************************
+  Keyword processing module
+ **************************************************************************/
+
+/**************************************************************************
+  wordbuf has a list of words, one per line.
+  !!! Important !!! On each line, words must be in length order, shortest first
+ **************************************************************************/
+proc BuildKeyWordList(integer wordbuf, integer databuf, integer hash_table_size)
+    integer hashbuf, count
+    string wordst[MAX_TOK_LEN], other[TOKEN_OTHER_SIZE] = ""
+    integer line_count, num_lines
+
+    if hash_table_size > 0
+        hashbuf = CreateTempBuffer()
+        AddThisManyLines(hash_table_size + 1)
+
+        GotoBufferId(wordbuf)
+        BegFile()
+
+        // create the "hash table"
+        // format: word:hash, byte:number of entries, byte:word-len, byte:color, string:word
+        repeat
+            line_count = CurrLine()
+            num_lines  = NumLines()
+            other = GetText(1, TOKEN_OTHER_SIZE)
+            // Get only the word, not the header info.
+            wordst = GetText(TOKEN_OTHER_SIZE + 1, CurrLineLen() - TOKEN_OTHER_SIZE)
+
+            GotoBufferId(hashbuf)
+            GotoLineBegin(1 + HashStr(wordst, hash_table_size))
+            if CurrLineLen() > 0    // if existing line, get current count
+                count = CurrChar(3)
+            else                    // otherwise, insert the hash code
+                count = 0
+                InsertText(WordStr(CurrLine() - 1), _INSERT_)
+            endif
+            GotoPos(3)
+
+            if count > 254
+                Warn("Logic error: count is ", count, " in BuildKeyWordList";line_count;"of";num_lines)
+            else
+
+                // update the count: # of words this line
+                InsertText(Chr(count + 1), _OVERWRITE_)
+                // now, insert the word, shortest word first if multiple words
+                loop
+                    if CurrChar() < 0 or CurrChar() >= Length(wordst)
+                        InsertText(other + wordst, _INSERT_)
+                        break
+                    endif
+                    GotoPos(CurrPos() + CurrChar() + TOKEN_OTHER_SIZE)
+                endloop
+            endif
+            GotoBufferId(wordbuf)
+        until not Down()
+
+        GotoBufferId(hashbuf)
+        // remove empty lines
+        KillEmptyLines()
+        PushBlock()
+        MarkLine(1, NumLines())
+        GotoBufferId(databuf)
+        GotoLine(KEYWORD_DATA_LINE)
+        KillToEOF()
+        MoveBlock()
+        PopBlock()
+        AbandonFile(hashbuf)
+    endif
+
+    GotoBufferId(databuf)
+    GotoLineBegin(KEYWORD_HEADER_LINE)
+    InsertText(WordStr(hash_table_size), _INSERT_)
+    // add empty line for end-of-keywords marker
+    EndFile()
+    AddLine()
+end
+
+/**************************************************************************
+  keywords are in the format:
+
+  [keyword1]
+    keyword keyword keyword
+    keyword keyword
+    keyword
+  [keyword2]
+    keyword keyword
+    ...
+
+  keywords must be the last occuring entries in the file
+
+  Add alphanum words to the word buffer
+
+  @@SEM 11/10/97 02:42 pm if an alpha word has an embedded '-', add '-' to wordset.
+
+  Add symbols to the symbol buffer
+
+ **************************************************************************/
+integer proc AddDashToWordSet()
+    if batch or MsgBox(CurrFilename(), "Use '-' as part of the keyword-wordset (along with a-zA-Z0-9)?", _YES_NO_) == 1
+        word_set[Asc('-')] = Chr(0xff)
+        return (TRUE)
+    endif
+    return (FALSE)
+end
+
+proc ExtractKeyWords(integer textbuf, integer databuf, integer wordbuf, integer ignore_case)
+    string s1[MAX_TOK_LEN]
+    integer i, num_symbols, symbuf, sym_len, max_reached, dash, dash_called
+
+    PushPosition()
+
+    dash_called = FALSE
+    max_reached = FALSE
+    num_symbols = 0
+    sym_len = 2
+    symbuf = CreateTempBuffer()
+    GotoBufferId(textbuf)
+    s1 = ""
+    // add keywords to appropriate buffer: alphanum or symbol
+    for i = 1 to MAX_KEYWORD_TOKS
+        if lFind("[" + keyword_str + Str(i) + "]", "gi^") and mDownSkipComments()
+            while not lFind("\[" + keyword_str + "[0-9][0-9]?\]", "^cxi")
+                s1 = ReadStrCfgItem0()
+                // skip blank lines, stop when eof, or line starting with '[keywordn]'
+                if s1 == ""
+                    if not mDownSkipComments()
+                        break
+                    endif
+                else
+                    if ignore_case
+                        s1 = Lower(s1)
+                    endif
+
+                    if (Length(s1) > 1 and isSynWordSet(s1[2:sizeof(s1)])) or isSynWordSet(s1)
+                    accum_keywords:
+                        AddLine(MakeToken(s1, i - 1, KEYWORD_FLAG, databuf), wordbuf)
+                    else
+                        if not dash_called
+                            dash = FALSE
+                            if isAlphaNumDash(s1, dash)
+                                if dash
+                                    dash_called = TRUE
+                                    if AddDashToWordSet()
+                                        goto accum_keywords
+                                    endif
+                                endif
+                            endif
+                        endif
+
+                        if not max_reached
+                            if num_symbols + 1 > MAX_SYMBOLS
+                                Warn("Maximum number (", MAX_SYMBOLS, ") of symbol keywords exceeded - ignoring rest: Curr:", s1)
+                                max_reached = TRUE
+                            elseif sym_len + Length(s1) + TOKEN_OTHER_SIZE >= MAXLINELEN
+                                Warn("Maximum line length reached building symbol keywords list - ignoring rest: Curr:", s1)
+                                max_reached = TRUE
+                            else
+                                AddLine(MakeToken(s1, i - 1, SYMBOL_FLAG, databuf), symbuf)
+                                num_symbols = num_symbols + 1
+                                sym_len = sym_len + Length(s1) + TOKEN_OTHER_SIZE
+                            endif
+                        endif
+                    endif
+                endif
+            endwhile
+        endif
+    endfor
+
+    // build the symbol keywords line in the databuf
+    if num_symbols == 0
+        GotoBufferId(databuf)
+        GotoLineBegin(SYMBOLS_LINE)
+        InsertText(WordStr(0), _INSERT_)
+    else
+        GotoBufferId(symbuf)
+
+        // sort the symbols
+        mSort(1, TOKEN_OTHER_SIZE + 1, NumLines(), MAX_TOK_LEN)
+
+        // put them all on one line
+        BegFile()
+        repeat
+        until not JoinLine()
+        InsertText(WordStr(num_symbols), _INSERT_)
+        PushBlock()
+        MarkColumn(1, 1, 1, CurrLineLen())
+        GotoBufferId(databuf)
+        GotoLineBegin(SYMBOLS_LINE)
+        CopyBlock(_OVERWRITE_)
+        PopBlock()
+    endif
+    AbandonFile(symbuf)
+
+    PopPosition()
+end
+
+/**************************************************************************
+  Convert the text keywords into their binary representation
+ **************************************************************************/
+proc DoKeyWords(integer textbuf, integer databuf, integer ignore_case)
+    integer wordbuf, hash_table_size
+
+    PushPosition()
+    wordbuf = CreateTempBuffer()
+    BinaryMode(0)
+
+    GotoBufferId(textbuf)
+
+    ExtractKeyWords(textbuf, databuf, wordbuf, ignore_case)
+    GotoBufferId(wordbuf)
+    // hash table size is largest prime greater than number of words
+    if NumLines() == 0
+        hash_table_size = 0
+    else
+        hash_table_size = ComputeTableSize(NumLines())
+    endif
+
+    BuildKeyWordList(wordbuf, databuf, hash_table_size)
+
+    PopPosition()
+    AbandonFile(wordbuf)
+end
+
+//************ end of keyword procssing module *******************************
+
+/**************************************************************************
+  Get the options from the text, and store them in the data buffer
+ **************************************************************************/
+proc DoOptions(integer textbuf, integer databuf, var integer ignore_case)
+    string opt_str[80], options[NUM_OPTIONS], s[255] = ""
+    integer i, j, numeric_option
+
+    PushPosition()
+
+    numeric_option = 0
+    options = Format("":NUM_OPTIONS:Chr(0))
+    GotoBufferId(textbuf)
+    for i = 1 to NumTokens(option_strs, ' ')
+        opt_str = GetToken(option_strs, ' ', i)
+        if ReadStrCfgItem(s, opt_str) and Lower(s) == "true"
+            options[i] = Chr(1)
+        endif
+        case i
+            when IGNORE_CASE_OF_KEYWORDS
+                ignore_case = options[i] <> Chr(0)
+            when HILITE_IF_0_STYLE_COMMENTS
+                if options[i] <> Chr(0)
+                    OrIn(databuf, Asc('#'), MULTILINE_DELIMITED_FLAG)
+                endif
+            when CURSOR_LINE_FLAG, NUMERIC_FLAG
+                if s == ""
+                    s = '0'
+                endif
+                options[i] = Chr(Asc(s[1]) - Asc('0'))
+                if i == NUMERIC_FLAG
+                    numeric_option = EncodeNumericFlag(s)
+                    if numeric_option
+                        for j = Asc('0') to Asc('9')
+                            OrIn(databuf, j, NUMBER_FLAG)
+                        endfor
+                    endif
+                    if numeric_option & NUMERIC_PASCAL_HEX
+                        OrIn(databuf, Asc('$'), NUMBER_FLAG)
+                    endif
+                    if numeric_option & NUMERIC_BINARY
+                        OrIn(databuf, Asc('%'), NUMBER_FLAG)
+                    endif
+                    if numeric_option & NUMERIC_BASIC_HEX
+                        OrIn(databuf, Asc('&'), NUMBER_FLAG)
+                    endif
+                    if numeric_option & NUMERIC_EUPHORIA_HEX
+                        OrIn(databuf, Asc('#'), NUMBER_FLAG)
+                    endif
+                else // i == CURSOR_LINE_FLAG
+                    options[i] = Chr(EncodeCursorLineFlag(s))
+                endif
+        endcase
+    endfor
+
+    GotoBufferId(databuf)
+    GotoLineBegin(OPTION_LINE)
+    InsertText(options, _INSERT_)
+    Left()
+    InsertText(WordStr(numeric_option), _OVERWRITE_)
+
+    PopPosition()
+end
+
+/**************************************************************************
+  Get the wordset from the text, and store it in the data buffer
+  @@SEM 05/26/98 12:11 pm word_set must remain global, because it is used
+    by the routines that build the binary word/symbol tables, to determin
+    what is a word and what is a symbol.
+ **************************************************************************/
+proc DoWordSet(integer textbuf)
+    string ws[128] = ""
+
+    PushPosition()
+
+    // go ahead and set the default wordset, in case of older version
+    word_set      = Format("":sizeof(word_set):Chr(0))
+    word_set[Asc('0'):10] = Format("":10:Chr(255))
+    word_set[Asc('A'):26] = Format("":26:Chr(255))
+    word_set[Asc('a'):26] = Format("":26:Chr(255))
+    word_set[Asc('_'):01] = Format("":01:Chr(255))
+
+    GotoBufferId(textbuf)
+    if ReadStrCfgItem(ws, wordset_str)
+        word_set = MakeWordSetBinary(ws)
+    endif
+
+    // @@SEM 05/26/98 12:22 pm Can't insert the word_set until we are through,
+    //      for backwards compatibility with the 'b' version
+
+    PopPosition()
+end
+
+proc InsertToken(integer buf, integer line, string token)
+    GotoBufferId(buf)
+    GotoLineBegin(line)
+    InsertText(token + Chr(0), _INSERT_)
+end
+
+proc DoDelimited(integer textbuf, integer databuf, string key, integer LINE, integer FLAG)
+    string token[255], s1[MAX_TOK_LEN]="", s2[MAX_TOK_LEN]=""
+    integer i
+
+    PushPosition()
+    GotoBufferId(textbuf)
+
+    // look for tokens
+    token = ""
+    for i = 1 to MAX_TOKS
+        if not ReadStrCfgItem(s1, key + Str(i)) or s1 == ""
+            break
+        endif
+        s2 = ReadStrCfgItem0()
+        if s2 == ""
+            Warn("Error: 2nd delimiter not found for:", key)
+            break
+        endif
+        token = token + MakeToken(s1, i, FLAG, databuf)
+        token = token + MakeToken(s2, i, 0,    databuf)
+    endfor
+
+    InsertToken(databuf, LINE, token)
+
+    PopPosition()
+end
+
+/**************************************************************************
+  Process TO_EOL, QUOTE, QUOTE_ESCAPE, and DIRECTIVE tokens
+  Respect the ignore_case flag.
+ **************************************************************************/
+proc DoToken(integer textbuf, integer databuf, integer NUM_TOKENS, string key, integer LINE, integer FLAG, integer ignore_case)
+    integer i
+    string extra[MAX_TOKS], token[255], s1[MAX_TOK_LEN] = ""
+
+    PushPosition()
+    GotoBufferId(textbuf)
+
+    token = ""
+    // look for tokens
+    for i = 1 to NUM_TOKENS
+        if ReadStrCfgItem(s1, key + Str(i)) and s1 <> ""
+            if ignore_case
+                s1 = Lower(s1)
+            endif
+            token = token + MakeToken(s1, i, FLAG, databuf)
+        endif
+    endfor
+
+    if key == till_end_of_line_str
+        extra = Format(Chr(0):NUM_TOKENS:Chr(0))
+        // look for tokens
+        for i = 1 to NUM_TOKENS
+            if ReadStrCfgItem(s1, till_end_of_line_start_col_str + Str(i)) and s1 <> ""
+                if Val(s1) in -1..254
+                    extra[i] = Chr(Val(s1))
+                endif
+            endif
+        endfor
+        token = token + Chr(0) + extra[1:NUM_TOKENS]
+    endif
+
+    InsertToken(databuf, LINE, token)
+
+    PopPosition()
+end
+
+proc SaveAndShow(string msg, var string stext, var string sattr)
+    integer x, y, x1, y1, x2, y2
+
+    if not batch
+        x = vWherex()
+        y = vWherey()
+        x1 = Query(PopWinX1)
+        y1 = Query(PopWinY1)
+        x2 = x1 + Query(PopWinCols) - 1
+        y2 = y1 + Query(PopWinRows) - 1
+        Window(1, 1, Query(ScreenCols), Query(ScreenRows))
+        vGotoXY(1, 1)
+        GetStrAttr(stext, sattr, MAX_SCREEN_WIDTH)
+        Window(x1, y1, x2, y2)
+        vGotoXY(x, y)
+        Message(msg)
+    endif
+end
+
+proc Restore(string msg, string stext, string sattr)
+    integer x, y, x1, y1, x2, y2
+
+    if not batch
+        if QueryEditState() == 0
+            Message(msg)
+        else
+            x = vWherex()
+            y = vWherey()
+            x1 = Query(PopWinX1)
+            y1 = Query(PopWinY1)
+            x2 = x1 + Query(PopWinCols) - 1
+            y2 = y1 + Query(PopWinRows) - 1
+            Window(1, 1, Query(ScreenCols), Query(ScreenRows))
+            vGotoXY(1, 1)
+            PutStrAttr(stext, sattr)
+            Window(x1, y1, x2, y2)
+            vGotoXY(x, y)
+        endif
+    endif
+end
+
+proc remove_comments(integer textbuf)
+    integer cur_buf
+
+    cur_buf = GotoBufferId(textbuf)
+
+    lReplace("{^[ \t]*}//.*$", "\1", "gxn")
+    lReplace("{^\[[a-zA-Z0-9]*\][ \t]*}//.*$", "\1", "gxn")
+
+    GotoBufferId(cur_buf)
+end
+
+/**************************************************************************
+  Create syn.syn from syn.txt
+
+  Comments are allowed in .txt files.
+  However, this code does not correctly handle them.
+  Because of that, we remove the comments from the .txt file.
+  Because of this, we copy the .txt buf to a temp buffer, since we (may)
+  need to change the .txt file.
+ **************************************************************************/
+integer proc TextToBinary(integer textbuf, integer databuf)
+    integer ignore_case = FALSE
+    string syn_name[_MAXPATH_], stext[MAX_SCREEN_WIDTH] = "", sattr[MAX_SCREEN_WIDTH] = ""
+
+    if not ValidateBuffers(databuf, textbuf)
+        return (FALSE)
+    endif
+
+    PushLocation()
+
+    // create temporary textbuf, copy old textbuf data to it
+    GotoBufferId(textbuf)
+
+    PushBlock()
+    MarkAll()                       // in .txt buffer
+    textbuf = CreateTempBuffer()
+    BufferType(_NORMAL_)
+    CopyBlock()                     // copy to temp buffer
+    PopBlock()
+
+    GotoBufferId(databuf)
+    SetUndoOff()                    // faster if we don't store undo data
+
+    syn_name = SynName()
+    SaveAndShow("Writing " + syn_name, stext, sattr)
+
+    EmptyBuffer(databuf)
+    BinaryMode(-2)
+    AddThisManyLines(HIGHEST_LINE)
+
+    GotoLineBegin(VERSION_LINE)
+    InsertText(version_str, _INSERT_)
+
+    // insert the default first-chars
+    GotoLineBegin(FIRST_CHARS_LINE)
+    do 32 - 0 + 1 times
+        InsertText(WordStr(WHITESPACE_FLAG), _OVERWRITE_)
+    enddo
+    do 255 - 33 + 1 times
+        InsertText(WordStr(0), _OVERWRITE_)
+    enddo
+
+    // insert the default min-max (0,0)
+    GotoLineBegin(MINMAX_LINE)
+    do 4 times
+        InsertText(Format("":128:Chr(0)), _OVERWRITE_)
+    enddo
+
+    BegLine()
+
+    remove_comments(textbuf)
+
+    DoOptions(textbuf, databuf, ignore_case)
+    DoWordSet(textbuf)                      // @@SEM 05/26/98 12:13 pm MUST be called before DoKeyWords, sets word_set
+
+    DoDelimited(textbuf, databuf, multiline_delimited_str, MULTILINE_DELIMITED_LINE, MULTILINE_DELIMITED_FLAG)
+    DoDelimited(textbuf, databuf, singleline_delimited_str, SINGLELINE_DELIMITED_LINE, SINGLELINE_DELIMITED_FLAG)
+
+    DoToken(textbuf, databuf, MAX_TOKS, till_end_of_line_str, TILL_END_OF_LINE_LINE, TO_END_OF_LINE_FLAG, ignore_case)
+    DoToken(textbuf, databuf, MAX_TOKS, quote_str, QUOTE_LINE, QUOTE_FLAG, ignore_case)
+    DoToken(textbuf, databuf, MAX_TOKS, quote_escape_str, QUOTE_ESCAPE_LINE, 0, ignore_case)
+    DoToken(textbuf, databuf, MAX_TOKS, directive_str, DIRECTIVE_LINE, DIRECTIVE_FLAG, ignore_case)
+    DoKeyWords(textbuf, databuf, ignore_case)
+
+    // @@SEM 05/26/98 12:23 pm Don't insert the word_set line until here, for backwards compatibility with the 'b' version
+    GotoBufferId(databuf)
+    GotoLineBegin(WORDSET_LINE)
+    InsertLine(word_set)
+    InsertText(Chr(0), _INSERT_)
+
+    SetUndoOn()                 // allow undo storage
+
+    PopLocation()
+    AbandonFile(textbuf)        // remove temporary textbuf
+
+    Restore(syn_name + " created", stext, sattr)
+    return (TRUE)
+end
+
+/**************************************************************************
+  end of text 2 binary, start of binary 2 text
+ **************************************************************************/
+
+// Assume we're in the databuf when called
+proc DecodeDelimited(integer textbuf, string key)
+    integer count, len
+    string s1[MAX_TOK_LEN], s2[MAX_TOK_LEN]
+
+    PushPosition()
+
+    count = 0
+    loop
+        len = CurrChar()
+        if len <= 0
+            break
+        endif
+        count = count + 1
+        Right(3)
+        s1 = GetText(CurrPos(), len)
+        Right(len)
+        len = CurrChar()
+        Right(3)
+        s2 = GetText(CurrPos(), len)
+        Right(len)
+        AddLine(key + Str(count) + '=' + s1 + ' ' + s2, textbuf)
+    endloop
+
+    PopPosition()
+    Down()
+    BegLine()
+end
+
+proc DecodeToken(integer textbuf, string key)
+    integer count, len, i
+    string s1[MAX_TOK_LEN]
+
+    PushPosition()
+
+    count = 0
+    loop
+        len = CurrChar()
+        if len <= 0
+            break
+        endif
+        count = count + 1
+        Right(3)
+        s1 = GetText(CurrPos(), len)
+        Right(len)
+        AddLine(key + Str(count) + '=' + s1, textbuf)
+    endloop
+
+    if key == till_end_of_line_str and version_num >= 0x0d
+        Right()     // skip over 0 end-of-text indicator
+        for i = 1 to MAX_TOKS
+            if CurrPos() <= CurrLineLen() and CurrChar() <> 0
+                AddLine(till_end_of_line_start_col_str + Str(i) + '=' + iif(CurrChar() == 255, "-1", Str(CurrChar())), textbuf)
+            endif
+            Right()
+        endfor
+    endif
+
+    PopPosition()
+    Down()
+    BegLine()
+end
+
+/**************************************************************************
+  When this routine is entered, we assume we are sitting on the symbols
+  line.
+ **************************************************************************/
+proc DecodeKeywords(integer textbuf, string key)
+    integer eof_keywords, len, i, lastgroup, thisgroup, num_symbols, workbuf, sym_line
+    string keyword[MAX_TOK_LEN]
+
+    PushPosition()
+    sym_line = CurrLine()
+
+    // skip 'hash table size' line
+    Down(2)
+
+    PushPosition()
+    workbuf = CreateTempBuffer()
+    PopPosition()
+
+    // back in data buffer
+
+    repeat
+        GotoPos(4)
+        do CurrChar(3) times        // CurrChar(3) has the # of words on this line
+            len = CurrChar()
+            Right()
+            thisgroup = CurrChar()
+            Right(2)                // skip flags
+            keyword = GetText(CurrPos(), len)
+            Right(len)
+            AddLine(Chr(thisgroup) + keyword, workbuf)
+        enddo
+    until not Down()
+
+    // get symbolic keywords
+    GotoLineBegin(sym_line)
+    num_symbols = StrWord(GetText(1, 2))
+    Right(2)                    // skip # of tokens word
+
+    do num_symbols times        // CurrChar(3) has the # of words on this line
+        len = CurrChar()
+        Right()
+        thisgroup = CurrChar()
+        Right(2)                // skip flags
+        keyword = GetText(CurrPos(), len)
+        Right(len)
+        AddLine(Chr(thisgroup) + keyword, workbuf)
+    enddo
+
+    // sort keywords by color
+    GotoBufferId(workbuf)
+    // bail out if nothing to sort
+    if NumLines() <= 0
+        PopPosition()
+        AbandonFile(workbuf)
+        return ()
+    endif
+
+    mSort(1, 1, NumLines(), MAX_TOK_LEN + 1)
+
+    // Now put the words in the text buffer, in their proper place, and also catch the colors
+    GotoLineBegin(1)
+    eof_keywords = FALSE
+    while not eof_keywords
+        lastgroup = CurrChar(1) + 1
+        AddLine("[" + key + Str(lastgroup) + "]", textbuf)
+        i = 1
+        loop
+            thisgroup = CurrChar(1) + 1
+            if thisgroup <> lastgroup
+                break
+            else
+                keyword = GetText(2, CurrLineLen() - 1)
+                if i == 1
+                    AddLine(' ' + keyword, textbuf) // add the keyword
+                else
+                    PushPosition()
+                    GotoBufferId(textbuf)
+                    EndLine()
+                    if CurrLineLen() + 1 + Length(keyword) > 78
+                        AddLine(' ' + keyword)
+                    else
+                        InsertText(' ' + keyword, _INSERT_)
+                    endif
+                    PopPosition()
+                endif
+                if not Down()
+                    eof_keywords = TRUE
+                    break
+                endif
+            endif
+            i = i + 1
+        endloop
+    endwhile
+
+    PopPosition()
+    AbandonFile(workbuf)
+end
+
+/**************************************************************************
+  Convert version 'b' numeric flag values to the new encoding
+ **************************************************************************/
+integer proc ConvertOldNumericFlagToNew(integer old_flag)
+    case old_flag
+        when 1//N09:
+            return (NUMERIC_INTEGER)
+        when 2//NC:
+            return (NUMERIC_INTEGER | NUMERIC_C_HEX | NUMERIC_REAL | NUMERIC_SCI_NOTATION | NUMERIC_C_UL)
+        when 3//NSAL:
+            return (NUMERIC_INTEGER | NUMERIC_C_HEX | NUMERIC_ASM_HEX | NUMERIC_SAL_BINARY)
+        when 4//NCOMMA:
+            return (NUMERIC_INTEGER | NUMERIC_REAL | NUMERIC_COMMA)
+    endcase
+    return (0)
+end
+
+/**************************************************************************
+  Create syn.txt from syn.syn
+ **************************************************************************/
+integer proc BinaryToText(integer databuf, integer textbuf)
+    string syn_name[_MAXPATH_], stext[MAX_SCREEN_WIDTH] = "", sattr[MAX_SCREEN_WIDTH] = ""
+
+    if not ValidateBuffers(databuf, textbuf) or not ClearBuffer(textbuf)
+        return (FALSE)
+    endif
+
+    PushLocation()
+
+    GotoBufferId(textbuf)
+    SetUndoOff()
+
+    GotoBufferId(databuf)
+
+    syn_name = SynName()
+
+    if BinaryMode() <> -2
+        PopPosition()
+        Warn("BinaryMode is ", BinaryMode(), " but it should be -2")
+        return (FALSE)
+    endif
+
+    BegFile()
+    version_str = GetText(1, Length(version_str))
+    case version_str
+        when version_str_b
+        when version_str_c
+        when version_str_d
+        otherwise
+            PopPosition()
+            Warn("Version mismatch")
+            return (FALSE)
+    endcase
+
+    SaveAndShow("Extracting hilite information from " + syn_name, stext, sattr)
+
+    version_num = Val(version_str, 16)
+
+    if version_str == version_str_b
+        AddLine("wordset=0-9A-Z_a-z", textbuf)
+    else
+        Down()  // skip over version line
+        AddLine("wordset=" + MakeWordSetText(GetText(2, 256)), textbuf) // ignore ascii NULL (0)
+    endif
+
+    Down(3) // skip first-chars line
+
+    // process options
+    while CurrLineLen() < NUM_OPTIONS
+        EndLine()
+        InsertText(Chr(0), _OVERWRITE_)
+    endwhile
+    BegLine()
+
+    AddLine(GetToken(option_strs, ' ', 1) + '=' + iif(CurrChar(HILITE_INCOMPLETE_QUOTES), "TRUE", "FALSE"), textbuf)
+    AddLine(GetToken(option_strs, ' ', 2) + '=' + iif(CurrChar(IGNORE_CASE_OF_KEYWORDS), "TRUE", "FALSE"), textbuf)
+    AddLine(GetToken(option_strs, ' ', 3) + '=' + iif(CurrChar(HILITE_IF_0_STYLE_COMMENTS), "TRUE", "FALSE"), textbuf)
+    AddLine(GetToken(option_strs, ' ', 4) + '=' + iif(CurrChar(TRANSPARENT), "TRUE", "FALSE"), textbuf)
+    AddLine(GetToken(option_strs, ' ', 5) + '=' + DecodeCursorLineFlag(CurrChar(CURSOR_LINE_FLAG)), textbuf)
+    // The numeric_flag encoding has changed in 'c' and above
+    // if version 'b', read old format, convert it to new
+    AddLine(GetToken(option_strs, ' ', 6) + '=' + DecodeNumericFlag(
+            iif(version_str == version_str_b,
+            ConvertOldNumericFlagToNew(CurrChar(NUMERIC_FLAG)),
+            StrWord(GetText(NUMERIC_FLAG, 2)))),
+            textbuf)
+
+    Down()
+    BegLine()
+
+    // process multi-line/single-line delimited
+    DecodeDelimited(textbuf, multiline_delimited_str)
+    DecodeDelimited(textbuf, singleline_delimited_str)
+
+    // process other tokens
+    DecodeToken(textbuf, till_end_of_line_str)
+    DecodeToken(textbuf, quote_str)
+    DecodeToken(textbuf, quote_escape_str)
+    DecodeToken(textbuf, directive_str)
+
+    // process the keywords
+    DecodeKeywords(textbuf, keyword_str)
+
+    GotoBufferId(textbuf)
+    SetUndoOn()
+
+    PopLocation()
+
+    Restore("Information extracted from " + syn_name, stext, sattr)
+    return (TRUE)
+end
+
+// Return an absolute directory with one trailing separator, or empty.
+string proc FNDirectoryPath(string directoryName)
+    string directory[255], expanded[255]
+    directory = Trim(directoryName)
+    if directory == "" or Pos("*", directory) or Pos("?", directory)
+        return ("")
+    endif
+    if directory[Length(directory)] <> "\" and
+       directory[Length(directory)] <> "/"
+        if Length(directory) > 249
+            return ("")
+        endif
+        directory = directory + "\"
+    endif
+    if not (FileExists(directory + ".") & _DIRECTORY_)
+        return ("")
+    endif
+    if Length(directory) > 249
+        return ("")
+    endif
+    expanded = ExpandPath(directory + "*.*", TRUE)
+    if expanded == ""
+        return ("")
+    endif
+    return (SplitPath(expanded, _DRIVE_ | _PATH_))
+end
+
+// Convert one directory member. Close buffers opened solely for this job.
+integer proc FNConvertDirectoryFile(string sourceName, string targetName,
+                                   integer reportId, integer reverseConversion)
+    integer sourceId = 0, targetId = 0, oldSourceId = 0, oldTargetId = 0
+    integer success = FALSE, converted = FALSE
+    string reason[120] = ""
+
+    oldSourceId = GetBufferId(sourceName)
+    oldTargetId = GetBufferId(targetName)
+    if oldTargetId
+        GotoBufferId(oldTargetId)
+        if FileChanged()
+            AddLine("FAILED: " + sourceName, reportId)
+            AddLine("  Output has unsaved edits: " + targetName, reportId)
+            return (FALSE)
+        endif
+    endif
+    if EditFile(Chr(34) + sourceName + Chr(34))
+        sourceId = GetBufferId()
+        targetId = oldTargetId
+        if CreateBuffer(targetName, _NORMAL_, targetId)
+            if sourceId <> targetId
+                version_str = version_str_d
+                version_num = Val(version_str, 16)
+                if reverseConversion
+                    converted = BinaryToText(sourceId, targetId)
+                else
+                    converted = TextToBinary(sourceId, targetId)
+                endif
+                if converted
+                    GotoBufferId(targetId)
+                    success = SaveFile()
+                    if not success
+                        reason = "Could not save output; converted buffer left open"
+                    endif
+                else
+                    reason = "Conversion failed"
+                endif
+            else
+                reason = "Input and output identify the same buffer"
+            endif
+        else
+            reason = "Could not create output buffer"
+        endif
+    else
+        reason = "Could not open input file"
+    endif
+    if success
+        AddLine("SAVED: " + targetName, reportId)
+    else
+        AddLine("FAILED: " + sourceName, reportId)
+        AddLine("  " + reason, reportId)
+    endif
+    if targetId and not oldTargetId
+        if success or not converted
+            AbandonFile(targetId)
+        endif
+    endif
+    if sourceId and not oldSourceId
+        AbandonFile(sourceId)
+    endif
+    return (success)
+end
+
+proc PROCConvertDirectory(string inputDirectory, string outputDirectory,
+                          integer reverseConversion)
+    string sourceDirectory[255], targetDirectory[255], memberName[255]
+    string sourceName[255], targetName[255]
+    string inputExtension[4] = ".txt", outputExtension[4] = ".syn"
+    integer searchHandle = -1, reportId = 0
+    integer savedCount = 0, failedCount = 0, matchedCount = 0
+
+    if reverseConversion
+        inputExtension = ".syn"
+        outputExtension = ".txt"
+    endif
+    sourceDirectory = FNDirectoryPath(inputDirectory)
+    targetDirectory = FNDirectoryPath(outputDirectory)
+    if sourceDirectory == "" or targetDirectory == ""
+        Warn("Both input and output must be existing directories")
+        return ()
+    endif
+    PushLocation()
+    reportId = CreateTempBuffer()
+    if not reportId
+        PopLocation()
+        Warn("Could not create conversion report buffer")
+        return ()
+    endif
+    BufferType(_NORMAL_)
+    AddLine("SYNCFG2 KNUD directory conversion version 1.0.0.0.8", reportId)
+    AddLine("Input: " + sourceDirectory, reportId)
+    AddLine("Output: " + targetDirectory, reportId)
+    AddLine("", reportId)
+
+    // Consume FFName/FFAttribute immediately; conversion may use file searches.
+    searchHandle = FindFirstFile(sourceDirectory + "*" + inputExtension, -1)
+    if searchHandle <> -1
+        repeat
+            memberName = FFName()
+            if not (FFAttribute() & _DIRECTORY_) and
+               Lower(SplitPath(memberName, _EXT_)) == inputExtension
+                matchedCount = matchedCount + 1
+                if Length(sourceDirectory) + Length(memberName) > 253 or
+                   Length(targetDirectory) + Length(memberName) > 253
+                    failedCount = failedCount + 1
+                    AddLine("FAILED (path too long): " + memberName, reportId)
+                else
+                    sourceName = sourceDirectory + memberName
+                    targetName = targetDirectory +
+                        SubStr(memberName, 1, Length(memberName) - 4) + outputExtension
+                    if FNConvertDirectoryFile(sourceName, targetName, reportId,
+                                              reverseConversion)
+                        savedCount = savedCount + 1
+                    else
+                        failedCount = failedCount + 1
+                    endif
+                endif
+            endif
+        until not FindNextFile(searchHandle, -1)
+        FindFileClose(searchHandle)
+    endif
+    AddLine("", reportId)
+    AddLine("Matched: " + Str(matchedCount) + "  Saved: " + Str(savedCount) +
+            "  Failed: " + Str(failedCount), reportId)
+    if not matchedCount
+        AddLine("No " + inputExtension + " files found, or input could not be read.",
+                reportId)
+    endif
+    PopLocation()
+    GotoBufferId(reportId)
+    BegFile()
+    Warn("SYNCFG2: ", savedCount, " saved; ", failedCount,
+         " failed. See conversion report.")
+end
+
+// Read one quoted or unquoted filename and consume it from the arguments.
+integer proc FNReadFilename(var string arguments, var string filename)
+    integer closingQuote
+    arguments = Trim(arguments)
+    filename = ""
+    if arguments == ""
+        return (FALSE)
+    endif
+    if arguments[1] == Chr(34)
+        closingQuote = Pos(Chr(34), SubStr(arguments, 2, 255)) + 1
+        if closingQuote < 3
+            return (FALSE)
+        endif
+        filename = SubStr(arguments, 2, closingQuote - 2)
+        if Length(arguments) > closingQuote and
+           arguments[closingQuote + 1] <> " "
+            return (FALSE)
+        endif
+        arguments = Trim(SubStr(arguments, closingQuote + 1, 255))
+    else
+        filename = GetToken(arguments, ' ', 1)
+        arguments = Trim(SubStr(arguments, Length(filename) + 1, 255))
+    endif
+    return (Pos(Chr(34), filename) == 0)
+end
+
+proc main()
+    string cmdline[255], name[_MAXPATH_]
+    string inputName[255] = "", outputName[255] = "", extension[10]
+    integer filenameMode = FALSE
+    string commandName[32] = ""
+    integer explicitFile = FALSE, explicitDirectory = FALSE
+    integer reverseConversion = FALSE
+    integer id1 = GetBufferId(), text_buf, binary_buf
+
+    // initialize global variables
+    version_str = version_str_d           // this string can be changed by the version recognizer
+    version_num = Val(version_str, 16)
+    batch = FALSE
+
+    cmdline = Trim(Query(MacroCmdLine))
+    if Lower(cmdline) == "-batch" or Lower(cmdline[1:7]) == "-batch "
+        batch = TRUE
+        cmdline = Trim(DelStr(cmdline, 1, 7))
+        Set(MacroCmdLine, cmdline)
+    endif
+
+    commandName = Lower(GetToken(cmdline, ' ', 1))
+    case commandName
+        when "files", "filetexttobinary", "filebinarytotext"
+            explicitFile = TRUE
+        when "directories", "directorytexttobinary", "directorybinarytotext"
+            explicitDirectory = TRUE
+    endcase
+    reverseConversion = commandName == "filebinarytotext" or
+                        commandName == "directorybinarytotext"
+    if explicitFile or explicitDirectory
+        cmdline = Trim(DelStr(cmdline, 1, Length(commandName)))
+        if cmdline == ""
+            Warn("Expected command followed by input and output paths")
+            return ()
+        endif
+    endif
+
+    if cmdline <> "" and
+       commandName <> "texttobinary" and
+       commandName <> "binarytotext"
+        if not FNReadFilename(cmdline, inputName)
+            Warn("Invalid input filename")
+            return ()
+        endif
+        if cmdline <> ""
+            if not FNReadFilename(cmdline, outputName) or cmdline <> ""
+                Warn("Expected input filename and optional output filename")
+                return ()
+            endif
+        endif
+        if explicitFile or explicitDirectory
+            if outputName == ""
+                Warn("Expected command followed by input and output paths")
+                return ()
+            endif
+        endif
+        if explicitDirectory
+            PROCConvertDirectory(inputName, outputName, reverseConversion)
+            return ()
+        endif
+        if explicitFile
+            if FNDirectoryPath(inputName) <> "" or
+               FNDirectoryPath(outputName) <> ""
+                Warn("The files command requires two filenames")
+                return ()
+            endif
+        elseif FNDirectoryPath(inputName) <> ""
+            // Legacy unnamed directory form.
+            PROCConvertDirectory(inputName, outputName, FALSE)
+            return ()
+        endif
+        extension = Lower(SplitPath(inputName, _EXT_))
+        if commandName == "filetexttobinary" and
+           extension <> ".txt" and extension <> ".ttt"
+            Warn("filetexttobinary requires a .txt or .ttt input file")
+            return ()
+        endif
+        if commandName == "filebinarytotext" and extension <> ".syn"
+            Warn("filebinarytotext requires a .syn input file")
+            return ()
+        endif
+        if extension <> ".txt" and extension <> ".ttt" and extension <> ".syn"
+            Warn("Extension not .txt, .ttt or .syn")
+            return ()
+        endif
+        if not FileExists(inputName)
+            Warn("Input file not found: ", inputName)
+            return ()
+        endif
+        if not EditFile(Chr(34) + inputName + Chr(34))
+            Warn("Could not open input file: ", inputName)
+            return ()
+        endif
+        id1 = GetBufferId()
+        filenameMode = TRUE
+        cmdline = ""
+    endif
+
+    if NumTokens(cmdline, ' ') and NumTokens(cmdline, ' ') <> 3
+        Warn("Expected conversion command and two buffer IDs")
+        return ()
+    endif
+
+    case Lower(GetToken(cmdline, ' ', 1))
+        when "texttobinary"
+            text_buf   = Val(GetToken(cmdline, ' ', 2))
+            binary_buf = Val(GetToken(cmdline, ' ', 3))
+            if TextToBinary(text_buf, binary_buf)
+                Set(MacroCmdLine, "true")
+            endif
+
+        when "binarytotext"
+            binary_buf = Val(GetToken(cmdline, ' ', 2))
+            text_buf   = Val(GetToken(cmdline, ' ', 3))
+            if BinaryToText(binary_buf, text_buf)
+                Set(MacroCmdLine, "true")
+            endif
+        otherwise
+            name = Lower(SplitPath(CurrFilename(), _NAME_))
+            if filenameMode
+                // Preserve the source directory and basename case.
+                name = SubStr(CurrFilename(), 1,
+                    Length(CurrFilename()) -
+                    Length(SplitPath(CurrFilename(), _EXT_)))
+            endif
+            case Lower(SplitPath(CurrFilename(), _EXT_))
+                when ".txt", ".ttt"
+                    name = name + ".syn"
+                    if outputName <> ""
+                        name = outputName
+                    endif
+                    binary_buf = GetBufferId(name)
+                    if not CreateBuffer(name, _NORMAL_, binary_buf)
+                        Warn("Could not get binary buffer")
+                    else
+                        if binary_buf == id1
+                            Warn("Output must differ from the input file")
+                        elseif TextToBinary(id1, binary_buf)
+                            if outputName <> ""
+                                GotoBufferId(binary_buf)
+                                if not SaveFile()
+                                    Warn("Could not save output: ", name)
+                                endif
+                            endif
+                        endif
+                    endif
+                when ".syn"
+                    name = name + ".txt"
+                    if outputName <> ""
+                        name = outputName
+                    endif
+                    text_buf = GetBufferId(name)
+                    if not CreateBuffer(name, _NORMAL_, text_buf)
+                        Warn("Could not get text buffer")
+                    else
+                        if text_buf == id1
+                            Warn("Output must differ from the input file")
+                        elseif BinaryToText(id1, text_buf)
+                            if outputName <> ""
+                                GotoBufferId(text_buf)
+                                if not SaveFile()
+                                    Warn("Could not save output: ", name)
+                                endif
+                            endif
+                        endif
+                    endif
+                otherwise
+                    Warn("Extension not .txt or .syn")
+            endcase
+    endcase
+    UpdateDisplayFlags(_STATUSLINE_REFRESH_)
+//    PurgeMacro(CurrMacroFilename())
+end
+
