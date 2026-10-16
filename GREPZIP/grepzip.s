@@ -1,5 +1,5 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.19
+// Version : 1.0.0.0.20
 // Date    : 2026-10-16
 // LLM     : OpenAI Codex
 
@@ -12,10 +12,12 @@ string manifestS[255] = ""
 string iniS[255] = ""
 string commandS[255] = ""
 integer resultBufferI = 0
+integer resultMapBufferI = 0
 integer manifestBufferI = 0
 integer originalBufferI = 0
 integer matchCountI = 0
 integer fileCountI = 0
+integer firstResultLineI = 0
 integer showFileNamesB = TRUE
 integer iniWarningCountI = 0
 string iniWarningsS[255] = ""
@@ -33,11 +35,13 @@ proc PROCAddIniWarning(integer lineI, string warningS)
     endif
 end
 
-proc PROCAddResult(string displayNameS, integer lineI, integer columnI,
-                   string textS)
+proc PROCAddResult(string diskNameS, string displayNameS, integer lineI,
+                   integer columnI, string textS)
     string outputS[255] = ""
     outputS = Format(displayNameS, "(", lineI, ",", columnI, "): ", textS)
     AddLine(outputS, resultBufferI)
+    AddLine(Format(diskNameS, Chr(9), lineI, Chr(9), columnI),
+            resultMapBufferI)
     matchCountI = matchCountI + 1
 end
 
@@ -52,10 +56,77 @@ proc PROCSearchOneFile(string diskNameS, string displayNameS)
         foundI = lFind(expressionS, findOptionsS)
         while (foundI)
             lineS = GetText(1, CurrLineLen())
-            PROCAddResult(displayNameS, CurrLine(), CurrCol(), lineS)
+            PROCAddResult(diskNameS, displayNameS, CurrLine(), CurrCol(), lineS)
             foundI = lRepeatFind()
         endwhile
         AbandonFile(sourceBufferI)
+    endif
+end
+
+proc PROCOpenResult()
+    integer mapLineI = 0
+    integer firstTabI = 0
+    integer secondTabI = 0
+    integer targetLineI = 0
+    integer targetColumnI = 0
+    string mapS[255] = ""
+    string remainderS[255] = ""
+    string diskNameS[255] = ""
+
+    if ((GetBufferId() <> resultBufferI) or
+        (CurrLine() < firstResultLineI) or
+        (CurrLine() >= firstResultLineI + matchCountI))
+        return()
+    endif
+    mapLineI = CurrLine() - firstResultLineI + 1
+    GotoBufferId(resultMapBufferI)
+    GotoLine(mapLineI)
+    mapS = GetText(1, CurrLineLen())
+    firstTabI = Pos(Chr(9), mapS)
+    if (firstTabI <= 1)
+        GotoBufferId(resultBufferI)
+        return()
+    endif
+    diskNameS = SubStr(mapS, 1, firstTabI - 1)
+    remainderS = SubStr(mapS, firstTabI + 1,
+                         Length(mapS) - firstTabI)
+    secondTabI = Pos(Chr(9), remainderS)
+    if (secondTabI <= 1)
+        GotoBufferId(resultBufferI)
+        return()
+    endif
+    targetLineI = Val(SubStr(remainderS, 1, secondTabI - 1))
+    targetColumnI = Val(SubStr(remainderS, secondTabI + 1,
+                                Length(remainderS) - secondTabI))
+    if (EditFile(Format('"', diskNameS, '"'), _DONT_PROMPT_))
+        GotoLine(targetLineI)
+        GotoColumn(targetColumnI)
+    else
+        GotoBufferId(resultBufferI)
+        Warn("The selected result file is no longer available.")
+    endif
+end
+
+proc PROCResultEnter()
+    if (GetBufferId() == resultBufferI)
+        PROCOpenResult()
+    else
+        ChainCmd()
+    endif
+end
+
+proc PROCResultLeftClick()
+    ChainCmd()
+    if (GetBufferId() == resultBufferI)
+        PROCOpenResult()
+    endif
+end
+
+proc PROCGoToResults()
+    if (resultBufferI)
+        GotoBufferId(resultBufferI)
+    else
+        Warn("No GREPZIP results are available.")
     endif
 end
 
@@ -315,12 +386,17 @@ proc Main()
     Dos(commandS, _DONT_PROMPT_)
 
     resultBufferI = CreateTempBuffer()
+    resultMapBufferI = CreateTempBuffer()
+    GotoBufferId(resultMapBufferI)
+    EmptyBuffer()
     GotoBufferId(resultBufferI)
     EmptyBuffer()
     AddLine(Format("GREPZIP results - search string: ", expressionS))
     AddLine(Format("Search options: ", searchOptionsS))
     AddLine(Format("Source: ", searchSpecS))
+    AddLine("Enter/Left click: open result; Ctrl+Alt+Shift+G: return here")
     AddLine("")
+    firstResultLineI = NumLines() + 1
     matchCountI = 0
     fileCountI = 0
     PROCSearchManifest()
@@ -331,12 +407,12 @@ proc Main()
     endif
     BegFile()
     UpdateDisplay(_DEFAULT_)
-    commandS = Format('powershell.exe -NoP -NonI -W Hidden -ExecutionPolicy Bypass -File "',
-                      helperS, '" -Cleanup')
-    Dos(commandS, _DONT_PROMPT_)
     Warn(Format(matchCountI, " matching line(s) found in ",
                 fileCountI, " file(s) examined."))
 end
 
 <CtrlAltShift F> Main()
+<CtrlAltShift G> PROCGoToResults()
 <CtrlAltShift R> PROCRegexHelp()
+<Enter> PROCResultEnter()
+<LeftBtn> PROCResultLeftClick()

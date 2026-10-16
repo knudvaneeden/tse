@@ -1,6 +1,6 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.19  
+**Version:** 1.0.0.0.20  
 **Date:** 2026-10-16  
 **Authoring model:** OpenAI Codex
 
@@ -173,6 +173,14 @@ Whether matching is case-sensitive follows the active TSE search behavior and ex
 
 ## Results
 
+The results buffer supports direct navigation:
+
+- Left-click a matching result line or place the cursor on it and press `Enter` to open the file at the reported line and column.
+- Press `Ctrl+Alt+Shift+G` to return to the current GREPZIP results buffer.
+- Header, instruction, blank, and summary lines are not navigation targets.
+
+For ordinary files, navigation opens the original file. For archive members, GREPZIP opens the physical temporary extraction file associated with the displayed virtual archive path. The extraction tree is retained after the search so those links remain usable. Starting the next GREPZIP search removes the previous extraction tree and creates a new one; an older archive-result link may therefore no longer be available after another search.
+
 Each match is shown as:
 
 ```text
@@ -196,7 +204,8 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - With a wildcard source specification, the mask selects ordinary files both outside and inside archives; supported archive files are still opened so matching members can be found.
 - Extracted temporary members use unique names below `%TEMP%`.
 - The manifest contains system paths only temporarily; search output retains the archive/member path.
-- After TSE finishes searching, the helper removes the temporary extraction tree and manifest.
+- The extraction tree and manifest remain available after searching so archive-result navigation works.
+- Starting the next GREPZIP search removes the previous extraction tree and manifest.
 
 ## Current limits
 
@@ -210,6 +219,15 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.20 - 2026-10-16
+
+- Makes matching result lines navigable with a left click or `Enter`.
+- Opens each selected result at its recorded line and column.
+- Adds `Ctrl+Alt+Shift+G` to return to the current results buffer.
+- Stores a hidden physical-file mapping for every visible match.
+- Supports navigation into nested archive members by retaining their extracted temporary files.
+- Cleans the preceding search's extraction tree when the next GREPZIP search starts.
 
 ### 1.0.0.0.19 - 2026-10-16
 

@@ -35,17 +35,18 @@ if (Test-Path -LiteralPath $iniPath -PathType Leaf) {
     }
 }
 
-if ($Cleanup) {
-    if (Test-Path -LiteralPath $Manifest) {
-        $first = [IO.File]::ReadLines($Manifest) | Select-Object -First 1
-        if ($first -and $first.StartsWith('#WORK=')) {
-            $oldWork = $first.Substring(6)
-            if ($oldWork -and (Test-Path -LiteralPath $oldWork)) {
-                Remove-Item -LiteralPath $oldWork -Recurse -Force -ErrorAction SilentlyContinue
-            }
+if (Test-Path -LiteralPath $Manifest) {
+    $first = [IO.File]::ReadLines($Manifest) | Select-Object -First 1
+    if ($first -and $first.StartsWith('#WORK=')) {
+        $oldWork = $first.Substring(6)
+        if ($oldWork -and (Test-Path -LiteralPath $oldWork)) {
+            Remove-Item -LiteralPath $oldWork -Recurse -Force `
+                        -ErrorAction SilentlyContinue
         }
-        Remove-Item -LiteralPath $Manifest -Force -ErrorAction SilentlyContinue
     }
+    Remove-Item -LiteralPath $Manifest -Force -ErrorAction SilentlyContinue
+}
+if ($Cleanup) {
     exit 0
 }
 
