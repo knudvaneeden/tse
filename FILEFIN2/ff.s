@@ -1,6 +1,6 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.30
-// Date    : 2026-09-18
+// Version : 1.0.0.0.31
+// Date    : 2026-10-16
 // LLM     : OpenAI Codex
 //
 // TSE 4.50 / Windows 11 port using ff.dll and zip.dll.
@@ -188,6 +188,36 @@ proc PROCSearchTree()
     endif
 end
 
+proc PROCSearchDirectoryList(string inputS)
+    string directoryS[255] = ""
+    integer indexI = 1
+    integer lengthI = Length(inputS)
+
+    while (indexI <= lengthI)
+        if (inputS[indexI] == ";")
+            directoryS = Trim(directoryS)
+            if (Length(directoryS))
+                PROCSetStartPath(directoryS)
+                if (Length(startPath))
+                    PROCSearchTree()
+                endif
+            endif
+            directoryS = ""
+        else
+            directoryS = directoryS + inputS[indexI]
+        endif
+        indexI = indexI + 1
+    endwhile
+
+    directoryS = Trim(directoryS)
+    if (Length(directoryS))
+        PROCSetStartPath(directoryS)
+        if (Length(startPath))
+            PROCSearchTree()
+        endif
+    endif
+end
+
 proc Main()
     string iniFilenameS[255] = ""
     string iniValueS[255] = ""
@@ -212,11 +242,10 @@ proc Main()
     endif
 
     if (Ask("Enter filename or file mask (*, .*, ?):", fileInput, _EDIT_HISTORY_) and Length(fileInput))
-        if (Ask("Enter top directory:", directoryInput, _EDIT_HISTORY_) and Length(directoryInput))
+        if (Ask("Enter top directories (; separated):", directoryInput, _EDIT_HISTORY_) and Length(directoryInput))
             PROCSetFileMask(fileInput)
-            PROCSetStartPath(directoryInput)
 
-            if (Length(fileToFind) and Length(startPath))
+            if (Length(fileToFind) and Length(directoryInput))
                 fileToFind = Upper(fileToFind)
                 if (Length(searchArchiveInput))
                     PushKey(Asc(searchArchiveInput[1]))
@@ -227,12 +256,12 @@ proc Main()
                 GotoBufferId(origId)
                 EmptyBuffer()
                 AddLine(Format("FILEFIN2 results for filename: ", fileToFind), origId)
-                AddLine(Format("Starting directory: ", startPath), origId)
+                AddLine(Format("Starting directories: ", directoryInput), origId)
                 AddLine(Format("File mask: ", fileToFind), origId)
                 AddLine("", origId)
                 resultCount = 0
 
-                PROCSearchTree()
+                PROCSearchDirectoryList(directoryInput)
                 UpdateDisplay(_DEFAULT_)
 
                 if (not resultCount)

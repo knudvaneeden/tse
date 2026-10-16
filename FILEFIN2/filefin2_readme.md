@@ -1,7 +1,7 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.30  
-**Date:** 2026-09-18  
+**Version:** 1.0.0.0.31  
+**Date:** 2026-10-16  
 **Time:** 11:42 CEST (UTC+02:00)  
 **LLM:** OpenAI Codex  
 
@@ -85,12 +85,12 @@ No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly
 3. Restart TSE after replacing either DLL, because Windows/TSE may retain a loaded DLL in memory.
 4. Execute the `FF` macro, or press **Ctrl+Alt+Shift+F** while it is loaded. The macro creates and displays a dedicated results buffer.
 5. At the first prompt, enter the filename or wildcard mask only, such as `FF.S`, `*.S`, `e.*list`, `elist.?`, or `FILE?.TXT`.
-6. At the second prompt, enter the top directory only, such as `C:\TEMP` or `F:\WORDPROC\tse32_v45024\MACDOWNLO`.
+6. At the second prompt, enter one top directory or a semicolon-separated list, such as `C:\TEMP` or `C:\TEMP;F:\WORDPROC\tse32_v45024\MACDOWNLO;G:\ARCHIVE`. Empty items between semicolons are ignored.
 7. Choose whether member names inside ZIP, JAR, TAR, TGZ, RAR, and 7z files, including nested and mixed archives, should also be searched. With the distributed blank `searcharchive=` setting, the menu remains visible for this choice.
 
 Both prompts retain their own TSE edit history. Cancelling either prompt stops the operation without starting a search.
 
-The macro recursively appends matching filenames, sizes, dates, and times to its dedicated results buffer. Searching starts at the separately supplied top directory.
+The macro recursively appends matching filenames, sizes, dates, and times to its dedicated results buffer. Each supplied top directory and all of its ordinary subdirectories are searched in list order. When archive searching is enabled, supported archives found anywhere below every top directory are searched too.
 
 ## Search defaults in `filefin2.ini`
 
@@ -105,7 +105,7 @@ searcharchive=
 ```
 
 - `filename` may contain the supported `*`, `.*`, and `?` wildcards.
-- `topdirectory` is the initial recursive-search directory.
+- `topdirectory` is the initial recursive-search directory or a semicolon-separated list of top directories. The complete value is limited to 255 characters by TSE's SAL string size.
 - The distributed default is `searcharchive=` so no key is queued and the user
   can choose normally. Setting `searcharchive=yes` queues the `y` accelerator,
   while `searcharchive=no` queues `n`. TSE immediately activates the matching
@@ -182,6 +182,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.31 | 2026-10-16 | Allowed the second `Ask()` prompt and `topdirectory=` INI value to contain one or more semicolon-separated top directories; each tree is searched recursively in list order |
 | 1.0.0.0.30 | 2026-09-18 | Left the distributed `searcharchive=` value blank so the archive menu remains visible and user-controlled; documented that nonempty `yes` or `no` automatically activates the matching menu entry |
 | 1.0.0.0.29 | 2026-09-18 | Moved `[Search]` INI reading entirely into `FF.S`; blank values now preserve the macro's original empty/history-driven prompts and unforced archive-menu history |
 | 1.0.0.0.28 | 2026-09-18 | Added `[Search]` INI defaults for the filename mask, top directory, and archive-menu selection; the first character of `searcharchive` positions the menu through `PushKey()` |
