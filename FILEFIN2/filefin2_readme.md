@@ -1,6 +1,6 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.32  
+**Version:** 1.0.0.0.34  
 **Date:** 2026-10-16  
 **Time:** 11:42 CEST (UTC+02:00)  
 **LLM:** OpenAI Codex  
@@ -91,6 +91,11 @@ No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly
 Both prompts retain their own TSE edit history. Cancelling either prompt stops the operation without starting a search.
 
 The macro recursively appends matching filenames, sizes, dates, and times to its dedicated results buffer. Each supplied top directory and all of its ordinary subdirectories are searched in list order. When archive searching is enabled, supported archives found anywhere below every top directory are searched too.
+
+The results header includes `Filename matching: DOS wildcards,
+case-insensitive`. FILEFIN2 does not use TSE SAL regular expressions or TSE
+search-option letters. Its `*`, `.*`, and `?` filename matching is
+case-insensitive for both ordinary files and archive members.
 
 ## Search defaults in `filefin2.ini`
 
@@ -193,6 +198,8 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.34 | 2026-10-16 | Replaced the misleading `Search options: i` results line with `Filename matching: DOS wildcards, case-insensitive`, clarifying that FILEFIN2 does not use TSE SAL regular expressions |
+| 1.0.0.0.33 | 2026-10-16 | Added `Search options: i` to the results header to record FILEFIN2's case-insensitive filename matching |
 | 1.0.0.0.32 | 2026-10-16 | Added thorough `filefin2.ini` validation with consolidated line-numbered warnings for unknown sections or parameters, missing equals signs, empty names, duplicates, misplaced settings, invalid `searcharchive` values, and the common `opdirectory` typo |
 | 1.0.0.0.31 | 2026-10-16 | Allowed the second `Ask()` prompt and `topdirectory=` INI value to contain one or more semicolon-separated top directories; each tree is searched recursively in list order |
 | 1.0.0.0.30 | 2026-09-18 | Left the distributed `searcharchive=` value blank so the archive menu remains visible and user-controlled; documented that nonempty `yes` or `no` automatically activates the matching menu entry |
