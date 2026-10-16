@@ -1,6 +1,6 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.15  
+**Version:** 1.0.0.0.16  
 **Date:** 2026-10-16  
 **Authoring model:** OpenAI Codex
 
@@ -97,6 +97,8 @@ C:\SOURCE;D:\SOURCE;F:\ARCHIVES\*.ZIP
 ```
 
 Each entry is processed independently, then all selected files are combined into one search and one results buffer. A file specification is applied recursively below its parent directory. A directory searches all files below it. A literal filename searches only that file. Whitespace surrounding each entry and empty entries are ignored.
+
+An invalid or unavailable entry is skipped without stopping the remaining entries. GREPZIP also tolerates an accidental equals sign immediately before an absolute drive specification, for example `=F:\SOURCE`.
 
 For example:
 
@@ -204,6 +206,12 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.16 - 2026-10-16
+
+- Prevents one malformed or unavailable source entry from stopping all later entries.
+- Accepts an accidental leading equals sign before an absolute drive specification, such as `=F:\SOURCE`.
+- Corrects the zero-files result caused when the first entry of a multi-directory search was malformed.
 
 ### 1.0.0.0.15 - 2026-10-16
 

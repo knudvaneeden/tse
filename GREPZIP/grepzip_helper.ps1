@@ -212,28 +212,35 @@ function Process-Specification([string]$oneSpecification) {
     $expanded = [Environment]::ExpandEnvironmentVariables(
         $oneSpecification.Trim().Trim('"'))
     if ([string]::IsNullOrWhiteSpace($expanded)) { return }
-    $mask = '*'
-    $forceSingle = $false
-    if (Test-Path -LiteralPath $expanded -PathType Container) {
-        $root = (Resolve-Path -LiteralPath $expanded).Path
-        $files = Get-ChildItem -LiteralPath $root -File -Recurse -Force `
-                               -ErrorAction SilentlyContinue
-    } elseif (Test-Path -LiteralPath $expanded -PathType Leaf) {
-        $files = @(Get-Item -LiteralPath $expanded)
-        $forceSingle = $true
-    } else {
-        $parent = Split-Path -Parent $expanded
-        $mask = Split-Path -Leaf $expanded
-        if ([string]::IsNullOrEmpty($parent)) { $parent = (Get-Location).Path }
-        $files = Get-ChildItem -LiteralPath $parent -File -Recurse -Force `
-                               -ErrorAction SilentlyContinue
+    if ($expanded -match '^=([A-Za-z]:[\\/].*)$') {
+        $expanded = $Matches[1]
     }
-
-    foreach ($file in $files) {
-        $kind = Get-ArchiveKind $file.Name
-        if ($kind -or $forceSingle -or (Test-Mask $file.Name $mask)) {
-            Process-File $file.FullName $file.FullName $mask 0 $forceSingle
+    try {
+        $mask = '*'
+        $forceSingle = $false
+        if (Test-Path -LiteralPath $expanded -PathType Container) {
+            $root = (Resolve-Path -LiteralPath $expanded).Path
+            $files = Get-ChildItem -LiteralPath $root -File -Recurse -Force `
+                                   -ErrorAction SilentlyContinue
+        } elseif (Test-Path -LiteralPath $expanded -PathType Leaf) {
+            $files = @(Get-Item -LiteralPath $expanded)
+            $forceSingle = $true
+        } else {
+            $parent = Split-Path -Parent $expanded
+            $mask = Split-Path -Leaf $expanded
+            if ([string]::IsNullOrEmpty($parent)) { $parent = (Get-Location).Path }
+            $files = Get-ChildItem -LiteralPath $parent -File -Recurse -Force `
+                                   -ErrorAction SilentlyContinue
         }
+
+        foreach ($file in $files) {
+            $kind = Get-ArchiveKind $file.Name
+            if ($kind -or $forceSingle -or (Test-Mask $file.Name $mask)) {
+                Process-File $file.FullName $file.FullName $mask 0 $forceSingle
+            }
+        }
+    } catch {
+        # One invalid or unavailable source must not stop the remaining sources.
     }
 }
 

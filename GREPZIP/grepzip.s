@@ -1,5 +1,5 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.15
+// Version : 1.0.0.0.16
 // Date    : 2026-10-16
 // LLM     : OpenAI Codex
 
