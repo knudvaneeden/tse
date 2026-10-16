@@ -1,5 +1,5 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.31
+// Version : 1.0.0.0.32
 // Date    : 2026-10-16
 // LLM     : OpenAI Codex
 //
@@ -16,6 +16,8 @@ string file_time[8]
 integer lLookInZip = TRUE
 integer origId
 integer resultCount = 0
+integer iniWarningCountI = 0
+string iniWarningsS[255] = ""
 
 dll "ff.dll"
     integer proc FF_TreeOpen(string directoryS, string maskS,
@@ -30,37 +32,156 @@ dll "ff.dll"
     integer proc FF_TreeClose(var string stateS)
 end
 
-string proc PROCReadIniValue(string iniFilenameS, string keyNameS)
+proc PROCAddIniWarning(integer lineI, string warningS)
+    string entryS[255] = ""
+
+    iniWarningCountI = iniWarningCountI + 1
+    entryS = Format("Line ", lineI, ": ", warningS)
+    if (Length(iniWarningsS) + Length(entryS) < 220)
+        if (Length(iniWarningsS))
+            iniWarningsS = iniWarningsS + " | "
+        endif
+        iniWarningsS = iniWarningsS + entryS
+    endif
+end
+
+proc PROCLoadIniDefaults(string iniFilenameS)
     integer oldBufferI = GetBufferId()
     integer iniBufferI = 0
-    integer equalsI = 0
+    integer lineI = 1
+    integer linesI = 0
+    integer separatorI = 0
     string lineS[255] = ""
-    string resultS[255] = ""
+    string keyS[40] = ""
+    string valueS[255] = ""
+    string sectionS[40] = ""
+    integer seenFilenameB = FALSE
+    integer seenTopDirectoryB = FALSE
+    integer seenSearchArchiveB = FALSE
+    integer seenSevenZipB = FALSE
+    integer seenRarB = FALSE
+
+    iniWarningCountI = 0
+    iniWarningsS = ""
+
+    if (not FileExists(iniFilenameS))
+        return()
+    endif
 
     iniBufferI = CreateTempBuffer()
-    if iniBufferI
-        GotoBufferId(iniBufferI)
-        if InsertFile(iniFilenameS, _DONT_PROMPT_)
-            BegFile()
-            loop
-                lineS = Trim(GetText(1, 255))
-                equalsI = Pos("=", lineS)
-                if equalsI > 0
-                    if Upper(Trim(SubStr(lineS, 1, equalsI - 1))) ==
-                       Upper(keyNameS)
-                        resultS = Trim(SubStr(lineS, equalsI + 1, 255))
-                        break
-                    endif
-                endif
-                if not Down()
-                    break
-                endif
-            endloop
-        endif
-        AbandonFile(iniBufferI)
+    if (not iniBufferI)
+        return()
     endif
+    GotoBufferId(iniBufferI)
+    if (not InsertFile(iniFilenameS, _DONT_PROMPT_))
+        AbandonFile(iniBufferI)
+        GotoBufferId(oldBufferI)
+        return()
+    endif
+
+    linesI = NumLines()
+    while (lineI <= linesI)
+        GotoBufferId(iniBufferI)
+        GotoLine(lineI)
+        lineS = Trim(GetText(1, 255))
+        if ((Length(lineS) > 1) and (lineS[1] == "[") and
+            (lineS[Length(lineS)] == "]"))
+            sectionS = Lower(Trim(SubStr(lineS, 2,
+                                         Length(lineS) - 2)))
+            if ((sectionS <> "search") and
+                (sectionS <> "archivetools"))
+                PROCAddIniWarning(lineI, Format("unknown section [",
+                                                sectionS, "]"))
+            endif
+        elseif (Length(lineS) and (lineS[1] <> ";"))
+            separatorI = Pos("=", lineS)
+            if (not separatorI)
+                PROCAddIniWarning(lineI, "missing '='")
+            elseif (separatorI == 1)
+                PROCAddIniWarning(lineI, "empty parameter name")
+            else
+                keyS = Lower(Trim(SubStr(lineS, 1, separatorI - 1)))
+                valueS = ""
+                if (separatorI < Length(lineS))
+                    valueS = Trim(SubStr(lineS, separatorI + 1,
+                                         Length(lineS) - separatorI))
+                endif
+                if (not Length(keyS))
+                    PROCAddIniWarning(lineI, "empty parameter name")
+                elseif (keyS == "filename")
+                    if (sectionS <> "search")
+                        PROCAddIniWarning(lineI,
+                            "filename is outside [Search]")
+                    elseif (seenFilenameB)
+                        PROCAddIniWarning(lineI, "duplicate filename")
+                    elseif (Length(valueS))
+                        fileInput = valueS
+                    endif
+                    if (sectionS == "search")
+                        seenFilenameB = TRUE
+                    endif
+                elseif (keyS == "topdirectory")
+                    if (sectionS <> "search")
+                        PROCAddIniWarning(lineI,
+                            "topdirectory is outside [Search]")
+                    elseif (seenTopDirectoryB)
+                        PROCAddIniWarning(lineI, "duplicate topdirectory")
+                    elseif (Length(valueS))
+                        directoryInput = valueS
+                    endif
+                    if (sectionS == "search")
+                        seenTopDirectoryB = TRUE
+                    endif
+                elseif (keyS == "searcharchive")
+                    if (sectionS <> "search")
+                        PROCAddIniWarning(lineI,
+                            "searcharchive is outside [Search]")
+                    elseif (seenSearchArchiveB)
+                        PROCAddIniWarning(lineI, "duplicate searcharchive")
+                    elseif ((Lower(valueS) == "yes") or
+                            (Lower(valueS) == "y") or
+                            (Lower(valueS) == "no") or
+                            (Lower(valueS) == "n"))
+                        searchArchiveInput = Lower(valueS)
+                    elseif (Length(valueS))
+                        PROCAddIniWarning(lineI,
+                                          "invalid searcharchive value")
+                    endif
+                    if (sectionS == "search")
+                        seenSearchArchiveB = TRUE
+                    endif
+                elseif (keyS == "sevenzipexe")
+                    if (sectionS <> "archivetools")
+                        PROCAddIniWarning(lineI,
+                            "SevenZipExe is outside [ArchiveTools]")
+                    elseif (seenSevenZipB)
+                        PROCAddIniWarning(lineI, "duplicate SevenZipExe")
+                    else
+                        seenSevenZipB = TRUE
+                    endif
+                elseif (keyS == "rarexe")
+                    if (sectionS <> "archivetools")
+                        PROCAddIniWarning(lineI,
+                            "RarExe is outside [ArchiveTools]")
+                    elseif (seenRarB)
+                        PROCAddIniWarning(lineI, "duplicate RarExe")
+                    else
+                        seenRarB = TRUE
+                    endif
+                elseif (keyS == "opdirectory")
+                    PROCAddIniWarning(lineI,
+                        "unknown 'opdirectory'; use 'topdirectory'")
+                else
+                    PROCAddIniWarning(lineI, Format("unknown parameter '",
+                                                    keyS, "'"))
+                endif
+            endif
+        endif
+        lineI = lineI + 1
+    endwhile
+    GotoBufferId(iniBufferI)
+    AbandonFile(iniBufferI)
     GotoBufferId(oldBufferI)
-    return (resultS)
 end
 
 dll "zip.dll"
@@ -220,7 +341,6 @@ end
 
 proc Main()
     string iniFilenameS[255] = ""
-    string iniValueS[255] = ""
 
     // Built-in FF.S defaults. Blank INI values do not replace them.
     fileInput = ""
@@ -228,17 +348,10 @@ proc Main()
     searchArchiveInput = ""
     iniFilenameS = SplitPath(CurrMacroFileName(), _DRIVE_|_PATH_) +
                    "filefin2.ini"
-    iniValueS = PROCReadIniValue(iniFilenameS, "filename")
-    if Length(iniValueS)
-        fileInput = iniValueS
-    endif
-    iniValueS = PROCReadIniValue(iniFilenameS, "topdirectory")
-    if Length(iniValueS)
-        directoryInput = iniValueS
-    endif
-    iniValueS = PROCReadIniValue(iniFilenameS, "searcharchive")
-    if Length(iniValueS)
-        searchArchiveInput = iniValueS
+    PROCLoadIniDefaults(iniFilenameS)
+    if (iniWarningCountI)
+        Warn(Format("FILEFIN2.INI has ", iniWarningCountI,
+                    " warning(s): ", iniWarningsS))
     endif
 
     if (Ask("Enter filename or file mask (*, .*, ?):", fileInput, _EDIT_HISTORY_) and Length(fileInput))

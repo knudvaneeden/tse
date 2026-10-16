@@ -1,6 +1,6 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.31  
+**Version:** 1.0.0.0.32  
 **Date:** 2026-10-16  
 **Time:** 11:42 CEST (UTC+02:00)  
 **LLM:** OpenAI Codex  
@@ -117,6 +117,17 @@ override those initial values. Blank keys preserve the original empty/history-
 driven prompts and archive-menu history. The user can still edit either
 `Ask()` value or choose another menu entry, so interactive input is final.
 
+FILEFIN2 validates every active line in `filefin2.ini`. It reports unknown
+sections, unknown or empty parameter names, missing equals signs, duplicate
+parameters, parameters in the wrong section, and invalid `searcharchive`
+values in one consolidated warning. The common typo `opdirectory` is reported
+with a suggestion to use `topdirectory`. Comments beginning with `;` are
+ignored. Valid settings remain available after the warning is dismissed.
+
+Accepted nonempty `searcharchive` values are `yes`, `y`, `no`, and `n`, without
+regard to letter case. A blank value continues to show the archive menu and
+lets the user choose normally.
+
 ## Wildcard examples
 
 | Mask | Matches |
@@ -182,6 +193,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.32 | 2026-10-16 | Added thorough `filefin2.ini` validation with consolidated line-numbered warnings for unknown sections or parameters, missing equals signs, empty names, duplicates, misplaced settings, invalid `searcharchive` values, and the common `opdirectory` typo |
 | 1.0.0.0.31 | 2026-10-16 | Allowed the second `Ask()` prompt and `topdirectory=` INI value to contain one or more semicolon-separated top directories; each tree is searched recursively in list order |
 | 1.0.0.0.30 | 2026-09-18 | Left the distributed `searcharchive=` value blank so the archive menu remains visible and user-controlled; documented that nonempty `yes` or `no` automatically activates the matching menu entry |
 | 1.0.0.0.29 | 2026-09-18 | Moved `[Search]` INI reading entirely into `FF.S`; blank values now preserve the macro's original empty/history-driven prompts and unforced archive-menu history |
