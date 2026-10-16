@@ -1,6 +1,6 @@
 /* FILEFIN2 Win32 file finder DLL.
    Borland C++ 5.5 compatible C source.
-   Version 1.0.0.0.34 - 2026-10-16 - OpenAI Codex */
+   Version 1.0.0.0.35 - 2026-10-17 - OpenAI Codex */
 
 #include <windows.h>
 

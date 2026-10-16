@@ -1,6 +1,6 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.34
-// Date    : 2026-10-16
+// Version : 1.0.0.0.35
+// Date    : 2026-10-17
 // LLM     : OpenAI Codex
 //
 // TSE 4.50 / Windows 11 port using ff.dll and zip.dll.
@@ -354,38 +354,48 @@ proc Main()
                     " warning(s): ", iniWarningsS))
     endif
 
-    if (Ask("Enter filename or file mask (*, .*, ?):", fileInput, _EDIT_HISTORY_) and Length(fileInput))
-        if (Ask("Enter top directories (; separated):", directoryInput, _EDIT_HISTORY_) and Length(directoryInput))
-            PROCSetFileMask(fileInput)
+    if (not Ask("Enter filename or file mask (*, .*, ?):", fileInput,
+                _EDIT_HISTORY_))
+        return()
+    endif
+    if (not Length(fileInput))
+        return()
+    endif
+    if (not Ask("Enter top directories (; separated):", directoryInput,
+                _EDIT_HISTORY_))
+        return()
+    endif
+    if (not Length(directoryInput))
+        return()
+    endif
 
-            if (Length(fileToFind) and Length(directoryInput))
-                fileToFind = Upper(fileToFind)
-                if (Length(searchArchiveInput))
-                    PushKey(Asc(searchArchiveInput[1]))
-                endif
-                ZipSearch()
-
-                origId = CreateTempBuffer()
-                GotoBufferId(origId)
-                EmptyBuffer()
-                AddLine(Format("FILEFIN2 results for filename: ", fileToFind), origId)
-                AddLine("Filename matching: DOS wildcards, case-insensitive", origId)
-                AddLine(Format("Starting directories: ", directoryInput), origId)
-                AddLine(Format("File mask: ", fileToFind), origId)
-                AddLine("", origId)
-                resultCount = 0
-
-                PROCSearchDirectoryList(directoryInput)
-                UpdateDisplay(_DEFAULT_)
-
-                if (not resultCount)
-                    AddLine("No matching files were found.", origId)
-                endif
-                GotoBufferId(origId)
-                GotoLine(1)
-                GotoColumn(1)
-            endif
+    PROCSetFileMask(fileInput)
+    if (Length(fileToFind) and Length(directoryInput))
+        fileToFind = Upper(fileToFind)
+        if (Length(searchArchiveInput))
+            PushKey(Asc(searchArchiveInput[1]))
         endif
+        ZipSearch()
+
+        origId = CreateTempBuffer()
+        GotoBufferId(origId)
+        EmptyBuffer()
+        AddLine(Format("FILEFIN2 results for filename: ", fileToFind), origId)
+        AddLine("Filename matching: DOS wildcards, case-insensitive", origId)
+        AddLine(Format("Starting directories: ", directoryInput), origId)
+        AddLine(Format("File mask: ", fileToFind), origId)
+        AddLine("", origId)
+        resultCount = 0
+
+        PROCSearchDirectoryList(directoryInput)
+        UpdateDisplay(_DEFAULT_)
+
+        if (not resultCount)
+            AddLine("No matching files were found.", origId)
+        endif
+        GotoBufferId(origId)
+        GotoLine(1)
+        GotoColumn(1)
     endif
 end
 

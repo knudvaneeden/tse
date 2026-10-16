@@ -1,7 +1,7 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.34  
-**Date:** 2026-10-16  
+**Version:** 1.0.0.0.35  
+**Date:** 2026-10-17  
 **Time:** 11:42 CEST (UTC+02:00)  
 **LLM:** OpenAI Codex  
 
@@ -88,7 +88,10 @@ No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly
 6. At the second prompt, enter one top directory or a semicolon-separated list, such as `C:\TEMP` or `C:\TEMP;F:\WORDPROC\tse32_v45024\MACDOWNLO;G:\ARCHIVE`. Empty items between semicolons are ignored.
 7. Choose whether member names inside ZIP, JAR, TAR, TGZ, RAR, and 7z files, including nested and mixed archives, should also be searched. With the distributed blank `searcharchive=` setting, the menu remains visible for this choice.
 
-Both prompts retain their own TSE edit history. Cancelling either prompt stops the operation without starting a search.
+Both prompts retain their own TSE edit history. Pressing Escape in either
+`Ask()` prompt immediately returns from the macro without displaying the
+archive menu, creating a results buffer, or starting a search. An accepted but
+empty input also stops the operation.
 
 The macro recursively appends matching filenames, sizes, dates, and times to its dedicated results buffer. Each supplied top directory and all of its ordinary subdirectories are searched in list order. When archive searching is enabled, supported archives found anywhere below every top directory are searched too.
 
@@ -198,6 +201,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.35 | 2026-10-17 | Changed both `Ask()` prompts to explicit early-return checks so Escape, or an accepted empty value, stops the macro before any search begins |
 | 1.0.0.0.34 | 2026-10-16 | Replaced the misleading `Search options: i` results line with `Filename matching: DOS wildcards, case-insensitive`, clarifying that FILEFIN2 does not use TSE SAL regular expressions |
 | 1.0.0.0.33 | 2026-10-16 | Added `Search options: i` to the results header to record FILEFIN2's case-insensitive filename matching |
 | 1.0.0.0.32 | 2026-10-16 | Added thorough `filefin2.ini` validation with consolidated line-numbered warnings for unknown sections or parameters, missing equals signs, empty names, duplicates, misplaced settings, invalid `searcharchive` values, and the common `opdirectory` typo |
