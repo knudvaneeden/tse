@@ -1,6 +1,6 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.17  
+**Version:** 1.0.0.0.19  
 **Date:** 2026-10-16  
 **Authoring model:** OpenAI Codex
 
@@ -57,7 +57,7 @@ RarExecutable=C:\Program Files\WinRAR\Rar.exe
 searchstring=foobar
 searchoptions=ix
 topdirectory=c:\temp\
-showfilenames=false
+showfilenames=true
 ```
 
 Paths may contain spaces and may optionally be enclosed in double quotes. Environment variables such as `%ProgramFiles%` are expanded. A configured path is used when it exists. If it is blank or invalid, GREPZIP searches `PATH` and the standard 7-Zip or WinRAR installation directories. If `rar.exe` cannot be found, GREPZIP tries `7z.exe` for RAR archives.
@@ -71,7 +71,9 @@ The three values under `[SearchDefaults]` provide the initial text displayed by 
 
 The user can edit each of the first three values in its prompt before starting the search. An empty INI value does not override GREPZIP's built-in value.
 
-`showfilenames=false` is the default and prevents filenames from flying by on the message bar. Set it to `true`, `yes`, `1`, or `on` to show each filename and refresh the display while searching. Use `false`, `no`, `0`, or `off` to disable it.
+`showfilenames=true` is the default. It shows each filename only on TSE's message bar and refreshes the display during the TSE search stage. The main editing window remains on the file that was active when GREPZIP started until the final results buffer is displayed. Use `false`, `no`, `0`, or `off` to disable filename progress.
+
+Before PowerShell begins enumerating files and expanding archives, GREPZIP displays `GREPZIP: Enumerating files and expanding archives...` on the message bar. That message remains visible during the synchronous enumeration stage. When enumeration finishes, changing filenames replace it during TSE's text-search stage.
 
 GREPZIP validates active lines in `grepzip.ini`. It reports unknown sections, unknown or empty parameter names, missing equals signs, duplicate parameters, parameters in the wrong section, and invalid `showfilenames` values in one consolidated warning. The common typo `opdirectory` is specifically reported with a suggestion to use `topdirectory`. Comments beginning with `;` are ignored. Valid settings remain available after the warning is dismissed.
 
@@ -208,6 +210,20 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.19 - 2026-10-16
+
+- Preserves the buffer that was active when GREPZIP started.
+- Restores that buffer before every filename progress refresh.
+- Restricts changing filename progress to TSE's message bar.
+- Prevents the hidden manifest filename list from being painted in the main editing window.
+
+### 1.0.0.0.18 - 2026-10-16
+
+- Displays an enumeration and archive-expansion status message before PowerShell starts.
+- Keeps that message visible throughout the otherwise silent enumeration stage.
+- Changes the supplied and built-in `showfilenames` default to `true`.
+- Shows changing filenames automatically when TSE begins searching the completed manifest.
 
 ### 1.0.0.0.17 - 2026-10-16
 

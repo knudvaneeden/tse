@@ -1,5 +1,5 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.17
+// Version : 1.0.0.0.19
 // Date    : 2026-10-16
 // LLM     : OpenAI Codex
 
@@ -13,9 +13,10 @@ string iniS[255] = ""
 string commandS[255] = ""
 integer resultBufferI = 0
 integer manifestBufferI = 0
+integer originalBufferI = 0
 integer matchCountI = 0
 integer fileCountI = 0
-integer showFileNamesB = FALSE
+integer showFileNamesB = TRUE
 integer iniWarningCountI = 0
 string iniWarningsS[255] = ""
 
@@ -79,6 +80,7 @@ proc PROCSearchManifest()
                 displayNameS = SubStr(manifestLineS, separatorI + 1,
                                       Length(manifestLineS) - separatorI)
                 if (showFileNamesB)
+                    GotoBufferId(originalBufferI)
                     Message(displayNameS)
                     UpdateDisplay(_DEFAULT_)
                 endif
@@ -276,6 +278,7 @@ proc PROCRegexHelp()
 end
 
 proc Main()
+    originalBufferI = GetBufferId()
     PROCBuildNames()
     PROCLoadIniDefaults()
     if (iniWarningCountI)
@@ -305,6 +308,8 @@ proc Main()
 
     PROCNormalizeSpecification()
     findOptionsS = Lower(searchOptionsS)
+    Message("GREPZIP: Enumerating files and expanding archives...")
+    UpdateDisplay(_DEFAULT_)
     commandS = Format('powershell.exe -NoP -NonI -W Hidden -ExecutionPolicy Bypass -File "',
                       helperS, '" -Specification "', searchSpecS, '"')
     Dos(commandS, _DONT_PROMPT_)
