@@ -208,8 +208,10 @@ function Process-File([string]$disk, [string]$display, [string]$mask,
     }
 }
 
-try {
-    $expanded = [Environment]::ExpandEnvironmentVariables($Specification.Trim('"'))
+function Process-Specification([string]$oneSpecification) {
+    $expanded = [Environment]::ExpandEnvironmentVariables(
+        $oneSpecification.Trim().Trim('"'))
+    if ([string]::IsNullOrWhiteSpace($expanded)) { return }
     $mask = '*'
     $forceSingle = $false
     if (Test-Path -LiteralPath $expanded -PathType Container) {
@@ -232,6 +234,12 @@ try {
         if ($kind -or $forceSingle -or (Test-Mask $file.Name $mask)) {
             Process-File $file.FullName $file.FullName $mask 0 $forceSingle
         }
+    }
+}
+
+try {
+    foreach ($oneSpecification in ($Specification -split ';')) {
+        Process-Specification $oneSpecification
     }
 } finally {
     $writer.Dispose()

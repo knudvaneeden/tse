@@ -1,6 +1,6 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.14
-// Date    : 2026-09-18
+// Version : 1.0.0.0.15
+// Date    : 2026-10-16
 // LLM     : OpenAI Codex
 
 string searchSpecS[255] = ""
@@ -179,7 +179,8 @@ proc Main()
                 _EDIT_HISTORY_))
         return()
     endif
-    if (not Ask("Directory or file specification:", searchSpecS, _EDIT_HISTORY_))
+    if (not Ask("Directories or file specifications (; separated):",
+                searchSpecS, _EDIT_HISTORY_))
         return()
     endif
     if (not Length(searchSpecS))

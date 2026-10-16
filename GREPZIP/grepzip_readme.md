@@ -1,10 +1,10 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.14  
-**Date:** 2026-09-18  
+**Version:** 1.0.0.0.15  
+**Date:** 2026-10-16  
 **Authoring model:** OpenAI Codex
 
-GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts a directory, one file, or a file specification and also searches files stored in ZIP, JAR, TAR, TGZ, 7Z and RAR archives. Supported archives stored inside other supported archives are expanded and searched recursively.
+GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts one or more directories, files, or file specifications and also searches files stored in ZIP, JAR, TAR, TGZ, 7Z and RAR archives. Supported archives stored inside other supported archives are expanded and searched recursively.
 
 ## Package contents
 
@@ -66,7 +66,7 @@ The three values under `[SearchDefaults]` provide the initial text displayed by 
 
 - `searchstring` initializes the search-string prompt.
 - `searchoptions` initializes the options prompt, for example `i` or `ix`.
-- `topdirectory` initializes the directory or file-specification prompt.
+- `topdirectory` initializes the directories or file-specifications prompt. It may contain a semicolon-separated list.
 - `showfilenames` controls whether each tested filename is displayed on TSE's message bar.
 
 The user can edit each of the first three values in its prompt before starting the search. An empty INI value does not override GREPZIP's built-in value.
@@ -79,8 +79,8 @@ Run `GREPZIP` as a macro, or press **Ctrl+Alt+Shift+F**. Press **Ctrl+Alt+Shift+
 
 1. Enter the search string.
 2. Enter TSE search options, for example `i` or `ix`.
-3. Enter a directory, file, or file specification.
-4. Wait while GREPZIP enumerates files, expands supported archives, and asks TSE to search each file. The currently searched virtual filename is refreshed on TSE's message bar.
+3. Enter one or more directories, files, or file specifications. Separate multiple entries with semicolons (`;`).
+4. Wait while GREPZIP enumerates files, expands supported archives, and asks TSE to search each file. If `showfilenames` is enabled, the currently searched virtual filename is refreshed on TSE's message bar.
 5. Review the results buffer.
 
 Examples of source specifications:
@@ -93,9 +93,18 @@ C:\ARCHIVES\*.ZIP
 C:\ARCHIVES\*.TAR
 C:\ARCHIVES\*.7Z
 C:\ARCHIVES\*.RAR
+C:\SOURCE;D:\SOURCE;F:\ARCHIVES\*.ZIP
 ```
 
-The file specification is applied recursively below its parent directory. A directory searches all files below it. A literal filename searches only that file.
+Each entry is processed independently, then all selected files are combined into one search and one results buffer. A file specification is applied recursively below its parent directory. A directory searches all files below it. A literal filename searches only that file. Whitespace surrounding each entry and empty entries are ignored.
+
+For example:
+
+```text
+C:\SOURCE;D:\PROJECTS\*.S;F:\ARCHIVES
+```
+
+searches every file below `C:\SOURCE`, matching `.S` files below `D:\PROJECTS`, and every file and supported archive below `F:\ARCHIVES`.
 
 ## Regular expressions
 
@@ -185,7 +194,7 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 
 ## Current limits
 
-- TSE SAL strings and displayed result lines are limited to 255 characters; very long paths or lines can be truncated.
+- TSE SAL strings and displayed result lines are limited to 255 characters; the complete semicolon-separated source list must fit in one 255-character SAL string, and very long paths or lines can be truncated.
 - TSE SAL integers are signed 32-bit.
 - Binary files may not be meaningful to TSE's text search.
 - Password-protected archives are not searched.
@@ -195,6 +204,14 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.15 - 2026-10-16
+
+- Accepts one or more top directories, literal files, or file specifications.
+- Uses semicolons to separate source entries in the TSE `Ask()` prompt.
+- Applies the same semicolon-separated syntax to `topdirectory` in `grepzip.ini`.
+- Combines all selected sources into one manifest, search, and results buffer.
+- Ignores empty entries and whitespace surrounding each source entry.
 
 ### 1.0.0.0.14 - 2026-09-18
 
