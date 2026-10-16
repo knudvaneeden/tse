@@ -1,5 +1,5 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.16
+// Version : 1.0.0.0.17
 // Date    : 2026-10-16
 // LLM     : OpenAI Codex
 
@@ -16,6 +16,21 @@ integer manifestBufferI = 0
 integer matchCountI = 0
 integer fileCountI = 0
 integer showFileNamesB = FALSE
+integer iniWarningCountI = 0
+string iniWarningsS[255] = ""
+
+proc PROCAddIniWarning(integer lineI, string warningS)
+    string entryS[255] = ""
+
+    iniWarningCountI = iniWarningCountI + 1
+    entryS = Format("Line ", lineI, ": ", warningS)
+    if (Length(iniWarningsS) + Length(entryS) < 220)
+        if (Length(iniWarningsS))
+            iniWarningsS = iniWarningsS + " | "
+        endif
+        iniWarningsS = iniWarningsS + entryS
+    endif
+end
 
 proc PROCAddResult(string displayNameS, integer lineI, integer columnI,
                    string textS)
@@ -94,6 +109,16 @@ proc PROCLoadIniDefaults()
     string lineS[255] = ""
     string keyS[40] = ""
     string valueS[255] = ""
+    string sectionS[40] = ""
+    integer seenSevenZipB = FALSE
+    integer seenRarB = FALSE
+    integer seenSearchStringB = FALSE
+    integer seenSearchOptionsB = FALSE
+    integer seenTopDirectoryB = FALSE
+    integer seenShowFileNamesB = FALSE
+
+    iniWarningCountI = 0
+    iniWarningsS = ""
 
     if (not FileExists(iniS))
         return()
@@ -109,24 +134,111 @@ proc PROCLoadIniDefaults()
         GotoBufferId(iniBufferI)
         GotoLine(lineI)
         lineS = GetText(1, CurrLineLen())
-        separatorI = Pos("=", lineS)
-        if ((separatorI > 1) and (separatorI < Length(lineS)))
-            keyS = Lower(SubStr(lineS, 1, separatorI - 1))
-            valueS = SubStr(lineS, separatorI + 1,
-                             Length(lineS) - separatorI)
-            if (Length(valueS))
-                if (keyS == "searchstring")
-                    expressionS = valueS
+        if ((Length(lineS) > 1) and (lineS[1] == "[") and
+            (lineS[Length(lineS)] == "]"))
+            sectionS = Lower(SubStr(lineS, 2, Length(lineS) - 2))
+            if ((sectionS <> "archivetools") and
+                (sectionS <> "searchdefaults"))
+                PROCAddIniWarning(lineI, Format("unknown section [",
+                                                sectionS, "]"))
+            endif
+        elseif (Length(lineS) and (lineS[1] <> ";"))
+            separatorI = Pos("=", lineS)
+            if (not separatorI)
+                PROCAddIniWarning(lineI, "missing '='")
+            elseif (separatorI == 1)
+                PROCAddIniWarning(lineI, "empty parameter name")
+            else
+                keyS = Lower(SubStr(lineS, 1, separatorI - 1))
+                valueS = ""
+                if (separatorI < Length(lineS))
+                    valueS = SubStr(lineS, separatorI + 1,
+                                     Length(lineS) - separatorI)
+                endif
+                if (keyS == "sevenzipexecutable")
+                    if (sectionS <> "archivetools")
+                        PROCAddIniWarning(lineI,
+                            "SevenZipExecutable is outside [ArchiveTools]")
+                    elseif (seenSevenZipB)
+                        PROCAddIniWarning(lineI,
+                                          "duplicate SevenZipExecutable")
+                    else
+                        seenSevenZipB = TRUE
+                    endif
+                elseif (keyS == "rarexecutable")
+                    if (sectionS <> "archivetools")
+                        PROCAddIniWarning(lineI,
+                            "RarExecutable is outside [ArchiveTools]")
+                    elseif (seenRarB)
+                        PROCAddIniWarning(lineI, "duplicate RarExecutable")
+                    else
+                        seenRarB = TRUE
+                    endif
+                elseif (keyS == "searchstring")
+                    if (sectionS <> "searchdefaults")
+                        PROCAddIniWarning(lineI,
+                            "searchstring is outside [SearchDefaults]")
+                    elseif (seenSearchStringB)
+                        PROCAddIniWarning(lineI, "duplicate searchstring")
+                    elseif (Length(valueS))
+                        expressionS = valueS
+                    endif
+                    if (sectionS == "searchdefaults")
+                        seenSearchStringB = TRUE
+                    endif
                 elseif (keyS == "searchoptions")
-                    searchOptionsS = valueS
+                    if (sectionS <> "searchdefaults")
+                        PROCAddIniWarning(lineI,
+                            "searchoptions is outside [SearchDefaults]")
+                    elseif (seenSearchOptionsB)
+                        PROCAddIniWarning(lineI, "duplicate searchoptions")
+                    elseif (Length(valueS))
+                        searchOptionsS = valueS
+                    endif
+                    if (sectionS == "searchdefaults")
+                        seenSearchOptionsB = TRUE
+                    endif
                 elseif (keyS == "topdirectory")
-                    searchSpecS = valueS
+                    if (sectionS <> "searchdefaults")
+                        PROCAddIniWarning(lineI,
+                            "topdirectory is outside [SearchDefaults]")
+                    elseif (seenTopDirectoryB)
+                        PROCAddIniWarning(lineI, "duplicate topdirectory")
+                    elseif (Length(valueS))
+                        searchSpecS = valueS
+                    endif
+                    if (sectionS == "searchdefaults")
+                        seenTopDirectoryB = TRUE
+                    endif
                 elseif (keyS == "showfilenames")
-                    valueS = Lower(valueS)
-                    showFileNamesB = ((valueS == "true") or
-                                      (valueS == "yes") or
-                                      (valueS == "1") or
-                                      (valueS == "on"))
+                    if (sectionS <> "searchdefaults")
+                        PROCAddIniWarning(lineI,
+                            "showfilenames is outside [SearchDefaults]")
+                    elseif (seenShowFileNamesB)
+                        PROCAddIniWarning(lineI, "duplicate showfilenames")
+                    else
+                        valueS = Lower(valueS)
+                        if ((valueS == "true") or (valueS == "yes") or
+                            (valueS == "1") or (valueS == "on"))
+                            showFileNamesB = TRUE
+                        elseif ((valueS == "false") or (valueS == "no") or
+                                (valueS == "0") or (valueS == "off") or
+                                (not Length(valueS)))
+                            showFileNamesB = FALSE
+                        else
+                            PROCAddIniWarning(lineI,
+                                              "invalid showfilenames value")
+                        endif
+                    endif
+                    if (sectionS == "searchdefaults")
+                        seenShowFileNamesB = TRUE
+                    endif
+                elseif (keyS == "opdirectory")
+                    PROCAddIniWarning(lineI,
+                        "unknown 'opdirectory'; use 'topdirectory'")
+                else
+                    PROCAddIniWarning(lineI, Format("unknown parameter '",
+                                                    keyS, "'"))
                 endif
             endif
         endif
@@ -166,6 +278,10 @@ end
 proc Main()
     PROCBuildNames()
     PROCLoadIniDefaults()
+    if (iniWarningCountI)
+        Warn(Format("GREPZIP.INI has ", iniWarningCountI,
+                    " warning(s): ", iniWarningsS))
+    endif
 
     if (not Ask(Format("Search string (TSE regex: . ^ $ | ? [] [~] * + @ # {} ",
                       Chr(92), "):"),

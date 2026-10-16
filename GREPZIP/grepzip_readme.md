@@ -1,6 +1,6 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.16  
+**Version:** 1.0.0.0.17  
 **Date:** 2026-10-16  
 **Authoring model:** OpenAI Codex
 
@@ -71,7 +71,9 @@ The three values under `[SearchDefaults]` provide the initial text displayed by 
 
 The user can edit each of the first three values in its prompt before starting the search. An empty INI value does not override GREPZIP's built-in value.
 
-`showfilenames=false` is the default and prevents filenames from flying by on the message bar. Set it to `true`, `yes`, `1`, or `on` to show each filename and refresh the display while searching. Any other non-empty value disables filename display.
+`showfilenames=false` is the default and prevents filenames from flying by on the message bar. Set it to `true`, `yes`, `1`, or `on` to show each filename and refresh the display while searching. Use `false`, `no`, `0`, or `off` to disable it.
+
+GREPZIP validates active lines in `grepzip.ini`. It reports unknown sections, unknown or empty parameter names, missing equals signs, duplicate parameters, parameters in the wrong section, and invalid `showfilenames` values in one consolidated warning. The common typo `opdirectory` is specifically reported with a suggestion to use `topdirectory`. Comments beginning with `;` are ignored. Valid settings remain available after the warning is dismissed.
 
 ## Run
 
@@ -206,6 +208,14 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.17 - 2026-10-16
+
+- Validates parameter and section names while reading `grepzip.ini`.
+- Detects missing equals signs, empty names, duplicates, misplaced parameters, and invalid `showfilenames` values.
+- Suggests `topdirectory` when the misspelling `opdirectory` is encountered.
+- Combines all detected configuration problems into one warning.
+- Continues with recognized settings and safe defaults after the warning.
 
 ### 1.0.0.0.16 - 2026-10-16
 

@@ -10,16 +10,27 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $sevenZipConfigured = ''
 $rarConfigured = ''
+$archiveIniSection = ''
+$sevenZipRead = $false
+$rarRead = $false
 $iniPath = Join-Path $PSScriptRoot 'grepzip.ini'
 if (Test-Path -LiteralPath $iniPath -PathType Leaf) {
     foreach ($iniLine in [IO.File]::ReadAllLines($iniPath)) {
         $trimmed = $iniLine.Trim()
-        if ($trimmed -match '^SevenZipExecutable\s*=\s*(.*)$') {
+        if ($trimmed -match '^\[([^]]+)\]$') {
+            $archiveIniSection = $Matches[1].ToLowerInvariant()
+        } elseif (($archiveIniSection -eq 'archivetools') -and
+                  (-not $sevenZipRead) -and
+                  ($trimmed -match '^SevenZipExecutable\s*=\s*(.*)$')) {
             $sevenZipConfigured = [Environment]::ExpandEnvironmentVariables(
                 $Matches[1].Trim().Trim('"'))
-        } elseif ($trimmed -match '^RarExecutable\s*=\s*(.*)$') {
+            $sevenZipRead = $true
+        } elseif (($archiveIniSection -eq 'archivetools') -and
+                  (-not $rarRead) -and
+                  ($trimmed -match '^RarExecutable\s*=\s*(.*)$')) {
             $rarConfigured = [Environment]::ExpandEnvironmentVariables(
                 $Matches[1].Trim().Trim('"'))
+            $rarRead = $true
         }
     }
 }
