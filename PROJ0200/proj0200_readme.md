@@ -2177,3 +2177,10 @@ the native input prompt is created, and disabled by prompt cleanup. Both text
 and filename input wrappers remove their hooks on return. This targets Open
 Project, New Project and Create Script prompts where an editor prompt-editing
 menu could previously take precedence over the pre-enabled key definition.
+
+## Input prompt mouse priority
+
+Right-click cancellation is reapplied before each key read inside PROJ0200
+input prompts, addressing prompt extensions that install their own mouse keys
+after startup hooks. The before-key hook is removed during prompt cleanup and
+on return from both input wrappers. Other editor prompts remain unchanged.
