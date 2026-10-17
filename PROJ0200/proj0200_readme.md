@@ -2163,3 +2163,17 @@ All three commands are case insensitive, accept no parameters and are included
 in Create script's command templates and the PJL syntax definitions.
 Run a script containing starttimelog, then work normally in the editor.
 Later run a script containing showtimelog and stoptimelog on separate lines.
+
+## Right-click cancellation in input prompts
+
+Native project text and filename prompts now treat right-click as Escape:
+it cancels the input directly. The hint reads Right-click/Esc: Cancel.
+Enter still accepts input. This replaces the previous right-click action menu.
+
+## Prompt-time right-click key activation
+
+The right-click cancellation key is enabled by the prompt startup hook, after
+the native input prompt is created, and disabled by prompt cleanup. Both text
+and filename input wrappers remove their hooks on return. This targets Open
+Project, New Project and Create Script prompts where an editor prompt-editing
+menu could previously take precedence over the pre-enabled key definition.
