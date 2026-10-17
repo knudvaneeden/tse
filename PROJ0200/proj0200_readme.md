@@ -2150,3 +2150,16 @@ current basename with .syn or .txt. The converted result is an editor buffer;
 save it explicitly when ready. Input and output must differ. Replacing an
 existing open output buffer requires confirmation. Escape cancels the prompt.
 The file and directory conversion pairs remain available separately.
+
+## PJL timelog commands
+
+starttimelog starts or resumes elapsed-time tracking for the active project.
+showtimelog saves the accumulated interval and displays the log; Escape returns
+to the script. stoptimelog saves the interval and stops tracking. Showing a
+stopped log does not restart tracking. Running start repeatedly keeps the
+existing interval. Stop is harmless when already stopped. Start/show require
+an active project; stop can flush the previously tracked project after closure.
+All three commands are case insensitive, accept no parameters and are included
+in Create script's command templates and the PJL syntax definitions.
+Run a script containing starttimelog, then work normally in the editor.
+Later run a script containing showtimelog and stoptimelog on separate lines.
