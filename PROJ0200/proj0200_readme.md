@@ -2184,3 +2184,9 @@ Right-click cancellation is reapplied before each key read inside PROJ0200
 input prompts, addressing prompt extensions that install their own mouse keys
 after startup hooks. The before-key hook is removed during prompt cleanup and
 on return from both input wrappers. Other editor prompts remain unchanged.
+
+## Return from Loaded languages and Help
+
+Loaded languages uses a small list dialog with Escape/right-click to return
+to the main menu. The Help submenu keeps the parent Project menu open when
+cancelled. Its existing help actions remain available.
