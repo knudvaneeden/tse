@@ -40,7 +40,7 @@
 - The Windows clipboard viewer displays text. The named-clipboard viewer
   offers NAMECLIP clipboards and legacy A-Z TSE clipboards separately.
 
-## Detailed help and change descriptions
+## HISTORY
 
 ## prioritize Import and Export
 
