@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.347
+# PROJ0200 - 1.0.0.0.351
 
-Updated: 2026-10-17 03:32:45
+Updated: 2026-10-17 03:43:54
 
 ## Installation
 
@@ -2192,3 +2192,34 @@ on return from both input wrappers. Other editor prompts remain unchanged.
 Loaded languages uses a small list dialog with Escape/right-click to return
 to the main menu. The Help submenu keeps the parent Project menu open when
 cancelled. Its existing help actions remain available.
+
+## Right-click dismissal of OK messages
+
+Native PROJ0200 information/warning boxes with only an OK button now accept
+right-click to dismiss. This includes the warning to open a saved project
+before Rename project. The temporary mouse binding is removed after dismissal.
+
+## Next and previous open file
+
+View projects > Next file / Previous file cycles through normal TSE ring
+buffers, including unnamed documents, skipping system buffers. A successful
+switch closes the Project menu and displays the target after menu cleanup.
+With no other open document, an explanatory message is shown and the main
+menu remains available. These actions do not open the next project member
+from disk; they navigate files already in the editor ring.
+
+## Timelog mouse return
+
+The no-active-project warning uses the shared OK-message right-click handler.
+The Time Log list also accepts right-click as Escape to return. Dismissing
+the viewer leaves the current tracking state unchanged.
+
+## Consistent right-click dismissal of native messages
+
+Package SAL sources route information/warning and confirmation messages through
+the shared dialog helper. Right-click dismisses OK-only messages and sends
+Escape for confirmations, without selecting Yes. Temporary keys/hooks are
+removed on return. This covers the project manager and supplied syntax,
+clipboard, AI and other utility sources. The clipboard viewer's custom Yes/No
+menu also recognises right-click as cancellation. Windows OS dialog style
+retains standard Windows mouse behavior; this change targets native TSE dialogs.
