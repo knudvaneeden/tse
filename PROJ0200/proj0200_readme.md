@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.352
+# PROJ0200 - 1.0.0.0.353
 
-Updated: 2026-10-17 03:51:51
+Updated: 2026-10-17 04:07:32
 
 ## Installation
 
@@ -2228,3 +2228,10 @@ retains standard Windows mouse behavior; this change targets native TSE dialogs.
 
 Next file and Previous file leave the main Project menu open after changing
 the active buffer. Escape/right-click can then leave the menu normally.
+
+## Search completion instructions
+
+A new search displays its match/file summary and explains that clicking a
+found line or pressing Enter opens the file at the row and column, and that
+Ctrl+Alt+Shift+G returns to the results. The dialog appears only for newly
+completed searches, not each time the results shortcut is used.
