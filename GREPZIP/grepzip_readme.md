@@ -1,7 +1,7 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.20  
-**Date:** 2026-10-16  
+**Version:** 1.0.0.0.21  
+**Date:** 2026-10-17  
 **Authoring model:** OpenAI Codex
 
 GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts one or more directories, files, or file specifications and also searches files stored in ZIP, JAR, TAR, TGZ, 7Z and RAR archives. Supported archives stored inside other supported archives are expanded and searched recursively.
@@ -219,6 +219,12 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.21 - 2026-10-17
+
+- Extends the final search-summary dialog with navigation instructions.
+- Explains that clicking a matching result line, or pressing `Enter`, opens the file at the recorded line and column.
+- Explains that `Ctrl+Alt+Shift+G` returns to the GREPZIP search results.
 
 ### 1.0.0.0.20 - 2026-10-16
 

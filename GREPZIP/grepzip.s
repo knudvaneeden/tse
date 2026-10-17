@@ -1,5 +1,5 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.20
+// Version : 1.0.0.0.21
 // Date    : 2026-10-16
 // LLM     : OpenAI Codex
 
@@ -408,7 +408,11 @@ proc Main()
     BegFile()
     UpdateDisplay(_DEFAULT_)
     Warn(Format(matchCountI, " matching line(s) found in ",
-                fileCountI, " file(s) examined."))
+                fileCountI, " file(s) examined.", Chr(13),
+                Chr(13),
+                "Click a found line or press Enter to open its file ",
+                "at that line and column.", Chr(13),
+                "Press Ctrl+Alt+Shift+G to return to the search results."))
 end
 
 <CtrlAltShift F> Main()
