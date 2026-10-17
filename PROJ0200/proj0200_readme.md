@@ -2140,3 +2140,13 @@ Its directory suggestions use the package directory and its SYNHI subdirectory.
 Original SemWare/contributor headers and editor behavior are retained.
 Association-management actions retain the supplied dependency on TSE synext;
 its sorting action retains the standard TSE sort macro dependency.
+
+## Convert the currently loaded syntax file
+
+The conversion menu's texttobinary and binarytotext options use the current
+loaded buffer directly, including unsaved edits. They do not ask for input
+filenames or buffer IDs. Choose only the output filename; it defaults to the
+current basename with .syn or .txt. The converted result is an editor buffer;
+save it explicitly when ready. Input and output must differ. Replacing an
+existing open output buffer requires confirmation. Escape cancels the prompt.
+The file and directory conversion pairs remain available separately.
