@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.351
+# PROJ0200 - 1.0.0.0.352
 
-Updated: 2026-10-17 03:43:54
+Updated: 2026-10-17 03:51:51
 
 ## Installation
 
@@ -2203,7 +2203,7 @@ before Rename project. The temporary mouse binding is removed after dismissal.
 
 View projects > Next file / Previous file cycles through normal TSE ring
 buffers, including unnamed documents, skipping system buffers. A successful
-switch closes the Project menu and displays the target after menu cleanup.
+switch keeps the Project menu open and updates the active buffer behind it.
 With no other open document, an explanatory message is shown and the main
 menu remains available. These actions do not open the next project member
 from disk; they navigate files already in the editor ring.
@@ -2223,3 +2223,8 @@ removed on return. This covers the project manager and supplied syntax,
 clipboard, AI and other utility sources. The clipboard viewer's custom Yes/No
 menu also recognises right-click as cancellation. Windows OS dialog style
 retains standard Windows mouse behavior; this change targets native TSE dialogs.
+
+## Keep the menu open during file navigation
+
+Next file and Previous file leave the main Project menu open after changing
+the active buffer. Escape/right-click can then leave the menu normally.
