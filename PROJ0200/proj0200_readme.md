@@ -2111,3 +2111,32 @@ Test: mark text, Clipboards > N: Named TSE clipboards > Copy, create a named
 clipboard, then Clipboards > B: View named TSE clipboards > N and select it.
 Rebuild both nameclip.s and clipview.s using the complete build.bat.
 
+
+## Syntax highlight conversion choices
+
+Change projects > S: Convert syntax highlight .txt to .syn or .syn to .txt
+opens four parameter choices:
+
+- filetexttobinary: choose input .txt and output .syn files.
+- filebinarytotext: choose input .syn and output .txt files.
+- directorytexttobinary: enter existing input and output directories.
+- directorybinarytotext: enter existing input and output directories.
+
+Escape cancels at either input prompt. File output defaults to the source
+basename with the target extension; it can be edited. Directory conversion
+uses the supplied SYNCFG2 component's existing conversion/report behavior.
+The front end runs projsyncfg.mac, which passes the chosen command and both
+quoted paths to syncfg2.mac. The bundled component keeps its upstream identity.
+
+## Configure syntax highlight mapping sets
+
+Change projects groups its two syntax highlight actions below a divider:
+S: Convert syntax highlight .txt to .syn or .syn to .txt, and
+H: Configure syntax highlight mapping sets.
+The latter runs the supplied SYNCFG mapping editor with common.h and syncfg.inc.
+Build compiles syncfg.si separately and copies syncfg.mac to the package root.
+The mapping editor's converter calls use the bundled syncfg2.mac explicitly.
+Its directory suggestions use the package directory and its SYNHI subdirectory.
+Original SemWare/contributor headers and editor behavior are retained.
+Association-management actions retain the supplied dependency on TSE synext;
+its sorting action retains the standard TSE sort macro dependency.
