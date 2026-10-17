@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.353
+# PROJ0200 - 1.0.0.0.354
 
-Updated: 2026-10-17 04:07:32
+Updated: 2026-10-17 11:09:57
 
 ## Installation
 
@@ -2235,3 +2235,8 @@ A new search displays its match/file summary and explains that clicking a
 found line or pressing Enter opens the file at the row and column, and that
 Ctrl+Alt+Shift+G returns to the results. The dialog appears only for newly
 completed searches, not each time the results shortcut is used.
+
+## Save the current project from PJL
+
+Use savecurrentproject with no parameters to save the active project record.
+The interpreter, command picker and syntax highlighting use this command name.
