@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.368
+# PROJ0200 - 1.0.0.0.369
 
-Updated: 2026-10-18 19:13:21
+Updated: 2026-10-18 19:22:33
 
 ## Installation
 
@@ -76,6 +76,12 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+- Audited all package history helpers. First-use prompts retain their
+  defaults instead of displaying internal history identifiers. Shared and
+  direct history readers now reject identifier entries and guard unavailable
+  histories. Existing accepted inputs remain available. See DOCS/history_audit.txt.
+
 
 - Enabled CTags generation, definition lookup and ignore-case options for a
   normal named source file without an active project. Current-file mode writes
