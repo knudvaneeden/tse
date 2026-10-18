@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.372
+# PROJ0200 - 1.0.0.0.373
 
-Updated: 2026-10-18 21:48:11
+Updated: 2026-10-18 22:14:09
 
 ## Installation
 
@@ -76,6 +76,10 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+Script and filename pickers now restore their last accepted input from TSE's persistent profile. Run script and Create script use separate histories; syntax conversion output prompts use the same shared helper. Cancellation does not replace a saved value. Named-history exhaustion no longer causes unrelated edit-history values to become defaults.
+
+Batch example loading now logs and skips invalid or unavailable entries, continues through the list, and reports loaded/skipped counts. Added six missing Hello World mappings found in the supplied languages.txt. Log writes use a hidden console without a close prompt. Windows compilation and runtime testing remain required.
 
 - Added file load examples TYPE from LANGUAGE_LIST for helloworld, bat, rule,
   errortest and syntaxhighlight. Included languages.txt and a PJL example;
