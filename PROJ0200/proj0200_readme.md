@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.356
+# PROJ0200 - 1.0.0.0.357
 
-Updated: 2026-10-18 02:26:44
+Updated: 2026-10-18 02:55:52
 
 ## Installation
 
@@ -43,6 +43,12 @@ Updated: 2026-10-18 02:26:44
   offers NAMECLIP clipboards and legacy A-Z TSE clipboards separately.
 
 ## HISTORY
+
+- Renamed the PJL command to `log view timelog`; removed `show` from the
+  language and syntax definition.
+- Version-control uploads now require `automatic` or `withnotes` and also
+  support `currentfile`. All sixteen combinations have editable templates.
+
 
 - Adopted the edited PJL syntax definition: nouns in KeyWords1, verbs in
   KeyWords3, and third and later parameters in KeyWords5. Both bundled copies
@@ -2169,7 +2175,7 @@ The file and directory conversion pairs remain available separately.
 ## PJL timelog commands
 
 log start timelog starts or resumes elapsed-time tracking for the active project.
-log show timelog saves the accumulated interval and displays the log; Escape returns
+log view timelog saves the accumulated interval and displays the log; Escape returns
 to the script. log stop timelog saves the interval and stops tracking. Showing a
 stopped log does not restart tracking. Running start repeatedly keeps the
 existing interval. Stop is harmless when already stopped. Start/show require
@@ -2177,7 +2183,7 @@ an active project; stop can flush the previously tracked project after closure.
 All three commands are case insensitive, accept no parameters and are included
 in Create script's command templates and the PJL syntax definitions.
 Run a script containing log start timelog, then work normally in the editor.
-Later run a script containing log show timelog and log stop timelog on separate lines.
+Later run a script containing log view timelog and log stop timelog on separate lines.
 
 ## Right-click cancellation in input prompts
 
