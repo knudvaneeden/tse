@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.364
+# PROJ0200 - 1.0.0.0.365
 
-Updated: 2026-10-18 18:03:32
+Updated: 2026-10-18 18:26:40
 
 ## Installation
 
@@ -58,7 +58,30 @@ value boxes refer to arguments or the named tracks below.
 See [pjl_readme.md](pjl_readme.md) for command behavior and examples.
 The notes below the tracks specify additional parameter restrictions.
 
+## Syntax-highlight example mapping
+
+`listsynext.txt` in the PROJ0200 directory is the only mapping used by
+**Load projects > Load a syntax highlight file example**. The left column
+names the syntax definition (with an optional trailing colon), and the right
+column lists its space- or tab-separated file extensions without dots.
+For example, `sal: inc s si ui` maps ddd.s to
+`PROJ0200SYNTAXHIGHLIGHTS\sal.txt`. Lookup is case-insensitive and matches
+complete extension tokens. If an extension appears on several rows, the
+first matching row is used.
+
+The definition is loaded only from `PROJ0200SYNTAXHIGHLIGHTS`. Missing mapping
+entries and missing mapped files produce distinct messages. Replace
+`listsynext.txt` with a newer copy at any time; it is reread for every request,
+so updating it does not require recompilation. Other example types continue
+to use proj0200_examples.txt.
+
 ## HISTORY
+
+- Added the supplied listsynext.txt unchanged. Syntax-highlight example
+  loading now uses this mapping exclusively and loads the mapped .txt from
+  PROJ0200SYNTAXHIGHLIGHTS. Removed obsolete syntax-example mapping records
+  from proj0200_examples.txt; other example mappings are retained.
+
 
 - Moved Change projects directly below Calculate projects in the main menu.
 
