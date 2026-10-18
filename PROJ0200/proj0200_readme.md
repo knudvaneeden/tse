@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.359
+# PROJ0200 - 1.0.0.0.360
 
-Updated: 2026-10-18 03:27:29
+Updated: 2026-10-18 04:03:29
 
 ## Installation
 
@@ -46,7 +46,24 @@ The status-line language summary is disabled by default. To enable it, set
 - The Windows clipboard viewer displays text. The named-clipboard viewer
   offers NAMECLIP clipboards and legacy A-Z TSE clipboards separately.
 
+## PJL railroad diagram
+
+Read each track from left to right. Branches select alternatives, bypasses
+mark optional parts, and return tracks repeat. Keyword boxes are literal;
+value boxes refer to arguments or the named tracks below.
+
+![PJL railroad diagram: project commands, creation options, version control, timelog, and pause](docs/pjl_railroad.png)
+
+[Open the scalable SVG diagram](docs/pjl_railroad.svg).
+See [pjl_readme.md](pjl_readme.md) for command behavior and examples.
+The notes below the tracks specify additional parameter restrictions.
+
 ## HISTORY
+
+- Added a PJL railroad diagram to the readme, with PNG and scalable SVG
+  copies in docs/. The diagram follows the current parser and includes
+  argument, quoting and creation-option restrictions.
+
 
 - Added `showlanguagesinstatusline=false` in proj0200.ini. Language labels
   are hidden by default so they cannot overwrite the filename in the status
