@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.369
+# PROJ0200 - 1.0.0.0.370
 
-Updated: 2026-10-18 19:22:33
+Updated: 2026-10-18 19:32:08
 
 ## Installation
 
@@ -76,6 +76,12 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+- Added ctagsignorecase=on to proj0200.ini. CTags lookup defaults to ignoring
+  letter case at startup and when a project has no saved TagsIgnoreCase value.
+  Set off for an exact-case default. Saved project choices still take precedence;
+  the CTags menu toggle remains available. Restart TSE after changing the INI.
+
 
 - Audited all package history helpers. First-use prompts retain their
   defaults instead of displaying internal history identifiers. Shared and
