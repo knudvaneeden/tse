@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.373
+# PROJ0200 - 1.0.0.0.376
 
-Updated: 2026-10-18 22:14:09
+Updated: 2026-10-18 22:46:26
 
 ## Installation
 
@@ -76,6 +76,12 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+Compiler BAT example loading now reads the selected compiler rule at runtime and extracts the COM...BAT filename from its Command field. Duplicate BAT rows have been removed from the example table, so changing a rule command takes effect on the next example load. The example table still selects the compiler rule for the language; an active compiler-rule file is read directly. Quoted commands, optional CALL and cmd.exe /c wrappers are supported. No compiler command is executed by this loader.
+
+Repaired missing compiler BAT and compiler-rule example mappings using the Command entries in the bundled compiler rules. This includes .b to COMBRAINF.BAT, .zig to COMZIG.BAT and .groovy to COMGROOVY.BAT. Added corresponding compiler/rule aliases and the .flex alias for the .l rule. The supplied full language list now resolves every BAT example except .s, whose compiler rule invokes SAL directly and has no bundled compiler BAT. Existing example mappings and supplied compiler files are preserved.
+
+Batch example warnings and loaded/skipped summaries now identify the example type by name: HELLOWORLD, BAT, RULE, ERRORTEST or SYNTAXHIGHLIGHT. Missing example mappings also use readable type names instead of numeric IDs.
 
 Script and filename pickers now restore their last accepted input from TSE's persistent profile. Run script and Create script use separate histories; syntax conversion output prompts use the same shared helper. Cancellation does not replace a saved value. Named-history exhaustion no longer causes unrelated edit-history values to become defaults.
 
