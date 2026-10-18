@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.379
+# PROJ0200 - 1.0.0.0.380
 
-Updated: 2026-10-18 23:12:47
+Updated: 2026-10-18 23:24:03
 
 ## Installation
 
@@ -76,6 +76,8 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+Repaired missing ERRORSTEST mappings, including errorstest.c, errorstest.zig and errorstest.e, and the remaining entries in the supplied languages.txt. Special filenames for BBC BASIC, FLEX and TCC/CMD are mapped explicitly. An unmapped extension now also checks for an existing PROJ0200ERRORSMULTIPLE\errorstest.<extension> file. Existing mappings and supplied error-example files are preserved.
 
 Included the supplied languages.txt in the PROJ0200 root. Relative language-list paths now search the PJL script directory first, then the PROJ0200 directory. Absolute paths are used as specified. A script-local list takes precedence over the bundled list.
 
