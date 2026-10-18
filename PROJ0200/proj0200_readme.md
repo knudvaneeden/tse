@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.366
+# PROJ0200 - 1.0.0.0.367
 
-Updated: 2026-10-18 18:50:54
+Updated: 2026-10-18 18:56:17
 
 ## Installation
 
@@ -76,6 +76,10 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+- Renamed the compiler-example menu option to Load a compiler .BAT example
+  for the current computer language.
+
 
 - Corrected C compiler-rule examples to comcbatcompilersetting_c.txt and
   the C runner to COMC.BAT. COMCPP.BAT now selects the C++ example group.
