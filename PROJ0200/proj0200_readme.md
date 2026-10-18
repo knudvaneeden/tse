@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.381
+# PROJ0200 - 1.0.0.0.385
 
-Updated: 2026-10-18 23:39:23
+Updated: 2026-10-19 00:18:10
 
 ## Installation
 
@@ -76,6 +76,14 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+Added Load SVN log and Load GIT log directly below the PJL log entry in Load projects. They open proj0200_svn_log.txt and proj0200_git_log.txt respectively from the PROJ0200 directory, showing a warning when no log has been created. They inspect existing upload logs without running version-control commands.
+
+Moved all computer-language recognition, summary collection and status-line drawing out of the main macro into projlanglist.mac, following another Macro too long compiler report. The main macro now retains only menu and guarded status calls. The optional status-line setting is preserved; reentrant status calls are blocked while the worker runs.
+
+Moved the sorted loaded-computer-language list into projlanglist.mac to reduce the main macro size after SAL reported Macro too long. The main menu calls the worker, and build.bat now compiles and copies it. The status summary and list share languagesmap.si for language recognition.
+
+Loaded computer languages now displays one distinct language per row in a case-insensitively sorted, scrollable List(). The list collects directly from loaded file buffers rather than a 255-character summary. Escape and right-click return to the menu. Added recognition for several bundled languages previously missing from this display, including Zig, BrainF, Groovy, Clojure, Elixir and Julia.
 
 Renamed the main menu entry and its list title to Loaded computer languages..., retaining its shortcut and behavior.
 
