@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.357
+# PROJ0200 - 1.0.0.0.358
 
-Updated: 2026-10-18 02:55:52
+Updated: 2026-10-18 03:09:23
 
 ## Installation
 
@@ -43,6 +43,12 @@ Updated: 2026-10-18 02:55:52
   offers NAMECLIP clipboards and legacy A-Z TSE clipboards separately.
 
 ## HISTORY
+
+- Excluded TSE unnamed-buffer labels such as <unnamed-2> from ring scopes
+  and combined backups, and rejected them for the current-file scope.
+  Git/Subversion helpers also skip these labels in leftover requests and
+  identify other invalid source filenames in their error messages.
+
 
 - Renamed the PJL command to `log view timelog`; removed `show` from the
   language and syntax definition.
