@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.365
+# PROJ0200 - 1.0.0.0.366
 
-Updated: 2026-10-18 18:26:40
+Updated: 2026-10-18 18:50:54
 
 ## Installation
 
@@ -76,6 +76,12 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+- Corrected C compiler-rule examples to comcbatcompilersetting_c.txt and
+  the C runner to COMC.BAT. COMCPP.BAT now selects the C++ example group.
+  Added current C runner/rule filename aliases and checked every compiler-rule
+  mapping target against the bundled files.
+
 
 - Added the supplied listsynext.txt unchanged. Syntax-highlight example
   loading now uses this mapping exclusively and loads the mapped .txt from
