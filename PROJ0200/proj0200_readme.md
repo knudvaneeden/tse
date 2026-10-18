@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.355
+# PROJ0200 - 1.0.0.0.356
 
-Updated: 2026-10-18 02:17:05
+Updated: 2026-10-18 02:26:44
 
 ## Installation
 
@@ -43,6 +43,11 @@ Updated: 2026-10-18 02:17:05
   offers NAMECLIP clipboards and legacy A-Z TSE clipboards separately.
 
 ## HISTORY
+
+- Adopted the edited PJL syntax definition: nouns in KeyWords1, verbs in
+  KeyWords3, and third and later parameters in KeyWords5. Both bundled copies
+  use the same definition.
+
 
 - PJL commands now use noun-first syntax (for example, `project open NAME`,
   `project save current`, and `log start timelog`). Update existing scripts;
