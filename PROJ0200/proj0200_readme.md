@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.376
+# PROJ0200 - 1.0.0.0.377
 
-Updated: 2026-10-18 22:46:26
+Updated: 2026-10-18 22:55:12
 
 ## Installation
 
@@ -76,6 +76,8 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+Added Load projects > Load .pjl log file..., separated by dividers. It opens the latest pjlYYYYMMDDHHMMSS.log in the PROJ0200 directory by the timestamp in its filename. It ignores unrelated files and directories, and warns if no matching log exists.
 
 Compiler BAT example loading now reads the selected compiler rule at runtime and extracts the COM...BAT filename from its Command field. Duplicate BAT rows have been removed from the example table, so changing a rule command takes effect on the next example load. The example table still selects the compiler rule for the language; an active compiler-rule file is read directly. Quoted commands, optional CALL and cmd.exe /c wrappers are supported. No compiler command is executed by this loader.
 
