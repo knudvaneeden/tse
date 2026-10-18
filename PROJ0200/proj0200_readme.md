@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.377
+# PROJ0200 - 1.0.0.0.379
 
-Updated: 2026-10-18 22:55:12
+Updated: 2026-10-18 23:12:47
 
 ## Installation
 
@@ -77,26 +77,30 @@ to use proj0200_examples.txt.
 
 ## HISTORY
 
+Included the supplied languages.txt in the PROJ0200 root. Relative language-list paths now search the PJL script directory first, then the PROJ0200 directory. Absolute paths are used as specified. A script-local list takes precedence over the bundled list.
+
+Renamed the PJL example type to errorstest to match the errorstest.* filenames. Both single-file and batch loading, editable templates, syntax highlighting, log type labels and railroad diagrams use the same spelling.
+
 Added Load projects > Load .pjl log file..., separated by dividers. It opens the latest pjlYYYYMMDDHHMMSS.log in the PROJ0200 directory by the timestamp in its filename. It ignores unrelated files and directories, and warns if no matching log exists.
 
 Compiler BAT example loading now reads the selected compiler rule at runtime and extracts the COM...BAT filename from its Command field. Duplicate BAT rows have been removed from the example table, so changing a rule command takes effect on the next example load. The example table still selects the compiler rule for the language; an active compiler-rule file is read directly. Quoted commands, optional CALL and cmd.exe /c wrappers are supported. No compiler command is executed by this loader.
 
 Repaired missing compiler BAT and compiler-rule example mappings using the Command entries in the bundled compiler rules. This includes .b to COMBRAINF.BAT, .zig to COMZIG.BAT and .groovy to COMGROOVY.BAT. Added corresponding compiler/rule aliases and the .flex alias for the .l rule. The supplied full language list now resolves every BAT example except .s, whose compiler rule invokes SAL directly and has no bundled compiler BAT. Existing example mappings and supplied compiler files are preserved.
 
-Batch example warnings and loaded/skipped summaries now identify the example type by name: HELLOWORLD, BAT, RULE, ERRORTEST or SYNTAXHIGHLIGHT. Missing example mappings also use readable type names instead of numeric IDs.
+Batch example warnings and loaded/skipped summaries now identify the example type by name: HELLOWORLD, BAT, RULE, ERRORSTEST or SYNTAXHIGHLIGHT. Missing example mappings also use readable type names instead of numeric IDs.
 
 Script and filename pickers now restore their last accepted input from TSE's persistent profile. Run script and Create script use separate histories; syntax conversion output prompts use the same shared helper. Cancellation does not replace a saved value. Named-history exhaustion no longer causes unrelated edit-history values to become defaults.
 
 Batch example loading now logs and skips invalid or unavailable entries, continues through the list, and reports loaded/skipped counts. Added six missing Hello World mappings found in the supplied languages.txt. Log writes use a hidden console without a close prompt. Windows compilation and runtime testing remain required.
 
 - Added file load examples TYPE from LANGUAGE_LIST for helloworld, bat, rule,
-  errortest and syntaxhighlight. Included languages.txt and a PJL example;
+  errorstest and syntaxhighlight. Included languages.txt and a PJL example;
   added the separate batch-loader build step, command templates, highlighting
   keywords, language reference and railroad track.
 
 
 - Added five PJL file load current example commands: helloworld, bat, rule,
-  errortest and syntaxhighlight. They use the existing loaders and return
+  errorstest and syntaxhighlight. They use the existing loaders and return
   failures to PJL logging. Updated command templates, syntax definitions,
   language documentation and the railroad diagram.
 
