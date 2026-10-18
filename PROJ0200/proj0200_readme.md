@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.354
+# PROJ0200 - 1.0.0.0.355
 
-Updated: 2026-10-17 11:09:57
+Updated: 2026-10-18 02:17:05
 
 ## Installation
 
@@ -43,6 +43,14 @@ Updated: 2026-10-17 11:09:57
   offers NAMECLIP clipboards and legacy A-Z TSE clipboards separately.
 
 ## HISTORY
+
+- PJL commands now use noun-first syntax (for example, `project open NAME`,
+  `project save current`, and `log start timelog`). Update existing scripts;
+  see pjl_readme.md for the complete migration table.
+- Added six `fileversioncontrol upload` templates for Git/Subversion and
+  the TSE ring, all projects, or the current project. Existing automatic-upload
+  settings apply; failed/cancelled uploads stop and log the script.
+
 
 ## prioritize Import and Export
 
@@ -114,9 +122,9 @@ Import project uses I; Import all projects uses A. Existing import actions are r
 
 View current active project (V) and View all projects (A) appear first, followed by a divider. Paused file viewing follows: current project (C), all projects (P), TSE ring (R). OpenAI Codex (GPT-6). Rebuild with build.bat and restart TSE. Menu source and archive checks passed; SAL compilation remains required.
 
-## desc= in createproject scripts
+## desc= in project create scripts
 
-createproject accepts optional desc="Project description" after the name. It writes Description= in the project Info section, matching interactive project creation. Omitting desc or supplying an empty value stores an empty description. Duplicate desc parameters are rejected. Examples, PJL documentation and syntax highlighting are updated. The full PJL command line is still limited to 255 characters. OpenAI Codex (GPT-6). Rebuild with build.bat and restart TSE; source checks passed, Windows SAL compilation and runtime testing remain required.
+project create accepts optional desc="Project description" after the name. It writes Description= in the project Info section, matching interactive project creation. Omitting desc or supplying an empty value stores an empty description. Duplicate desc parameters are rejected. Examples, PJL documentation and syntax highlighting are updated. The full PJL command line is still limited to 255 characters. OpenAI Codex (GPT-6). Rebuild with build.bat and restart TSE; source checks passed, Windows SAL compilation and runtime testing remain required.
 
 ## document both dialog-style values
 
@@ -1837,10 +1845,10 @@ opens an editable template; Enter inserts it, Escape cancels that insertion.
 The list repeats for the next command. Escape from the list returns to the
 normal editor with the script buffer retained; save any further edits.
 
-openallprojects "C:\TEMP\DDDPJ\" imports and registers valid .pj records
+project open all "C:\TEMP\DDDPJ\" imports and registers valid .pj records
 from that directory (nonrecursive). It does not restore every project's files
 into the editor. Only one project is active at once; the next command can be
-openproject PROJ0200HELLOWORLD. Existing destination records use the same
+project open PROJ0200HELLOWORLD. Existing destination records use the same
 copy behavior as Import all projects. Invalid records are skipped with WARNING;
 no valid records or a failed copy stops execution with ERROR.
 
@@ -1854,7 +1862,7 @@ The portable logging helpers use powershell.exe from PATH; script text is
 passed through a data file, never evaluated as shell commands.
 
 Rebuild using build.bat. SAL compilation and Windows runtime tests are pending.
-Test Create script, openprojects.pjl (adapt the directory), and errorstest.pjl.
+Test Create script, project opens.pjl (adapt the directory), and errorstest.pjl.
 OpenAI Codex (GPT-6).
 
 While editing an existing .pjl script, Run scripts > K: Insert PJL keyword
@@ -1879,7 +1887,7 @@ Create script reopens the initially saved .pjl as a normal named editor file bef
 
 Run scripts defaults to the main PROJ0200 directory and *.pjl. Previous script filenames remain available from history without overriding the default directory. The original working directory is restored after cancellation or execution. OpenAI Codex (GPT-6). Rebuild and restart TSE. Windows runtime verification remains pending.
 
-openallprojects removes a trailing filename wildcard added by ExpandPath before constructing the *.pj search. This fixes No valid .pj projects found for directories resolving to path\*.*. OpenAI Codex (GPT-6). Rebuild and restart TSE. Windows runtime verification remains pending.
+project open all removes a trailing filename wildcard added by ExpandPath before constructing the *.pj search. This fixes No valid .pj projects found for directories resolving to path\*.*. OpenAI Codex (GPT-6). Rebuild and restart TSE. Windows runtime verification remains pending.
 
 PJL logging overwrites stale event files and reports event-file or buffer failures. Helper diagnostics go to proj0200_pjl_log_errors.txt; returned log paths are checked for existence. INFO is written only after a successful ERROR event. Test errorstest.pjl to trigger an unknown command and a timestamped log. OpenAI Codex (GPT-6). Windows runtime verification remains pending.
 
@@ -1891,7 +1899,7 @@ PJL ERROR log entries and final error messages include a one-based source column
 
 Run scripts lists R: Run Project Language script (.pjl)... first, followed by K: Insert PJL keyword.... Existing actions and hotkeys are retained. OpenAI Codex (GPT-6). Rebuild and restart TSE.
 
-New PJL command viewcurrentactiveproject takes no parameters and invokes the same name, filename and description dialogs as View current active project. No active project or extra parameters produce a logged ERROR. The command is included in the keyword picker and pjl.txt syntax definitions. OpenAI Codex (GPT-6). Rebuild and restart TSE; Windows compilation and runtime verification remain pending.
+New PJL command project view current active takes no parameters and invokes the same name, filename and description dialogs as View current active project. No active project or extra parameters produce a logged ERROR. The command is included in the keyword picker and pjl.txt syntax definitions. OpenAI Codex (GPT-6). Rebuild and restart TSE; Windows compilation and runtime verification remain pending.
 
 Run projects now lists R: Run scripts first, above F: Run block or files. Existing hotkeys and actions are retained. OpenAI Codex (GPT-6). Rebuild and restart TSE.
 
@@ -1904,9 +1912,9 @@ Relative script filenames resolve from the main PROJ0200 directory. The filename
 
 Restored the clean an earlier release implementation. CmdLineParameter source, test macro, build integration and -p parameter capture from an earlier release are absent. In-editor Execute Macro support remains: projstart.mac newscript.pjl. OpenAI Codex (GPT-6). Rebuild and restart TSE.
 
-New PJL command viewallprojects takes no parameters and calls the existing View all projects action. It displays saved project names without switching the active project and does not require an active project. Included in the keyword picker and syntax highlighting. OpenAI Codex (GPT-6). Rebuild and restart TSE; Windows compilation and runtime verification remain pending.
+New PJL command project view all takes no parameters and calls the existing View all projects action. It displays saved project names without switching the active project and does not require an active project. Included in the keyword picker and syntax highlighting. OpenAI Codex (GPT-6). Rebuild and restart TSE; Windows compilation and runtime verification remain pending.
 
-openallprojects can be run repeatedly. Existing valid destination project records are retained and registered, counted as available projects, and do not show replacement prompts. Only missing records are copied. An invalid existing destination reports ERROR without overwriting it. Use the interactive Import action when intentionally replacing an existing record from the source directory. OpenAI Codex (GPT-6). Rebuild and restart TSE; Windows runtime verification remains pending.
+project open all can be run repeatedly. Existing valid destination project records are retained and registered, counted as available projects, and do not show replacement prompts. Only missing records are copied. An invalid existing destination reports ERROR without overwriting it. Use the interactive Import action when intentionally replacing an existing record from the source directory. OpenAI Codex (GPT-6). Rebuild and restart TSE; Windows runtime verification remains pending.
 
 PJL pause [text]
 
@@ -2155,16 +2163,16 @@ The file and directory conversion pairs remain available separately.
 
 ## PJL timelog commands
 
-starttimelog starts or resumes elapsed-time tracking for the active project.
-showtimelog saves the accumulated interval and displays the log; Escape returns
-to the script. stoptimelog saves the interval and stops tracking. Showing a
+log start timelog starts or resumes elapsed-time tracking for the active project.
+log show timelog saves the accumulated interval and displays the log; Escape returns
+to the script. log stop timelog saves the interval and stops tracking. Showing a
 stopped log does not restart tracking. Running start repeatedly keeps the
 existing interval. Stop is harmless when already stopped. Start/show require
 an active project; stop can flush the previously tracked project after closure.
 All three commands are case insensitive, accept no parameters and are included
 in Create script's command templates and the PJL syntax definitions.
-Run a script containing starttimelog, then work normally in the editor.
-Later run a script containing showtimelog and stoptimelog on separate lines.
+Run a script containing log start timelog, then work normally in the editor.
+Later run a script containing log show timelog and log stop timelog on separate lines.
 
 ## Right-click cancellation in input prompts
 
@@ -2238,5 +2246,5 @@ completed searches, not each time the results shortcut is used.
 
 ## Save the current project from PJL
 
-Use savecurrentproject with no parameters to save the active project record.
+Use project save current with no parameters to save the active project record.
 The interpreter, command picker and syntax highlighting use this command name.
