@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.362
+# PROJ0200 - 1.0.0.0.363
 
-Updated: 2026-10-18 16:11:56
+Updated: 2026-10-18 16:42:49
 
 ## Installation
 
@@ -59,6 +59,12 @@ See [pjl_readme.md](pjl_readme.md) for command behavior and examples.
 The notes below the tracks specify additional parameter restrictions.
 
 ## HISTORY
+
+- Replaced the contents of PROJ0200COMPILERS, PROJ0200COMPILERSETTINGS,
+  PROJ0200ERRORSMULTIPLE, PROJ0200HELLOWORLD and PROJ0200SYNTAXHIGHLIGHTS
+  with the supplied ZIP contents. The latest noun-first pjl.txt is retained
+  in both locations; all other supplied files are preserved exactly.
+
 
 - Renamed the diagram directory to DOCS and updated the documentation links.
 
