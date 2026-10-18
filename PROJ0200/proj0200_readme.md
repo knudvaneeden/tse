@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.363
+# PROJ0200 - 1.0.0.0.364
 
-Updated: 2026-10-18 16:42:49
+Updated: 2026-10-18 18:03:32
 
 ## Installation
 
@@ -59,6 +59,9 @@ See [pjl_readme.md](pjl_readme.md) for command behavior and examples.
 The notes below the tracks specify additional parameter restrictions.
 
 ## HISTORY
+
+- Moved Change projects directly below Calculate projects in the main menu.
+
 
 - Replaced the contents of PROJ0200COMPILERS, PROJ0200COMPILERSETTINGS,
   PROJ0200ERRORSMULTIPLE, PROJ0200HELLOWORLD and PROJ0200SYNTAXHIGHLIGHTS
