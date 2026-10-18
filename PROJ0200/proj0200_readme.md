@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.360
+# PROJ0200 - 1.0.0.0.362
 
-Updated: 2026-10-18 04:03:29
+Updated: 2026-10-18 16:11:56
 
 ## Installation
 
@@ -52,16 +52,23 @@ Read each track from left to right. Branches select alternatives, bypasses
 mark optional parts, and return tracks repeat. Keyword boxes are literal;
 value boxes refer to arguments or the named tracks below.
 
-![PJL railroad diagram: project commands, creation options, version control, timelog, and pause](docs/pjl_railroad.png)
+![PJL railroad diagram: project commands, creation options, version control, timelog, and pause](DOCS/pjl_railroad.png)
 
-[Open the scalable SVG diagram](docs/pjl_railroad.svg).
+[Open the scalable SVG diagram](DOCS/pjl_railroad.svg).
 See [pjl_readme.md](pjl_readme.md) for command behavior and examples.
 The notes below the tracks specify additional parameter restrictions.
 
 ## HISTORY
 
+- Renamed the diagram directory to DOCS and updated the documentation links.
+
+
+- Sorted the eleven main-menu entries in the Backup projects through Close
+  projects block alphabetically by label; retained their keys and actions.
+
+
 - Added a PJL railroad diagram to the readme, with PNG and scalable SVG
-  copies in docs/. The diagram follows the current parser and includes
+  copies in DOCS/. The diagram follows the current parser and includes
   argument, quoting and creation-option restrictions.
 
 
