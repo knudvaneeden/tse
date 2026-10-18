@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.367
+# PROJ0200 - 1.0.0.0.368
 
-Updated: 2026-10-18 18:56:17
+Updated: 2026-10-18 19:13:21
 
 ## Installation
 
@@ -76,6 +76,12 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+- Enabled CTags generation, definition lookup and ignore-case options for a
+  normal named source file without an active project. Current-file mode writes
+  the tags file beside the source. Project tagging retains its existing scope
+  setting. Unsaved current-file changes must be saved before generation.
+
 
 - Renamed the compiler-example menu option to Load a compiler .BAT example
   for the current computer language.
