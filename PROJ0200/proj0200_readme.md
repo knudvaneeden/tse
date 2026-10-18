@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.380
+# PROJ0200 - 1.0.0.0.381
 
-Updated: 2026-10-18 23:24:03
+Updated: 2026-10-18 23:39:23
 
 ## Installation
 
@@ -76,6 +76,8 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+Renamed the main menu entry and its list title to Loaded computer languages..., retaining its shortcut and behavior.
 
 Repaired missing ERRORSTEST mappings, including errorstest.c, errorstest.zig and errorstest.e, and the remaining entries in the supplied languages.txt. Special filenames for BBC BASIC, FLEX and TCC/CMD are mapped explicitly. An unmapped extension now also checks for an existing PROJ0200ERRORSMULTIPLE\errorstest.<extension> file. Existing mappings and supplied error-example files are preserved.
 
@@ -164,7 +166,7 @@ Batch example loading now logs and skips invalid or unavailable entries, continu
 
 - Added `showlanguagesinstatusline=false` in proj0200.ini. Language labels
   are hidden by default so they cannot overwrite the filename in the status
-  line. Set it to true and restart TSE to restore them. The Loaded languages
+  line. Set it to true and restart TSE to restore them. The Loaded computer languages
   menu remains available.
 
 
@@ -1626,7 +1628,7 @@ The SAL changes require compilation and runtime verification on Windows; no TSE 
 
 While a project is open and the editor status line is enabled, its right-hand portion shows `Languages: Python / C / C++`, for example. The summary lists distinct recognized languages of files currently loaded in the normal file ring, updates after commands and on idle, and restores the current buffer and cursor after inspecting the ring. Files included in the project but not loaded are not counted. Unknown file extensions are omitted; `None` means no recognized language is currently loaded. `.s` and `.si` always mean TSE SAL, and `.pl` means Perl. This indicator describes filename mappings; it does not prove that a particular CTags parser indexed a file.
 
-The status summary occupies up to 70 columns, limited to half the screen width, replacing the existing information in that portion of the status line while a project is open. Longer summaries end in `...`. Use **Alt+[ -> Loaded languages...** to view the summary (up to SAL's 255-character limit). The ordering follows the loaded file ring; each language appears once. Recompile all five macros. Compilation and visual behavior still require testing in Windows TSE rc24 and 4.50.30.
+The status summary occupies up to 70 columns, limited to half the screen width, replacing the existing information in that portion of the status line while a project is open. Longer summaries end in `...`. Use **Alt+[ -> Loaded computer languages...** to view the summary (up to SAL's 255-character limit). The ordering follows the loaded file ring; each language appears once. Recompile all five macros. Compilation and visual behavior still require testing in Windows TSE rc24 and 4.50.30.
 
 ## Delete Project
 
@@ -1638,7 +1640,7 @@ The Delete Project profile cleanup now uses the literal `LastProject` key in the
 
 ## language message wording
 
-The Loaded languages message now reads `Current computer language(s) loaded:`, suitable for either one or several languages. Recompile with `build.bat`.
+The Loaded computer languages message now reads `Current computer language(s) loaded:`, suitable for either one or several languages. Recompile with `build.bat`.
 
 ## Escape from the Load prompt
 
@@ -1646,7 +1648,7 @@ When files are already in the editor ring, Escape cancels the File(s) to edit / 
 
 ## language indicator visibility and position
 
-Corrected the reversed QueryEditState check that suppressed the indicator during ordinary editing. The language summary now begins just right of the screen midpoint and leaves the final 25 columns untouched for date/time information. If fewer than 16 columns remain for it, the status indicator is omitted; the Loaded languages menu entry remains available. Long lists are shortened with `...`. Recompile and check the status line while editing, outside a prompt.
+Corrected the reversed QueryEditState check that suppressed the indicator during ordinary editing. The language summary now begins just right of the screen midpoint and leaves the final 25 columns untouched for date/time information. If fewer than 16 columns remain for it, the status indicator is omitted; the Loaded computer languages menu entry remains available. Long lists are shortened with `...`. Recompile and check the status line while editing, outside a prompt.
 
 ## Emacs Lisp and VimScript
 
@@ -1837,7 +1839,7 @@ Recompile and restart TSE. The ZIP and menu hotkey uniqueness were validated loc
 
 ### Updated hotkeys in version 
 
-The main project menu uses unique uppercase letters before digits or punctuation. First letters are preferred where available; conflicting labels use another letter. The current keys are N New, Y Copy, O Open, G Change, A Active project, V View all, L Load all files, E Export, X Export all, I Import, M Import all, S Save, C Close, D Delete, R Rename, T CTags, B Clipboards, F Refresh, P Project settings, Q Options, H Help, U Loaded languages, and J Session tools. The label format is &character: Label. F1 still opens help.
+The main project menu uses unique uppercase letters before digits or punctuation. First letters are preferred where available; conflicting labels use another letter. The current keys are N New, Y Copy, O Open, G Change, A Active project, V View all, L Load all files, E Export, X Export all, I Import, M Import all, S Save, C Close, D Delete, R Rename, T CTags, B Clipboards, F Refresh, P Project settings, Q Options, H Help, U Loaded computer languages, and J Session tools. The label format is &character: Label. F1 still opens help.
 
 ## The single-project menu labels now read &I: Import project... and &E: Export project..., with project in lowercase. Existing uppercase hotkeys are retained. Recompile and restart TSE.
 
@@ -2216,7 +2218,7 @@ Full original menu hints remain documented in proj0200_menu_help.txt.
 
 Bundled clipboard tools and timelog
 
-Loaded languages now appears directly above Settings.
+Loaded computer languages now appears directly above Settings.
 Clipboards adds: View the current Microsoft Windows clipboard content (text),
 Named TSE clipboards (supplied NAMECLIP by David Marcus), and View named TSE
 clipboards (supplied CLIPVIEW by Ian Campbell). The Windows viewer pastes into
@@ -2336,9 +2338,9 @@ input prompts, addressing prompt extensions that install their own mouse keys
 after startup hooks. The before-key hook is removed during prompt cleanup and
 on return from both input wrappers. Other editor prompts remain unchanged.
 
-## Return from Loaded languages and Help
+## Return from Loaded computer languages and Help
 
-Loaded languages uses a small list dialog with Escape/right-click to return
+Loaded computer languages uses a small list dialog with Escape/right-click to return
 to the main menu. The Help submenu keeps the parent Project menu open when
 cancelled. Its existing help actions remain available.
 
