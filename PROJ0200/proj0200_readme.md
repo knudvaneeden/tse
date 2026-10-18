@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.358
+# PROJ0200 - 1.0.0.0.359
 
-Updated: 2026-10-18 03:09:23
+Updated: 2026-10-18 03:27:29
 
 ## Installation
 
@@ -26,6 +26,10 @@ Updated: 2026-10-18 03:09:23
 
 ## Things to know
 
+The status-line language summary is disabled by default. To enable it, set
+`showlanguagesinstatusline=true` in proj0200.ini and restart TSE.
+
+
 - Keep the complete package together: macros, DLLs, INI, help files and helpers.
   Rebuild with `build.bat` after an update, then restart TSE.
 - Preserve your personal `proj0200.ini` settings and saved project records
@@ -43,6 +47,12 @@ Updated: 2026-10-18 03:09:23
   offers NAMECLIP clipboards and legacy A-Z TSE clipboards separately.
 
 ## HISTORY
+
+- Added `showlanguagesinstatusline=false` in proj0200.ini. Language labels
+  are hidden by default so they cannot overwrite the filename in the status
+  line. Set it to true and restart TSE to restore them. The Loaded languages
+  menu remains available.
+
 
 - Excluded TSE unnamed-buffer labels such as <unnamed-2> from ring scopes
   and combined backups, and rejected them for the current-file scope.
