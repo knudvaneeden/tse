@@ -1,6 +1,6 @@
-# PROJ0200 - 1.0.0.0.370
+# PROJ0200 - 1.0.0.0.372
 
-Updated: 2026-10-18 19:32:08
+Updated: 2026-10-18 21:48:11
 
 ## Installation
 
@@ -76,6 +76,18 @@ so updating it does not require recompilation. Other example types continue
 to use proj0200_examples.txt.
 
 ## HISTORY
+
+- Added file load examples TYPE from LANGUAGE_LIST for helloworld, bat, rule,
+  errortest and syntaxhighlight. Included languages.txt and a PJL example;
+  added the separate batch-loader build step, command templates, highlighting
+  keywords, language reference and railroad track.
+
+
+- Added five PJL file load current example commands: helloworld, bat, rule,
+  errortest and syntaxhighlight. They use the existing loaders and return
+  failures to PJL logging. Updated command templates, syntax definitions,
+  language documentation and the railroad diagram.
+
 
 - Added ctagsignorecase=on to proj0200.ini. CTags lookup defaults to ignoring
   letter case at startup and when a project has no saved TagsIgnoreCase value.
