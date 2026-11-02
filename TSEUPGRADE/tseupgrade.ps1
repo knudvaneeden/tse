@@ -1,5 +1,5 @@
-# TSEUPGRADE version 1.0.0.0.53
-# Created: 2026-10-31 18:43:55
+# TSEUPGRADE version 1.0.0.0.54
+# Created: 2026-11-02 10:11:34
 # Windows PowerShell 5.1; built-in .NET ZIP extraction. No third-party utilities.
 param([switch]$ValidateOnly)
 
@@ -59,7 +59,7 @@ function Initialize-UpgradeLog {
         [IO.File]::WriteAllText($path, '', [Text.Encoding]::ASCII)
     }
     $script:logPath = $path
-    Write-UpgradeLog 'TSEUPGRADE 1.0.0.0.53 started; logging precedes INI validation.' -Type 'START'
+    Write-UpgradeLog 'TSEUPGRADE 1.0.0.0.54 started; logging precedes INI validation.' -Type 'START'
     Write-UpgradeLog "Main log: $script:logPath" -Type 'LOG'
 }
 function Select-ConfiguredUpgradeLog {
@@ -662,6 +662,7 @@ function Test-UpgradeSettings {
     $script:validationIssues = New-Object 'System.Collections.Generic.List[string]'
     if ($script:logSetupError) { Add-Validation 'ERROR' 'log_file' $script:logSetupError }
     $knownKeys = @('silent','unattended','copydisplay','copyeta','compileeta','powershell_exe',
+        'install_old_first','old_archive_file','old_installer_exe',
         'old_version','new_version','old_directory','new_directory','archive_file',
         'download_url','installer_exe','preparation_compiler_exe','preparation_wait_seconds',
         'generated_macro_launch_delay_seconds','ui_file','ui_destination','cfg_file',
@@ -699,7 +700,36 @@ function Test-UpgradeSettings {
     if ($url -and (-not [Uri]::TryCreate($url,[UriKind]::Absolute,[ref]$parsedUrl) -or $parsedUrl.Scheme -notin @('http','https'))) {
         Add-Validation 'ERROR' 'download_url' 'Use an absolute http:// or https:// URL.'
     }
-    $oldPath = Check-ValidationPath 'old_directory' $base 'Container' 'ERROR'
+    $bootstrap = Value 'install_old_first'
+    if (-not $bootstrap) { $bootstrap = 'no' }
+    if (@('yes','no') -notcontains $bootstrap.ToLowerInvariant()) {
+        Add-Validation 'ERROR' 'install_old_first' 'Use yes or no.'
+    }
+    $oldMissingLevel = 'ERROR'
+    if ($bootstrap -ieq 'yes') { $oldMissingLevel = 'INFO' }
+    $oldPath = Check-ValidationPath 'old_directory' $base 'Container' $oldMissingLevel
+    if ($bootstrap -ieq 'yes') {
+        if ($oldPath -and (Test-Path -LiteralPath $oldPath -PathType Container)) {
+            if (@(Get-ChildItem -LiteralPath $oldPath -Force).Count -ne 0) {
+                Add-Validation 'ERROR' 'old_directory' 'install_old_first=yes requires an initially empty OLD directory. No files will be removed.'
+            }
+        }
+        $oldZip = Value 'old_archive_file'
+        if (-not $oldZip) {
+            if ($automatic -or $ValidateOnly) { Add-Validation 'ERROR' 'old_archive_file' 'Required when install_old_first=yes.' }
+            else { Add-Validation 'WARNING' 'old_archive_file' 'Blank: local ZIP filename or direct ZIP URL will be asked.' }
+        } elseif ($oldZip -match '^https?://') {
+            $oldZipUri = $null
+            if (-not [Uri]::TryCreate($oldZip,[UriKind]::Absolute,[ref]$oldZipUri)) {
+                Add-Validation 'ERROR' 'old_archive_file' 'Invalid direct ZIP URL.'
+            }
+        } else { [void](Check-ValidationPath 'old_archive_file' $base 'Leaf' 'ERROR') }
+        $oldInstallerSetting = Value 'old_installer_exe'
+        if ($oldInstallerSetting -and ([IO.Path]::IsPathRooted($oldInstallerSetting) -or $oldInstallerSetting.Contains('"'))) {
+            Add-Validation 'ERROR' 'old_installer_exe' 'Use an unquoted relative path inside the OLD ZIP.'
+        }
+        Add-Validation 'INFO' 'install_old_first' 'Older installer runs first, attended. OLD editor/compiler are checked after setup; remaining upgrade uses the normal flow.'
+    }
     $newPath = Check-ValidationPath 'new_directory' $base 'Container' 'INFO'
     if ($newPath -and -not (Test-Path -LiteralPath $newPath)) {
         Add-Validation 'INFO' 'new_directory' 'A new installation directory can be created by the upgrade.'
@@ -781,7 +811,7 @@ function Test-UpgradeSettings {
     if ($macro) { Add-Validation 'INFO' 'startup_macro' "TSE will resolve [$macro] at final launch after compilation; existence is deferred." }
     $errors = @($script:validationIssues | Where-Object { $_.StartsWith('ERROR:') }).Count
     $warnings = @($script:validationIssues | Where-Object { $_.StartsWith('WARNING:') }).Count
-    $report = @('TSEUPGRADE 1.0.0.0.53 - INI validation', ('Configuration: '+$ini),
+    $report = @('TSEUPGRADE 1.0.0.0.54 - INI validation', ('Configuration: '+$ini),
         ('Checked: '+(Get-Date -Format 'yyyy-MM-dd HH:mm:ss zzz')), '') +
         @($script:validationIssues) + @('', "Validation summary: $errors error(s), $warnings warning(s).",
         'Warnings describe optional/conditional steps; choosing such a step still requires its files.',
@@ -853,7 +883,9 @@ try {
     $newVersion = Required 'new_version' 'New TSE version (label)'
     $old = Resolve-Setting (Required 'old_directory' 'Full path to OLD TSE installation')
     $new = Resolve-Setting (Required 'new_directory' 'Full path to NEW TSE installation')
-    if (-not (Test-Path -LiteralPath $old -PathType Container)) { throw "Old installation not found: $old" }
+    $installOld = Value 'install_old_first'
+    if (-not $installOld) { $installOld = 'no' }
+    if ($installOld -ieq 'no' -and -not (Test-Path -LiteralPath $old -PathType Container)) { throw "Old installation not found: $old" }
     Reject-Links $old
     Reject-Links $new
     $script:oldPrefix = $old.TrimEnd('\') + '\'
@@ -877,6 +909,69 @@ try {
     [IO.File]::WriteAllText($script:compilerTimingLog, $timingHeader + "`r`n", [Text.Encoding]::ASCII)
     Write-UpgradeLog "SC32 compilation timing log: $script:compilerTimingLog"
     Write-UpgradeLog "Upgrade $oldVersion -> $newVersion`nOLD: $old`nNEW: $new`nLOG: $log"
+    Write-UpgradeLog "OLD bootstrap install_old_first=$installOld"
+    if ($installOld -ieq 'yes') {
+        # Never clear an existing installation. Bootstrap only an empty directory.
+        if (Test-Path -LiteralPath $old) {
+            if (-not (Test-Path -LiteralPath $old -PathType Container)) { throw 'OLD path must be a directory.' }
+            if (@(Get-ChildItem -LiteralPath $old -Force).Count -ne 0) { throw 'install_old_first=yes requires an empty OLD directory. Use no to reuse an installed OLD version.' }
+        }
+        $oldArchiveInput = Required 'old_archive_file' 'OLD installer ZIP: local filename or direct http(s) ZIP URL'
+        $oldInstallerName = Value 'old_installer_exe'
+        if (-not $oldInstallerName) { $oldInstallerName = 'tse.exe' }
+        # Stage outside OLD, leaving OLD empty until its attended installer runs.
+        $oldStage = Join-Path ([IO.Path]::GetTempPath()) ('tseupgrade_old_' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $oldStage | Out-Null
+        Write-UpgradeLog "OLD bootstrap staging directory: $oldStage"
+        try {
+            if ($oldArchiveInput -match '^https?://') {
+                # Enable TLS 1.2 for Windows PowerShell 5.1 download hosts.
+                [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+                $oldArchive = Join-Path $oldStage 'old-installer.zip'
+                Write-UpgradeLog "OLD ZIP download START: $oldArchiveInput"
+                Invoke-WebRequest -Uri $oldArchiveInput -OutFile $oldArchive -UseBasicParsing | Out-Null
+                Write-UpgradeLog "OLD ZIP download END: $oldArchive; bytes=$((Get-Item -LiteralPath $oldArchive).Length)"
+            } else {
+                $oldArchive = Resolve-Setting $oldArchiveInput
+                Require-File $oldArchive
+                Reject-Links $oldArchive
+            }
+            $oldExtract = Join-Path $oldStage 'extracted'
+            Write-UpgradeLog "OLD ZIP extraction START: $oldArchive -> $oldExtract"
+            Expand-Archive -LiteralPath $oldArchive -DestinationPath $oldExtract
+            Write-UpgradeLog 'OLD ZIP extraction END'
+            $oldInstaller = Resolve-Setting $oldInstallerName $oldExtract
+            $stagePrefix = $oldExtract.TrimEnd('\') + '\'
+            if (-not $oldInstaller.StartsWith($stagePrefix,[StringComparison]::OrdinalIgnoreCase)) { throw 'old_installer_exe must resolve inside the extracted OLD archive.' }
+            Require-File $oldInstaller
+            Reject-Links $oldInstaller
+            if (-not (Test-Path -LiteralPath $old)) { New-Item -ItemType Directory -Path $old | Out-Null }
+            if (@(Get-ChildItem -LiteralPath $old -Force).Count -ne 0) { throw 'OLD directory became nonempty before bootstrap installation.' }
+            if (-not (Confirm-Step ("Install older TSE first?`nInstaller: {0}`nSelect OLD destination in installer: {1}`nThis installer requires attendance." -f $oldInstaller,$old))) { return }
+            Set-Clipboard -Value ($old.TrimEnd('\') + '\')
+            if ((Get-Clipboard -Raw) -ne ($old.TrimEnd('\') + '\')) { throw 'Could not verify OLD destination on clipboard.' }
+            Write-UpgradeLog "OLD destination copied to clipboard: $old"
+            Write-UpgradeLog ("OLD INSTALLER START: {0:yyyy-MM-dd HH:mm:ss.fff}" -f (Get-Date))
+            $oldInstallProcess = Start-Process -FilePath $oldInstaller -WorkingDirectory $oldExtract -Wait -PassThru
+            Write-UpgradeLog ("OLD INSTALLER END: {0:yyyy-MM-dd HH:mm:ss.fff}; exit={1}" -f (Get-Date),$oldInstallProcess.ExitCode)
+            if ($oldInstallProcess.ExitCode -ne 0) { throw "OLD installer returned exit $($oldInstallProcess.ExitCode)" }
+            if (-not (Confirm-Step 'Did the OLD installation finish successfully in the configured OLD directory?')) { return }
+            foreach ($checkKey in @('editor_exe','compiler_exe')) {
+                $checkName = Value $checkKey
+                if (-not $checkName) {
+                    $checkName = @{editor_exe='g32.exe';compiler_exe='sc32.exe';cfg_data_file='tsecfg.dat'}[$checkKey]
+                }
+                $checkPath = Resolve-Setting $checkName $old
+                if (-not $checkPath.StartsWith($oldPrefix,[StringComparison]::OrdinalIgnoreCase)) { throw "Bootstrap validation requires $checkKey inside OLD." }
+                Require-File $checkPath
+                Reject-Links $checkPath
+            }
+            Write-UpgradeLog 'OLD bootstrap validated. Continuing the normal upgrade from OLD.'
+        } finally {
+            # Keep extracted installer and download for diagnosis; never erase OLD.
+            Write-UpgradeLog "OLD bootstrap staging retained for inspection: $oldStage"
+        }
+    }
     $archive = Resolve-Setting (Value 'archive_file')
     $url = Value 'download_url'
     if ($url -and (Confirm-Step ("Open download URL in your default browser?`nURL: {0}`nArchive file: {1}" -f $url, $archive))) {

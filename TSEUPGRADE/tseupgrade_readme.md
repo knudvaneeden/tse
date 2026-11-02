@@ -1,6 +1,6 @@
 # TSEUPGRADE
 
-Version: 1.0.0.0.53  
+Version: 1.0.0.0.54  
 Updated: 2026-10-31 18:43:55
 
 Upgrade Windows TSE into a separate installation, using an INI for all personal
@@ -146,7 +146,7 @@ compiler: install the new release first or correct its executable paths. Existin
 personal output: select an unused NEW filename. Compiler error: inspect console
 and transcript, fix the source, then rerun. Access denied: select writable paths.
 
-## Copy progress in version 1.0.0.0.53
+## Copy progress in version 1.0.0.0.54
 
 Installation and personal-source copies print their source, destination and totals.
 Scanning, directory preparation and copying report progress about once per second
@@ -165,7 +165,7 @@ Replace all package files with this version, retaining any later personal INI
 changes you made. Copy progress is part of the helper and is always enabled;
 `silent=true` still suppresses only the introductory SAL message.
 
-## Linked source folders in version 1.0.0.0.53
+## Linked source folders in version 1.0.0.0.54
 
 A junction or symbolic link such as F:\BBC\TAAL\tse no longer stops a source
 scan. The console and transcript show `SKIP linked file/directory: full-path`.
@@ -192,7 +192,7 @@ Validation: reviewed the explicit traversal to ensure links are skipped before
 being queued or yielded; checked version stamps, ASCII encoding and ZIP integrity.
 Windows execution still requires testing on your computer.
 
-## Compiler warnings in version 1.0.0.0.53
+## Compiler warnings in version 1.0.0.0.54
 
 Exit code 1 is accepted with explicit success even when there are no warnings.
 The reported UI compile showed duplicate-key warnings and unused-declaration
@@ -217,13 +217,13 @@ Checks covered warning-only success, actual errors, missing success confirmation
 and other nonzero results using representative diagnostic text, plus ZIP integrity
 and ASCII/version checks. Windows execution still requires local testing.
 
-## Target confirmations in version 1.0.0.0.53
+## Target confirmations in version 1.0.0.0.54
 
 Both the continue confirmation and the existing-directory confirmation now include
 the full NEW installation directory, taken from new_directory in the INI. This
 makes the destination explicit at the point where you answer Yes or No.
 
-## Installer execution in version 1.0.0.0.53
+## Installer execution in version 1.0.0.0.54
 
 The sequence is now: copy OLD installation to NEW (optional), extract the ZIP
 into NEW, run the extracted installer, wait for it to finish, confirm its target,
@@ -265,7 +265,7 @@ continue-after-batch-errors behavior is retained. No separate download files are
 provided. Windows installer execution could not be tested in this environment;
 sequence, paths, ASCII/version consistency and ZIP integrity were checked.
 
-## Explicit confirmation details in version 1.0.0.0.53
+## Explicit confirmation details in version 1.0.0.0.54
 
 Every confirmation displays the old and new version labels. Each operation also
 shows the actual relevant paths or values: download URL, archive, source tree,
@@ -279,7 +279,7 @@ for an installer extracted directly into the NEW directory.
 Validation checked every confirmation site for context, output preview resolution,
 ASCII/version consistency and ZIP integrity. Windows execution remains to be tested.
 
-## Less copy output and installer clipboard in version 1.0.0.0.53
+## Less copy output and installer clipboard in version 1.0.0.0.54
 
 Per-file copy logging is optional to reduce console/transcript overhead.
 The default is copydisplay=none; an omitted or blank key also defaults to none.
@@ -320,17 +320,17 @@ In none mode, the single start message and any copy errors are still recorded
 in the transcript; filenames and periodic progress are suppressed.
 Existing INIs without this parameter use none automatically.
 
-Version 1.0.0.0.53 changes the copydisplay default and missing/blank-key fallback
+Version 1.0.0.0.54 changes the copydisplay default and missing/blank-key fallback
 to none. Explicit all or summary settings remain supported. Copy errors remain visible.
 
-## Copy start notice in version 1.0.0.0.53
+## Copy start notice in version 1.0.0.0.54
 
 Each directory-copy operation prints one line before scanning or copying begins:
 `Copying has started. Please be patient...`
 This is also displayed with copydisplay=none. No periodic progress or filenames
 are added in that mode. Copy errors remain visible.
 
-## Console focus in version 1.0.0.0.53
+## Console focus in version 1.0.0.0.54
 
 The helper remembers the window that receives each Yes/No answer. It requests
 that window's focus again after the answer, before the next confirmation, and
@@ -349,7 +349,7 @@ Validation checked focus-call placement after answers, after browser launch,
 before copying and after installer exit; version/ASCII and ZIP checks passed.
 Windows foreground behavior requires local testing.
 
-## Delayed browser activation in version 1.0.0.0.53
+## Delayed browser activation in version 1.0.0.0.54
 
 Opening the download URL can activate a browser after Start-Process has already
 returned. The helper now announces focus recovery and retries for five seconds
@@ -363,7 +363,7 @@ Changes affect download-URL launch, not ZIP extraction. Focus behavior requires
 Windows testing; source sequencing, balanced thread attachment cleanup, ASCII
 version stamps and ZIP integrity were checked locally.
 
-## One early copy-time estimate in version 1.0.0.0.53
+## One early copy-time estimate in version 1.0.0.0.54
 
 `copyeta=true` in the INI enables one early estimate per directory-copy operation.
 It also defaults to true if omitted. With copydisplay=none, the start notice is
@@ -385,7 +385,7 @@ consistency and ZIP integrity. Windows execution and timing accuracy need testin
 
 ## Prepare the copied editor before the installer
 
-Version 1.0.0.0.53 replaces the ineffective Windows TSEPATH environment-variable
+Version 1.0.0.0.54 replaces the ineffective Windows TSEPATH environment-variable
 workaround. TSEPath is an internal editor setting.
 
 After copying/extraction and before launching tse.exe, the helper:
@@ -425,7 +425,7 @@ Validation: checked preparation/backup/compile/run/marker/installer ordering,
 removed environment-variable manipulation, and verified ASCII/CRLF files and ZIP
 integrity. Neither Windows TSE execution nor installer behavior was testable here.
 
-## Strict Yes/No input in version 1.0.0.0.53
+## Strict Yes/No input in version 1.0.0.0.54
 
 Every Yes/No confirmation displays [Y/n]. Press Enter for the default Yes,
 or enter y/Y for Yes or n/N for No, followed by Enter. Other input (t, yes, no,
@@ -439,7 +439,7 @@ Validation checked empty/default input, both letter cases, invalid text and
 whitespace, plus the retry loop, ASCII/CRLF and ZIP integrity. Windows runtime
 testing remains required.
 
-## Preparation diagnostics in version 1.0.0.0.53
+## Preparation diagnostics in version 1.0.0.0.54
 
 The existing console transcript now records the exact preparation command, working
 directory, generated source and compiled macro, configuration backup and expected
@@ -456,7 +456,7 @@ Version 20 added diagnostics without changing the preparation command or upgrade
 sequence. Static checks and ZIP validation passed. Windows execution still needs
 local testing.
 
-## Preparation command correction in version 1.0.0.0.53
+## Preparation command correction in version 1.0.0.0.54
 
 The preparation editor is now launched with a plain macro name, without a full
 path, quotes or .mac extension in the -e argument. For example:
@@ -476,7 +476,7 @@ TSE parsing cause or the installer's use of saved TSEPath. Windows testing is
 still required. The installer remains blocked unless the fresh marker confirms
 saved=true. Backup and post-install personal compilation ordering are unchanged.
 
-## Launch strategy from chanfitn.s in version 1.0.0.0.53
+## Launch strategy from chanfitn.s in version 1.0.0.0.54
 
 Preparation now follows the original macro's launch pattern: Windows START, a
 full compiled macro path and an existing text file to open. IConfig is omitted.
@@ -504,7 +504,7 @@ TSEPath hypothesis remains unverified until the Windows installation test.
 Static ordering, ASCII/CRLF and ZIP integrity checks passed; no Windows runtime
 test was available here.
 
-## Version 1.0.0.0.53: recursive wildcard compilation
+## Version 1.0.0.0.54: recursive wildcard compilation
 
 After the installer finishes, each selected compilation tree is scanned for .s
 and .si files, including ordinary subdirectories and hidden sources. In each
@@ -581,7 +581,7 @@ No INI setting is required. Static checks verified timer start/end placement,
 logging before transcript closure, ASCII/CRLF and ZIP integrity. Windows runtime
 testing remains required.
 
-## Version 1.0.0.0.53: integrated configuration operations
+## Version 1.0.0.0.54: integrated configuration operations
 
 One upgrade package and ONE tseupgrade.ini. Two independent internal SAL modules,
 tseupgrade_writecfg.s and tseupgrade_mergedat.s, are included alongside the four
@@ -645,7 +645,7 @@ ordering, unique marker verification, ASCII/CRLF and ZIP integrity. No Windows
 SAL compiler/runtime is available here; both modules and integration need local
 compilation/runtime testing. No claim of a successful Windows test is made.
 
-## Version 1.0.0.0.53: rc24 sources and named configuration queries
+## Version 1.0.0.0.54: rc24 sources and named configuration queries
 
 Both operation modules now derive from the supplied default TSE 4.50.rc24
 sources: iconfig(1).si and compile(10).s. tse(1).ui confirms their menu launchers.
@@ -677,7 +677,7 @@ no internal configuration API calls remain, extraction matches rc24 merge routin
 control-block balance, ASCII/CRLF and ZIP integrity. No Windows compilation or
 runtime test was possible here. Please test compilation first, before a full run.
 
-## Version 1.0.0.0.53: delay before generated macro execution
+## Version 1.0.0.0.54: delay before generated macro execution
 
 The supplied failed-run log showed preparation sc32.exe finishing at
 15:38:16.162, followed immediately by g32.exe startup. That process exited after
@@ -714,7 +714,7 @@ introduced. Static checks verified compile-before-delay-before-launch ordering,
 absence of batch delays, INI default/range handling, ASCII/CRLF and ZIP integrity.
 Windows execution remains to be tested.
 
-## Version 1.0.0.0.53: absolute macro paths after -e
+## Version 1.0.0.0.54: absolute macro paths after -e
 
 Every generated worker is now launched with its quoted full drive and path
 immediately after -e. Preparation, CFG export and DAT merge use this form:
@@ -734,7 +734,7 @@ spaces, no basename-only construction, ASCII/CRLF and ZIP integrity. The change
 still needs a Windows runtime test; it is not a confirmed explanation of the
 previous missing marker.
 
-## Version 1.0.0.0.53: suspend copied autoload for helper editor runs
+## Version 1.0.0.0.54: suspend copied autoload for helper editor runs
 
 The manual test identified an autoload failure (KeepBlinking) before the
 preparation macro could create its marker. Renaming NEW/tseload.dat allowed the
@@ -772,7 +772,7 @@ preparation_wait_seconds defaults/fallbacks to 5 seconds. Both remain configurab
 from 0 through 300. Earlier timing examples describe previous versions. The
 confirmation wait is a maximum polling interval and returns early on success.
 
-## Version 1.0.0.0.53: START launches and separate TSE instances
+## Version 1.0.0.0.54: START launches and separate TSE instances
 
 Helper editor launches now run through the Windows cmd.exe START command, as
 requested, following the launch strategy in chanfitn.s. The generated command is:
@@ -806,7 +806,7 @@ is the user's observed explanation. Only a successful isolated run will confirm
 the fix. Static command/quoting tests and launch coverage checks, ASCII/CRLF and
 ZIP integrity passed. Windows runtime testing is still required.
 
-## Version 1.0.0.0.53: refresh installer clipboard after preparation
+## Version 1.0.0.0.54: refresh installer clipboard after preparation
 
 The NEW installation path is now copied to the Microsoft Windows clipboard AFTER
 the preparation editor has exited and its saved=true marker has been confirmed,
@@ -823,14 +823,14 @@ waits, compilation and total timer are unchanged. No new INI parameter is needed
 Static checks verified copy placement after preparation, before installer launch,
 ASCII/CRLF and ZIP integrity. Windows runtime testing remains required.
 
-## Version 1.0.0.0.53: Yes is the confirmation default
+## Version 1.0.0.0.54: Yes is the confirmation default
 
 All upgrade confirmations now show [Y/n] and accept Enter as Yes. Explicit n/N
 still declines. Invalid text repeats the prompt. Source/destination/version
 details remain visible before confirmation. This includes questions authorizing
 writes to the NEW installation. No additional INI option is required.
 
-## Version 1.0.0.0.53: TSE settings interface
+## Version 1.0.0.0.54: TSE settings interface
 
 The SAL launcher now offers Run upgrade, Settings and Cancel. The Settings menus
 follow the supplied latex.s pattern: current values beside each item, prefilled
@@ -879,7 +879,7 @@ strings, as before. No new INI parameter is introduced. Static checks verified
 all INI keys are covered, defaults, menu sizes, source structure, ASCII/CRLF and
 ZIP integrity. Windows SAL compilation and menu testing remain required.
 
-## Version 1.0.0.0.53: automatic Yes for upgrade steps
+## Version 1.0.0.0.54: automatic Yes for upgrade steps
 
 Set in the shared [tseupgrade] INI section, or toggle under Settings > Behavior:
 
@@ -913,7 +913,7 @@ Static checks covered the unattended branch before Read-Host, guarded required
 input/final pause, shared-INI/menu coverage, default false, ASCII/CRLF and ZIP
 integrity. Windows compilation and full-run testing remain required.
 
-## Version 1.0.0.0.53: reuse expected personal output filenames
+## Version 1.0.0.0.54: reuse expected personal output filenames
 
 F:\BBC\TAAL\qed32v45032.ui is a valid NEW UI destination outside the installation
 directory. An existing file there no longer stops the upgrade. (This .ui is the
@@ -941,7 +941,7 @@ filesystem checks verified preserving an existing output and writing its new
 replacement. Windows runtime testing remains required.
 
 
-## Version 1.0.0.0.53: optional tsecfg.dat and restoration
+## Version 1.0.0.0.54: optional tsecfg.dat and restoration
 
 An absent cfg_data_file (normally NEW/tsecfg.dat) no longer stops installation.
 When absent, copied-configuration preparation is skipped and the interactive
@@ -959,12 +959,12 @@ Version 1.0.0.0.42 backed up the original DAT but omitted post-installer
 restoration. A missing DAT stopped that version before tse.exe was launched.
 
 Validation: reviewed both missing/present branches and installer finally order;
-checked all six packaged files carry 1.0.0.0.53 and are ASCII with CRLF.
+checked all six packaged files carry 1.0.0.0.54 and are ASCII with CRLF.
 Windows PowerShell, the interactive installer, and SAL compilation were not
 available for an end-to-end execution here.
 
 
-## Version 1.0.0.0.53: continue after skipping tse.exe
+## Version 1.0.0.0.54: continue after skipping tse.exe
 
 Answering No to Run installer now means the NEW installation was installed
 earlier. Skip copied-editor preparation and the installer, then continue the
@@ -973,7 +973,7 @@ The installer executable is required only when it is selected to run.
 All previous fixes for absent tsecfg.dat and post-installer restoration remain.
 
 
-## Version 1.0.0.0.53: final launch from custom_macros
+## Version 1.0.0.0.54: final launch from custom_macros
 
 Final g32.exe launch uses NEW/custom_macros as its working directory so the
 newly compiled personal macros can be found. It no longer uses the personal
@@ -997,13 +997,13 @@ Validated version consistency, ASCII/CRLF, settings load/save/menu wiring and
 launch argument order. Windows execution and SAL compilation remain to test.
 
 
-## Version 1.0.0.0.53: startup menu dividers
+## Version 1.0.0.0.54: startup menu dividers
 
 Added a menu divider between Run upgrade and Settings, and between Settings
 and Cancel. unattended mode continues to bypass the startup menu.
 
 
-## Version 1.0.0.0.53: warning before startup menu
+## Version 1.0.0.0.54: warning before startup menu
 
 The introductory Warn dialog now appears when the macro starts, before the
 three-option startup menu. It is shown once per invocation, rather than after
@@ -1011,7 +1011,7 @@ selecting Run upgrade. silent=true or unattended=true suppresses this
 informational dialog as before. Errors still report normally.
 
 
-## Version 1.0.0.0.53: initial INI validation and compilation estimates
+## Version 1.0.0.0.54: initial INI validation and compilation estimates
 
 Before download/copy/extraction/installer actions, PowerShell now prints one
 aggregate INI validation report. It also saves a uniquely named
@@ -1089,7 +1089,7 @@ still requires interaction if launched. Default: false.
 Only unattended is recognized. If absent or blank, unattended mode is off.
 The supplied INI contains unattended=false.
 
-## Version 1.0.0.0.53: built-in help
+## Version 1.0.0.0.54: built-in help
 
 Choose Help in the startup menu or settings menu. The topic menu covers
 getting started, directories/personal files, confirmations/unattended mode,
@@ -1110,7 +1110,7 @@ enabled on macro entry and disabled on return, including early-return paths;
 it does not install a permanent editor-wide binding.
 
 
-## Version 1.0.0.0.53: one unattended parameter
+## Version 1.0.0.0.54: one unattended parameter
 
 unattended is the only accepted setting for automatic Yes confirmations.
 No compatibility alias or fallback is supported. Use unattended=true or
@@ -1118,7 +1118,7 @@ unattended=false. Unknown INI keys produce the usual validation warning and
 have no effect. Review existing INIs and retain only the documented settings.
 
 
-## Version 1.0.0.0.53: structured main log includes INI errors
+## Version 1.0.0.0.54: structured main log includes INI errors
 
 Every main-log message uses:
 
@@ -1149,14 +1149,14 @@ Checked PowerShell syntax, logging initialization order and packaged file
 versions. Windows PowerShell runtime and SAL compilation remain to be tested.
 
 
-## Version 1.0.0.0.53: startup menu hotkey notation
+## Version 1.0.0.0.54: startup menu hotkey notation
 
 Startup labels now use R: Run upgrade, S: Settings, H: Help and C: Cancel.
 The corresponding letter is the menu hotkey. Dividers and the Help shortcut
 <CtrlAltShift F1> are retained.
 
 
-## Version 1.0.0.0.53: separate personal-copy and compile confirmations
+## Version 1.0.0.0.54: separate personal-copy and compile confirmations
 
 Personal files now have two independent [Y/n] confirmations:
 
@@ -1169,3 +1169,51 @@ offered. If compilation is accepted, its destination must exist; the usual
 error is logged if absent. Copy failure stops the upgrade before compilation.
 Both choices and skipped steps are recorded in the main log.
 With unattended=true, each confirmation is automatically answered Yes as before.
+
+
+Version 1.0.0.0.54 - optional OLD installation before upgrading
+------------------------------------------------------------
+This release is built from the original version 53 package, preserving its
+INI validation, help/settings menus, logging, copy/compilation estimates,
+startup_macro and existing upgrade behavior. Disregard the duplicate versions
+43/44 issued later: they were based on an obsolete baseline.
+
+New [tseupgrade] settings (also in Settings > Optional OLD test installation):
+
+    install_old_first=no
+    old_archive_file=
+    old_installer_exe=tse.exe
+
+With no (default), use the existing OLD installation normally. With yes, OLD
+must initially be empty or absent. Existing OLD files are never deleted.
+old_archive_file is a local ZIP path or direct http(s) ZIP URL, not a web page.
+Relative local paths resolve beside tseupgrade.ini. A blank value is asked in
+interactive mode; unattended=true requires it to be set before starting.
+old_installer_exe is relative to the extracted OLD archive; specify e.g.
+subfolder\tse.exe if the archive has a wrapper directory.
+
+The older ZIP is downloaded if necessary and extracted into a unique temporary
+staging directory outside OLD. OLD remains empty until its installer writes
+there. The OLD destination is copied to the clipboard immediately before
+launching the attended installer. Select/paste OLD as the installation target,
+finish and close setup. The script waits, checks its exit code and verifies
+OLD editor/compiler files, then continues the unchanged normal upgrade flow.
+Staging is retained and its path logged for diagnosis; no automatic deletion.
+The main log and total timer cover both installations.
+
+Keep version 53's existing syntax for automatic confirmations:
+
+    unattended=false
+
+Set unattended=true to automatically answer Yes, skip the launcher menu/intro
+and final pause, in both install_old_first modes. Both tse.exe installers still
+require attendance. There is no second automatic-confirmation parameter.
+A default older installation does not create your personal UI/CFG sources;
+configure valid existing source paths or leave optional source settings blank
+for a clean test. After OLD has been installed, change install_old_first to no
+before reusing it. yes refuses a populated OLD directory.
+
+Validation-only checks understand the empty/absent OLD case and validate the
+new settings without downloading, extracting or starting either installer.
+Windows runtime testing is required. This package was checked statically on
+Linux; no Windows PowerShell/SAL or installer runtime success is claimed.

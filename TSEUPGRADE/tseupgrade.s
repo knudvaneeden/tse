@@ -1,7 +1,10 @@
-// TSEUPGRADE version 1.0.0.0.53
-// Created: 2026-10-31 18:43:55
+// TSEUPGRADE version 1.0.0.0.54
+// Created: 2026-11-02 10:11:34
 // Settings menus follow the supplied latex.s Options/Configure pattern.
 // No external menu helper macros are required.
+STRING cfgInstallOldFirstS[255] = "no"
+STRING cfgOldArchiveFileS[255] = ""
+STRING cfgOldInstallerExeS[255] = "tse.exe"
 STRING configIniS[255] = ""
 STRING cfgUnattendedS[255] = "false"
 INTEGER configDirtyI = FALSE, configDoneI = FALSE, launchRequestedI = FALSE, cancelRequestedI = FALSE
@@ -111,6 +114,9 @@ PROC EditCopyDisplay()
 END
 
 PROC ReadConfigSettings()
+ cfgOldInstallerExeS = GetProfileStr("tseupgrade", "old_installer_exe", "tse.exe", configIniS)
+ cfgOldArchiveFileS = GetProfileStr("tseupgrade", "old_archive_file", "", configIniS)
+ cfgInstallOldFirstS = GetProfileStr("tseupgrade", "install_old_first", "no", configIniS)
  cfgUnattendedS = GetProfileStr("tseupgrade", "unattended", "false", configIniS)
  cfgOldVersionS = GetProfileStr("tseupgrade", "old_version", "", configIniS)
  cfgNewVersionS = GetProfileStr("tseupgrade", "new_version", "", configIniS)
@@ -159,6 +165,15 @@ END
 
 INTEGER PROC SaveConfigSettings()
  INTEGER okI = TRUE
+ IF NOT WriteOneSetting("old_installer_exe", cfgOldInstallerExeS)
+  okI = FALSE
+ ENDIF
+ IF NOT WriteOneSetting("old_archive_file", cfgOldArchiveFileS)
+  okI = FALSE
+ ENDIF
+ IF NOT WriteOneSetting("install_old_first", cfgInstallOldFirstS)
+  okI = FALSE
+ ENDIF
  IF NOT WriteOneSetting("unattended", cfgUnattendedS)
   okI = FALSE
  ENDIF
@@ -277,6 +292,24 @@ END
 PROC DiscardConfig()
  ReadConfigSettings()
  configDoneI = TRUE
+END
+
+PROC ToggleOldBootstrap()
+ IF Lower(cfgInstallOldFirstS) == "yes"
+  cfgInstallOldFirstS = "no"
+ ELSE
+  cfgInstallOldFirstS = "yes"
+ ENDIF
+ configDirtyI = TRUE
+END
+
+MENU ConfigOldBootstrapMenu()
+ Title = "TSEUPGRADE - Optional OLD test installation"
+ Width = 70
+ History
+ "Install OLD first (yes/no)  " [ConfigPreview(cfgInstallOldFirstS):38], ToggleOldBootstrap(), _MF_Dont_Close_
+ "OLD ZIP filename or URL     " [ConfigPreview(cfgOldArchiveFileS):38], EditConfigText(cfgOldArchiveFileS, "OLD ZIP filename or direct URL"), _MF_Dont_Close_
+ "OLD installer inside ZIP    " [ConfigPreview(cfgOldInstallerExeS):38], EditConfigText(cfgOldInstallerExeS, "OLD installer path inside ZIP"), _MF_Dont_Close_
 END
 
 MENU ConfigInstallationMenu()
@@ -401,7 +434,7 @@ PROC CloseUpgradeHelp()
 END
 
 MENU UpgradeHelpMenu()
- Title = "TSEUPGRADE help - 1.0.0.0.53"
+ Title = "TSEUPGRADE help - 1.0.0.0.54"
  Width = 62
  History
  "&Getting started", HelpOverview(), _MF_Dont_Close_
@@ -427,6 +460,7 @@ MENU ConfigSettingsMenu()
  Title = "TSEUPGRADE settings"
  Width = 70
  History
+ "Optional &OLD test installation", ConfigOldBootstrapMenu(), _MF_Dont_Close_
  "&Installation and versions", ConfigInstallationMenu(), _MF_Dont_Close_
  "&Personal paths and destinations", ConfigPersonalMenu(), _MF_Dont_Close_
  "&Executables and data files", ConfigExecutablesMenu(), _MF_Dont_Close_
@@ -461,7 +495,7 @@ PROC CancelUpgradeMenu()
 END
 
 MENU UpgradeStartupMenu()
- Title = "TSEUPGRADE 1.0.0.0.53"
+ Title = "TSEUPGRADE 1.0.0.0.54"
  Width = 52
  History
  "&R: Run upgrade", RequestUpgrade()
@@ -520,7 +554,7 @@ PROC RunUpgradeMain()
  cancelRequestedI = FALSE
  IF Lower(GetProfileStr("tseupgrade", "silent", "false", configIniS)) <> "true" AND
     Lower(GetProfileStr("tseupgrade", "unattended", "false", configIniS)) <> "true"
-  Warn("TSEUPGRADE 1.0.0.0.53: Upgrade into a separate directory.",
+  Warn("TSEUPGRADE 1.0.0.0.54: Upgrade into a separate directory.",
        " Review tseupgrade.ini first. Answer the steps in the console.",
        " The old installation is kept. See tseupgrade_readme.md.")
  ENDIF

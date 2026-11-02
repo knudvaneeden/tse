@@ -1,5 +1,5 @@
-// Version: 1.0.0.0.53
-// Created: 2026-10-31 18:43:55
+// Version: 1.0.0.0.54
+// Created: 2026-11-02 10:11:34
 // Derived from supplied SemWare SAL sources; supporting wrappers added.
 // Duplicate removal extracted from TSE 4.50.rc24 compile.s: isSetupSame/RemoveDuplicateSetups.
 // The supplied menu compares 20 lines per compiler setup; that rule is retained.

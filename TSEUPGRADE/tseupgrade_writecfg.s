@@ -1,5 +1,5 @@
-// Version: 1.0.0.0.53
-// Created: 2026-10-31 18:43:55
+// Version: 1.0.0.0.54
+// Created: 2026-11-02 10:11:34
 // Derived from SemWare TSE 4.50.rc24 iconfig.si supplied by the user.
 // Export helpers retained; numeric configuration APIs replaced by named Query.
 INTEGER exportEntabOnSave
