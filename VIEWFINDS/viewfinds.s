@@ -5,7 +5,7 @@
   Compatibility TSE v4.50    (26 Oct 2024) upwards for comment and search-term hiliting
                 TSE v4.50.26 ( 1 Jul 2026) upwards for full syntax-hiliting
                 All TSE variants, including TSE for Linux.
-  Version       v1.1.18  21 Aug 2026
+  Version       v1.0.0.0.20  6 Nov 2026
 
   If you do a search with the "v" option or use the "grep" macro from TSE's
   Potpourri menu, then the lines of the search-results will have colored
@@ -81,6 +81,13 @@
 
   HISTORY
   
+  v1.0.0.0.20           6 Nov 2026
+  - Remember the highlighted View Finds row and restore it on redisplay.
+  - Restore once before keyboard input, after native list initialization.
+  - Validate buffer, search, list boundaries and saved row before reuse.
+  - Position memory lasts while this macro remains loaded. A newly generated
+    identical list in the same buffer cannot be distinguished from redisplay.
+
   v1.1.18           21 Aug 2026
   - Fixed a SAL compiler syntax error in modern TSE versions (v4.50.25+) caused by 
     variable declarations appearing after executable statements in the attribute list procedure.
@@ -207,6 +214,74 @@ integer g_menu_text_attr                       = 0
 integer g_stop_main_menu                       = TRUE
 integer g_text_attr                            = 0
 
+
+// Position memory belongs to the results buffer, not the source file.
+integer vf_list_id = 0
+integer vf_list_lines = 0
+integer vf_saved_row = 1
+integer vf_active = FALSE
+integer vf_restore_pending = FALSE
+string vf_first [MAXSTRINGLEN] = ''
+string vf_last [MAXSTRINGLEN] = ''
+string vf_row_text [MAXSTRINGLEN] = ''
+string vf_search [MAXSTRINGLEN] = ''
+string vf_options [MAXSTRINGLEN] = ''
+
+proc vf_restore_position()
+  UnHook(vf_restore_position)
+  if vf_active and vf_restore_pending
+    vf_restore_pending = FALSE
+    if GetBufferId() == vf_list_id
+      GotoLine(Max(1, Min(vf_saved_row, NumLines())))
+      UpdateDisplay(_ALL_WINDOWS_REFRESH_)
+    endif
+  endif
+end
+
+proc vf_prepare_position()
+  string first_text [MAXSTRINGLEN] = ''
+  string last_text [MAXSTRINGLEN] = ''
+  string saved_text [MAXSTRINGLEN] = ''
+  string find_text [MAXSTRINGLEN] = ''
+  string find_options [MAXSTRINGLEN] = ''
+  integer same_list = FALSE
+
+  find_text = GetHistoryStr(_FIND_HISTORY_, 1)
+  find_options = GetHistoryStr(_FIND_OPTIONS_HISTORY_, 1)
+  PushLocation()
+  BegFile()
+  first_text = GetText(1, MAXSTRINGLEN)
+  GotoLine(NumLines())
+  last_text = GetText(1, MAXSTRINGLEN)
+  if vf_saved_row >= 1 and vf_saved_row <= NumLines()
+    GotoLine(vf_saved_row)
+    saved_text = GetText(1, MAXSTRINGLEN)
+  endif
+  PopLocation()
+
+  same_list = (GetBufferId() == vf_list_id
+          and NumLines() == vf_list_lines
+          and find_text == vf_search
+          and find_options == vf_options
+          and first_text == vf_first
+          and last_text == vf_last
+          and saved_text == vf_row_text)
+  if not same_list
+    vf_saved_row = CurrLine()
+    vf_row_text = GetText(1, MAXSTRINGLEN)
+  endif
+  vf_list_id = GetBufferId()
+  vf_list_lines = NumLines()
+  vf_first = first_text
+  vf_last = last_text
+  vf_search = find_text
+  vf_options = find_options
+  vf_active = TRUE
+  vf_restore_pending = same_list
+  if vf_restore_pending
+    Hook(_BEFORE_GETKEY_, vf_restore_position)
+  endif
+end
 
 proc to_beep_or_not_to_beep()
   if Query(Beep)
@@ -404,6 +479,15 @@ proc hd_draw_list_line(integer is_cursorline)
   integer visibleLenI                    = 0
   integer startPosI                      = 1
   string  fullLineTextS   [MAXSTRINGLEN] = ''
+
+  // Capture only the actual highlighted row, never a row being painted.
+  if is_cursorline and vf_active and not vf_restore_pending
+    if GetBufferId() == vf_list_id
+      vf_saved_row = CurrLine()
+      vf_row_text = GetText(1, MAXSTRINGLEN)
+      vf_list_lines = NumLines()
+    endif
+  endif
 
   line_text = GetText(list_x_offset, Query(WindowCols))
   line_text = StrReplace(Chr(9), line_text, ' ')
@@ -716,6 +800,9 @@ end
 
 proc list_cleanup()
   UnHook(list_cleanup)
+  UnHook(vf_restore_position)
+  vf_active = FALSE
+  vf_restore_pending = FALSE
   UnhookDisplay()
   SetHookState(g_old_hookstate, _ON_CHANGING_FILES_)
   Disable(list_keys)
@@ -731,6 +818,7 @@ proc list_startup()
   GetStrAttrXY(1, 0, title_text, title_attrs, MAXSTRINGLEN)
 
   if Pos('View Finds', title_text)
+    vf_prepare_position()
     g_old_hookstate = SetHookState(OFF, _ON_CHANGING_FILES_)
     ClrScr()
     PutStrAttrXY(Query(WindowCols) / 2 - 16,
@@ -904,6 +992,7 @@ end
 
 
 proc WhenPurged()
+  UnHook(vf_restore_position)
   AbandonFile(ATTRIBUTES_LIST_ID)
   AbandonFile(MEMORY_BLOCKS_ID)
   AbandonFile(TMP_REF_ID)
