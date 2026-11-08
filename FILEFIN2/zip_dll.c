@@ -1,7 +1,7 @@
 /* FILEFIN2 archive reader for TSE 4.50.
    Supports ZIP/JAR directly and nested ZIP/JAR/TAR/TGZ/RAR/7Z through PowerShell.
    Uses Win32 only: no Borland C runtime library is required.
-   Version 1.0.0.0.38 - 2026-11-08 - OpenAI Codex */
+   Version 1.0.0.0.39 - 2026-11-08 - OpenAI Codex */
 
 #include <windows.h>
 
@@ -472,13 +472,13 @@ static int next_nested_entry(ZIP_CONTEXT *context)
     return 1;
 }
 
+/* Do not close archive contexts from DllEntryPoint under the loader lock.
+ * ZIP_Close() performs normal per-context cleanup. Remaining OS handles
+ * are released at process termination. */
 BOOL WINAPI DllEntryPoint(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
-    int index;
     (void)reserved;
     if (reason == DLL_PROCESS_ATTACH) moduleInstance = instance;
-    if (reason == DLL_PROCESS_DETACH)
-        for (index = 0; index < MAX_ZIPS; index++) close_context(&contexts[index]);
     return TRUE;
 }
 

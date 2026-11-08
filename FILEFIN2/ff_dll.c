@@ -1,6 +1,6 @@
 /* FILEFIN2 Win32 file finder DLL.
    Borland C++ 5.5 compatible C source.
-   Version 1.0.0.0.38 - 2026-11-08 - OpenAI Codex */
+   Version 1.0.0.0.39 - 2026-11-08 - OpenAI Codex */
 
 #include <windows.h>
 
@@ -279,18 +279,15 @@ static int tree_local_time(const WIN32_FIND_DATAA *data, SYSTEMTIME *systemTime)
     return FileTimeToSystemTime(&localTime, systemTime) ? 1 : 0;
 }
 
+/* No search-handle cleanup from DllEntryPoint: DLL entry points run under
+ * the Windows loader lock. Normal traversal closes handles in next_accepted()
+ * and close_tree() (called by FF_TreeClose()). Windows closes remaining
+ * kernel handles on process termination. */
 BOOL WINAPI DllEntryPoint(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
-    int index;
     (void)instance;
+    (void)reason;
     (void)reserved;
-    if (reason == DLL_PROCESS_DETACH) {
-        for (index = 0; index < MAX_SEARCHES; index++) {
-            if (searches[index].used && searches[index].handle != INVALID_HANDLE_VALUE)
-                FindClose(searches[index].handle);
-        }
-        for (index = 0; index < MAX_TREES; index++) close_tree(&trees[index]);
-    }
     return TRUE;
 }
 

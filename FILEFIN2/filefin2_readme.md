@@ -1,9 +1,26 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.38  
+**Version:** 1.0.0.0.39  
 **Date:** 2026-11-08  
-**Time:** 02:48 CET (UTC+01:00)  
+**Time:** 14:41 CET (UTC+01:00)  
 **LLM:** OpenAI Codex  
+
+
+## Version 1.0.0.0.39 - DLL detach crash mitigation
+
+- Removed `FindClose()` and `close_tree()` operations from `ff.dll`'s
+  `DllEntryPoint` on DLL_PROCESS_DETACH. A user-reported crash at `ff.dll`
+  offset `0x18CE` was disassembled and mapped to the initial read in this
+  cleanup loop. The underlying `0xC0000006` in-page error remains unconfirmed.
+- Removed `close_context()` cleanup from `zip.dll`'s `DllEntryPoint`,
+  avoiding resource cleanup under the Windows loader lock.
+- Normal cleanup paths, including `FF_TreeClose()` and `ZIP_Close()`, remain
+  unchanged. DLL exports and TSE SAL calling interface are unchanged.
+- IMPORTANT: Source-only release. The previously uploaded binary DLLs are **not**
+  rebuilt by this archive. Run `build.bat` on your Windows Borland BCC 5.5.1
+  environment, verify compiler success, and then replace the DLLs with TSE closed.
+- To reproduce/diagnose any remaining `0xC0000006` in-page errors, preserve
+  the matching Windows crash dump and inspect its exception information.
 
 ## Description
 
@@ -212,7 +229,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
-| 1.0.0.0.38 | 2026-11-08 | Made `build.bat` locate `bcc32.exe` and pass the Borland `Include` and `Lib` directories explicitly; added clear diagnostics for a missing compiler, `windows.h`, or library directory |
+| 1.0.0.0.39 | 2026-11-08 | Made `build.bat` locate `bcc32.exe` and pass the Borland `Include` and `Lib` directories explicitly; added clear diagnostics for a missing compiler, `windows.h`, or library directory |
 | 1.0.0.0.37 | 2026-11-08 | Added `Search archive files: Yes` or `Search archive files: No` to the results header, reflecting the archive-menu choice actually used for the search; synchronized the version in every packaged source file |
 | 1.0.0.0.36 | 2026-10-20 | The distributed archive was named version 36, but its internal folder and source-file versions remained at 35; superseded by synchronized version 37 |
 | 1.0.0.0.35 | 2026-10-17 | Changed both `Ask()` prompts to explicit early-return checks so Escape, or an accepted empty value, stops the macro before any search begins |

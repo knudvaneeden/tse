@@ -1,5 +1,5 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.38
+// Version : 1.0.0.0.39
 // Date    : 2026-11-08
 // LLM     : OpenAI Codex
 //
