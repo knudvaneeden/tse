@@ -1,9 +1,22 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.39  
+**Version:** 1.0.0.0.40  
 **Date:** 2026-11-08  
-**Time:** 14:41 CET (UTC+01:00)  
+**Time:** 18:51 CET (UTC+01:00)  
 **LLM:** OpenAI Codex  
+
+
+## Version 1.0.0.0.40 - dedicated Ask histories
+
+- The filename-mask prompt now uses the named history
+  `FILEFIN2:filename`.
+- The top-directory-list prompt now uses the separate named history
+  `FILEFIN2:topdirectories`.
+- If an INI prompt value is blank, the newest value from the corresponding
+  dedicated history becomes the initial text. A nonempty INI value still has
+  priority as the initial text.
+- Escape and accepted empty input still stop the macro before the archive menu
+  or search starts.
 
 
 ## Version 1.0.0.0.39 - DLL detach crash mitigation
@@ -35,7 +48,7 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 - The DLL sources use Win32 functions only and do not require unresolved Borland C runtime functions such as `strlen`, `memcpy`, `atol`, or `sprintf`.
 - The reserved SAL names `FindFirst` and `FindNext` are replaced by `FNFindFirstI` and `FNFindNextI`.
 - Separate DLL search contexts preserve recursive searches.
-- The search input is split into two prompts: first the filename or wildcard mask, then the top directory. Both prompts use TSE's `_EDIT_HISTORY_`, so earlier entries can be recalled independently.
+- The search input is split into two prompts: first the filename or wildcard mask, then the top directory list. Each prompt uses its own named TSE history: `FILEFIN2:filename` and `FILEFIN2:topdirectories`.
 - Search defaults come from `filefin2.ini`. When `searcharchive` is nonempty, its first character is queued with `PushKey()` and acts as the menu accelerator, automatically choosing **Yes** or **No**.
 - `FF.S` is standalone: its DLL declarations and ZIP helper are embedded directly, so compiling it does not open or retain `FF.INC` or `ZIP.INC` editor buffers.
 - Double quotes are ignored in both inputs. For example, `FF.S` and `"FF.S"`, or `C:\TEMP` and `"C:\TEMP"`, produce the same search.
@@ -111,7 +124,10 @@ No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly
 6. At the second prompt, enter one top directory or a semicolon-separated list, such as `C:\TEMP` or `C:\TEMP;F:\WORDPROC\tse32_v45024\MACDOWNLO;G:\ARCHIVE`. Empty items between semicolons are ignored.
 7. Choose whether member names inside ZIP, JAR, TAR, TGZ, RAR, and 7z files, including nested and mixed archives, should also be searched. With the distributed blank `searcharchive=` setting, the menu remains visible for this choice.
 
-Both prompts retain their own TSE edit history. Pressing Escape in either
+Both prompts retain their own dedicated TSE history. When the corresponding
+INI value is blank, the newest value in that prompt's history is used as its
+initial text. A nonempty INI value has priority as the initial text, while the
+user's accepted prompt input remains final. Pressing Escape in either
 `Ask()` prompt immediately returns from the macro without displaying the
 archive menu, creating a results buffer, or starting a search. An accepted but
 empty input also stops the operation.
@@ -149,8 +165,8 @@ searcharchive=
   visibly displayed.
 
 `FF.S` first establishes its built-in defaults. Only nonempty INI values
-override those initial values. Blank keys preserve the original empty/history-
-driven prompts and archive-menu history. The user can still edit either
+override those initial values. Blank keys let the two prompts use their own
+latest dedicated-history values and preserve the archive-menu history. The user can still edit either
 `Ask()` value or choose another menu entry, so interactive input is final.
 
 FILEFIN2 validates every active line in `filefin2.ini`. It reports unknown
@@ -229,7 +245,9 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
-| 1.0.0.0.39 | 2026-11-08 | Made `build.bat` locate `bcc32.exe` and pass the Borland `Include` and `Lib` directories explicitly; added clear diagnostics for a missing compiler, `windows.h`, or library directory |
+| 1.0.0.0.40 | 2026-11-08 | Replaced shared `_EDIT_HISTORY_` use with dedicated named histories for the filename-mask and top-directory prompts; blank INI values now recall the newest value from the corresponding history, while nonempty INI defaults retain priority |
+| 1.0.0.0.39 | 2026-11-08 | Removed cleanup operations from both DLL entry points during process detach to mitigate the reported `ff.dll` loader-detach crash while preserving normal explicit cleanup paths |
+| 1.0.0.0.38 | 2026-11-08 | Made `build.bat` locate `bcc32.exe` and pass the Borland `Include` and `Lib` directories explicitly; added clear diagnostics for a missing compiler, `windows.h`, or library directory |
 | 1.0.0.0.37 | 2026-11-08 | Added `Search archive files: Yes` or `Search archive files: No` to the results header, reflecting the archive-menu choice actually used for the search; synchronized the version in every packaged source file |
 | 1.0.0.0.36 | 2026-10-20 | The distributed archive was named version 36, but its internal folder and source-file versions remained at 35; superseded by synchronized version 37 |
 | 1.0.0.0.35 | 2026-10-17 | Changed both `Ask()` prompts to explicit early-return checks so Escape, or an accepted empty value, stops the macro before any search begins |
@@ -251,7 +269,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 | 1.0.0.0.5 | 2026-09-08 | Fixed repeated ZIP-member duplicates and made recursion cover all ordinary subdirectories while excluding reparse-point loops |
 | 1.0.0.0.6 | 2026-09-08 | Replaced recursive SAL directory enumeration with an explicit queue so child searches cannot overwrite the parent search state |
 | 1.0.0.0.7 | 2026-09-08 | Moved complete recursive traversal into `ff.dll` after the SAL queue still skipped sibling branches |
-| 1.0.0.0.8 | 2026-09-08 | Added `_EDIT_HISTORY_` to the search prompt and made `FF.S` standalone so compiling it no longer loads or retains include-file buffers |
+| 1.0.0.0.8 | 2026-09-08 | Added `_EDIT_HISTORY_` to the search prompt and made `FF.S` standalone so compiling it no longer loads or retains include-file buffers; the shared history was replaced by dedicated prompt histories in version 40 |
 | 1.0.0.0.9 | 2026-09-08 | Fixed quoted and accidentally half-quoted search input by removing double quotes before splitting the starting directory and file mask |
 | 1.0.0.0.10 | 2026-09-08 | Added the **Ctrl+Alt+Shift+F** key assignment for starting a search |
 | 1.0.0.0.11 | 2026-09-08 | Documented and exposed `*` and `?` wildcard searching in the prompt, including `e.*list` and `elist.?` examples |
@@ -261,7 +279,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 | 1.0.0.0.15 | 2026-09-08 | Added recursive filename searching inside ZIP files nested in other ZIP files, with `::` archive-chain display and safety limits |
 | 1.0.0.0.16 | 2026-09-08 | Added an `INVALID_FILE_ATTRIBUTES` compatibility definition for the older Windows headers supplied with Borland C++ 5.5.1 |
 | 1.0.0.0.17 | 2026-09-08 | Removed the Borland `_llmul` linker dependency by parsing the already-capped nested member size with bounded 32-bit arithmetic |
-| 1.0.0.0.18 | 2026-09-13 | Split search input into two `_EDIT_HISTORY_` prompts: filename or mask first, then the top directory; cancelling either prompt stops cleanly |
+| 1.0.0.0.18 | 2026-09-13 | Split search input into two prompts: filename or mask first, then the top directory; cancelling either prompt stops cleanly; dedicated histories were added in version 40 |
 | 1.0.0.0.19 | 2026-09-15 | Added recursive `.jar`, `.tar`, and `.tgz` searching alongside `.zip`, including mixed nested archive chains |
 | 1.0.0.0.20 | 2026-09-15 | Made archive searching default to **Yes**, refreshed the current archive path before scanning, and kept TSE repainting while the PowerShell helper runs |
 | 1.0.0.0.21 | 2026-09-15 | Corrected the archive-menu default by queuing `<CursorUp>` before `ZipSearch()`, so the visible initial choice is **Yes** |

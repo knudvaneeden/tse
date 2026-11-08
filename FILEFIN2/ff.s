@@ -1,5 +1,5 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.39
+// Version : 1.0.0.0.40
 // Date    : 2026-11-08
 // LLM     : OpenAI Codex
 //
@@ -341,6 +341,8 @@ end
 
 proc Main()
     string iniFilenameS[255] = ""
+    integer filenameHistoryI = 0
+    integer topDirectoriesHistoryI = 0
 
     // Built-in FF.S defaults. Blank INI values do not replace them.
     fileInput = ""
@@ -354,15 +356,28 @@ proc Main()
                     " warning(s): ", iniWarningsS))
     endif
 
+    filenameHistoryI = GetFreeHistory("FILEFIN2:filename")
+    topDirectoriesHistoryI = GetFreeHistory("FILEFIN2:topdirectories")
+    if ((not filenameHistoryI) or (not topDirectoriesHistoryI))
+        Warn("FILEFIN2 could not allocate its dedicated input histories.")
+        return()
+    endif
+    if ((not Length(fileInput)) and filenameHistoryI)
+        fileInput = GetHistoryStr(filenameHistoryI, 1)
+    endif
+    if ((not Length(directoryInput)) and topDirectoriesHistoryI)
+        directoryInput = GetHistoryStr(topDirectoriesHistoryI, 1)
+    endif
+
     if (not Ask("Enter filename or file mask (*, .*, ?):", fileInput,
-                _EDIT_HISTORY_))
+                filenameHistoryI))
         return()
     endif
     if (not Length(fileInput))
         return()
     endif
     if (not Ask("Enter top directories (; separated):", directoryInput,
-                _EDIT_HISTORY_))
+                topDirectoriesHistoryI))
         return()
     endif
     if (not Length(directoryInput))
