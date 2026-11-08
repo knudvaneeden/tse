@@ -1,9 +1,18 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.40  
+**Version:** 1.0.0.0.41  
 **Date:** 2026-11-08  
-**Time:** 18:51 CET (UTC+01:00)  
+**Time:** 23:53 CET (UTC+01:00)  
 **LLM:** OpenAI Codex  
+
+
+## Version 1.0.0.0.41 - archive executable defaults
+
+- Renamed the `[ArchiveTools]` parameters to `SevenZipExecutable` and
+  `RarExecutable` in `filefin2.ini`, `FF.S`, the PowerShell archive helper,
+  validation messages, and this documentation.
+- Set their distributed defaults to `C:\Program Files\7-Zip\7z.exe` and
+  `C:\Program Files\WinRAR\Rar.exe`.
 
 
 ## Version 1.0.0.0.40 - dedicated Ask histories
@@ -218,8 +227,8 @@ kept beside `FF.S` and `zip_nested.ps1`:
 
 ```ini
 [ArchiveTools]
-SevenZipExe=C:\Program Files\7-Zip\7z.exe
-RarExe=C:\Program Files\WinRAR\rar.exe
+SevenZipExecutable=C:\Program Files\7-Zip\7z.exe
+RarExecutable=C:\Program Files\WinRAR\Rar.exe
 ```
 
 Quotes around a path are optional. A blank or invalid setting causes automatic
@@ -245,6 +254,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.41 | 2026-11-08 | Renamed the archive-tool INI parameters to `SevenZipExecutable` and `RarExecutable`, and set their defaults to the standard 7-Zip and WinRAR installation paths |
 | 1.0.0.0.40 | 2026-11-08 | Replaced shared `_EDIT_HISTORY_` use with dedicated named histories for the filename-mask and top-directory prompts; blank INI values now recall the newest value from the corresponding history, while nonempty INI defaults retain priority |
 | 1.0.0.0.39 | 2026-11-08 | Removed cleanup operations from both DLL entry points during process detach to mitigate the reported `ff.dll` loader-detach crash while preserving normal explicit cleanup paths |
 | 1.0.0.0.38 | 2026-11-08 | Made `build.bat` locate `bcc32.exe` and pass the Borland `Include` and `Lib` directories explicitly; added clear diagnostics for a missing compiler, `windows.h`, or library directory |

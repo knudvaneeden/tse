@@ -1,5 +1,5 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.40
+// Version : 1.0.0.0.41
 // Date    : 2026-11-08
 // LLM     : OpenAI Codex
 //
@@ -150,21 +150,23 @@ proc PROCLoadIniDefaults(string iniFilenameS)
                     if (sectionS == "search")
                         seenSearchArchiveB = TRUE
                     endif
-                elseif (keyS == "sevenzipexe")
+                elseif (keyS == "sevenzipexecutable")
                     if (sectionS <> "archivetools")
                         PROCAddIniWarning(lineI,
-                            "SevenZipExe is outside [ArchiveTools]")
+                            "SevenZipExecutable is outside [ArchiveTools]")
                     elseif (seenSevenZipB)
-                        PROCAddIniWarning(lineI, "duplicate SevenZipExe")
+                        PROCAddIniWarning(lineI,
+                                          "duplicate SevenZipExecutable")
                     else
                         seenSevenZipB = TRUE
                     endif
-                elseif (keyS == "rarexe")
+                elseif (keyS == "rarexecutable")
                     if (sectionS <> "archivetools")
                         PROCAddIniWarning(lineI,
-                            "RarExe is outside [ArchiveTools]")
+                            "RarExecutable is outside [ArchiveTools]")
                     elseif (seenRarB)
-                        PROCAddIniWarning(lineI, "duplicate RarExe")
+                        PROCAddIniWarning(lineI,
+                                          "duplicate RarExecutable")
                     else
                         seenRarB = TRUE
                     endif

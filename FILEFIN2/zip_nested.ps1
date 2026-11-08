@@ -1,5 +1,5 @@
 # FILEFIN2 nested archive helper
-# Version 1.0.0.0.40 - 2026-11-08 - OpenAI Codex
+# Version 1.0.0.0.41 - 2026-11-08 - OpenAI Codex
 
 param(
     [Parameter(Mandatory = $true)][string]$ArchivePath,
@@ -44,7 +44,7 @@ function Get-IniValue {
     return ''
 }
 
-$configuredSevenZip = Get-IniValue $iniPath 'ArchiveTools' 'SevenZipExe'
+$configuredSevenZip = Get-IniValue $iniPath 'ArchiveTools' 'SevenZipExecutable'
 if ($configuredSevenZip -ne '') {
     $configuredSevenZip =
         [Environment]::ExpandEnvironmentVariables($configuredSevenZip)
@@ -52,7 +52,7 @@ if ($configuredSevenZip -ne '') {
         $script:SevenZipPath = $configuredSevenZip
     }
 }
-$configuredRar = Get-IniValue $iniPath 'ArchiveTools' 'RarExe'
+$configuredRar = Get-IniValue $iniPath 'ArchiveTools' 'RarExecutable'
 if ($configuredRar -ne '') {
     $configuredRar = [Environment]::ExpandEnvironmentVariables($configuredRar)
     if (Test-Path -LiteralPath $configuredRar -PathType Leaf) {
