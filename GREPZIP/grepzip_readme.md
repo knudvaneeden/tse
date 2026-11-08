@@ -1,6 +1,6 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.22  
+**Version:** 1.0.0.0.23  
 **Date:** 2026-11-08  
 **Authoring model:** OpenAI Codex
 
@@ -219,6 +219,13 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.23 - 2026-11-08
+
+- Replaces PowerShell's single `Get-ChildItem -Recurse` enumeration with an explicit directory-stack walker.
+- Ensures every accessible subdirectory is visited even when another directory is inaccessible or problematic.
+- Applies the same robust traversal to extracted TAR, TGZ, 7Z and RAR directory trees.
+- Skips directory reparse points to prevent junction or symbolic-link recursion loops.
 
 ### 1.0.0.0.22 - 2026-11-08
 

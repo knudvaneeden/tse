@@ -114,6 +114,26 @@ function Test-Mask([string]$name, [string]$mask) {
     return $name -like $mask
 }
 
+function Get-RecursiveFiles([string]$root) {
+    $pending = New-Object 'Collections.Generic.Stack[string]'
+    $pending.Push($root)
+    while ($pending.Count -gt 0) {
+        $directory = $pending.Pop()
+        $files = @(Get-ChildItem -LiteralPath $directory -File -Force `
+                                 -ErrorAction SilentlyContinue)
+        foreach ($file in $files) {
+            Write-Output $file
+        }
+        $directories = @(Get-ChildItem -LiteralPath $directory -Directory `
+                                       -Force -ErrorAction SilentlyContinue)
+        foreach ($child in $directories) {
+            if (-not ($child.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                $pending.Push($child.FullName)
+            }
+        }
+    }
+}
+
 function Expand-ZipArchive([string]$archivePath, [string]$display,
                            [string]$mask, [int]$depth) {
     $stream = [IO.File]::Open($archivePath, [IO.FileMode]::Open,
@@ -148,8 +168,7 @@ function Expand-TarArchive([string]$archivePath, [string]$display,
     New-Item -ItemType Directory -Path $extractRoot | Out-Null
     & $tarCommand.Source -xf $archivePath -C $extractRoot 2>$null
     if ($LASTEXITCODE -ne 0) { return }
-    $members = Get-ChildItem -LiteralPath $extractRoot -File -Recurse -Force `
-                             -ErrorAction SilentlyContinue
+    $members = Get-RecursiveFiles $extractRoot
     foreach ($member in $members) {
         $relative = $member.FullName.Substring($extractRoot.Length).TrimStart('\')
         $relative = $relative.Replace('\', '/')
@@ -167,8 +186,7 @@ function Expand-SevenZipArchive([string]$archivePath, [string]$display,
     $outputOption = '-o' + $extractRoot
     & $sevenZip x -y $outputOption -- $archivePath *> $null
     if ($LASTEXITCODE -ne 0) { return }
-    $members = Get-ChildItem -LiteralPath $extractRoot -File -Recurse -Force `
-                             -ErrorAction SilentlyContinue
+    $members = Get-RecursiveFiles $extractRoot
     foreach ($member in $members) {
         $relative = $member.FullName.Substring($extractRoot.Length).TrimStart('\')
         $relative = $relative.Replace('\', '/')
@@ -189,8 +207,7 @@ function Expand-RarArchive([string]$archivePath, [string]$display,
     $destination = $extractRoot + '\'
     & $rarCommand x -o+ -inul $archivePath $destination *> $null
     if ($LASTEXITCODE -ne 0) { return }
-    $members = Get-ChildItem -LiteralPath $extractRoot -File -Recurse -Force `
-                             -ErrorAction SilentlyContinue
+    $members = Get-RecursiveFiles $extractRoot
     foreach ($member in $members) {
         $relative = $member.FullName.Substring($extractRoot.Length).TrimStart('\')
         $relative = $relative.Replace('\', '/')
@@ -232,8 +249,7 @@ function Process-Specification([string]$oneSpecification) {
         $forceSingle = $false
         if (Test-Path -LiteralPath $expanded -PathType Container) {
             $root = (Resolve-Path -LiteralPath $expanded).Path
-            $files = Get-ChildItem -LiteralPath $root -File -Recurse -Force `
-                                   -ErrorAction SilentlyContinue
+            $files = Get-RecursiveFiles $root
         } elseif (Test-Path -LiteralPath $expanded -PathType Leaf) {
             $files = @(Get-Item -LiteralPath $expanded)
             $forceSingle = $true
@@ -241,8 +257,7 @@ function Process-Specification([string]$oneSpecification) {
             $parent = Split-Path -Parent $expanded
             $mask = Split-Path -Leaf $expanded
             if ([string]::IsNullOrEmpty($parent)) { $parent = (Get-Location).Path }
-            $files = Get-ChildItem -LiteralPath $parent -File -Recurse -Force `
-                                   -ErrorAction SilentlyContinue
+            $files = Get-RecursiveFiles $parent
         }
 
         foreach ($file in $files) {
