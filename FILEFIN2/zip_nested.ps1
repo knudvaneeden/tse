@@ -1,3 +1,6 @@
+# FILEFIN2 nested archive helper
+# Version 1.0.0.0.38 - 2026-11-08 - OpenAI Codex
+
 param(
     [Parameter(Mandatory = $true)][string]$ArchivePath,
     [Parameter(Mandatory = $true)][string]$OutputPath

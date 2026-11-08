@@ -1,6 +1,6 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.35
-// Date    : 2026-10-17
+// Version : 1.0.0.0.38
+// Date    : 2026-11-08
 // LLM     : OpenAI Codex
 //
 // TSE 4.50 / Windows 11 port using ff.dll and zip.dll.
@@ -382,6 +382,11 @@ proc Main()
         EmptyBuffer()
         AddLine(Format("FILEFIN2 results for filename: ", fileToFind), origId)
         AddLine("Filename matching: DOS wildcards, case-insensitive", origId)
+        if (lLookInZip)
+            AddLine("Search archive files: Yes", origId)
+        else
+            AddLine("Search archive files: No", origId)
+        endif
         AddLine(Format("Starting directories: ", directoryInput), origId)
         AddLine(Format("File mask: ", fileToFind), origId)
         AddLine("", origId)

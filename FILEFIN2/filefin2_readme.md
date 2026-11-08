@@ -1,8 +1,8 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.35  
-**Date:** 2026-10-17  
-**Time:** 11:42 CEST (UTC+02:00)  
+**Version:** 1.0.0.0.38  
+**Date:** 2026-11-08  
+**Time:** 02:48 CET (UTC+01:00)  
 **LLM:** OpenAI Codex  
 
 ## Description
@@ -59,14 +59,20 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
    Build completed: ff.dll and zip.dll
    ```
 
-The batch file uses:
+The batch file locates `bcc32.exe` in the current directory or on `PATH`,
+derives the Borland installation directory from that executable, and supplies
+the `Include` and `Lib` directories explicitly:
 
 ```bat
-bcc32 -tWD -O2 -u- -eff.dll ff_dll.c
-bcc32 -tWD -O2 -u- -ezip.dll zip_dll.c
+bcc32 -I"<bcc-root>\include" -L"<bcc-root>\lib" -tWD -O2 -u- -eff.dll ff_dll.c
+bcc32 -I"<bcc-root>\include" -L"<bcc-root>\lib" -tWD -O2 -u- -ezip.dll zip_dll.c
 ```
 
 `-tWD` creates a Win32 DLL. `-u-` disables Borland's leading underscore on exported C names so TSE can resolve the exact names declared in the SAL `dll` blocks. The exported functions use the Pascal/WinAPI calling convention required by 32-bit TSE DLL calls.
+
+This explicit path handling avoids dependence on `bcc32.cfg`. If the compiler
+cannot find `windows.h`, version 38 reports the exact expected header path and
+stops before producing the cascade of secondary declaration errors.
 
 ## Compile the SAL macro
 
@@ -99,6 +105,11 @@ The results header includes `Filename matching: DOS wildcards,
 case-insensitive`. FILEFIN2 does not use TSE SAL regular expressions or TSE
 search-option letters. Its `*`, `.*`, and `?` filename matching is
 case-insensitive for both ordinary files and archive members.
+
+The results header also records the effective archive-menu choice as either
+`Search archive files: Yes` or `Search archive files: No`. This shows whether
+the listed directory trees were searched only as ordinary files or also inside
+supported archive files.
 
 ## Search defaults in `filefin2.ini`
 
@@ -201,6 +212,9 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.38 | 2026-11-08 | Made `build.bat` locate `bcc32.exe` and pass the Borland `Include` and `Lib` directories explicitly; added clear diagnostics for a missing compiler, `windows.h`, or library directory |
+| 1.0.0.0.37 | 2026-11-08 | Added `Search archive files: Yes` or `Search archive files: No` to the results header, reflecting the archive-menu choice actually used for the search; synchronized the version in every packaged source file |
+| 1.0.0.0.36 | 2026-10-20 | The distributed archive was named version 36, but its internal folder and source-file versions remained at 35; superseded by synchronized version 37 |
 | 1.0.0.0.35 | 2026-10-17 | Changed both `Ask()` prompts to explicit early-return checks so Escape, or an accepted empty value, stops the macro before any search begins |
 | 1.0.0.0.34 | 2026-10-16 | Replaced the misleading `Search options: i` results line with `Filename matching: DOS wildcards, case-insensitive`, clarifying that FILEFIN2 does not use TSE SAL regular expressions |
 | 1.0.0.0.33 | 2026-10-16 | Added `Search options: i` to the results header to record FILEFIN2's case-insensitive filename matching |
