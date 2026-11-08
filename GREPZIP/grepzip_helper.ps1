@@ -1,8 +1,12 @@
 param(
     [string]$Specification = '',
     [string]$Manifest = (Join-Path $env:TEMP 'grepzip_manifest.txt'),
+    [string]$SearchArchives = 'yes',
     [switch]$Cleanup
 )
+
+$searchArchivesEnabled = @('yes', 'y', 'true', '1', 'on') -contains `
+                         $SearchArchives.ToLowerInvariant()
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression
@@ -54,10 +58,24 @@ $work = Join-Path $env:TEMP ('grepzip_' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $work | Out-Null
 $writer = New-Object IO.StreamWriter($Manifest, $false, [Text.Encoding]::Default)
 $writer.WriteLine('#WORK=' + $work)
+$sourceFilesEnumerated = 0
+$manifestEntriesWritten = 0
+$helperErrorCount = 0
+$firstHelperError = ''
+
+function Record-HelperError([string]$message) {
+    $script:helperErrorCount++
+    if ([string]::IsNullOrEmpty($script:firstHelperError)) {
+        $clean = $message.Replace("`r", ' ').Replace("`n", ' ').Replace("`t", ' ')
+        if ($clean.Length -gt 160) { $clean = $clean.Substring(0, 160) }
+        $script:firstHelperError = $clean
+    }
+}
 
 function Add-SearchFile([string]$disk, [string]$display) {
     if ($display.IndexOf("`t") -ge 0) { $display = $display.Replace("`t", ' ') }
     $writer.WriteLine($disk + "`t" + $display)
+    $script:manifestEntriesWritten++
 }
 
 function Get-ArchiveKind([string]$name) {
@@ -220,6 +238,7 @@ function Process-File([string]$disk, [string]$display, [string]$mask,
                       [int]$depth, [bool]$forceSearch) {
     if ($depth -gt 32) { return }
     $kind = Get-ArchiveKind $display
+    if ($kind -and (-not $searchArchivesEnabled)) { return }
     try {
         if ($kind -eq 'zip') {
             Expand-ZipArchive $disk $display $mask $depth
@@ -234,6 +253,7 @@ function Process-File([string]$disk, [string]$display, [string]$mask,
         }
     } catch {
         # Damaged, encrypted and unsupported archives are skipped.
+        Record-HelperError $_.Exception.Message
     }
 }
 
@@ -261,6 +281,7 @@ function Process-Specification([string]$oneSpecification) {
         }
 
         foreach ($file in $files) {
+            $script:sourceFilesEnumerated++
             $kind = Get-ArchiveKind $file.Name
             if ($kind -or $forceSingle -or (Test-Mask $file.Name $mask)) {
                 Process-File $file.FullName $file.FullName $mask 0 $forceSingle
@@ -268,6 +289,7 @@ function Process-Specification([string]$oneSpecification) {
         }
     } catch {
         # One invalid or unavailable source must not stop the remaining sources.
+        Record-HelperError $_.Exception.Message
     }
 }
 
@@ -276,5 +298,8 @@ try {
         Process-Specification $oneSpecification
     }
 } finally {
+    $writer.WriteLine('#STATS=' + $sourceFilesEnumerated + '|' +
+                      $manifestEntriesWritten + '|' + $helperErrorCount + '|' +
+                      $firstHelperError)
     $writer.Dispose()
 }

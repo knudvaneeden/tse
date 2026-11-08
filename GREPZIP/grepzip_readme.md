@@ -1,6 +1,6 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.23  
+**Version:** 1.0.0.0.27  
 **Date:** 2026-11-08  
 **Authoring model:** OpenAI Codex
 
@@ -58,24 +58,26 @@ searchstring=foobar
 searchoptions=ix
 topdirectory=c:\temp\
 showfilenames=true
+searcharchives=yes
 ```
 
 Paths may contain spaces and may optionally be enclosed in double quotes. Environment variables such as `%ProgramFiles%` are expanded. A configured path is used when it exists. If it is blank or invalid, GREPZIP searches `PATH` and the standard 7-Zip or WinRAR installation directories. If `rar.exe` cannot be found, GREPZIP tries `7z.exe` for RAR archives.
 
-The three values under `[SearchDefaults]` provide the initial text displayed by the corresponding TSE `Ask()` prompts:
+The prompt values under `[SearchDefaults]` provide the initial text displayed by the corresponding TSE `Ask()` prompts:
 
 - `searchstring` initializes the search-string prompt.
 - `searchoptions` initializes the options prompt, for example `i` or `ix`.
 - `topdirectory` initializes the directories or file-specifications prompt. It may contain a semicolon-separated list.
 - `showfilenames` controls whether each tested filename is displayed on TSE's message bar.
+- `searcharchives` initializes the archive-search prompt; use `yes` or `no`.
 
-The user can edit each of the first three values in its prompt before starting the search. Each `Ask()` prompt has its own named TSE history: `GREPZIP:searchstring`, `GREPZIP:searchoptions`, and `GREPZIP:searchspecifications`. When the corresponding initial value is blank, GREPZIP recalls the newest value from that prompt's dedicated history. A nonempty INI or built-in value has priority as the initial text, while the user's accepted prompt input remains final.
+The user can edit each prompt value before starting the search. Each `Ask()` prompt has its own named TSE history: `GREPZIP:searchstring`, `GREPZIP:searchoptions`, `GREPZIP:searchspecifications`, and `GREPZIP:searcharchives`. When the corresponding initial value is blank, GREPZIP recalls the newest value from that prompt's dedicated history. A nonempty INI or built-in value has priority as the initial text, while the user's accepted prompt input remains final.
 
 `showfilenames=true` is the default. It shows each filename only on TSE's message bar and refreshes the display during the TSE search stage. The main editing window remains on the file that was active when GREPZIP started until the final results buffer is displayed. Use `false`, `no`, `0`, or `off` to disable filename progress.
 
 Before PowerShell begins enumerating files and expanding archives, GREPZIP displays `GREPZIP: Enumerating files and expanding archives...` on the message bar. That message remains visible during the synchronous enumeration stage. When enumeration finishes, changing filenames replace it during TSE's text-search stage.
 
-GREPZIP validates active lines in `grepzip.ini`. It reports unknown sections, unknown or empty parameter names, missing equals signs, duplicate parameters, parameters in the wrong section, and invalid `showfilenames` values in one consolidated warning. The common typo `opdirectory` is specifically reported with a suggestion to use `topdirectory`. Comments beginning with `;` are ignored. Valid settings remain available after the warning is dismissed.
+GREPZIP validates active lines in `grepzip.ini`. It reports unknown sections, unknown or empty parameter names, missing equals signs, duplicate parameters, parameters in the wrong section, and invalid `showfilenames` or `searcharchives` values in one consolidated warning. The common typo `opdirectory` is specifically reported with a suggestion to use `topdirectory`. Comments beginning with `;` are ignored. Valid settings remain available after the warning is dismissed.
 
 ## Run
 
@@ -84,8 +86,9 @@ Run `GREPZIP` as a macro, or press **Ctrl+Alt+Shift+F**. Press **Ctrl+Alt+Shift+
 1. Enter the search string.
 2. Enter TSE search options, for example `i` or `ix`.
 3. Enter one or more directories, files, or file specifications. Separate multiple entries with semicolons (`;`).
-4. Wait while GREPZIP enumerates files, expands supported archives, and asks TSE to search each file. If `showfilenames` is enabled, the currently searched virtual filename is refreshed on TSE's message bar.
-5. Review the results buffer.
+4. Enter `yes` or `no` when asked whether archived files should be searched.
+5. Wait while GREPZIP enumerates files, optionally expands supported archives, and asks TSE to search each file. If `showfilenames` is enabled, the currently searched virtual filename is refreshed on TSE's message bar.
+6. Review the results buffer.
 
 Examples of source specifications:
 
@@ -219,6 +222,33 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.27 - 2026-11-08
+
+- Fixes `Illegal characters in path` when a source directory ends in a backslash.
+- Normalizes slash characters using their ASCII character codes, avoiding ambiguous SAL string literals.
+- Places the directory or file specification last on the PowerShell command line so a final backslash cannot consume the following archive option.
+
+### 1.0.0.0.26 - 2026-11-08
+
+- Restores the `Search archived files (yes/no)` prompt.
+- Gives the archive-search prompt its own dedicated TSE input history.
+- Adds the validated `searcharchives=yes|no` setting to `[SearchDefaults]` in `grepzip.ini`.
+- Passes the selected archive behavior explicitly to the PowerShell helper.
+- With `no`, archive files are skipped while ordinary files are still searched recursively.
+
+### 1.0.0.0.25 - 2026-11-08
+
+- Verifies that `GREPZIP_HELPER.PS1` exists beside the running macro before starting a search.
+- Deletes the previous manifest before launching PowerShell and stops if it cannot be removed.
+- Requires PowerShell to create a new manifest containing the current `#STATS` marker.
+- Prevents a failed or mismatched helper from silently reusing stale file entries from an earlier search.
+
+### 1.0.0.0.24 - 2026-11-08
+
+- Adds separate result counters for files enumerated by PowerShell, searchable manifest entries written by PowerShell, and manifest entries processed by TSE.
+- Reports the PowerShell helper error count and first error message when an error occurs.
+- Makes it possible to locate enumeration loss precisely between filesystem traversal, manifest creation, and TSE manifest processing.
 
 ### 1.0.0.0.23 - 2026-11-08
 

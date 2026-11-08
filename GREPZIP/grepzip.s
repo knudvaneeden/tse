@@ -1,11 +1,12 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.23
+// Version : 1.0.0.0.27
 // Date    : 2026-11-08
 // LLM     : OpenAI Codex
 
 string searchSpecS[255] = ""
 string expressionS[255] = ""
 string searchOptionsS[20] = "ix"
+string searchArchivesS[10] = "yes"
 string findOptionsS[24] = ""
 string helperS[255] = ""
 string manifestS[255] = ""
@@ -18,9 +19,13 @@ integer originalBufferI = 0
 integer matchCountI = 0
 integer fileCountI = 0
 integer firstResultLineI = 0
+integer helperEnumeratedCountI = 0
+integer helperManifestCountI = 0
+integer helperErrorCountI = 0
 integer showFileNamesB = TRUE
 integer iniWarningCountI = 0
 string iniWarningsS[255] = ""
+string helperFirstErrorS[255] = ""
 
 proc PROCAddIniWarning(integer lineI, string warningS)
     string entryS[255] = ""
@@ -130,6 +135,31 @@ proc PROCGoToResults()
     endif
 end
 
+proc PROCParseHelperStats(string statsLineS)
+    string remainderS[255] = ""
+    integer separatorI = 0
+
+    remainderS = SubStr(statsLineS, 8, Length(statsLineS) - 7)
+    separatorI = Pos("|", remainderS)
+    if (separatorI)
+        helperEnumeratedCountI = Val(SubStr(remainderS, 1, separatorI - 1))
+        remainderS = SubStr(remainderS, separatorI + 1,
+                            Length(remainderS) - separatorI)
+        separatorI = Pos("|", remainderS)
+        if (separatorI)
+            helperManifestCountI = Val(SubStr(remainderS, 1, separatorI - 1))
+            remainderS = SubStr(remainderS, separatorI + 1,
+                                Length(remainderS) - separatorI)
+            separatorI = Pos("|", remainderS)
+            if (separatorI)
+                helperErrorCountI = Val(SubStr(remainderS, 1, separatorI - 1))
+                helperFirstErrorS = SubStr(remainderS, separatorI + 1,
+                                            Length(remainderS) - separatorI)
+            endif
+        endif
+    endif
+end
+
 proc PROCSearchManifest()
     string manifestLineS[255] = ""
     string diskNameS[255] = ""
@@ -146,7 +176,10 @@ proc PROCSearchManifest()
             GotoLine(manifestLineI)
             manifestLineS = GetText(1, CurrLineLen())
             separatorI = Pos(Chr(9), manifestLineS)
-            if ((separatorI > 1) and (SubStr(manifestLineS, 1, 6) <> "#WORK="))
+            if (SubStr(manifestLineS, 1, 7) == "#STATS=")
+                PROCParseHelperStats(manifestLineS)
+            elseif ((separatorI > 1) and
+                    (SubStr(manifestLineS, 1, 6) <> "#WORK="))
                 diskNameS = SubStr(manifestLineS, 1, separatorI - 1)
                 displayNameS = SubStr(manifestLineS, separatorI + 1,
                                       Length(manifestLineS) - separatorI)
@@ -174,6 +207,35 @@ proc PROCBuildNames()
     manifestS = GetEnvStr("TEMP") + "\\grepzip_manifest.txt"
 end
 
+integer proc FNManifestHasCurrentStats()
+    integer checkBufferI = 0
+    integer checkLineI = 0
+    integer firstLineI = 0
+    integer foundB = FALSE
+    string checkLineS[255] = ""
+
+    checkBufferI = EditBuffer(manifestS, _SYSTEM_)
+    if (checkBufferI)
+        checkLineI = NumLines()
+        firstLineI = checkLineI - 4
+        if (firstLineI < 1)
+            firstLineI = 1
+        endif
+        while ((checkLineI >= firstLineI) and (not foundB))
+            GotoLine(checkLineI)
+            checkLineS = GetText(1, CurrLineLen())
+            if (SubStr(checkLineS, 1, 7) == "#STATS=")
+                foundB = TRUE
+            endif
+            checkLineI = checkLineI - 1
+        endwhile
+        GotoBufferId(checkBufferI)
+        AbandonFile(checkBufferI)
+        GotoBufferId(originalBufferI)
+    endif
+    return(foundB)
+end
+
 proc PROCLoadIniDefaults()
     integer iniBufferI = 0
     integer lineI = 1
@@ -189,6 +251,7 @@ proc PROCLoadIniDefaults()
     integer seenSearchOptionsB = FALSE
     integer seenTopDirectoryB = FALSE
     integer seenShowFileNamesB = FALSE
+    integer seenSearchArchivesB = FALSE
 
     iniWarningCountI = 0
     iniWarningsS = ""
@@ -306,6 +369,30 @@ proc PROCLoadIniDefaults()
                     if (sectionS == "searchdefaults")
                         seenShowFileNamesB = TRUE
                     endif
+                elseif (keyS == "searcharchives")
+                    if (sectionS <> "searchdefaults")
+                        PROCAddIniWarning(lineI,
+                            "searcharchives is outside [SearchDefaults]")
+                    elseif (seenSearchArchivesB)
+                        PROCAddIniWarning(lineI, "duplicate searcharchives")
+                    else
+                        valueS = Lower(valueS)
+                        if ((valueS == "yes") or (valueS == "y") or
+                            (valueS == "true") or (valueS == "1") or
+                            (valueS == "on"))
+                            searchArchivesS = "yes"
+                        elseif ((valueS == "no") or (valueS == "n") or
+                                (valueS == "false") or (valueS == "0") or
+                                (valueS == "off"))
+                            searchArchivesS = "no"
+                        else
+                            PROCAddIniWarning(lineI,
+                                              "invalid searcharchives value")
+                        endif
+                    endif
+                    if (sectionS == "searchdefaults")
+                        seenSearchArchivesB = TRUE
+                    endif
                 elseif (keyS == "opdirectory")
                     PROCAddIniWarning(lineI,
                         "unknown 'opdirectory'; use 'topdirectory'")
@@ -328,8 +415,8 @@ proc PROCNormalizeSpecification()
 
     while (indexI <= lengthI)
         if (Asc(searchSpecS[indexI]) <> 34)
-            if (searchSpecS[indexI] == "/")
-                normalizedS = normalizedS + "\\"
+            if (Asc(searchSpecS[indexI]) == 47)
+                normalizedS = normalizedS + Chr(92)
             else
                 normalizedS = normalizedS + searchSpecS[indexI]
             endif
@@ -338,8 +425,8 @@ proc PROCNormalizeSpecification()
     endwhile
     searchSpecS = normalizedS
     lengthI = Length(searchSpecS)
-    if ((lengthI > 3) and ((searchSpecS[lengthI] == "\\") or
-        (searchSpecS[lengthI] == "/")))
+    if ((lengthI > 3) and ((Asc(searchSpecS[lengthI]) == 92) or
+        (Asc(searchSpecS[lengthI]) == 47)))
         searchSpecS = SubStr(searchSpecS, 1, lengthI - 1)
     endif
 end
@@ -352,6 +439,7 @@ proc Main()
     integer searchStringHistoryI = 0
     integer searchOptionsHistoryI = 0
     integer searchSpecificationsHistoryI = 0
+    integer searchArchivesHistoryI = 0
 
     originalBufferI = GetBufferId()
     PROCBuildNames()
@@ -359,6 +447,7 @@ proc Main()
     // Built-in GREPZIP defaults. Blank INI values do not replace them.
     expressionS = ""
     searchOptionsS = "ix"
+    searchArchivesS = "yes"
     searchSpecS = ""
     PROCLoadIniDefaults()
     if (iniWarningCountI)
@@ -369,9 +458,10 @@ proc Main()
     searchStringHistoryI = GetFreeHistory("GREPZIP:searchstring")
     searchOptionsHistoryI = GetFreeHistory("GREPZIP:searchoptions")
     searchSpecificationsHistoryI = GetFreeHistory("GREPZIP:searchspecifications")
+    searchArchivesHistoryI = GetFreeHistory("GREPZIP:searcharchives")
     if ((not searchStringHistoryI) or (not searchOptionsHistoryI) or
-        (not searchSpecificationsHistoryI))
-        Warn("GREPZIP could not allocate its dedicated input histories.")
+        (not searchSpecificationsHistoryI) or (not searchArchivesHistoryI))
+        Warn("GREPZIP could not allocate all dedicated input histories.")
         return()
     endif
     if (not Length(expressionS))
@@ -382,6 +472,9 @@ proc Main()
     endif
     if (not Length(searchSpecS))
         searchSpecS = GetHistoryStr(searchSpecificationsHistoryI, 1)
+    endif
+    if (not Length(searchArchivesS))
+        searchArchivesS = GetHistoryStr(searchArchivesHistoryI, 1)
     endif
 
     if (not Ask(Format("Search string (TSE regex: . ^ $ | ? [] [~] * + @ # {} ",
@@ -403,14 +496,62 @@ proc Main()
     if (not Length(searchSpecS))
         return()
     endif
+    if (not Ask("Search archived files (yes/no):", searchArchivesS,
+                searchArchivesHistoryI))
+        return()
+    endif
+    searchArchivesS = Lower(searchArchivesS)
+    if ((searchArchivesS == "yes") or (searchArchivesS == "y") or
+        (searchArchivesS == "true") or (searchArchivesS == "1") or
+        (searchArchivesS == "on"))
+        searchArchivesS = "yes"
+    elseif ((searchArchivesS == "no") or (searchArchivesS == "n") or
+            (searchArchivesS == "false") or (searchArchivesS == "0") or
+            (searchArchivesS == "off"))
+        searchArchivesS = "no"
+    else
+        Warn("Search archived files must be yes or no.")
+        return()
+    endif
 
     PROCNormalizeSpecification()
     findOptionsS = Lower(searchOptionsS)
+    if (not FileExists(helperS))
+        Warn(Format("GREPZIP_HELPER.PS1 was not found beside the running ",
+                    "GREPZIP macro.", Chr(13), helperS, Chr(13),
+                    "Keep GREPZIP.MAC and GREPZIP_HELPER.PS1 together."))
+        return()
+    endif
+
+    // Never permit a failed helper launch to reuse an earlier search manifest.
+    commandS = Format('cmd.exe /c del /q "', manifestS, '" 2>nul')
+    Dos(commandS, _DONT_PROMPT_)
+    if (FileExists(manifestS))
+        Warn(Format("GREPZIP could not remove its previous manifest:",
+                    Chr(13), manifestS, Chr(13),
+                    "The search was stopped to prevent stale results."))
+        return()
+    endif
+
     Message("GREPZIP: Enumerating files and expanding archives...")
     UpdateDisplay(_DEFAULT_)
     commandS = Format('powershell.exe -NoP -NonI -W Hidden -ExecutionPolicy Bypass -File "',
-                      helperS, '" -Specification "', searchSpecS, '"')
+                      helperS, '" -SearchArchives "', searchArchivesS,
+                      '" -Specification "', searchSpecS, '"')
     Dos(commandS, _DONT_PROMPT_)
+
+    if (not FileExists(manifestS))
+        Warn(Format("PowerShell did not create a new GREPZIP manifest.",
+                    Chr(13), "Check that GREPZIP_HELPER.PS1 can run and ",
+                    "that PowerShell reports no error."))
+        return()
+    endif
+    if (not FNManifestHasCurrentStats())
+        Warn(Format("The new GREPZIP manifest has no current #STATS marker.",
+                    Chr(13), "The helper may be an older or mismatched version.",
+                    Chr(13), "Reinstall all files from the same GREPZIP ZIP."))
+        return()
+    endif
 
     resultBufferI = CreateTempBuffer()
     resultMapBufferI = CreateTempBuffer()
@@ -420,15 +561,30 @@ proc Main()
     EmptyBuffer()
     AddLine(Format("GREPZIP results - search string: ", expressionS))
     AddLine(Format("Search options: ", searchOptionsS))
+    AddLine(Format("Search archived files: ", searchArchivesS))
     AddLine(Format("Source: ", searchSpecS))
     AddLine("Enter/Left click: open result; Ctrl+Alt+Shift+G: return here")
     AddLine("")
     firstResultLineI = NumLines() + 1
     matchCountI = 0
     fileCountI = 0
+    helperEnumeratedCountI = 0
+    helperManifestCountI = 0
+    helperErrorCountI = 0
+    helperFirstErrorS = ""
     PROCSearchManifest()
     GotoBufferId(resultBufferI)
+    AddLine(Format("PowerShell source files enumerated: ",
+                   helperEnumeratedCountI))
+    AddLine(Format("PowerShell manifest entries written: ",
+                   helperManifestCountI))
     AddLine(Format("Files examined: ", fileCountI))
+    if (helperErrorCountI)
+        AddLine(Format("PowerShell helper errors: ", helperErrorCountI))
+        if (Length(helperFirstErrorS))
+            AddLine(Format("First helper error: ", helperFirstErrorS))
+        endif
+    endif
     if (not matchCountI)
         AddLine("No matching text was found.")
     endif
