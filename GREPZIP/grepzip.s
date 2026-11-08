@@ -1,6 +1,6 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.21
-// Date    : 2026-10-16
+// Version : 1.0.0.0.22
+// Date    : 2026-11-08
 // LLM     : OpenAI Codex
 
 string searchSpecS[255] = ""
@@ -349,28 +349,55 @@ proc PROCRegexHelp()
 end
 
 proc Main()
+    integer searchStringHistoryI = 0
+    integer searchOptionsHistoryI = 0
+    integer searchSpecificationsHistoryI = 0
+
     originalBufferI = GetBufferId()
     PROCBuildNames()
+
+    // Built-in GREPZIP defaults. Blank INI values do not replace them.
+    expressionS = ""
+    searchOptionsS = "ix"
+    searchSpecS = ""
     PROCLoadIniDefaults()
     if (iniWarningCountI)
         Warn(Format("GREPZIP.INI has ", iniWarningCountI,
                     " warning(s): ", iniWarningsS))
     endif
 
+    searchStringHistoryI = GetFreeHistory("GREPZIP:searchstring")
+    searchOptionsHistoryI = GetFreeHistory("GREPZIP:searchoptions")
+    searchSpecificationsHistoryI = GetFreeHistory("GREPZIP:searchspecifications")
+    if ((not searchStringHistoryI) or (not searchOptionsHistoryI) or
+        (not searchSpecificationsHistoryI))
+        Warn("GREPZIP could not allocate its dedicated input histories.")
+        return()
+    endif
+    if (not Length(expressionS))
+        expressionS = GetHistoryStr(searchStringHistoryI, 1)
+    endif
+    if (not Length(searchOptionsS))
+        searchOptionsS = GetHistoryStr(searchOptionsHistoryI, 1)
+    endif
+    if (not Length(searchSpecS))
+        searchSpecS = GetHistoryStr(searchSpecificationsHistoryI, 1)
+    endif
+
     if (not Ask(Format("Search string (TSE regex: . ^ $ | ? [] [~] * + @ # {} ",
                       Chr(92), "):"),
-                expressionS, _EDIT_HISTORY_))
+                expressionS, searchStringHistoryI))
         return()
     endif
     if (not Length(expressionS))
         return()
     endif
     if (not Ask("Search options (for example i or ix):", searchOptionsS,
-                _EDIT_HISTORY_))
+                searchOptionsHistoryI))
         return()
     endif
     if (not Ask("Directories or file specifications (; separated):",
-                searchSpecS, _EDIT_HISTORY_))
+                searchSpecS, searchSpecificationsHistoryI))
         return()
     endif
     if (not Length(searchSpecS))

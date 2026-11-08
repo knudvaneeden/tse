@@ -1,7 +1,7 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.21  
-**Date:** 2026-10-17  
+**Version:** 1.0.0.0.22  
+**Date:** 2026-11-08  
 **Authoring model:** OpenAI Codex
 
 GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts one or more directories, files, or file specifications and also searches files stored in ZIP, JAR, TAR, TGZ, 7Z and RAR archives. Supported archives stored inside other supported archives are expanded and searched recursively.
@@ -69,7 +69,7 @@ The three values under `[SearchDefaults]` provide the initial text displayed by 
 - `topdirectory` initializes the directories or file-specifications prompt. It may contain a semicolon-separated list.
 - `showfilenames` controls whether each tested filename is displayed on TSE's message bar.
 
-The user can edit each of the first three values in its prompt before starting the search. An empty INI value does not override GREPZIP's built-in value.
+The user can edit each of the first three values in its prompt before starting the search. Each `Ask()` prompt has its own named TSE history: `GREPZIP:searchstring`, `GREPZIP:searchoptions`, and `GREPZIP:searchspecifications`. When the corresponding initial value is blank, GREPZIP recalls the newest value from that prompt's dedicated history. A nonempty INI or built-in value has priority as the initial text, while the user's accepted prompt input remains final.
 
 `showfilenames=true` is the default. It shows each filename only on TSE's message bar and refreshes the display during the TSE search stage. The main editing window remains on the file that was active when GREPZIP started until the final results buffer is displayed. Use `false`, `no`, `0`, or `off` to disable filename progress.
 
@@ -219,6 +219,12 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.22 - 2026-11-08
+
+- Replaces shared `_EDIT_HISTORY_` use with three dedicated named histories for the search-string, search-options, and source-specifications prompts.
+- Uses the newest value from the corresponding history when that prompt's INI or built-in initial value is blank.
+- Stops with a clear warning if TSE cannot allocate all three dedicated history numbers.
 
 ### 1.0.0.0.21 - 2026-10-17
 
