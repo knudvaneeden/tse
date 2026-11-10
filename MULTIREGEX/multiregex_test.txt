@@ -1,0 +1,14 @@
+This is line 1.
+This is line 2.
+BEGIN TRANSACTION
+SELECT customers
+FROM database
+WHERE country = NL
+COMMIT TRANSACTION
+This is line 8.
+This is line 9.
+
+BEGIN TRANSACTION
+SELECT orders
+FROM database
+COMMIT TRANSACTION
