@@ -1,5 +1,5 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.22
+// Version: 1.0.0.0.26
 // Date: 2026-11-10
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
@@ -286,6 +286,14 @@ integer mrFastScan = TRUE
 integer mrFastPlan = TRUE
 // Optional phase profiling; turn off for uninstrumented A/B benchmarks.
 integer mrProfileEnabled = TRUE
+// Combined ring results retain their source buffer ids in a hidden map.
+integer mrAllMode = FALSE
+integer mrAllResults = 0
+integer mrAllMap = 0
+integer mrAllHits = 0
+integer mrAllFiles = 0
+integer mrAllLines = 0
+integer mrAllSkipped = 0
 integer mrFirstResultRow = 13
 integer mrPlanTicks = 0
 integer mrBuildTicks = 0
@@ -329,7 +337,7 @@ end
 
 // Reject unsupported letters and duplicates; always display g,i,l,v,x order.
 string proc MR_NormalizeOptions(string rawOptions)
-    string ordered[255] = "gilvx"
+    string ordered[255] = "agilvx"
     string normalized[255] = ""
     string lowered[255] = Lower(rawOptions)
     string letter[2] = ""
@@ -418,10 +426,13 @@ proc MR_PrependSummary(integer bufferId, integer lineCount,
     InsertLine(Format("Elapsed time     : ", MR_ElapsedText(centisecondsI)))
     InsertLine(Format("Matches found    : ", hits))
     InsertLine(Format("Lines scanned    : ", lineCount))
+    if mrAllMode
+        InsertLine(Format("Files searched   : ", mrAllFiles))
+    endif
     InsertLine(Format("Search options   : ", mrOptions))
     InsertLine(Format("Expression       : ", mrPattern))
     InsertLine("----------------------------------------------------------")
-    InsertLine("MULTIREGEX 1.0.0.0.22 - Search results")
+    InsertLine("MULTIREGEX 1.0.0.0.26 - Search results")
     if skippedLines > 0
         // Preserve the first match at row 13 by appending the warning at end.
         EndFile()
@@ -559,18 +570,45 @@ proc MR_OpenResult()
     rowText = GetText(1, CurrLineLen())
     commaAt = Pos(",", rowText)
     colonAt = Pos(":", rowText)
-    if commaAt <= 1 or colonAt <= commaAt
-        Message("MULTIREGEX: select a numbered result")
-        return()
-    endif
-    leftPart = SubStr(rowText, 1, commaAt - 1)
-    hitLine = Val(leftPart)
-    hitCol = Val(SubStr(rowText, commaAt + 1, colonAt - commaAt - 1))
-    if hitLine < 1 or hitCol < 1
-        Message("MULTIREGEX: select a numbered result")
-        return()
+    if not mrAllMode
+        if commaAt <= 1 or colonAt <= commaAt
+            Message("MULTIREGEX: select a numbered result")
+            return()
+        endif
+        leftPart = SubStr(rowText, 1, commaAt - 1)
+        hitLine = Val(leftPart)
+        hitCol = Val(SubStr(rowText, commaAt + 1, colonAt - commaAt - 1))
+        if hitLine < 1 or hitCol < 1
+            Message("MULTIREGEX: select a numbered result")
+            return()
+        endif
     endif
     mrResultsRow = CurrLine()
+    if mrAllMode
+        // The display filename is descriptive; the hidden map is authoritative.
+        if mrResultsRow < mrFirstResultRow or
+           mrResultsRow >= mrFirstResultRow + mrAllHits
+            Message("MULTIREGEX: select a numbered result")
+            return()
+        endif
+        if not GotoBufferId(mrAllMap)
+            Warn("MULTIREGEX: result mapping is unavailable")
+            return()
+        endif
+        GotoLine(mrResultsRow - mrFirstResultRow + 1)
+        rowText = GetText(1, CurrLineLen())
+        commaAt = Pos(",", rowText)
+        colonAt = Pos(":", rowText)
+        if commaAt < 2 or colonAt <= commaAt
+            GotoBufferId(mrResults)
+            Warn("MULTIREGEX: invalid result mapping")
+            return()
+        endif
+        mrResultsSource = Val(SubStr(rowText, 1, commaAt - 1))
+        hitLine = Val(SubStr(rowText, commaAt + 1,
+                             colonAt - commaAt - 1))
+        hitCol = Val(SubStr(rowText, colonAt + 1, 32))
+    endif
     if not GotoBufferId(mrResultsSource)
         Warn("MULTIREGEX: source buffer is no longer available")
         return()
@@ -636,16 +674,39 @@ proc MR_ViewResults(integer resultsId, integer sourceId)
         BegFile()
     endif
     Enable(MRResultsKeys)
-    // Process yields editing control to TSE until Escape ends it.
-    // While visiting a source location, only the return keys are overridden.
+    // A source can be edited normally while the viewer's Process() is open.
+    // Escape (including from the source) calls EndProcess().
     Process()
+    // Process() has returned: do not abandon buffers before this point.
     Disable(MRResultsKeys)
     Disable(MRSourceKeys)
     mrViewActive = FALSE
-    if GetBufferId() <> resultsId
-        GotoBufferId(resultsId)
+
+    // Only clean up OUR hidden result-to-source mapping.
+    if mrAllMap > 0
+        if GotoBufferId(mrAllMap)
+            AbandonFile()
+        endif
     endif
-    Message("MULTIREGEX: results viewer closed")
+    mrAllMap = 0
+    mrAllMode = FALSE
+    mrAllHits = 0
+
+    // The results buffer is created by CreateTempBuffer().  It is volatile
+    // and must not remain in the ring after the viewer has been closed.
+    // Never abandon a user-owned source buffer or an unrelated * buffer.
+    if resultsId > 0 and resultsId <> sourceId
+        if GotoBufferId(resultsId)
+            AbandonFile()
+        endif
+    endif
+    mrResults = 0
+    mrAllResults = 0
+    mrResultsSource = 0
+    mrResultsRow = 0
+    // Return control to the file that was active before opening the viewer.
+    GotoBufferId(sourceId)
+    Message("MULTIREGEX: results viewer closed; temporary buffers released")
 end
 
 // Search successive independent chunks with a bounded overlap.
@@ -692,6 +753,7 @@ integer proc MR_Search(integer mode)
     integer regexFoundI = FALSE
     integer knownPhaseTicksI = 0
     string options[255] = ""
+    string sourceFileS[255] = ""
     // Exact lengths, no 125-character truncation. Base-180 digits are
     // stored in TWO strings. Each digit is encoded +1 to avoid Chr(0).
     // 255 lengths fit; if a chunk reaches 256 lines, use legacy planning.
@@ -700,9 +762,10 @@ integer proc MR_Search(integer mode)
     integer lengthIndexI = 0
     integer cachedLengthI = 0
 
-    // Modes: 0=new search, 1=repeat forward, 2=view all from origin.
-    showAll = (mode == 2)
+    // Modes: 0=new, 1=repeat, 2=view current file, 3=append ring file.
+    showAll = (mode == 2 or mode == 3)
     sourceId = GetBufferId()
+    sourceFileS = CurrFilename()
     total = NumLines()
     localLast = total
     if mrLocal
@@ -744,7 +807,10 @@ integer proc MR_Search(integer mode)
             return(FALSE)
         endif
     endif
-    if mode == 1 and mrValid and sourceId == mrSource
+    if mode == 3
+        startLine = 1
+        startColumn = 1
+    elseif mode == 1 and mrValid and sourceId == mrSource
         startLine = mrNextLine
         startColumn = mrNextColumn
     elseif Pos("g", mrOptions) > 0
@@ -799,7 +865,9 @@ integer proc MR_Search(integer mode)
         Warn("MULTIREGEX: temp buffer failed")
         return(FALSE)
     endif
-    if showAll
+    if mode == 3
+        resultId = mrAllResults
+    elseif showAll
         resultId = CreateTempBuffer()
         if resultId
             AddLine("Left-click: visit. CtrlAltShift G: return. Escape: close.")
@@ -990,8 +1058,17 @@ integer proc MR_Search(integer mode)
                                 GotoBufferId(sourceId)
                                 GotoLine(targetLine)
                                 GotoBufferId(resultId)
-                                AddLine(Format(targetLine, ",", targetCol,
-                                               ": ", mrPattern))
+                                if mode == 3
+                                    AddLine(Format(sourceFileS, "(", targetLine,
+                                                   ",", targetCol, "): ", mrPattern))
+                                    GotoBufferId(mrAllMap)
+                                    AddLine(Format(sourceId, ",", targetLine,
+                                                   ":", targetCol))
+                                    mrAllHits = mrAllHits + 1
+                                else
+                                    AddLine(Format(targetLine, ",", targetCol,
+                                                   ": ", mrPattern))
+                                endif
                                 if mrProfileEnabled
                                     mrResultTicks = mrResultTicks + MR_TickDelta(tickBeginI, GetTime())
                                 endif
@@ -1040,6 +1117,12 @@ integer proc MR_Search(integer mode)
     GotoBufferId(workId)
     AbandonFile()
     GotoBufferId(sourceId)
+    if mode == 3
+        // The ring driver owns the shared result buffer and its summary.
+        mrAllLines = mrAllLines + scannedLinesI
+        mrAllSkipped = mrAllSkipped + skippedLinesI
+        return(accepted)
+    endif
     if showAll and resultId
         GotoBufferId(resultId)
         AddLine(Format("Matches found: ", count))
@@ -1104,6 +1187,149 @@ proc MR_StartSearchSession()
     endif
 end
 
+// Search a stable snapshot of the normal TSE buffers.  Hidden and system
+// buffers, including MULTIREGEX's own work/results, are never searched.
+proc MR_SearchRing()
+    integer startingId = GetBufferId()
+    integer currentId = startingId
+    integer nextId = 0
+    integer ringListId = 0
+    integer resultId = 0
+    integer mapId = 0
+    integer fileIndex = 1
+    integer fileId = 0
+    integer startTicks = 0
+    integer elapsedTicks = 0
+    integer speedI = 0
+    integer plannedI = 0
+    integer plannedTotalI = 0
+    integer buildTotalI = 0
+    integer regexTotalI = 0
+    integer mapTotalI = 0
+    integer resultTotalI = 0
+    integer chunksTotalI = 0
+    integer adaptiveTotalI = 0
+    integer callsTotalI = 0
+
+    ringListId = CreateTempBuffer()
+    if not ringListId
+        Warn("MULTIREGEX: could not create ring snapshot")
+        return()
+    endif
+    GotoBufferId(startingId)
+    // NextFile() walks only normal, visible buffers in the editing ring.
+    // We collect ids first so later temporary buffers cannot join the scan.
+    repeat
+        currentId = GetBufferId()
+        if BufferType() == _NORMAL_
+            GotoBufferId(ringListId)
+            AddLine(Str(currentId))
+            GotoBufferId(currentId)
+        endif
+        plannedI = plannedI + 1
+        if plannedI > 10000
+            Warn("MULTIREGEX: ring enumeration safety limit reached")
+            break
+        endif
+        if not NextFile()
+            break
+        endif
+        nextId = GetBufferId()
+    until nextId == startingId
+    GotoBufferId(startingId)
+    plannedI = 0
+
+    mrAllResults = CreateTempBuffer()
+    if not mrAllResults
+        GotoBufferId(ringListId)
+        AbandonFile()
+        GotoBufferId(startingId)
+        Warn("MULTIREGEX: could not create results buffer")
+        return()
+    endif
+    resultId = mrAllResults
+    AddLine("Left-click: edit source. CtrlAltShift G: return. Escape: close.")
+    AddLine("filename(line,column): matched expression")
+    AddLine("----------------------------------------------------------")
+    mrAllMap = CreateTempBuffer()
+    if not mrAllMap
+        GotoBufferId(resultId)
+        AbandonFile()
+        GotoBufferId(ringListId)
+        AbandonFile()
+        GotoBufferId(startingId)
+        Warn("MULTIREGEX: could not create result mapping")
+        return()
+    endif
+    mapId = mrAllMap
+    mrAllMode = TRUE
+    mrAllHits = 0
+    mrAllFiles = 0
+    mrAllLines = 0
+    mrAllSkipped = 0
+    startTicks = GetTime()
+    GotoBufferId(ringListId)
+    plannedTotalI = NumLines()
+    for fileIndex = 1 to plannedTotalI
+        GotoBufferId(ringListId)
+        GotoLine(fileIndex)
+        fileId = Val(GetText(1, CurrLineLen()))
+        if fileId > 0 and GotoBufferId(fileId)
+            mrAllFiles = mrAllFiles + 1
+            // Refresh the progress line BEFORE starting this file's long
+            // synchronous scan. UpdateDisplay() is a native SAL command.
+            // Call it only at file boundaries to avoid slowing the search.
+            Message(Format("MULTIREGEX: searching ring file ", mrAllFiles,
+                           "/", plannedTotalI, ": ", CurrFilename()))
+            UpdateDisplay()
+            MR_Search(3)
+            plannedI = plannedI + mrPlanTicks
+            buildTotalI = buildTotalI + mrBuildTicks
+            regexTotalI = regexTotalI + mrRegexTicks
+            mapTotalI = mapTotalI + mrMapTicks
+            resultTotalI = resultTotalI + mrResultTicks
+            chunksTotalI = chunksTotalI + mrChunkCount
+            adaptiveTotalI = adaptiveTotalI + mrAdaptiveCount
+            callsTotalI = callsTotalI + mrRegexCalls
+        endif
+    endfor
+    elapsedTicks = MR_TickDelta(startTicks, GetTime())
+    mrPlanTicks = plannedI
+    mrBuildTicks = buildTotalI
+    mrRegexTicks = regexTotalI
+    mrMapTicks = mapTotalI
+    mrResultTicks = resultTotalI
+    mrChunkCount = chunksTotalI
+    mrAdaptiveCount = adaptiveTotalI
+    mrRegexCalls = callsTotalI
+    mrOtherTicks = elapsedTicks - plannedI - buildTotalI - regexTotalI -
+                   mapTotalI - resultTotalI
+    if mrOtherTicks < 0
+        mrOtherTicks = 0
+    endif
+    if elapsedTicks > 0
+        speedI = (mrAllLines / elapsedTicks) * 100 +
+                 ((mrAllLines mod elapsedTicks) * 100) / elapsedTicks
+    endif
+    GotoBufferId(ringListId)
+    AbandonFile()
+    GotoBufferId(startingId)
+    GotoBufferId(resultId)
+    AddLine(Format("Matches found: ", mrAllHits))
+    mrFirstResultRow = 13
+    if mrProfileEnabled
+        mrFirstResultRow = mrFirstResultRow + 10
+    endif
+    // One additional "Files searched" row in the ring-mode header.
+    mrFirstResultRow = mrFirstResultRow + 1
+    MR_PrependSummary(resultId, mrAllLines, mrAllHits,
+                      elapsedTicks, mrAllSkipped, speedI)
+    BegFile()
+    mrResultsRow = mrFirstResultRow
+    MR_ViewResults(resultId, startingId)
+    GotoBufferId(startingId)
+end
+
 proc Main()
     string pattern[255] = ""
     string options[255] = "ix"
@@ -1150,14 +1376,14 @@ proc Main()
     endif
 
     pattern = mrPattern
-    if not Ask("MULTIREGEX 1.0.0.0.22 - multiline TSE regex:", pattern, historyPattern)
+    if not Ask("MULTIREGEX 1.0.0.0.26 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0
         return()
     endif
     options = mrOptions
-    if not Ask("Options (alphabetical: g,i,l,v,x; e.g. gilvx):",
+    if not Ask("Options (alphabetical: a,g,i,l,v,x; e.g. agivx):",
                options, historyOptions)
         return()
     endif
@@ -1167,6 +1393,16 @@ proc Main()
         return()
     endif
     options = normalized
+    if Pos("a", options) > 0
+        if Pos("l", options) > 0
+            Warn("MULTIREGEX: a (ring) and l (block) cannot be combined")
+            return()
+        endif
+        if Pos("g", options) == 0 or Pos("v", options) == 0
+            Warn("MULTIREGEX: ring-wide mode currently requires agivx")
+            return()
+        endif
+    endif
     if Pos("l", options) > 0
         oldBlockKind = IsBlockInCurrFile()
         if oldBlockKind == 0
@@ -1207,7 +1443,9 @@ proc Main()
     WriteProfileStr("MultiRegex", "SearchOptions", mrOptions, mrIniPath)
     FlushProfile(mrIniPath)
 
-    if Pos("v", options) > 0
+    if Pos("a", options) > 0
+        MR_SearchRing()
+    elseif Pos("v", options) > 0
         MR_Search(2)
     else
         if MR_Search(0)

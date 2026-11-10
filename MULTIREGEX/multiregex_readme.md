@@ -1,34 +1,56 @@
-# MULTIREGEX — version 1.0.0.0.22
+# MULTIREGEX 1.0.0.0.26 — TSE SAL
 
-Pure TSE SAL macro for TSE 4.50.33. **Session-lifecycle correction** based on version 1.0.0.0.21. Keep the verified version 21 as a backup until this release has been tested.
+Repackaged from the previously tested version 24 source, retaining the version 22 process lifecycle. This release has NOT yet been separately compiled or tested using TSE SAL 4.50.33. Keep the prior working release as backup.
 
-## Critical correction
 
-The previous non-view search left a nested `Process()` editor level open while waiting for `<Ctrl L>` or `<Escape>`. This could prevent normal custom key bindings (such as `<Shift Tab>`) from behaving as expected, and could make purging the macro unreliable.
+**Version 26 rollback release.** This package restores the *exact search, ring progress, results viewer, and temporary-buffer cleanup behavior of version 1.0.0.0.24*. Version 1.0.0.0.25 progress-display changes are not included. Source code differences from version 24 are limited to the version label. No improvement to the 1/2 → 2/2 progress display is claimed. Version 24 was tested on the two large ring files; version 26 itself has not yet been compiled in TSE.
 
-**Version 22 retains `<Ctrl L>` repeat forward without starting `Process()` for normal non-`v` searches.** It enables a temporary `KEYDEF` and returns immediately to TSE's existing editor process. `<Escape>` or `<CtrlAltShift X>` disables this key definition and restores the original bindings. Other normal editor shortcuts should remain available. Starting a fresh MULTIREGEX search first disables any earlier repeat key definition.
+## Changes in 1.0.0.0.26
 
-The `v` results viewer still uses a nested `Process()` for mouse-driven navigation. In the results list **and while visiting a match in the source file**, `<Escape>` or `<CtrlAltShift X>` invokes `EndProcess()`, after which both results-view key definitions are disabled and the nested viewer session is closed. `<CtrlAltShift G>` continues to return to the same result. Mouse click continues to jump to the source.
+- **Ring-file progress refresh:** Immediately before processing each ring file, display `searching ring file N/total: filename` and call the native SAL `UpdateDisplay()` to request repainting. The refresh happens once per file, not once per line, to avoid harming large-file search performance. Repainting in a synchronous Windows editor process must be verified at runtime.
+- **Results-buffer cleanup:** When the interactive viewer ends via Escape or `<CtrlAltShift X>` (in the results list or after visiting a source), `EndProcess()` returns to the waiting `MR_ViewResults()` procedure. Only then are the temporary result-to-source mapping buffer and the temporary results buffer abandoned with `AbandonFile()`. A normal editable source file is never deliberately abandoned by this cleanup.
+- **No search changes:** `g`, `i`, `l`, `v`, `x`, `a`, `<Ctrl L>` for normal searches, clickable source navigation, `<CtrlAltShift G>`, adaptive windows, and profiling remain as in version 23.
 
-`PurgeMacro()` deliberately is **not** invoked by MULTIREGEX itself. Purging an executing macro is not a safe substitute for leaving its nested editor process. After the session exits and bindings are disabled, normal manual purging can be used if desired.
+## Suggested tests for 1.0.0.0.26
 
-## Controls
+1. Compile `multiregex.s` with `sc32 multiregex.s`. Confirm there are no errors.
+2. On two small loaded files, run `agivx`. Confirm the results list displays matches from both files. The `2/2` progress message may not visibly repaint (known behavior of version 24).
+3. Click a result in the second file, make and undo a temporary edit, and return with `<CtrlAltShift G>`.
+4. Press Escape either in the results buffer or while visiting an editable source. Verify the results `*` buffer no longer remains in the buffer list, and the original source is still open and unmodified except for any edits you deliberately retained.
+5. Verify `<Shift Tab>` works normally, MULTIREGEX can be purged, and normal non-view `<Ctrl L>` repeat is unchanged.
+6. Only after passing these tests, compare against the earlier 26-million-line benchmark.
 
-- Normal search (`ix`, `gix`, `gilx`, etc.): after finding first match, `<Ctrl L>` repeats forward; `<Escape>` or `<CtrlAltShift X>` ends repeat mode.
-- Results view (`ivx`, `givx`, `gilvx`): click a result to visit; `<CtrlAltShift G>` returns; `<Escape>` or `<CtrlAltShift X>` closes the viewer from **either** results or source.
-- Only two input prompts: expression and alphabetical options.
-- The INI provides maximum and adaptive window sizes without further prompts.
+**Status:** Version 24 logic restored. Version 26 has not been separately compiled or runtime-tested with TSE 4.50.33 in this environment. Keep version 24 as a rollback copy.
 
-## Test plan
+## New: `a` option (all normal buffers in the TSE ring)
 
-1. **Important:** Restart TSE once before testing if a previous v21 `Process()` session may still be active. The new macro cannot reliably unwind an older already-running nested process.
-2. Compile `multiregex.s` with `sc32 multiregex.s` in TSE 4.50.33.
-3. Search `BEGIN TRANSACTION.*COMMIT TRANSACTION` with `gix`. Verify first match, press `<Ctrl L>` for second, use `<Shift Tab>` to check your custom main menu, then `<Escape>` or `<CtrlAltShift X>` to end repeat mode. Confirm original `<Ctrl L>` behavior returns.
-4. Search with `givx`. Left-click the second result; use `<CtrlAltShift G>` to return. Left-click again and use `<CtrlAltShift X>` directly from the source to close the viewer. Verify ordinary `<Shift Tab>` works afterward.
-5. Verify clipboard and source remain unchanged, and search counts match version 21 on small test data before running large files.
+Use options **`agivx`** to search all loaded, visible TSE buffers from the beginning of each file, ignoring case, using the TSE regex syntax, and producing a combined view. The new `a` option sorts before the existing `gilvx` options.
 
-## Unchanged correctness limits
+Only the ring-wide **`g` + `v`** workflow is supported in this first release of `a`. The `a` and `l` options cannot be combined. Existing single-file and local block search options remain available.
 
-Search logic, `FastPlan=0` default, adaptive window, timing, matching and source coordinates are unchanged from v21. The scan still may miss matches longer than the configured search context and skips source lines longer than `AdaptiveWindow=30000`. Prior benchmarks recorded 4 skipped lines in a 10,046,760-line file and 50 in a 16,364,141-line file.
+- TSE's normal loaded buffers are enumerated once at search start. Hidden and system buffers (including MULTIREGEX's temporary buffers) are excluded.
+- The search uses the **in-memory contents** of each loaded buffer, including unsaved edits, not disk copies.
+- Each result displays `filename(line,column): expression`. A separate hidden result map stores the authoritative buffer ID, line and column.
+- Left-click a result to open its original loaded buffer for **normal editing**. Save with your existing TSE binding. `<CtrlAltShift G>` returns to the same result. `<Escape>` or `<CtrlAltShift X>` exits the nested results viewer and restores normal editing keys.
+- Results are a snapshot: after edits affecting line positions or matches, rerun `agivx` to refresh them. If a source buffer is closed during the session, its old result may no longer be navigable.
+- Search summary at top includes total files scanned, total lines, match count, elapsed time, throughput and diagnostics.
 
-This release has **not** been compiled or executed in TSE locally. It requires your compiler/runtime check.
+## Safety and lifecycle
+
+The `Process()`/`EndProcess()` cleanup from version 22 is preserved. Ring-wide searching is synchronous in pure SAL. The only temporary nested editor session is the results viewer. When Escape (or CtrlAltShift X) calls EndProcess(), control returns to the waiting macro, which disables its temporary keydefs, abandons its hidden mapping buffer, abandons its own volatile results buffer, and returns to the original file. No other * buffers or source buffers are abandoned. `<Ctrl L>` remains active for ordinary (non-view) searches as in version 22.
+
+## Test sequence
+
+1. Back up version 22. Unpack the four files into a test macro directory and compile `sc32 multiregex.s`.
+2. Open `multiregex_test.txt`, a second source file with the same transaction expression, and a third source file with no matches. Optionally edit one file without saving it to confirm in-memory search.
+3. Execute MULTIREGEX using expression `BEGIN TRANSACTION.*COMMIT TRANSACTION`, options `agivx`. Confirm results carry different filenames, correct line/column positions, and the correct file count.
+4. Left-click a result in the second file, edit text, return with `<CtrlAltShift G>`, and verify the result selection is preserved. Press Escape and ensure `<Shift Tab>` (your menu) works again. Verify MULTIREGEX can be purged.
+5. Also run the established `givx` and `gilvx` regressions before testing million-line buffers.
+
+## Existing limits
+
+The search engine is unchanged from 1.0.0.0.22; windows cannot guarantee matches longer than configured context, and physical lines longer than `AdaptiveWindow=30000` can be skipped. Results on huge files are not guaranteed exhaustive. Profiling and adaptive-window behavior are unchanged.
+
+### Package contents
+
+`multiregex.s`, `multiregex.ini`, `multiregex_readme.md`, `multiregex_test.txt`. Only the ZIP filename includes the version number.
