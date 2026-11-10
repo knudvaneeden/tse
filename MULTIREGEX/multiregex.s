@@ -1,5 +1,5 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.21
+// Version: 1.0.0.0.22
 // Date: 2026-11-10
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
@@ -305,6 +305,7 @@ integer mrResults = 0
 integer mrResultsSource = 0
 integer mrResultsRow = 13
 integer mrViewActive = FALSE
+integer mrSearchKeysActive = FALSE
 integer mrLocal = FALSE
 integer mrBlockFirst = 0
 integer mrBlockLast = 0
@@ -420,7 +421,7 @@ proc MR_PrependSummary(integer bufferId, integer lineCount,
     InsertLine(Format("Search options   : ", mrOptions))
     InsertLine(Format("Expression       : ", mrPattern))
     InsertLine("----------------------------------------------------------")
-    InsertLine("MULTIREGEX 1.0.0.0.21 - Search results")
+    InsertLine("MULTIREGEX 1.0.0.0.22 - Search results")
     if skippedLines > 0
         // Preserve the first match at row 13 by appending the warning at end.
         EndFile()
@@ -523,16 +524,20 @@ keydef MRResultsKeys
     <Enter> MR_ResultEnter()
     <LeftBtn> MR_MouseOpenResult()
     <Escape> MR_ExitResults()
+    <CtrlAltShift X> MR_ExitResults()
 end
 
 keydef MRSourceKeys
     <CtrlAltShift G> MR_ReturnResults()
+    <Escape> MR_ExitResults()
+    <CtrlAltShift X> MR_ExitResults()
 end
 
 // Active only while using the normal (non-view) MULTIREGEX search.
 keydef MRRepeatKeys
     <Ctrl L> MR_RepeatForward()
     <Escape> MR_ExitSearchSession()
+    <CtrlAltShift X> MR_ExitSearchSession()
 end
 
 
@@ -607,10 +612,19 @@ proc MR_ReturnResults()
 end
 
 proc MR_ExitResults()
-    EndProcess()
+    // If a result was opened, switch back before unwinding the nested session.
+    // EndProcess() must be called while the results viewer's Process() is active.
+    if mrViewActive
+        EndProcess()
+    endif
 end
 
 proc MR_ViewResults(integer resultsId, integer sourceId)
+    // Never leave the previous non-view Ctrl+L override stacked underneath.
+    if mrSearchKeysActive
+        Disable(MRRepeatKeys)
+        mrSearchKeysActive = FALSE
+    endif
     mrResults = resultsId
     mrResultsSource = sourceId
     mrResultsRow = mrFirstResultRow
@@ -1066,14 +1080,28 @@ proc MR_RepeatForward()
 end
 
 proc MR_ExitSearchSession()
-    EndProcess()
+    // Normal searches do not start a nested Process().  Just remove our
+    // temporary keydef and restore the user's normal TSE shortcuts.
+    if mrSearchKeysActive
+        Disable(MRRepeatKeys)
+        mrSearchKeysActive = FALSE
+    endif
+    Message("MULTIREGEX: repeat mode ended; normal TSE keys restored")
 end
 
 proc MR_StartSearchSession()
-    Enable(MRRepeatKeys)
-    Message("MULTIREGEX: Ctrl L = repeat forward; Escape = exit session")
-    Process()
-    Disable(MRRepeatKeys)
+    // Enable only our Ctrl+L / Escape / emergency-exit bindings; DO NOT
+    // invoke Process().  The editor stays in its original process level.
+    if mrSearchKeysActive
+        Disable(MRRepeatKeys)
+        mrSearchKeysActive = FALSE
+    endif
+    if Enable(MRRepeatKeys)
+        mrSearchKeysActive = TRUE
+        Message("MULTIREGEX: Ctrl L = repeat; Escape or CtrlAltShift X = exit")
+    else
+        Warn("MULTIREGEX: could not enable repeat keys")
+    endif
 end
 
 proc Main()
@@ -1083,6 +1111,12 @@ proc Main()
     integer oldBlockKind = 0
     integer historyPattern = GetFreeHistory("multiregex:pattern")
     integer historyOptions = GetFreeHistory("multiregex:options")
+
+    // Replace earlier non-view repeat bindings; even cancel paths are clean.
+    if mrSearchKeysActive
+        Disable(MRRepeatKeys)
+        mrSearchKeysActive = FALSE
+    endif
 
     // Keep the running session's search settings in memory. The INI holds
     // defaults and MaximumWindow, but the window never opens another dialog.
@@ -1116,7 +1150,7 @@ proc Main()
     endif
 
     pattern = mrPattern
-    if not Ask("MULTIREGEX 1.0.0.0.21 - multiline TSE regex:", pattern, historyPattern)
+    if not Ask("MULTIREGEX 1.0.0.0.22 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0
