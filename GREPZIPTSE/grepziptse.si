@@ -1,0 +1,2697 @@
+// GREPZIPTSE - Pure TSE SAL recursive ordinary-file and ZIP search
+// Version: 1.0.0.0.44
+// Date: 2026-11-11
+// Experimental: ZIP member native TSE single-line regular-expression search (hybrid 32 KiB history).
+// No DLL, PowerShell helper or external ZIP executable is needed for ZIP/JAR.
+// Windows cmd.exe or Linux /bin/sh is used only for filesystem orchestration.
+//
+// Note: Test with TSE Pro 4.50.33. Do not save the ZIP buffer.
+// Matching: native TSE lFind(), single-line only; usual options blank/i/x/ix.
+
+#define ZIP_LINE_WIDTH 64
+#define ZIP_MAX_ENTRIES 1000
+#define ZIP_MAX_SEARCH_BYTES 200000
+#define ZIP_MAX_MATCH_DIALOGS 20
+#define ZIP_MAX_FIXED_OUTPUT 240
+#define DYN_WINDOW 32768
+#define HIST_LINE_BYTES 64
+#define HIST_LINES 512
+#define DYN_MAX_OUTPUT 200000
+
+// Integer arrays require compiling this source as .si (not .s).
+integer gArrayTest[64]
+integer gNavigationLogging = FALSE
+integer gLogHandle = -1
+string gLogPath[255] = ""
+integer gWindowsPlatform = TRUE
+integer gLinuxPlatform = FALSE
+string gPathSeparator[1] = ""
+
+proc DetectPlatform()
+    // Use TSE's own platform identification; do not infer the OS from paths
+    // or environment variables.
+    gWindowsPlatform = ((WhichOS() == _WINDOWS_) or
+                        (WhichOS() == _WINDOWS_NT_))
+    gLinuxPlatform = (WhichOS() == _LINUX_)
+    if gWindowsPlatform
+        gPathSeparator = Chr(92)
+    else
+        gPathSeparator = "/"
+    endif
+end
+
+string proc PathJoin(string directory, string leaf)
+    string result[255] = directory
+    if Length(result) and
+       SubStr(result, Length(result), 1) <> Chr(92) and
+       SubStr(result, Length(result), 1) <> "/"
+        result = result + gPathSeparator
+    endif
+    return(result + leaf)
+end
+
+string proc TempDirectory()
+    string result[255] = ""
+    if not gWindowsPlatform
+        result = GetEnvStr("TMPDIR")
+    endif
+    if Length(result) == 0
+        result = GetEnvStr("TEMP")
+    endif
+    if Length(result) == 0
+        result = GetEnvStr("TMP")
+    endif
+    if Length(result) == 0
+        if gWindowsPlatform
+            result = CurrDir()
+        else
+            result = "/tmp"
+        endif
+    endif
+    return(result)
+end
+
+integer proc AbsolutePath(string fileName)
+    string uncPrefix[2] = Format(Chr(92), Chr(92))
+    if Length(fileName) == 0
+        return(FALSE)
+    endif
+    if not gWindowsPlatform
+        return(SubStr(fileName, 1, 1) == "/")
+    endif
+    return(SubStr(fileName, 2, 1) == ":" or
+           SubStr(fileName, 1, 2) == uncPrefix or
+           SubStr(fileName, 1, 1) == Chr(92))
+end
+
+
+// Logging is intentionally independent of the current TSE buffer.
+// Format: YYYY-MM-DD HH:MM:SS LEVEL message (CRLF).
+ string proc Stamp(integer compact)
+    integer mo = 0
+    integer da = 0
+    integer yr = 0
+    integer dow = 0
+    integer hh = 0
+    integer mm = 0
+    integer ss = 0
+    integer hs = 0
+    GetDate(mo, da, yr, dow)
+    GetTime(hh, mm, ss, hs)
+    if compact
+        return(Format(yr:4:'0', mo:2:'0', da:2:'0',
+                      hh:2:'0', mm:2:'0', ss:2:'0'))
+    endif
+    return(Format(yr:4:'0', "-", mo:2:'0', "-", da:2:'0', " ",
+                  hh:2:'0', ":", mm:2:'0', ":", ss:2:'0'))
+ end
+
+ proc LogLine(string level, string msg)
+    string prefix[48] = ""
+    string tail[255] = ""
+    string remaining[255] = ""
+    integer available = 0
+    if gLogHandle == -1
+        return()
+    endif
+    prefix = Format(Stamp(FALSE), " ", level, " ")
+    available = 250 - Length(prefix)
+    // SAL procedure string parameters are constant. Copy to a local
+    // variable before shortening the message into log-sized chunks.
+    remaining = msg
+    while Length(remaining) > available
+        tail = SubStr(remaining, 1, available)
+        fWrite(gLogHandle, prefix + tail + Chr(13) + Chr(10))
+        remaining = SubStr(remaining, available + 1, 255)
+    endwhile
+    fWrite(gLogHandle, prefix + remaining + Chr(13) + Chr(10))
+ end
+
+ proc ReportInfo(string msg)
+    LogLine("INFO", msg)
+ end
+
+ proc ReportWarn(string msg)
+    LogLine("WARN", msg)
+ end
+
+ // Make sure a directory ends in a directory separator.
+ string proc LogDirWithSlash(string directory)
+    string result[255] = directory
+    if Length(result) > 0
+        if SubStr(result, Length(result), 1) <> Chr(92) and
+           SubStr(result, Length(result), 1) <> "/"
+            if Length(result) < 254
+                result = result + gPathSeparator
+            endif
+        endif
+    endif
+    return(result)
+ end
+
+ // Try this location without overwriting an earlier run's log.
+ integer proc TryLogDirectory(string directory, string stampText)
+    integer suffix = 0
+    string logDir[255] = ""
+    string name[96] = ""
+    string fullName[255] = ""
+    logDir = LogDirWithSlash(directory)
+    if Length(logDir) == 0 or Length(logDir) > 190
+        return(FALSE)
+    endif
+    name = Format("grepziptse_", stampText, ".log")
+    fullName = logDir + name
+    while FileExists(fullName) and suffix < 998
+        suffix = suffix + 1
+        name = Format("grepziptse_", stampText, "_", suffix, ".log")
+        fullName = logDir + name
+    endwhile
+    if FileExists(fullName)
+        return(FALSE)
+    endif
+    gLogHandle = fCreate(fullName)
+    if gLogHandle == -1
+        return(FALSE)
+    endif
+    gLogPath = fullName
+    return(TRUE)
+ end
+
+ proc OpenRunLog()
+    string macroFile[255] = ""
+    string macroDir[255] = ""
+    string iniFile[255] = ""
+    string configuredDir[255] = ""
+    string selectedDir[255] = ""
+    string stampText[32] = ""
+    string uncPrefix[2] = ""
+    integer done = FALSE
+    gLogHandle = -1
+    gLogPath = ""
+
+    // Capture the executing .mac location before running other macros.
+    macroFile = CurrMacroFilename()
+    // Both drive and path are required (_PATH_ alone omits the drive).
+    macroDir = SplitPath(macroFile, _DRIVE_ | _PATH_)
+    stampText = Stamp(TRUE)
+    uncPrefix = Format(Chr(92), Chr(92))
+
+    if Length(macroDir) > 0 and Length(macroDir) + 13 < 255
+        iniFile = macroDir + "grepziptse.ini"
+        configuredDir = GetProfileStr("Logging", "LogDirectory", "", iniFile)
+    endif
+
+    if Length(configuredDir) > 0
+        // Relative overrides are resolved relative to the macro directory.
+        selectedDir = configuredDir
+        if not AbsolutePath(configuredDir)
+            if Length(macroDir) + Length(configuredDir) < 240
+                selectedDir = macroDir + configuredDir
+            else
+                selectedDir = ""
+            endif
+        endif
+        if Length(selectedDir) > 0
+            done = TryLogDirectory(selectedDir, stampText)
+        endif
+        if not done
+            Warn(Format("GREPZIPTSE: Cannot log to configured directory: ",
+                        configuredDir))
+        endif
+    endif
+
+    // By default log next to the .mac, NOT next to g32.exe.
+    if not done and Length(macroDir) > 0
+        done = TryLogDirectory(macroDir, stampText)
+    endif
+
+    // Last resort: TSE working directory.
+    if not done
+        done = TryLogDirectory(CurrDir(), stampText)
+        if done
+            Warn("GREPZIPTSE: Using current directory for log (fallback).")
+        endif
+    endif
+
+    if not done
+        Warn("GREPZIPTSE: Unable to create a log in any directory.")
+        return()
+    endif
+    ReportInfo("GREPZIPTSE version 1.0.0.0.44 started")
+    if gWindowsPlatform
+        ReportInfo("Platform backend: Windows cmd.exe")
+    else
+        ReportInfo("Platform backend: Linux /bin/sh")
+    endif
+    ReportInfo(Format("Compiled macro: ", macroFile))
+    ReportInfo(Format("Log file: ", gLogPath))
+ end
+
+ proc CloseRunLog()
+    if gLogHandle <> -1
+        ReportInfo("GREPZIPTSE run complete")
+        fClose(gLogHandle)
+        gLogHandle = -1
+        if FileExists(gLogPath)
+            Warn(Format("GREPZIPTSE log: ", gLogPath))
+        else
+            Warn(Format("GREPZIPTSE: Log not found after close: ", gLogPath))
+        endif
+    endif
+ end
+
+ // Minimal .si array smoke test; avoid excessive static memory use.
+ integer proc TestArrays()
+    gArrayTest[1] = 3
+    gArrayTest[64] = 5
+    return(gArrayTest[1] == 3 and gArrayTest[64] == 5)
+ end
+
+integer gBatchSearch = FALSE
+integer gResultBuffer = 0
+integer gResultMapBuffer = 0
+integer gZipResultBuffer = 0
+integer gZipResultMapBuffer = 0
+integer gFirstResultLine = 0
+integer gResultCount = 0
+integer gOrdinaryResultCount = 0
+integer gZipResultCount = 0
+string gSevenZipExecutable[255] = ""
+string gRarExecutable[255] = ""
+string gArchiveWorkRoot[255] = ""
+integer gExternalArchiveNumber = 0
+integer gByteSourceHex = FALSE
+integer gCaptureMode = FALSE
+integer gCaptureBuffer = 0
+integer gCaptureOldBuffer = 0
+string gCaptureLine[255] = ""
+
+proc SaveResultState()
+    SetGlobalInt("GREPZIPTSE_RESULT_BUFFER", gResultBuffer)
+    SetGlobalInt("GREPZIPTSE_RESULT_MAP_BUFFER", gResultMapBuffer)
+    SetGlobalInt("GREPZIPTSE_FIRST_RESULT_LINE", gFirstResultLine)
+    SetGlobalInt("GREPZIPTSE_RESULT_COUNT", gResultCount)
+end
+
+proc LoadResultState()
+    gResultBuffer = GetGlobalInt("GREPZIPTSE_RESULT_BUFFER")
+    gResultMapBuffer = GetGlobalInt("GREPZIPTSE_RESULT_MAP_BUFFER")
+    gFirstResultLine = GetGlobalInt("GREPZIPTSE_FIRST_RESULT_LINE")
+    gResultCount = GetGlobalInt("GREPZIPTSE_RESULT_COUNT")
+end
+
+proc AddSearchResult(string targetKind, string targetRef,
+                     string displayName, integer lineNo, integer columnNo,
+                     string lineText, integer compressed)
+    string output[255] = ""
+    string mapping[255] = ""
+    output = Format(displayName, "(", lineNo, ",", columnNo, "): ",
+                    lineText)
+    mapping = Format(targetKind, Chr(9), targetRef, Chr(9), lineNo,
+                     Chr(9), columnNo)
+    if compressed
+        AddLine(output, gZipResultBuffer)
+        AddLine(mapping, gZipResultMapBuffer)
+        gZipResultCount = gZipResultCount + 1
+    else
+        AddLine(output, gResultBuffer)
+        AddLine(mapping, gResultMapBuffer)
+        gOrdinaryResultCount = gOrdinaryResultCount + 1
+    endif
+    gResultCount = gResultCount + 1
+end
+
+proc WarnLogged(string msg)
+    LogLine("INFO", msg)
+    // Avoid a separate dialog for every match; results are in the log.
+    if not gBatchSearch and
+       (SubStr(msg, 1, 8) == "DEFLATE " or
+        SubStr(msg, 1, 9) == "GREPZIPTSE")
+        Warn(msg)
+    endif
+end
+
+// This stage deliberately buffers at most 240 decoded bytes.
+// This is NOT the final 32 KiB DEFLATE sliding-window implementation.
+string gFixedOutput[255] = ""
+integer gFixedBit = 0
+integer gFixedFailure = FALSE
+
+integer proc HexNibbleValue(string digit)
+    string upperDigit[1] = Upper(digit)
+    integer value = Asc(upperDigit)
+    if value >= Asc("0") and value <= Asc("9")
+        return(value - Asc("0"))
+    elseif value >= Asc("A") and value <= Asc("F")
+        return(value - Asc("A") + 10)
+    endif
+    return(-1)
+end
+
+string proc ByteHex(integer value)
+    string digits[16] = "0123456789ABCDEF"
+    return(SubStr(digits, value / 16 + 1, 1) +
+           SubStr(digits, value mod 16 + 1, 1))
+end
+
+// Must be called while the ZIP buffer is current.
+// Offsets are zero based. -b64 maps 64 bytes to each TSE line.
+// Asc(GetText(...)) was verified against ZIP signature and NUL on TSE 4.50.33.
+integer proc ByteAt(integer offset)
+    integer lineNo = 0
+    integer columnNo = 0
+    integer highNibble = 0
+    integer lowNibble = 0
+
+    if offset < 0
+        return(-1)
+    endif
+    lineNo = offset / ZIP_LINE_WIDTH + 1
+    columnNo = offset mod ZIP_LINE_WIDTH + 1
+    if lineNo > NumLines()
+        return(-1)
+    endif
+    // GotoLine() is a positioning command; its return value must not
+    // be interpreted as a success/failure flag. This caused version .3
+    // to return -1 for all four ZIP signature bytes.
+    GotoLine(lineNo)
+    if gByteSourceHex
+        highNibble = HexNibbleValue(GetText((columnNo - 1) * 2 + 1, 1))
+        lowNibble = HexNibbleValue(GetText((columnNo - 1) * 2 + 2, 1))
+        if highNibble < 0 or lowNibble < 0
+            return(-1)
+        endif
+        return(highNibble * 16 + lowNibble)
+    endif
+    // Do not test Length(GetText(...)) for zero: 00 is a valid ZIP byte.
+    return(Asc(GetText(columnNo, 1)))
+end
+
+integer proc WordAt(integer offset)
+    integer a = ByteAt(offset)
+    integer b = ByteAt(offset + 1)
+    if a < 0 or b < 0
+        return(-1)
+    endif
+    return(a + b * 256)
+end
+
+// Deliberately restrict values to signed 31-bit range until ZIP64 handling.
+integer proc DwordAt(integer offset)
+    integer lo = WordAt(offset)
+    integer hi = WordAt(offset + 2)
+    if lo < 0 or hi < 0 or hi >= 32768
+        return(-1)
+    endif
+    return(lo + hi * 65536)
+end
+
+integer proc LocalHeaderAt(integer offset)
+    return(ByteAt(offset) == 80 and
+           ByteAt(offset + 1) == 75 and
+           ByteAt(offset + 2) == 3 and
+           ByteAt(offset + 3) == 4)
+end
+
+string proc NameAt(integer offset, integer count)
+    string result[255] = ""
+    integer i = 0
+    integer value = 0
+    if count < 0 or count > 220
+        return("<unsupported member name length>")
+    endif
+    for i = 0 to count - 1
+        value = ByteAt(offset + i)
+        if value < 0
+            return("<truncated member name>")
+        endif
+        if value >= 32 and value <= 126
+            result = result + Chr(value)
+        else
+            result = result + "?"
+        endif
+    endfor
+    return(result)
+end
+
+integer proc NestedZipName(string memberName)
+    string lowerName[255] = Lower(memberName)
+    if Length(lowerName) < 4
+        return(FALSE)
+    endif
+    return(SubStr(lowerName, Length(lowerName) - 3, 4) == ".zip" or
+           SubStr(lowerName, Length(lowerName) - 3, 4) == ".jar")
+end
+
+// Decoded member text is collected in a temporary editor buffer. Native TSE
+// lFind() owns ALL regular-expression matching, including anchors, classes,
+// alternatives, tags and repetitions when option x is supplied. TSE regular
+// expressions are single-line. Options retain their normal TSE meanings.
+// A 240-character text cache reduces changes to the editor buffer.
+integer gSearchBuffer = 0
+integer gSearchOldBuffer = 0
+integer gSearchPendingCR = FALSE
+string gSearchLine[255] = ""
+integer gSearchFileHandle = -1
+integer gSearchFileNumber = 0
+string gSearchFilePath[255] = ""
+
+integer proc CaptureBegin()
+    gCaptureOldBuffer = GetBufferId()
+    gCaptureBuffer = CreateTempBuffer()
+    if gCaptureBuffer == 0
+        GotoBufferId(gCaptureOldBuffer)
+        return(FALSE)
+    endif
+    GotoBufferId(gCaptureBuffer)
+    AddLine("")
+    GotoBufferId(gCaptureOldBuffer)
+    gCaptureLine = ""
+    gCaptureMode = TRUE
+    return(TRUE)
+end
+
+proc CaptureFlush()
+    integer oldBuffer = 0
+    if gCaptureBuffer == 0 or Length(gCaptureLine) == 0
+        return()
+    endif
+    oldBuffer = GetBufferId()
+    GotoBufferId(gCaptureBuffer)
+    EndFile()
+    EndLine()
+    InsertText(gCaptureLine, _INSERT_)
+    if Length(gCaptureLine) == ZIP_LINE_WIDTH * 2
+        AddLine("")
+    endif
+    GotoBufferId(oldBuffer)
+    gCaptureLine = ""
+end
+
+proc CaptureEmitByte(integer value)
+    gCaptureLine = gCaptureLine + ByteHex(value)
+    if Length(gCaptureLine) >= ZIP_LINE_WIDTH * 2
+        CaptureFlush()
+    endif
+end
+
+integer proc CaptureFinish()
+    integer resultBuffer = gCaptureBuffer
+    CaptureFlush()
+    gCaptureMode = FALSE
+    gCaptureBuffer = 0
+    gCaptureLine = ""
+    return(resultBuffer)
+end
+
+proc CaptureDiscard()
+    integer oldBuffer = GetBufferId()
+    gCaptureMode = FALSE
+    if gCaptureBuffer
+        GotoBufferId(gCaptureBuffer)
+        AbandonFile(gCaptureBuffer)
+        GotoBufferId(oldBuffer)
+    endif
+    gCaptureBuffer = 0
+    gCaptureLine = ""
+end
+
+integer proc SearchBegin()
+    gSearchOldBuffer = GetBufferId()
+    gSearchFileHandle = -1
+    gSearchFilePath = ""
+    gSearchBuffer = CreateTempBuffer()
+    if gSearchBuffer == 0
+        GotoBufferId(gSearchOldBuffer)
+        return(FALSE)
+    endif
+    GotoBufferId(gSearchBuffer)
+    AddLine("")
+    GotoBufferId(gSearchOldBuffer)
+    gSearchLine = ""
+    gSearchPendingCR = FALSE
+    // Captured nested archives need their original bytes, not a text file.
+    // Normal decoded members are also written to disk so result navigation
+    // never depends on a temporary TSE buffer surviving the complete search.
+    if not gCaptureMode
+        gSearchFileNumber = gSearchFileNumber + 1
+        gSearchFilePath = PathJoin(gArchiveWorkRoot,
+                                  Format("member_", gSearchFileNumber,
+                                         ".txt"))
+        gSearchFileHandle = fCreate(gSearchFilePath)
+        if gSearchFileHandle == -1
+            GotoBufferId(gSearchBuffer)
+            AbandonFile()
+            GotoBufferId(gSearchOldBuffer)
+            gSearchBuffer = 0
+            gSearchFilePath = ""
+            return(FALSE)
+        endif
+    endif
+    return(TRUE)
+end
+
+// Append pending printable text to the current output line. This is only
+// called for each 240 bytes, at newline, or at end of member.
+proc SearchFlushText()
+    integer oldBuffer = 0
+    if Length(gSearchLine) == 0 or gSearchBuffer == 0
+        return()
+    endif
+    oldBuffer = GetBufferId()
+    GotoBufferId(gSearchBuffer)
+    EndFile()
+    EndLine()
+    InsertText(gSearchLine, _INSERT_)
+    GotoBufferId(oldBuffer)
+    if gSearchFileHandle <> -1
+        fWrite(gSearchFileHandle, gSearchLine)
+    endif
+    gSearchLine = ""
+end
+
+proc SearchNextLine()
+    integer oldBuffer = GetBufferId()
+    SearchFlushText()
+    GotoBufferId(gSearchBuffer)
+    AddLine("")
+    GotoBufferId(oldBuffer)
+    if gSearchFileHandle <> -1
+        fWrite(gSearchFileHandle, Chr(13) + Chr(10))
+    endif
+end
+
+// NUL and non-printable bytes are mapped to ? in the search text buffer.
+// This does not affect ZIP decoding/history, but text regex cannot address
+// those original binary bytes. CR and LF preserve logical line boundaries.
+proc SearchEmitByte(integer value)
+    if gCaptureMode
+        CaptureEmitByte(value)
+        return()
+    endif
+    if value == 13
+        SearchNextLine()
+        gSearchPendingCR = TRUE
+    elseif value == 10
+        if not gSearchPendingCR
+            SearchNextLine()
+        endif
+        gSearchPendingCR = FALSE
+    else
+        gSearchPendingCR = FALSE
+        if value == 9 or value >= 32 and value <= 126
+            gSearchLine = gSearchLine + Chr(value)
+        else
+            gSearchLine = gSearchLine + "?"
+        endif
+        if Length(gSearchLine) >= 240
+            SearchFlushText()
+        endif
+    endif
+end
+
+integer proc SearchFinish(string member, string expression, string findOptions)
+    integer count = 0
+    integer oldBuffer = GetBufferId()
+    integer lineNo = 0
+    integer columnNo = 0
+    string found[255] = ""
+    string lineText[255] = ""
+    if gCaptureMode
+        GotoBufferId(gSearchBuffer)
+        AbandonFile()
+        GotoBufferId(oldBuffer)
+        gSearchBuffer = 0
+        gSearchLine = ""
+        gSearchFilePath = ""
+        return(0)
+    endif
+    SearchFlushText()
+    if gSearchFileHandle <> -1
+        fClose(gSearchFileHandle)
+        gSearchFileHandle = -1
+    endif
+    GotoBufferId(gSearchBuffer)
+    BegFile()
+    while lFind(expression, findOptions)
+        count = count + 1
+        // Must immediately follow lFind before cursor operations.
+        found = GetFoundText()
+        lineNo = CurrLine()
+        columnNo = CurrPos()
+        lineText = GetText(1, CurrLineLen())
+        LogLine("INFO", Format(member, "(", lineNo, ",", columnNo,
+                        "): ", found))
+        AddSearchResult("F", gSearchFilePath, member, lineNo, columnNo,
+                        lineText, TRUE)
+        // Force progress, including for zero-width regex matches.
+        if not Right()
+            break
+        endif
+    endwhile
+    // The decoded disk file is now the stable navigation target. The editor
+    // buffer is no longer retained and therefore cannot be reused underneath
+    // an older result mapping during nested/archive-heavy searches.
+    GotoBufferId(gSearchBuffer)
+    AbandonFile()
+    GotoBufferId(oldBuffer)
+    gSearchBuffer = 0
+    gSearchLine = ""
+    gSearchFilePath = ""
+    return(count)
+end
+
+proc SearchDiscard()
+    integer oldBuffer = GetBufferId()
+    if gSearchFileHandle <> -1
+        fClose(gSearchFileHandle)
+        gSearchFileHandle = -1
+    endif
+    if gSearchBuffer <> 0
+        GotoBufferId(gSearchBuffer)
+        AbandonFile()
+        GotoBufferId(oldBuffer)
+    endif
+    gSearchBuffer = 0
+    gSearchLine = ""
+    gSearchFilePath = ""
+end
+
+// Stored ZIP members use exactly the same native matcher as DEFLATE members.
+integer proc SearchStored(integer dataStart, integer dataSize,
+                          string member, string expression, string findOptions)
+    integer p = 0
+    integer value = 0
+    integer count = 0
+    if dataSize > ZIP_MAX_SEARCH_BYTES
+        WarnLogged(Format("GREPZIPTSE: Skipping large member ", member,
+                   " (", dataSize, " bytes; experimental limit)."))
+        return(0)
+    endif
+    if not SearchBegin()
+        ReportWarn("GREPZIPTSE: Could not create text search buffer.")
+        return(0)
+    endif
+    for p = 0 to dataSize - 1
+        value = ByteAt(dataStart + p)
+        if value < 0
+            ReportWarn(Format("GREPZIPTSE: Truncated stored member: ", member))
+            SearchDiscard()
+            return(0)
+        endif
+        SearchEmitByte(value)
+    endfor
+    count = SearchFinish(member, expression, findOptions)
+    return(count)
+end
+
+// Read an arbitrary set of DEFLATE bits, least-significant bit first.
+// bitOffset is relative to the compressed data of the ZIP member.
+// Returns -1 if requested data is outside compressed member bounds.
+// Only small bit fields (1..16 bits) are supported here.
+integer proc DeflateBits(integer dataStart, integer packedSize,
+                         integer bitOffset, integer bitCount)
+    integer i = 0
+    integer byteOffset = 0
+    integer bitIndex = 0
+    integer b = 0
+    integer result = 0
+
+    if bitCount < 1 or bitCount > 16 or bitOffset < 0
+        return(-1)
+    endif
+    for i = 0 to bitCount - 1
+        byteOffset = (bitOffset + i) / 8
+        bitIndex = (bitOffset + i) mod 8
+        if byteOffset >= packedSize
+            return(-1)
+        endif
+        b = ByteAt(dataStart + byteOffset)
+        if b < 0
+            return(-1)
+        endif
+        if ((b shr bitIndex) & 1) <> 0
+            result = result | (1 shl i)
+        endif
+    endfor
+    return(result)
+end
+
+// Read bits from the compressed ZIP member and advance a global bit cursor.
+integer proc NextFixedBits(integer dataStart, integer packedSize, integer count)
+    integer result = DeflateBits(dataStart, packedSize, gFixedBit, count)
+    if result >= 0
+        gFixedBit = gFixedBit + count
+    endif
+    return(result)
+end
+
+// Canonical fixed Huffman codes arrive most-significant CODE bit first.
+// Each compressed BYTE is still consumed least-significant byte bit first.
+// These two concepts must not be confused.
+integer proc FixedSymbol(integer dataStart, integer packedSize, integer distanceTree)
+    integer code = 0
+    integer bitValue = 0
+    integer width = 0
+    for width = 1 to 9
+        bitValue = NextFixedBits(dataStart, packedSize, 1)
+        if bitValue < 0
+            return(-1)
+        endif
+        code = (code shl 1) | bitValue
+        if distanceTree
+            if width == 5
+                return(code)
+            endif
+        else
+            if width == 7 and code <= 23
+                return(256 + code)
+            endif
+            if width == 8
+                if code >= 48 and code <= 191
+                    return(code - 48)
+                endif
+                if code >= 192 and code <= 199
+                    return(code - 192 + 280)
+                endif
+            endif
+            if width == 9 and code >= 400 and code <= 511
+                return(code - 400 + 144)
+            endif
+        endif
+    endfor
+    return(-1)
+end
+
+integer proc FixedLength(integer symbol, integer dataStart, integer packedSize)
+    integer groupNo = 0
+    integer extraCount = 0
+    integer extraValue = 0
+    integer base = 0
+    if symbol >= 257 and symbol <= 264
+        return(symbol - 254)
+    endif
+    if symbol == 285
+        return(258)
+    endif
+    if symbol < 265 or symbol > 284
+        return(-1)
+    endif
+    groupNo = (symbol - 265) / 4
+    extraCount = groupNo + 1
+    base = (1 shl (groupNo + 3)) + 3
+    extraValue = NextFixedBits(dataStart, packedSize, extraCount)
+    if extraValue < 0
+        return(-1)
+    endif
+    return(base + ((symbol - 265) mod 4) * (1 shl extraCount) + extraValue)
+end
+
+integer proc FixedDistance(integer symbol, integer dataStart, integer packedSize)
+    integer groupNo = 0
+    integer extraCount = 0
+    integer extraValue = 0
+    integer base = 0
+    if symbol >= 0 and symbol <= 3
+        return(symbol + 1)
+    endif
+    if symbol < 4 or symbol > 29
+        return(-1)
+    endif
+    groupNo = (symbol - 4) / 2
+    extraCount = groupNo + 1
+    base = (1 shl (groupNo + 2)) + 1
+    extraValue = NextFixedBits(dataStart, packedSize, extraCount)
+    if extraValue < 0
+        return(-1)
+    endif
+    return(base + ((symbol - 4) mod 2) * (1 shl extraCount) + extraValue)
+end
+
+integer proc AppendFixedByte(integer value)
+    if value < 0 or value > 255 or Length(gFixedOutput) >= ZIP_MAX_FIXED_OUTPUT
+        return(FALSE)
+    endif
+    // Embedded NUL handling in SAL strings requires separate investigation.
+    if value == 0
+        return(FALSE)
+    endif
+    gFixedOutput = gFixedOutput + Chr(value)
+    return(TRUE)
+end
+
+// Decode a single FINAL fixed-Huffman block. Subsequent blocks and dynamic
+// blocks will be implemented later. Status: TRUE only after end-of-block 256.
+integer proc DecodeFixedFinal(integer dataStart, integer packedSize,
+                              integer expectedSize)
+    integer symbol = 0
+    integer distanceSymbol = 0
+    integer count = 0
+    integer distance = 0
+    integer i = 0
+    integer sourcePos = 0
+    integer value = 0
+    integer done = FALSE
+
+    gFixedOutput = ""
+    gFixedBit = 3 // BFINAL and BTYPE already inspected, now skip 3 header bits.
+    if expectedSize > ZIP_MAX_FIXED_OUTPUT or expectedSize < 0
+        WarnLogged(Format("DEFLATE: Fixed output exceeds experimental limit (",
+                    ZIP_MAX_FIXED_OUTPUT, " bytes)."))
+        return(FALSE)
+    endif
+    while not done
+        symbol = FixedSymbol(dataStart, packedSize, FALSE)
+        if symbol < 0
+            WarnLogged("DEFLATE: Invalid or truncated fixed literal/length symbol.")
+            return(FALSE)
+        endif
+        if symbol < 256
+            if not AppendFixedByte(symbol)
+                WarnLogged("DEFLATE: Output limit or unsupported NUL byte.")
+                return(FALSE)
+            endif
+        elseif symbol == 256
+            done = TRUE
+        else
+            count = FixedLength(symbol, dataStart, packedSize)
+            distanceSymbol = FixedSymbol(dataStart, packedSize, TRUE)
+            distance = FixedDistance(distanceSymbol, dataStart, packedSize)
+            if count < 3 or distance < 1 or distance > Length(gFixedOutput)
+                WarnLogged("DEFLATE: Invalid length/distance back-reference.")
+                return(FALSE)
+            endif
+            if Length(gFixedOutput) + count > ZIP_MAX_FIXED_OUTPUT
+                WarnLogged("DEFLATE: Output exceeded experimental 240-byte limit.")
+                return(FALSE)
+            endif
+            for i = 1 to count
+                // Recalculate for EACH byte; overlapping LZ77 copies are legal.
+                sourcePos = Length(gFixedOutput) - distance + 1
+                value = Asc(SubStr(gFixedOutput, sourcePos, 1))
+                if not AppendFixedByte(value)
+                    return(FALSE)
+                endif
+            endfor
+        endif
+    endwhile
+    if Length(gFixedOutput) <> expectedSize
+        WarnLogged(Format("DEFLATE: Output size mismatch: decoded=",
+                    Length(gFixedOutput), " expected=", expectedSize))
+        return(FALSE)
+    endif
+    return(TRUE)
+end
+
+// Fixed-Huffman text is sent through native lFind(), too.
+integer proc SearchFixedText(string member, string expression, string findOptions)
+    integer i = 0
+    integer count = 0
+    if not SearchBegin()
+        ReportWarn("DEFLATE: Cannot allocate fixed text search buffer.")
+        return(0)
+    endif
+    for i = 1 to Length(gFixedOutput)
+        SearchEmitByte(Asc(SubStr(gFixedOutput, i, 1)))
+    endfor
+    count = SearchFinish(member, expression, findOptions)
+    return(count)
+end
+
+// Small Huffman tables remain integer arrays (.si).
+// The full 32 KiB LZ77 history uses a temporary editor buffer, never a huge integer array.
+// DYN_WINDOW and DYN_MAX_OUTPUT are defined at the top of this file.
+integer gDynLitLen[288]
+integer gDynLitCode[288]
+integer gDynDistLen[32]
+integer gDynDistCode[32]
+integer gDynCLLen[19]
+integer gDynCLCode[19]
+integer gDynCounts[16]
+integer gDynNextCode[16]
+// History: one line per 64 bytes, stored as 128 uppercase hexadecimal digits.
+// Cache the last accessed 64-byte line in a SAL string to reduce buffer I/O.
+integer gHistBuffer = 0
+integer gHistCacheLine = -1
+integer gHistDirty = FALSE
+integer gHistError = FALSE
+string gHistCache[255] = ""
+string gHistZeroLine[255] = ""
+integer gDynBit = 0
+integer gDynWritten = 0
+integer gDynLine = 1
+integer gDynColumn = 1
+integer gDynPreviousCR = FALSE
+integer gDynMatches = 0
+integer gDynMaxDistance = 0
+integer gDynReferences = 0
+
+// tree: 0=code length, 1=literal/length, 2=distance.
+integer proc DynTreeLength(integer tree, integer symbol)
+    if tree == 0
+        return(gDynCLLen[symbol + 1])
+    elseif tree == 1
+        return(gDynLitLen[symbol + 1])
+    endif
+    return(gDynDistLen[symbol + 1])
+end
+
+proc SetDynTreeLength(integer tree, integer symbol, integer value)
+    if tree == 0
+        gDynCLLen[symbol + 1] = value
+    elseif tree == 1
+        gDynLitLen[symbol + 1] = value
+    else
+        gDynDistLen[symbol + 1] = value
+    endif
+end
+
+integer proc DynTreeCode(integer tree, integer symbol)
+    if tree == 0
+        return(gDynCLCode[symbol + 1])
+    elseif tree == 1
+        return(gDynLitCode[symbol + 1])
+    endif
+    return(gDynDistCode[symbol + 1])
+end
+
+proc SetDynTreeCode(integer tree, integer symbol, integer value)
+    if tree == 0
+        gDynCLCode[symbol + 1] = value
+    elseif tree == 1
+        gDynLitCode[symbol + 1] = value
+    else
+        gDynDistCode[symbol + 1] = value
+    endif
+end
+
+// Canonical Huffman code construction, RFC 1951 section 3.2.2.
+integer proc BuildDynTree(integer tree, integer symbolCount)
+    integer i = 0
+    integer lengthVal = 0
+    integer code = 0
+    integer remaining = 1
+    for i = 1 to 16
+        gDynCounts[i] = 0
+        gDynNextCode[i] = 0
+    endfor
+    for i = 0 to symbolCount - 1
+        lengthVal = DynTreeLength(tree, i)
+        if lengthVal < 0 or lengthVal > 15
+            return(FALSE)
+        endif
+        if lengthVal > 0
+            gDynCounts[lengthVal + 1] = gDynCounts[lengthVal + 1] + 1
+        endif
+    endfor
+    code = 0
+    for i = 1 to 15
+        code = (code + gDynCounts[i]) shl 1
+        gDynNextCode[i + 1] = code
+    endfor
+    // Reject oversubscribed trees; incomplete trees are legal in DEFLATE.
+    remaining = 1
+    for i = 1 to 15
+        remaining = remaining * 2 - gDynCounts[i + 1]
+        if remaining < 0
+            return(FALSE)
+        endif
+    endfor
+    for i = 0 to symbolCount - 1
+        lengthVal = DynTreeLength(tree, i)
+        if lengthVal > 0
+            SetDynTreeCode(tree, i, gDynNextCode[lengthVal + 1])
+            gDynNextCode[lengthVal + 1] = gDynNextCode[lengthVal + 1] + 1
+        else
+            SetDynTreeCode(tree, i, -1)
+        endif
+    endfor
+    return(TRUE)
+end
+
+integer proc NextDynBits(integer dataStart, integer packedSize, integer count)
+    integer value = DeflateBits(dataStart, packedSize, gDynBit, count)
+    if value >= 0
+        gDynBit = gDynBit + count
+    endif
+    return(value)
+end
+
+// Canonical bits are read most-significant code bit first.
+integer proc DynamicSymbol(integer dataStart, integer packedSize,
+                           integer tree, integer symbolCount)
+    integer width = 0
+    integer code = 0
+    integer bitValue = 0
+    integer symbol = 0
+    for width = 1 to 15
+        bitValue = NextDynBits(dataStart, packedSize, 1)
+        if bitValue < 0
+            return(-1)
+        endif
+        code = (code shl 1) | bitValue
+        for symbol = 0 to symbolCount - 1
+            if DynTreeLength(tree, symbol) == width and
+               DynTreeCode(tree, symbol) == code
+                return(symbol)
+            endif
+        endfor
+    endfor
+    return(-1)
+end
+
+// Convert one byte to precisely two uppercase hexadecimal digits.
+string proc HistByteHex(integer value)
+    string digits[16] = "0123456789ABCDEF"
+    return(SubStr(digits, (value / 16) + 1, 1) +
+           SubStr(digits, (value mod 16) + 1, 1))
+end
+
+integer proc HistHexNibble(string digit)
+    integer value = Asc(digit)
+    if value >= 48 and value <= 57
+        return(value - 48)
+    elseif value >= 65 and value <= 70
+        return(value - 65 + 10)
+    endif
+    return(-1)
+end
+
+// Write the cached editor line only when modified. Restore the ZIP buffer.
+integer proc HistFlush()
+    integer oldBuffer = 0
+    if not gHistDirty
+        return(TRUE)
+    endif
+    if gHistBuffer == 0 or gHistCacheLine < 0
+        return(FALSE)
+    endif
+    oldBuffer = GetBufferId()
+    GotoBufferId(gHistBuffer)
+    GotoLine(gHistCacheLine + 1)
+    BegLine()
+    KillToEol()
+    InsertText(gHistCache, _INSERT_)
+    GotoBufferId(oldBuffer)
+    gHistDirty = FALSE
+    return(TRUE)
+end
+
+// Select a 64-byte history line. Dirty previous line is flushed only on a miss.
+integer proc HistSelectLine(integer lineIndex)
+    integer oldBuffer = 0
+    if lineIndex < 0 or lineIndex >= HIST_LINES or gHistBuffer == 0
+        return(FALSE)
+    endif
+    if lineIndex == gHistCacheLine
+        return(TRUE)
+    endif
+    if not HistFlush()
+        return(FALSE)
+    endif
+    oldBuffer = GetBufferId()
+    GotoBufferId(gHistBuffer)
+    GotoLine(lineIndex + 1)
+    gHistCache = GetText(1, 128)
+    GotoBufferId(oldBuffer)
+    if Length(gHistCache) <> 128
+        gHistError = TRUE
+        return(FALSE)
+    endif
+    gHistCacheLine = lineIndex
+    return(TRUE)
+end
+
+// Initialise 512 fixed-width lines = 32768 independent byte slots.
+integer proc HistInit()
+    integer oldBuffer = GetBufferId()
+    integer i = 0
+    gHistBuffer = 0
+    gHistCacheLine = -1
+    gHistDirty = FALSE
+    gHistError = FALSE
+    gHistCache = ""
+    gHistZeroLine = ""
+    for i = 1 to HIST_LINE_BYTES
+        gHistZeroLine = gHistZeroLine + "00"
+    endfor
+    gHistBuffer = CreateTempBuffer()
+    if gHistBuffer == 0
+        GotoBufferId(oldBuffer)
+        return(FALSE)
+    endif
+    GotoBufferId(gHistBuffer)
+    for i = 1 to HIST_LINES
+        AddLine(gHistZeroLine)
+    endfor
+    GotoBufferId(oldBuffer)
+    return(TRUE)
+end
+
+// This routine is also called after a decoding error: do not leak temp buffers.
+proc HistClose()
+    integer oldBuffer = GetBufferId()
+    if gHistBuffer <> 0
+        if gHistDirty
+            HistFlush()
+        endif
+        GotoBufferId(gHistBuffer)
+        AbandonFile()
+        GotoBufferId(oldBuffer)
+    endif
+    gHistBuffer = 0
+    gHistCacheLine = -1
+    gHistDirty = FALSE
+    gHistCache = ""
+end
+
+// Read a byte from an absolute output position, respecting circular history.
+// Names DynPackedAt/Put retained to minimize decoder changes.
+integer proc DynPackedAt(integer absoluteOffset)
+    integer slot = 0
+    integer lineIndex = 0
+    integer charIndex = 0
+    integer hi = 0
+    integer lo = 0
+    if absoluteOffset < 0 or absoluteOffset >= gDynWritten or
+       gDynWritten - absoluteOffset > DYN_WINDOW
+        return(-1)
+    endif
+    slot = absoluteOffset mod DYN_WINDOW
+    lineIndex = slot / HIST_LINE_BYTES
+    charIndex = (slot mod HIST_LINE_BYTES) * 2 + 1
+    if not HistSelectLine(lineIndex)
+        return(-1)
+    endif
+    hi = HistHexNibble(SubStr(gHistCache, charIndex, 1))
+    lo = HistHexNibble(SubStr(gHistCache, charIndex + 1, 1))
+    if hi < 0 or lo < 0
+        return(-1)
+    endif
+    return(hi * 16 + lo)
+end
+
+// Write a byte to the 32 KiB circular history, using a cached line update.
+integer proc DynPackedPut(integer value)
+    integer slot = gDynWritten mod DYN_WINDOW
+    integer lineIndex = slot / HIST_LINE_BYTES
+    integer charIndex = (slot mod HIST_LINE_BYTES) * 2 + 1
+    if value < 0 or value > 255 or not HistSelectLine(lineIndex)
+        return(FALSE)
+    endif
+    if charIndex == 1
+        gHistCache = HistByteHex(value) + SubStr(gHistCache, 3, 126)
+    elseif charIndex == 127
+        gHistCache = SubStr(gHistCache, 1, 126) + HistByteHex(value)
+    else
+        gHistCache = SubStr(gHistCache, 1, charIndex - 1) +
+                     HistByteHex(value) +
+                     SubStr(gHistCache, charIndex + 2, 127 - charIndex)
+    endif
+    if Length(gHistCache) <> 128
+        gHistError = TRUE
+        return(FALSE)
+    endif
+    gHistDirty = TRUE
+    return(TRUE)
+end
+
+integer proc DynWindowByte(integer distance)
+    if distance < 1 or distance > DYN_WINDOW or distance > gDynWritten
+        return(-1)
+    endif
+    return(DynPackedAt(gDynWritten - distance))
+end
+
+integer proc EmitDynamicByte(integer value, string member,
+                             string expression, string findOptions)
+    if value < 0 or value > 255 or gDynWritten >= DYN_MAX_OUTPUT
+        return(FALSE)
+    endif
+    if not DynPackedPut(value)
+        return(FALSE)
+    endif
+    gDynWritten = gDynWritten + 1
+    SearchEmitByte(value)
+    return(TRUE)
+end
+
+// Parse one dynamic block at the CURRENT gDynBit position.  The caller owns
+// the stream-wide output buffer, 32 KiB history and BFINAL loop.
+integer proc DecodeDynamicBlock(integer dataStart, integer packedSize,
+                                string member, string expression,
+                                string findOptions)
+    integer hlit = 0
+    integer hdist = 0
+    integer hclen = 0
+    integer codeOrder[19]
+    integer i = 0
+    integer n = 0
+    integer symbol = 0
+    integer value = 0
+    integer previous = 0
+    integer repeatCount = 0
+    integer repeatValue = 0
+    integer total = 0
+    integer len = 0
+    integer distSymbol = 0
+    integer distance = 0
+    integer k = 0
+    integer done = FALSE
+    hlit = NextDynBits(dataStart, packedSize, 5) + 257
+    hdist = NextDynBits(dataStart, packedSize, 5) + 1
+    hclen = NextDynBits(dataStart, packedSize, 4) + 4
+    if hlit < 257 or hlit > 286 or hdist < 1 or hdist > 32 or
+       hclen < 4 or hclen > 19
+        ReportWarn("DEFLATE: Invalid dynamic HLIT/HDIST/HCLEN.")
+        return(-1)
+    endif
+    ReportInfo(Format("DEFLATE dynamic ", member, " HLIT=", hlit,
+                      " HDIST=", hdist, " HCLEN=", hclen))
+    for i = 1 to 19
+        gDynCLLen[i] = 0
+    endfor
+    for i = 1 to 288
+        gDynLitLen[i] = 0
+    endfor
+    for i = 1 to 32
+        gDynDistLen[i] = 0
+    endfor
+    codeOrder[1] = 16
+    codeOrder[2] = 17
+    codeOrder[3] = 18
+    codeOrder[4] = 0
+    codeOrder[5] = 8
+    codeOrder[6] = 7
+    codeOrder[7] = 9
+    codeOrder[8] = 6
+    codeOrder[9] = 10
+    codeOrder[10] = 5
+    codeOrder[11] = 11
+    codeOrder[12] = 4
+    codeOrder[13] = 12
+    codeOrder[14] = 3
+    codeOrder[15] = 13
+    codeOrder[16] = 2
+    codeOrder[17] = 14
+    codeOrder[18] = 1
+    codeOrder[19] = 15
+    for i = 1 to hclen
+        value = NextDynBits(dataStart, packedSize, 3)
+        if value < 0
+            return(-1)
+        endif
+        gDynCLLen[codeOrder[i] + 1] = value
+    endfor
+    if not BuildDynTree(0, 19)
+        ReportWarn("DEFLATE: Invalid code-length Huffman tree.")
+        return(-1)
+    endif
+    total = hlit + hdist
+    i = 0
+    previous = 0
+    while i < total
+        symbol = DynamicSymbol(dataStart, packedSize, 0, 19)
+        if symbol < 0
+            ReportWarn("DEFLATE: Failed decoding dynamic code lengths.")
+            return(-1)
+        endif
+        if symbol <= 15
+            repeatValue = symbol
+            repeatCount = 1
+        elseif symbol == 16
+            if i == 0
+                return(-1)
+            endif
+            repeatCount = NextDynBits(dataStart, packedSize, 2) + 3
+            repeatValue = previous
+        elseif symbol == 17
+            repeatCount = NextDynBits(dataStart, packedSize, 3) + 3
+            repeatValue = 0
+        elseif symbol == 18
+            repeatCount = NextDynBits(dataStart, packedSize, 7) + 11
+            repeatValue = 0
+        else
+            return(-1)
+        endif
+        if repeatCount < 1 or i + repeatCount > total
+            ReportWarn("DEFLATE: Invalid code-length repeat.")
+            return(-1)
+        endif
+        for n = 1 to repeatCount
+            if i < hlit
+                gDynLitLen[i + 1] = repeatValue
+            else
+                gDynDistLen[i - hlit + 1] = repeatValue
+            endif
+            i = i + 1
+        endfor
+        previous = repeatValue
+    endwhile
+    if gDynLitLen[257] == 0
+        ReportWarn("DEFLATE: Missing end-of-block symbol 256.")
+        return(-1)
+    endif
+    if not BuildDynTree(1, hlit) or not BuildDynTree(2, hdist)
+        ReportWarn("DEFLATE: Invalid literal or distance Huffman tree.")
+        return(-1)
+    endif
+    while not done
+        symbol = DynamicSymbol(dataStart, packedSize, 1, hlit)
+        if symbol < 0
+            ReportWarn("DEFLATE: Invalid dynamic literal/length code.")
+            return(-1)
+        endif
+        if symbol < 256
+            if not EmitDynamicByte(symbol, member, expression, findOptions)
+                return(-1)
+            endif
+        elseif symbol == 256
+            done = TRUE
+        else
+            // Decode length extra bits using the dynamic bit cursor.
+            if symbol == 285
+                len = 258
+            elseif symbol >= 257 and symbol <= 264
+                len = symbol - 254
+            elseif symbol >= 265 and symbol <= 284
+                k = (symbol - 265) / 4
+                n = k + 1
+                value = NextDynBits(dataStart, packedSize, n)
+                if value < 0
+                    return(-1)
+                endif
+                len = (1 shl (k + 3)) + 3 +
+                      ((symbol - 265) mod 4) * (1 shl n) + value
+            else
+                return(-1)
+            endif
+            distSymbol = DynamicSymbol(dataStart, packedSize, 2, hdist)
+            if distSymbol < 0 or distSymbol > 29
+                return(-1)
+            endif
+            if distSymbol <= 3
+                distance = distSymbol + 1
+            else
+                k = (distSymbol - 4) / 2
+                n = k + 1
+                value = NextDynBits(dataStart, packedSize, n)
+                if value < 0
+                    return(-1)
+                endif
+                distance = (1 shl (k + 2)) + 1 +
+                           ((distSymbol - 4) mod 2) * (1 shl n) + value
+            endif
+            if distance > gDynMaxDistance
+                gDynMaxDistance = distance
+            endif
+            gDynReferences = gDynReferences + 1
+            if distance > DYN_WINDOW
+                ReportWarn(Format("DEFLATE: Back-reference distance ",
+                    distance, " exceeds ", DYN_WINDOW,
+                    "-byte diagnostic history window."))
+                return(-1)
+            endif
+            for n = 1 to len
+                value = DynWindowByte(distance)
+                if value < 0 or
+                   not EmitDynamicByte(value, member, expression, findOptions)
+                    ReportWarn("DEFLATE: Invalid LZ77 back-reference.")
+                    return(-1)
+                endif
+            endfor
+        endif
+    endwhile
+    return(TRUE)
+end
+
+// Decode one fixed-Huffman block at the current stream position.  Fixed codes
+// use their established cursor, synchronized with the stream cursor here.
+integer proc DecodeFixedBlock(integer dataStart, integer packedSize,
+                              string member, string expression,
+                              string findOptions)
+    integer symbol = 0
+    integer distanceSymbol = 0
+    integer len = 0
+    integer distance = 0
+    integer value = 0
+    integer n = 0
+    integer done = FALSE
+    gFixedBit = gDynBit
+    while not done
+        symbol = FixedSymbol(dataStart, packedSize, FALSE)
+        if symbol < 0
+            ReportWarn("DEFLATE: Invalid fixed literal/length symbol.")
+            return(FALSE)
+        endif
+        if symbol < 256
+            if not EmitDynamicByte(symbol, member, expression, findOptions)
+                return(FALSE)
+            endif
+        elseif symbol == 256
+            done = TRUE
+        else
+            len = FixedLength(symbol, dataStart, packedSize)
+            distanceSymbol = FixedSymbol(dataStart, packedSize, TRUE)
+            distance = FixedDistance(distanceSymbol, dataStart, packedSize)
+            if len < 3 or distance < 1 or distance > DYN_WINDOW or
+               distance > gDynWritten
+                ReportWarn("DEFLATE: Invalid fixed length/distance reference.")
+                return(FALSE)
+            endif
+            if distance > gDynMaxDistance
+                gDynMaxDistance = distance
+            endif
+            gDynReferences = gDynReferences + 1
+            for n = 1 to len
+                value = DynWindowByte(distance)
+                if value < 0 or
+                   not EmitDynamicByte(value, member, expression, findOptions)
+                    ReportWarn("DEFLATE: Invalid fixed LZ77 back-reference.")
+                    return(FALSE)
+                endif
+            endfor
+        endif
+    endwhile
+    gDynBit = gFixedBit
+    return(TRUE)
+end
+
+// Decode one byte-aligned stored block.  gDynBit points immediately after its
+// three-bit header when this routine is entered.
+integer proc DecodeStoredBlock(integer dataStart, integer packedSize,
+                               string member, string expression,
+                               string findOptions)
+    integer len = 0
+    integer inverse = 0
+    integer value = 0
+    integer n = 0
+    gDynBit = ((gDynBit + 7) / 8) * 8
+    len = NextDynBits(dataStart, packedSize, 16)
+    inverse = NextDynBits(dataStart, packedSize, 16)
+    if len < 0 or inverse < 0 or (len ^ inverse) <> 65535
+        ReportWarn("DEFLATE: Invalid or truncated stored-block LEN/NLEN.")
+        return(FALSE)
+    endif
+    for n = 1 to len
+        value = NextDynBits(dataStart, packedSize, 8)
+        if value < 0 or
+           not EmitDynamicByte(value, member, expression, findOptions)
+            ReportWarn("DEFLATE: Truncated stored-block payload.")
+            return(FALSE)
+        endif
+    endfor
+    return(TRUE)
+end
+
+// Stream-wide DEFLATE decoder.  History and output persist across every block.
+// Blocks may freely mix stored, fixed-Huffman and dynamic-Huffman encodings.
+integer proc DecodeDeflateWithBuffer(integer dataStart, integer packedSize,
+                                     integer expectedSize, string member,
+                                     string expression, string findOptions)
+    integer result = -1
+    integer finalBlock = FALSE
+    integer blockType = 0
+    integer blockNumber = 0
+    integer blockStartBit = 0
+    integer ok = TRUE
+
+    if expectedSize < 0 or expectedSize > DYN_MAX_OUTPUT
+        ReportWarn("DEFLATE: Member exceeds output limit.")
+        return(-1)
+    endif
+    if not HistInit()
+        ReportWarn("DEFLATE: Unable to allocate 32 KiB history editor buffer.")
+        return(-1)
+    endif
+    if not SearchBegin()
+        HistClose()
+        ReportWarn("DEFLATE: Could not allocate member search buffer.")
+        return(-1)
+    endif
+
+    gDynBit = 0
+    gDynWritten = 0
+    gDynMatches = 0
+    gDynMaxDistance = 0
+    gDynReferences = 0
+    gDynLine = 1
+    gDynColumn = 1
+    gDynPreviousCR = FALSE
+
+    while ok and not finalBlock
+        blockNumber = blockNumber + 1
+        blockStartBit = gDynBit
+        finalBlock = NextDynBits(dataStart, packedSize, 1)
+        blockType = NextDynBits(dataStart, packedSize, 2)
+        if finalBlock < 0 or blockType < 0
+            ReportWarn("DEFLATE: Truncated block header.")
+            ok = FALSE
+        else
+            ReportInfo(Format("DEFLATE block #", blockNumber,
+                       " start-bit=", blockStartBit,
+                       " BFINAL=", finalBlock, " BTYPE=", blockType))
+            if blockType == 0
+                ok = DecodeStoredBlock(dataStart, packedSize, member,
+                                       expression, findOptions)
+            elseif blockType == 1
+                ok = DecodeFixedBlock(dataStart, packedSize, member,
+                                      expression, findOptions)
+            elseif blockType == 2
+                ok = DecodeDynamicBlock(dataStart, packedSize, member,
+                                        expression, findOptions)
+            else
+                ReportWarn("DEFLATE: Reserved BTYPE=3 encountered.")
+                ok = FALSE
+            endif
+        endif
+    endwhile
+
+    if ok and gDynWritten <> expectedSize
+        ReportWarn(Format("DEFLATE: Output size mismatch: decoded=",
+                          gDynWritten, " expected=", expectedSize))
+        ok = FALSE
+    endif
+    if ok and gHistError
+        ReportWarn("DEFLATE: History editor buffer read/write failed.")
+        ok = FALSE
+    endif
+    if ok
+        ReportInfo(Format("DEFLATE: blocks=", blockNumber,
+                          ", decoded bytes=", gDynWritten,
+                          ", back-references=", gDynReferences,
+                          ", maximum distance=", gDynMaxDistance,
+                          ", history window=", DYN_WINDOW))
+        gDynMatches = SearchFinish(member, expression, findOptions)
+        ReportInfo(Format("DEFLATE: Stream decoded successfully; matches=",
+                          gDynMatches))
+        result = gDynMatches
+    else
+        SearchDiscard()
+    endif
+    HistClose()
+    return(result)
+end
+
+// Inspect the first header for diagnostics, then decode the complete stream.
+integer proc InspectDeflate(integer dataStart, integer packedSize,
+                            integer unpackedSize, string member,
+                            string expression, string findOptions)
+    integer finalBlock = 0
+    integer blockType = 0
+    integer firstByte = 0
+
+    if packedSize < 1
+        WarnLogged(Format("GREPZIPTSE: Empty DEFLATE stream: ", member))
+        return(-1)
+    endif
+    firstByte = ByteAt(dataStart)
+    finalBlock = DeflateBits(dataStart, packedSize, 0, 1)
+    blockType = DeflateBits(dataStart, packedSize, 1, 2)
+    if firstByte < 0 or finalBlock < 0 or blockType < 0
+        WarnLogged(Format("GREPZIPTSE: Truncated DEFLATE header: ", member))
+        return(-1)
+    endif
+    WarnLogged(Format("DEFLATE ", member, ": first byte=", firstByte,
+                ", BFINAL=", finalBlock, ", BTYPE=", blockType))
+
+    if blockType == 3
+        WarnLogged("DEFLATE: Invalid reserved BTYPE=3 (malformed stream).")
+        return(-1)
+    endif
+    return(DecodeDeflateWithBuffer(dataStart, packedSize, unpackedSize,
+                                   member, expression, findOptions))
+end
+
+// Keep the previous version's known-working buffer-search regression test.
+proc SearchCurrentBuffer()
+    string expression[255] = ""
+    string options[16] = "ix"
+    integer matches = 0
+    integer expressionHistory = GetFreeHistory("GREPZIPTSE:bufferexpression")
+    integer optionsHistory = GetFreeHistory("GREPZIPTSE:bufferoptions")
+    if not Ask("GREPZIPTSE: Search expression:", expression,
+               expressionHistory)
+        return()
+    endif
+    if Length(expression) == 0
+        return()
+    endif
+    if not Ask("Search options (blank, i, x, or ix):", options,
+               optionsHistory)
+        return()
+    endif
+    options = Lower(options)
+    if options <> "" and options <> "i" and options <> "x" and
+       options <> "ix" and options <> "xi"
+        WarnLogged("GREPZIPTSE: Options must be blank, i, x, or ix.")
+        return()
+    endif
+    if options == "xi"
+        options = "ix"
+    endif
+    ReportInfo(Format("Current-buffer search expression=", expression,
+                      "; options=", options))
+    PushPosition()
+    BegFile()
+    while lFind(expression, options)
+        matches = matches + 1
+        if not Right()
+            break
+        endif
+    endwhile
+    PopPosition()
+    WarnLogged(Format("GREPZIPTSE: ", matches, " matches in current buffer."))
+end
+
+integer proc ProbeZipCurrent(string displayZipPath, string expression,
+                             string options, integer depth)
+    integer sourceBuffer = GetBufferId()
+    integer offset = 0
+    integer flags = 0
+    integer method = 0
+    integer packedSize = 0
+    integer unpackedSize = 0
+    integer nameLength = 0
+    integer extraLength = 0
+    integer dataStart = 0
+    integer nextOffset = 0
+    integer entries = 0
+    integer stopped = FALSE
+    integer bad = FALSE
+    integer totalMatches = 0
+    integer searched = 0
+    integer ignored = 0
+    integer decodedMatches = -1
+    integer decodedMembers = 0
+    integer capturedBuffer = 0
+    integer oldHexMode = gByteSourceHex
+    string member[255] = ""
+    string displayMember[255] = ""
+    string detail[255] = ""
+    string conclusion[255] = ""
+
+    ReportInfo(Format("ZIP search expression=", expression,
+                      "; options=", options))
+
+    LogLine("INFO", Format("ZIP header probe: currentBuffer=", GetBufferId(),
+                           "; lines=", NumLines()))
+    if not LocalHeaderAt(0)
+        detail = Format("First bytes: ", ByteAt(0), ", ", ByteAt(1),
+                        ", ", ByteAt(2), ", ", ByteAt(3),
+                        "; buffer lines=", NumLines())
+        WarnLogged(Format("GREPZIPTSE: Not a local ZIP header. ", detail))
+        return(0)
+    endif
+
+    while not stopped and entries < ZIP_MAX_ENTRIES
+        if not LocalHeaderAt(offset)
+            break
+        endif
+        flags = WordAt(offset + 6)
+        method = WordAt(offset + 8)
+        packedSize = DwordAt(offset + 18)
+        unpackedSize = DwordAt(offset + 22)
+        nameLength = WordAt(offset + 26)
+        extraLength = WordAt(offset + 28)
+
+        if flags < 0 or method < 0 or packedSize < 0 or
+           unpackedSize < 0 or nameLength < 0 or extraLength < 0
+            conclusion = "Invalid/truncated header or ZIP64 size."
+            bad = TRUE
+            break
+        endif
+        if nameLength > 220
+            conclusion = "Member name exceeds experimental 220-char limit."
+            bad = TRUE
+            break
+        endif
+
+        member = NameAt(offset + 30, nameLength)
+        displayMember = Format(displayZipPath, "::", member)
+        dataStart = offset + 30 + nameLength + extraLength
+        entries = entries + 1
+        detail = Format("#", entries, " ", member,
+                        " method=", method, " packed=", packedSize,
+                        " unpacked=", unpackedSize)
+        WarnLogged(detail)
+
+        // General-purpose bit 3 means local sizes may be placeholders.
+        // Need central-directory parsing before safely skipping payload.
+        if (flags / 8) mod 2 == 1
+            conclusion = "Bit 3 data-descriptor entry: central dir needed."
+            stopped = TRUE
+            break
+        endif
+
+        if (flags / 1) mod 2 == 1
+            WarnLogged(Format("GREPZIPTSE: Encrypted member skipped: ", member))
+            ignored = ignored + 1
+        elseif NestedZipName(member) and depth < 16 and
+               (method == 0 or method == 8)
+            if not CaptureBegin()
+                WarnLogged(Format("GREPZIPTSE: Cannot capture nested ZIP: ",
+                                  displayMember))
+                ignored = ignored + 1
+            else
+                if method == 0 and packedSize == unpackedSize
+                    decodedMatches = SearchStored(dataStart, packedSize,
+                                      displayMember, expression, options)
+                elseif method == 8
+                    decodedMatches = InspectDeflate(dataStart, packedSize,
+                                      unpackedSize, displayMember,
+                                      expression, options)
+                else
+                    decodedMatches = -1
+                endif
+                capturedBuffer = CaptureFinish()
+                if capturedBuffer and decodedMatches >= 0
+                    GotoBufferId(capturedBuffer)
+                    gByteSourceHex = TRUE
+                    totalMatches = totalMatches + ProbeZipCurrent(
+                        displayMember, expression, options, depth + 1)
+                    GotoBufferId(capturedBuffer)
+                    AbandonFile(capturedBuffer)
+                    GotoBufferId(sourceBuffer)
+                    gByteSourceHex = oldHexMode
+                else
+                    if capturedBuffer
+                        GotoBufferId(capturedBuffer)
+                        AbandonFile(capturedBuffer)
+                        GotoBufferId(sourceBuffer)
+                    endif
+                    ignored = ignored + 1
+                endif
+            endif
+        elseif NestedZipName(member) and depth >= 16
+            WarnLogged(Format("GREPZIPTSE: Nested ZIP limit reached: ",
+                              displayMember))
+            ignored = ignored + 1
+        elseif method == 0
+            if packedSize == unpackedSize
+                totalMatches = totalMatches + SearchStored(dataStart,
+                    packedSize, displayMember, expression, options)
+                searched = searched + 1
+            else
+                WarnLogged(Format("GREPZIPTSE: Stored size mismatch: ", member))
+                ignored = ignored + 1
+            endif
+        elseif method == 8
+            decodedMatches = InspectDeflate(dataStart, packedSize,
+                              unpackedSize, displayMember, expression, options)
+            if decodedMatches >= 0
+                decodedMembers = decodedMembers + 1
+                totalMatches = totalMatches + decodedMatches
+            else
+                ignored = ignored + 1
+            endif
+        else
+            ignored = ignored + 1
+        endif
+
+        nextOffset = dataStart + packedSize
+        if nextOffset <= offset
+            conclusion = "Invalid next entry offset."
+            bad = TRUE
+            break
+        endif
+        offset = nextOffset
+    endwhile
+
+    GotoBufferId(sourceBuffer)
+    gByteSourceHex = oldHexMode
+    WarnLogged(Format("GREPZIPTSE: searched ", searched, " stored member(s), ",
+                decodedMembers, " DEFLATE member(s); ",
+                totalMatches, " match(es); ", ignored,
+                " skipped/unsupported member(s)."))
+    if bad or stopped
+        WarnLogged(Format("GREPZIPTSE: ", entries, " entries. ", conclusion))
+    else
+        WarnLogged(Format("GREPZIPTSE: ", entries, " local ZIP entries inspected."))
+    endif
+    return(totalMatches)
+end
+
+integer proc ProbeZip(string zipPath, string displayZipPath,
+                      string expression, string options, integer depth)
+    integer oldBuffer = GetBufferId()
+    integer zipBuffer = 0
+    integer oldHexMode = gByteSourceHex
+    integer totalMatches = 0
+
+    LogLine("INFO", Format("ZIP open request: ", zipPath))
+    LogLine("INFO", Format("ZIP open pre: fileExists=", FileExists(zipPath),
+                           "; oldBuffer=", oldBuffer,
+                           "; oldLines=", NumLines()))
+    if not EditFile(Format('-h -b64 "', zipPath, '"'))
+        LogLine("ERROR", Format("ZIP EditFile failed: path=", zipPath,
+                                "; currentBuffer=", GetBufferId(),
+                                "; lines=", NumLines()))
+        WarnLogged("GREPZIPTSE: Unable to open ZIP file.")
+        return(0)
+    endif
+    zipBuffer = GetBufferId()
+    gByteSourceHex = FALSE
+    LogLine("INFO", Format("ZIP open post: currentBuffer=", zipBuffer,
+                           "; oldBuffer=", oldBuffer,
+                           "; lines=", NumLines()))
+    totalMatches = ProbeZipCurrent(displayZipPath, expression, options, depth)
+    GotoBufferId(zipBuffer)
+    AbandonFile(zipBuffer)
+    GotoBufferId(oldBuffer)
+    gByteSourceHex = oldHexMode
+    return(totalMatches)
+end
+
+// Resolve a bare/relative ZIP path beside the running compiled .mac.
+// Absolute drive paths and UNC paths are passed through unchanged.
+// If no macro-relative file exists, allow the original path to resolve
+// against TSE's working directory (existing behavior).
+string proc ResolveZipPath(string requested)
+    string macroDir[255] = ""
+    string candidate[255] = ""
+    string uncPrefix[2] = ""
+    if Length(requested) == 0
+        return(requested)
+    endif
+    uncPrefix = Format(Chr(92), Chr(92))
+    if AbsolutePath(requested)
+        return(requested)
+    endif
+    macroDir = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
+    if Length(macroDir) > 0 and
+       Length(macroDir) + Length(requested) < 255
+        candidate = LogDirWithSlash(macroDir) + requested
+        if FileExists(candidate)
+            return(candidate)
+        endif
+    endif
+    return(requested)
+end
+
+// Version 28 orchestration -------------------------------------------------
+// The decoder above remains the version-27 decoder.  The routines below add
+// recursive ordinary-file searching, recursive ZIP discovery and a
+// semicolon-separated list of directory/file specifications.  Enumeration
+// uses Windows DIR or Linux find; no DLL, PowerShell helper or ZIP utility is
+// required for native ZIP/JAR processing.
+
+string proc TrimInput(string value)
+    string result[255] = value
+    while Length(result) > 0 and
+          (SubStr(result, 1, 1) == " " or SubStr(result, 1, 1) == Chr(9))
+        result = SubStr(result, 2, 254)
+    endwhile
+    while Length(result) > 0 and
+          (SubStr(result, Length(result), 1) == " " or
+           SubStr(result, Length(result), 1) == Chr(9))
+        result = SubStr(result, 1, Length(result) - 1)
+    endwhile
+    return(result)
+end
+
+integer proc IsZipName(string fileName)
+    string lowerName[255] = Lower(fileName)
+    if Length(lowerName) < 4
+        return(FALSE)
+    endif
+    return(SubStr(lowerName, Length(lowerName) - 3, 4) == ".zip" or
+           SubStr(lowerName, Length(lowerName) - 3, 4) == ".jar")
+end
+
+integer proc IsExternalArchiveName(string fileName)
+    string lowerName[255] = Lower(fileName)
+    if Length(lowerName) < 4
+        return(FALSE)
+    endif
+    return(SubStr(lowerName, Length(lowerName) - 3, 4) == ".rar" or
+           SubStr(lowerName, Length(lowerName) - 2, 3) == ".7z" or
+           SubStr(lowerName, Length(lowerName) - 3, 4) == ".tar" or
+           SubStr(lowerName, Length(lowerName) - 3, 4) == ".tgz" or
+           (Length(lowerName) >= 7 and
+            SubStr(lowerName, Length(lowerName) - 6, 7) == ".tar.gz"))
+end
+
+integer proc IsSupportedArchiveName(string fileName)
+    return(IsZipName(fileName) or IsExternalArchiveName(fileName))
+end
+
+integer proc SearchOrdinaryFile(string fileName, string expression,
+                                string options)
+    integer sourceBuffer = 0
+    integer found = FALSE
+    integer matches = 0
+    integer lineNo = 0
+    integer columnNo = 0
+    string lineText[255] = ""
+
+    sourceBuffer = EditBuffer(fileName, _SYSTEM_)
+    if sourceBuffer == 0
+        LogLine("WARN", Format("Unable to open ordinary file: ", fileName))
+        return(0)
+    endif
+    BegFile()
+    found = lFind(expression, options)
+    while found
+        matches = matches + 1
+        lineNo = CurrLine()
+        columnNo = CurrCol()
+        lineText = GetText(1, CurrLineLen())
+        LogLine("INFO", Format(fileName, "(", lineNo, ",", columnNo,
+                                "): ", lineText))
+        AddSearchResult("F", fileName, fileName, lineNo, columnNo,
+                        lineText, FALSE)
+        found = lRepeatFind()
+    endwhile
+    AbandonFile(sourceBuffer)
+    return(matches)
+end
+
+integer proc SearchExternalFile(string fileName, string displayName,
+                                string expression, string options)
+    integer sourceBuffer = 0
+    integer found = FALSE
+    integer matches = 0
+    integer lineNo = 0
+    integer columnNo = 0
+    string lineText[255] = ""
+
+    sourceBuffer = EditBuffer(fileName, _SYSTEM_)
+    if sourceBuffer == 0
+        LogLine("WARN", Format("Unable to open extracted file: ", fileName))
+        return(0)
+    endif
+    BegFile()
+    found = lFind(expression, options)
+    while found
+        matches = matches + 1
+        lineNo = CurrLine()
+        columnNo = CurrCol()
+        lineText = GetText(1, CurrLineLen())
+        LogLine("INFO", Format(displayName, "(", lineNo, ",", columnNo,
+                                "): ", lineText))
+        AddSearchResult("F", fileName, displayName, lineNo, columnNo,
+                        lineText, TRUE)
+        found = lRepeatFind()
+    endwhile
+    AbandonFile(sourceBuffer)
+    return(matches)
+end
+
+// Central external-command entry point.  The undocumented START_HIDDEN
+// flag eliminates console flicker on Windows.  Keep Linux's established
+// execution flags unchanged during native-Ubuntu regression testing.
+integer proc RunCommand(string command)
+    if gWindowsPlatform
+        return(Dos(command, _DONT_PROMPT_ | _START_HIDDEN_))
+    endif
+    return(Dos(command, _DONT_PROMPT_))
+end
+
+proc AppendSpecification(string specification, string manifestPath)
+    string command[255] = ""
+    string clean[255] = TrimInput(specification)
+    string baseDir[255] = ""
+    string pattern[255] = ""
+    if Length(clean) == 0
+        return()
+    endif
+    if gWindowsPlatform
+        // /s recurses; /b emits one full path per line; /a-d excludes dirs.
+        command = Format('cmd.exe /d /c dir /s /b /a-d "', clean,
+                         '" >> "', manifestPath, '" 2>nul')
+    else
+        // A literal file or directory is accepted directly. For a wildcard
+        // specification, find recurses below its directory and applies the
+        // final path component as -name.
+        if Pos("*", clean) or Pos("?", clean)
+            baseDir = SplitPath(clean, _DRIVE_ | _PATH_)
+            pattern = SplitPath(clean, _NAME_ | _EXT_)
+            if Length(baseDir) == 0
+                baseDir = "."
+            endif
+            command = Format("/bin/sh -c 'find ", Chr(34), baseDir,
+                             Chr(34), " -type f -name ", Chr(34), pattern,
+                             Chr(34), " -print >> ", Chr(34), manifestPath,
+                             Chr(34), " 2>/dev/null'")
+        else
+            command = Format("/bin/sh -c 'find ", Chr(34), clean,
+                             Chr(34), " -type f -print >> ", Chr(34),
+                             manifestPath, Chr(34), " 2>/dev/null'")
+        endif
+    endif
+    RunCommand(command)
+end
+
+integer proc BuildManifest(string specifications, string manifestPath)
+    string remaining[255] = specifications
+    string oneSpec[255] = ""
+    string command[255] = ""
+    integer separator = 0
+
+    if gWindowsPlatform
+        command = Format('cmd.exe /d /c del /q "', manifestPath,
+                         '" 2>nul')
+    else
+        command = Format("/bin/sh -c 'rm -f ", Chr(34), manifestPath,
+                         Chr(34), " 2>/dev/null'")
+    endif
+    RunCommand(command)
+    while Length(remaining) > 0
+        separator = Pos(";", remaining)
+        if separator > 0
+            oneSpec = SubStr(remaining, 1, separator - 1)
+            remaining = SubStr(remaining, separator + 1, 255)
+        else
+            oneSpec = remaining
+            remaining = ""
+        endif
+        AppendSpecification(oneSpec, manifestPath)
+    endwhile
+    return(FileExists(manifestPath))
+end
+
+proc PrepareExternalArchiveWork()
+    string command[255] = ""
+    gArchiveWorkRoot = PathJoin(TempDirectory(), "grepziptse_external")
+    if gWindowsPlatform
+        command = Format('cmd.exe /d /c if exist "', gArchiveWorkRoot,
+                         '" rmdir /s /q "', gArchiveWorkRoot, '"')
+        RunCommand(command)
+        command = Format('cmd.exe /d /c mkdir "', gArchiveWorkRoot,
+                         '" 2>nul')
+    else
+        command = Format("/bin/sh -c 'rm -rf ", Chr(34), gArchiveWorkRoot,
+                         Chr(34), "; mkdir -p ", Chr(34), gArchiveWorkRoot,
+                         Chr(34), " 2>/dev/null'")
+    endif
+    RunCommand(command)
+    gExternalArchiveNumber = 0
+    gSearchFileNumber = 0
+end
+
+integer proc SearchExternalArchive(string archivePath, string displayName,
+                                   string expression, string options,
+                                   integer depth)
+    string extractor[255] = ""
+    string extractRoot[255] = ""
+    string manifestPath[255] = ""
+    string command[255] = ""
+    string fileName[255] = ""
+    string relativeName[255] = ""
+    string childDisplay[255] = ""
+    integer useRar = FALSE
+    integer useTar = FALSE
+    integer useGzipTar = FALSE
+    integer manifestBuffer = 0
+    integer manifestLine = 1
+    integer manifestLines = 0
+    integer oldBuffer = GetBufferId()
+    integer totalMatches = 0
+
+    if depth > 16
+        LogLine("WARN", Format("Archive nesting limit reached: ", displayName))
+        return(0)
+    endif
+    // TAR/TGZ use the OS tar utility, not 7-Zip's first-stage gzip
+    // extraction (which otherwise leaves a .tar instead of the members).
+    if SubStr(Lower(archivePath), Length(archivePath) - 3, 4) == ".tar"
+        useTar = TRUE
+    elseif SubStr(Lower(archivePath), Length(archivePath) - 3, 4) == ".tgz" or
+           (Length(archivePath) >= 7 and
+            SubStr(Lower(archivePath), Length(archivePath) - 6, 7) == ".tar.gz")
+        useTar = TRUE
+        useGzipTar = TRUE
+    endif
+    if useTar
+        extractor = "tar"
+    elseif SubStr(Lower(archivePath), Length(archivePath) - 3, 4) == ".rar" and
+       Length(gRarExecutable) and FileExists(gRarExecutable)
+        extractor = gRarExecutable
+        useRar = TRUE
+    elseif Length(gSevenZipExecutable) and FileExists(gSevenZipExecutable)
+        extractor = gSevenZipExecutable
+    else
+        LogLine("WARN", Format("No configured archive executable is available for ",
+                               displayName))
+        return(0)
+    endif
+
+    gExternalArchiveNumber = gExternalArchiveNumber + 1
+    extractRoot = PathJoin(gArchiveWorkRoot,
+                           Format("archive_", gExternalArchiveNumber))
+    manifestPath = PathJoin(gArchiveWorkRoot,
+                            Format("manifest_", gExternalArchiveNumber,
+                                   ".txt"))
+    if gWindowsPlatform
+        command = Format('cmd.exe /d /c mkdir "', extractRoot, '" 2>nul')
+    else
+        command = Format("/bin/sh -c 'mkdir -p ", Chr(34), extractRoot,
+                         Chr(34), " 2>/dev/null'")
+    endif
+    RunCommand(command)
+    if gWindowsPlatform
+        if useTar
+            if useGzipTar
+                command = Format('cmd.exe /d /c tar -xzf "', archivePath,
+                                 '" -C "', extractRoot, '" >nul 2>&1')
+            else
+                command = Format('cmd.exe /d /c tar -xf "', archivePath,
+                                 '" -C "', extractRoot, '" >nul 2>&1')
+            endif
+        elseif useRar
+            command = Format('cmd.exe /d /c ""', extractor,
+                             '" x -o+ -inul "', archivePath, '" "',
+                             extractRoot, '\\" >nul 2>&1"')
+        else
+            command = Format('cmd.exe /d /c ""', extractor,
+                             '" x -y -o"', extractRoot, '" -- "', archivePath,
+                             '" >nul 2>&1"')
+        endif
+    else
+        if useTar
+            if useGzipTar
+                command = Format("/bin/sh -c 'tar -xzf ", Chr(34), archivePath,
+                                 Chr(34), " -C ", Chr(34), extractRoot,
+                                 Chr(34), " >/dev/null 2>&1'")
+            else
+                command = Format("/bin/sh -c 'tar -xf ", Chr(34), archivePath,
+                                 Chr(34), " -C ", Chr(34), extractRoot,
+                                 Chr(34), " >/dev/null 2>&1'")
+            endif
+        elseif useRar
+            command = Format("/bin/sh -c '", Chr(34), extractor,
+                             Chr(34), " x -o+ -inul ", Chr(34), archivePath,
+                             Chr(34), " ", Chr(34), extractRoot, "/",
+                             Chr(34), " >/dev/null 2>&1'")
+        else
+            command = Format("/bin/sh -c '", Chr(34), extractor,
+                             Chr(34), " x -y -o", Chr(34), extractRoot,
+                             Chr(34), " -- ", Chr(34), archivePath,
+                             Chr(34), " >/dev/null 2>&1'")
+        endif
+    endif
+    LogLine("INFO", Format("Extracting archive: ", displayName))
+    RunCommand(command)
+
+    if not BuildManifest(PathJoin(extractRoot, "*"), manifestPath)
+        LogLine("WARN", Format("Archive produced no searchable members: ",
+                               displayName))
+        GotoBufferId(oldBuffer)
+        return(0)
+    endif
+    manifestBuffer = EditBuffer(manifestPath, _SYSTEM_)
+    if manifestBuffer == 0
+        LogLine("WARN", Format("Could not open archive member manifest: ",
+                               displayName))
+        GotoBufferId(oldBuffer)
+        return(0)
+    endif
+    manifestLines = NumLines()
+    while manifestLine <= manifestLines
+        GotoBufferId(manifestBuffer)
+        GotoLine(manifestLine)
+        fileName = TrimInput(GetText(1, CurrLineLen()))
+        if Length(fileName) > Length(extractRoot) + 1
+            relativeName = SubStr(fileName, Length(extractRoot) + 2, 255)
+        else
+            relativeName = SplitPath(fileName, _NAME_ | _EXT_)
+        endif
+        childDisplay = Format(displayName, "::", relativeName)
+        if IsZipName(fileName)
+            totalMatches = totalMatches +
+                ProbeZip(fileName, childDisplay, expression, options,
+                         depth + 1)
+        elseif IsExternalArchiveName(fileName)
+            totalMatches = totalMatches + SearchExternalArchive(
+                fileName, childDisplay, expression, options, depth + 1)
+        else
+            totalMatches = totalMatches + SearchExternalFile(
+                fileName, childDisplay, expression, options)
+        endif
+        manifestLine = manifestLine + 1
+    endwhile
+    GotoBufferId(manifestBuffer)
+    AbandonFile(manifestBuffer)
+    GotoBufferId(oldBuffer)
+    return(totalMatches)
+end
+
+integer proc BeginResults(string specifications, string expression,
+                          string options, string searchArchives)
+    gResultBuffer = CreateTempBuffer()
+    gResultMapBuffer = CreateTempBuffer()
+    gZipResultBuffer = CreateTempBuffer()
+    gZipResultMapBuffer = CreateTempBuffer()
+    if gResultBuffer == 0 or gResultMapBuffer == 0 or
+       gZipResultBuffer == 0 or gZipResultMapBuffer == 0
+        return(FALSE)
+    endif
+    GotoBufferId(gResultBuffer)
+    EmptyBuffer()
+    GotoBufferId(gResultMapBuffer)
+    EmptyBuffer()
+    GotoBufferId(gZipResultBuffer)
+    EmptyBuffer()
+    GotoBufferId(gZipResultMapBuffer)
+    EmptyBuffer()
+    AddLine(Format("GREPZIPTSE results - search string: ", expression),
+            gResultBuffer)
+    AddLine(Format("Search options: ", options), gResultBuffer)
+    AddLine(Format("Search archived files: ", searchArchives), gResultBuffer)
+    AddLine(Format("Source: ", specifications), gResultBuffer)
+    AddLine("Enter/Left click: open result; Ctrl+Alt+G: return here",
+            gResultBuffer)
+    AddLine("", gResultBuffer)
+    GotoBufferId(gResultBuffer)
+    gFirstResultLine = NumLines() + 1
+    gResultCount = 0
+    gOrdinaryResultCount = 0
+    gZipResultCount = 0
+    SaveResultState()
+    return(TRUE)
+end
+
+proc AppendCompressedResults()
+    integer lineNo = 1
+    integer lines = 0
+    string text[255] = ""
+    GotoBufferId(gZipResultBuffer)
+    lines = NumLines()
+    while lineNo <= lines
+        GotoLine(lineNo)
+        text = GetText(1, CurrLineLen())
+        AddLine(text, gResultBuffer)
+        GotoBufferId(gZipResultMapBuffer)
+        GotoLine(lineNo)
+        text = GetText(1, CurrLineLen())
+        AddLine(text, gResultMapBuffer)
+        lineNo = lineNo + 1
+        GotoBufferId(gZipResultBuffer)
+    endwhile
+    GotoBufferId(gZipResultBuffer)
+    AbandonFile(gZipResultBuffer)
+    GotoBufferId(gZipResultMapBuffer)
+    AbandonFile(gZipResultMapBuffer)
+    gZipResultBuffer = 0
+    gZipResultMapBuffer = 0
+end
+
+proc FinishResults(integer filesExamined, integer ordinaryFiles,
+                   integer zipFiles)
+    AppendCompressedResults()
+    AddLine("", gResultBuffer)
+    AddLine(Format("Matches: ", gResultCount,
+                   " (ordinary: ", gOrdinaryResultCount,
+                   ", archive members: ", gZipResultCount, ")"), gResultBuffer)
+    AddLine(Format("Files examined: ", filesExamined,
+                   " (ordinary: ", ordinaryFiles,
+                   ", archives: ", zipFiles, ")"), gResultBuffer)
+    if gResultCount == 0
+        AddLine("No matching text was found.", gResultBuffer)
+    endif
+    GotoBufferId(gResultBuffer)
+    BegFile()
+    SaveResultState()
+    UpdateDisplay(_DEFAULT_)
+    Warn(Format(gResultCount, " matching line(s) found in ",
+                filesExamined, " file(s) examined.", Chr(13), Chr(13),
+                "Click a found line or press Enter to open its file ",
+                "at that line and column.", Chr(13),
+                "Press Ctrl+Alt+G to return to the search results."))
+end
+
+proc OpenSelectedResult()
+    integer navigationLogOpened = FALSE
+    integer mapLine = 0
+    integer tab1 = 0
+    integer tab2 = 0
+    integer tab3 = 0
+    integer targetLine = 0
+    integer targetColumn = 0
+    integer targetBuffer = 0
+    string mapping[255] = ""
+    string remainder[255] = ""
+    string targetKind[4] = ""
+    string targetRef[255] = ""
+
+    // Main() closes the search-phase log when the search completes.
+    // Reopen a separate navigation log for each Enter/click, otherwise
+    // no log checkpoints would be recorded during the Ubuntu crash.
+    if gNavigationLogging and gLogHandle == -1
+        OpenRunLog()
+        if gLogHandle <> -1
+            navigationLogOpened = TRUE
+            LogLine("INFO", "OpenSelectedResult: entered")
+        endif
+    endif
+    LoadResultState()
+    if GetBufferId() <> gResultBuffer or CurrLine() < gFirstResultLine or
+       CurrLine() >= gFirstResultLine + gResultCount
+        return()
+    endif
+    mapLine = CurrLine() - gFirstResultLine + 1
+    GotoBufferId(gResultMapBuffer)
+    GotoLine(mapLine)
+    mapping = GetText(1, CurrLineLen())
+    tab1 = Pos(Chr(9), mapping)
+    if tab1 <= 0
+        GotoBufferId(gResultBuffer)
+        return()
+    endif
+    targetKind = SubStr(mapping, 1, tab1 - 1)
+    remainder = SubStr(mapping, tab1 + 1, 255)
+    tab2 = Pos(Chr(9), remainder)
+    if tab2 <= 0
+        GotoBufferId(gResultBuffer)
+        return()
+    endif
+    targetRef = SubStr(remainder, 1, tab2 - 1)
+    remainder = SubStr(remainder, tab2 + 1, 255)
+    tab3 = Pos(Chr(9), remainder)
+    if tab3 <= 0
+        GotoBufferId(gResultBuffer)
+        return()
+    endif
+    targetLine = Val(SubStr(remainder, 1, tab3 - 1))
+    targetColumn = Val(SubStr(remainder, tab3 + 1, 255))
+
+    // Diagnostic checkpoints for the native Ubuntu Enter/navigation crash.
+    // Do not change the result mapping or search algorithm.
+    LogLine("INFO", Format("OpenSelectedResult: kind=", targetKind,
+                           " path=", targetRef, " line=", targetLine,
+                           " column=", targetColumn))
+    if Length(targetRef) == 0 or targetLine < 1 or targetColumn < 1
+        LogLine("ERROR", "OpenSelectedResult: invalid target mapping")
+        GotoBufferId(gResultBuffer)
+        Warn("The selected result has an invalid file or position.")
+        return()
+    endif
+    if targetKind == "B"
+        targetBuffer = Val(targetRef)
+        if targetBuffer <= 0
+            LogLine("ERROR", "OpenSelectedResult: invalid ZIP buffer id")
+            GotoBufferId(gResultBuffer)
+            return()
+        endif
+        LogLine("INFO", "OpenSelectedResult: before GotoBufferId ZIP")
+        GotoBufferId(targetBuffer)
+        if GetBufferId() <> targetBuffer
+            GotoBufferId(gResultBuffer)
+            Warn("The decoded ZIP-member buffer is no longer available.")
+            return()
+        endif
+    else
+        if not FileExists(targetRef)
+            LogLine("ERROR", Format("OpenSelectedResult: missing file: ", targetRef))
+            GotoBufferId(gResultBuffer)
+            Warn("The selected result file is no longer available.")
+            return()
+        endif
+        GotoBufferId(gResultBuffer)
+        LogLine("INFO", Format("OpenSelectedResult: before EditFile: ", targetRef))
+        // EditFile expects a filename, not a shell-quoted command argument.
+        if not EditFile(targetRef, _DONT_PROMPT_)
+            LogLine("ERROR", Format("OpenSelectedResult: EditFile failed: ", targetRef))
+            Warn("The selected result file could not be opened.")
+            return()
+        endif
+        LogLine("INFO", "OpenSelectedResult: EditFile succeeded")
+    endif
+    LogLine("INFO", "OpenSelectedResult: before GotoLine/GotoColumn")
+    GotoLine(targetLine)
+    GotoColumn(targetColumn)
+    LogLine("INFO", "OpenSelectedResult: navigation complete")
+    if navigationLogOpened
+        fClose(gLogHandle)
+        gLogHandle = -1
+    endif
+end
+
+proc ResultEnter()
+    LoadResultState()
+    if GetBufferId() == gResultBuffer
+        OpenSelectedResult()
+    else
+        ChainCmd()
+    endif
+end
+
+proc ResultLeftClick()
+    ChainCmd()
+    LoadResultState()
+    if GetBufferId() == gResultBuffer
+        OpenSelectedResult()
+    endif
+end
+
+proc GoToResults()
+    LoadResultState()
+    if gResultBuffer
+        GotoBufferId(gResultBuffer)
+    else
+        Warn("No GREPZIPTSE results are available.")
+    endif
+end
+
+proc RunRecursiveSearch(string specifications, string expression,
+                        string options, string searchArchives)
+    string manifestPath[255] = ""
+    string fileName[255] = ""
+    integer originalBuffer = GetBufferId()
+    integer manifestBuffer = 0
+    integer manifestLine = 1
+    integer manifestLines = 0
+    integer filesExamined = 0
+    integer ordinaryFiles = 0
+    integer zipFiles = 0
+    integer totalMatches = 0
+
+    gBatchSearch = TRUE
+    manifestPath = PathJoin(TempDirectory(), "grepziptse_manifest.txt")
+    Message("GREPZIPTSE: Enumerating files recursively...")
+    UpdateDisplay(_DEFAULT_)
+    if not BuildManifest(specifications, manifestPath)
+        gBatchSearch = FALSE
+        WarnLogged("GREPZIPTSE: No files matched the supplied specifications.")
+        return()
+    endif
+
+    manifestBuffer = EditBuffer(manifestPath, _SYSTEM_)
+    if manifestBuffer == 0
+        gBatchSearch = FALSE
+        WarnLogged("GREPZIPTSE: Could not open the generated file manifest.")
+        return()
+    endif
+    manifestLines = NumLines()
+    if searchArchives == "yes"
+        PrepareExternalArchiveWork()
+    endif
+    if not BeginResults(specifications, expression, options, searchArchives)
+        GotoBufferId(manifestBuffer)
+        AbandonFile(manifestBuffer)
+        GotoBufferId(originalBuffer)
+        gBatchSearch = FALSE
+        WarnLogged("GREPZIPTSE: Could not create the result buffers.")
+        return()
+    endif
+    while manifestLine <= manifestLines
+        GotoBufferId(manifestBuffer)
+        GotoLine(manifestLine)
+        fileName = TrimInput(GetText(1, CurrLineLen()))
+        if Length(fileName) > 0
+            GotoBufferId(originalBuffer)
+            Message(Format("GREPZIPTSE: ", fileName))
+            UpdateDisplay(_DEFAULT_)
+            if IsZipName(fileName) and searchArchives == "yes"
+                filesExamined = filesExamined + 1
+                zipFiles = zipFiles + 1
+                totalMatches = totalMatches +
+                    ProbeZip(fileName, fileName, expression, options, 0)
+            elseif IsExternalArchiveName(fileName) and searchArchives == "yes"
+                filesExamined = filesExamined + 1
+                zipFiles = zipFiles + 1
+                totalMatches = totalMatches + SearchExternalArchive(
+                    fileName, fileName, expression, options, 0)
+            elseif not IsSupportedArchiveName(fileName)
+                filesExamined = filesExamined + 1
+                ordinaryFiles = ordinaryFiles + 1
+                totalMatches = totalMatches +
+                    SearchOrdinaryFile(fileName, expression, options)
+            endif
+        endif
+        manifestLine = manifestLine + 1
+    endwhile
+    GotoBufferId(manifestBuffer)
+    AbandonFile(manifestBuffer)
+    GotoBufferId(originalBuffer)
+    gBatchSearch = FALSE
+    LogLine("INFO", Format("GREPZIPTSE 1.0.0.0.44: ", totalMatches,
+                            " match(es) in ", filesExamined, " file(s); ",
+                            ordinaryFiles, " ordinary file(s), ", zipFiles,
+                            " archive(s)."))
+    FinishResults(filesExamined, ordinaryFiles, zipFiles)
+end
+
+proc Main()
+    string macroDir[255] = ""
+    string iniFile[255] = ""
+    string expression[255] = "foobar"
+    string options[16] = "ix"
+    string specifications[255] = ""
+    string searchArchives[16] = "yes"
+    string createLogText[16] = "false"
+    integer createLog = FALSE
+    integer showStartupDiagnostics = FALSE
+    string startupDiagnosticsText[16] = "false"
+    integer expressionHistory = 0
+    integer optionsHistory = 0
+    integer specificationsHistory = 0
+    integer searchArchivesHistory = 0
+    // Startup checkpoint: visible even if no log file can be created.
+    DetectPlatform()
+    if not gWindowsPlatform and not gLinuxPlatform
+        Warn("GREPZIPTSE: This version supports Windows and Linux only.")
+        return()
+    endif
+    // Small integer arrays only; 32 KiB history lives in a temporary buffer.
+    if not TestArrays()
+        Warn("GREPZIPTSE: .si integer array test failed.")
+        return()
+    endif
+    macroDir = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
+    iniFile = LogDirWithSlash(macroDir) + "grepziptse.ini"
+    // Only informational startup messages are optional; array validation
+    // still runs on every startup and failed validation remains visible.
+    startupDiagnosticsText = Lower(TrimInput(GetProfileStr(
+        "Diagnostics", "ShowStartupDiagnostics", "false", iniFile)))
+    if startupDiagnosticsText == "true" or
+       startupDiagnosticsText == "yes" or
+       startupDiagnosticsText == "1" or
+       startupDiagnosticsText == "on"
+        showStartupDiagnostics = TRUE
+    endif
+    if showStartupDiagnostics
+        Warn("GREPZIPTSE 1.0.0.0.44: Main() started.")
+        Warn("GREPZIPTSE: .si integer array test passed.")
+    endif
+    createLogText = Lower(TrimInput(GetProfileStr("Logging", "CreateLog",
+                                                  "false", iniFile)))
+    if createLogText == "true" or createLogText == "yes" or
+       createLogText == "1" or createLogText == "on"
+        createLog = TRUE
+    elseif createLogText == "false" or createLogText == "no" or
+           createLogText == "0" or createLogText == "off"
+        createLog = FALSE
+    else
+        createLog = FALSE
+        Warn(Format("GREPZIPTSE.INI: Invalid Logging/CreateLog value '",
+                    createLogText, "'. Using false."))
+    endif
+    gNavigationLogging = createLog
+    if createLog
+        OpenRunLog()
+        if gLogHandle == -1
+            Warn("GREPZIPTSE: Logging unavailable. Search will continue.")
+        else
+            Warn(Format("GREPZIPTSE: Log created: ", gLogPath))
+        endif
+    endif
+    expression = GetProfileStr("SearchDefaults", "SearchString",
+                               expression, iniFile)
+    options = GetProfileStr("SearchDefaults", "SearchOptions",
+                            options, iniFile)
+    if gLinuxPlatform
+        specifications = GetProfileStr("Linux", "TopDirectories",
+                                       "/tmp/", iniFile)
+    else
+        specifications = GetProfileStr("SearchDefaults", "TopDirectories",
+                                       "", iniFile)
+        // Compatibility with the earlier singular spelling.
+        if Length(specifications) == 0
+            specifications = GetProfileStr("SearchDefaults", "TopDirectory",
+                                           "c:\\temp\\", iniFile)
+        endif
+    endif
+    searchArchives = Lower(TrimInput(GetProfileStr(
+        "SearchDefaults", "SearchArchives", "yes", iniFile)))
+    if gLinuxPlatform
+        gSevenZipExecutable = TrimInput(GetProfileStr(
+            "Linux", "SevenZipExecutable", "/usr/bin/7z", iniFile))
+        gRarExecutable = TrimInput(GetProfileStr(
+            "Linux", "RarExecutable", "/usr/bin/rar", iniFile))
+    else
+        gSevenZipExecutable = TrimInput(GetProfileStr(
+            "ArchiveTools", "SevenZipExecutable",
+            "C:\\Program Files\\7-Zip\\7z.exe", iniFile))
+        gRarExecutable = TrimInput(GetProfileStr(
+            "ArchiveTools", "RarExecutable",
+            "C:\\Program Files\\WinRAR\\Rar.exe", iniFile))
+    endif
+
+    expressionHistory = GetFreeHistory("GREPZIPTSE:searchstring")
+    optionsHistory = GetFreeHistory("GREPZIPTSE:searchoptions")
+    specificationsHistory = GetFreeHistory("GREPZIPTSE:searchspecifications")
+    searchArchivesHistory = GetFreeHistory("GREPZIPTSE:searcharchives")
+
+    if not Ask("GREPZIPTSE: Search expression:", expression,
+               expressionHistory)
+        CloseRunLog()
+        return()
+    endif
+    if Length(expression) == 0
+        CloseRunLog()
+        return()
+    endif
+    if not Ask("Search options (blank, i, x, or ix):", options,
+               optionsHistory)
+        CloseRunLog()
+        return()
+    endif
+    options = Lower(options)
+    if options == "xi"
+        options = "ix"
+    endif
+    if options <> "" and options <> "i" and options <> "x" and
+       options <> "ix"
+        WarnLogged("GREPZIPTSE: Options must be blank, i, x, or ix.")
+        CloseRunLog()
+        return()
+    endif
+    if not Ask("Directories or file specifications (; separated):",
+               specifications, specificationsHistory)
+        CloseRunLog()
+        return()
+    endif
+    if Length(TrimInput(specifications)) == 0
+        CloseRunLog()
+        return()
+    endif
+    if not Ask("Search archived files (yes/no):", searchArchives,
+               searchArchivesHistory)
+        CloseRunLog()
+        return()
+    endif
+    searchArchives = Lower(TrimInput(searchArchives))
+    if searchArchives == "y" or searchArchives == "true" or
+       searchArchives == "1" or searchArchives == "on"
+        searchArchives = "yes"
+    elseif searchArchives == "n" or searchArchives == "false" or
+           searchArchives == "0" or searchArchives == "off"
+        searchArchives = "no"
+    elseif searchArchives <> "yes" and searchArchives <> "no"
+        WarnLogged("GREPZIPTSE: Search archived files must be yes or no.")
+        CloseRunLog()
+        return()
+    endif
+    ReportInfo(Format("Search expression=", expression,
+                      "; options=", options,
+                      "; specifications=", specifications,
+                      "; search archives=", searchArchives))
+    RunRecursiveSearch(specifications, expression, options, searchArchives)
+    CloseRunLog()
+end
+
+<CtrlAlt G> GoToResults()
+<Enter> ResultEnter()
+<LeftBtn> ResultLeftClick()

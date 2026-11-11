@@ -1,0 +1,6 @@
+GREPZIPTSE test data - version 1.0.0.0.2
+foobar first literal hit
+FOOBAR uppercase hit
+Some unrelated text
+foobar third literal hit
+End of test.
