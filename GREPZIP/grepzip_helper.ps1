@@ -180,8 +180,17 @@ function Expand-ZipArchive([string]$archivePath, [string]$display,
 
 function Expand-TarArchive([string]$archivePath, [string]$display,
                            [string]$mask, [int]$depth) {
-    $tarCommand = Get-Command tar.exe -ErrorAction SilentlyContinue
-    if (-not $tarCommand) {
+    # Use only Windows' native tar.exe. A tar.exe found through PATH may be
+    # Cygwin tar; it interprets "F:\..." as host "F" plus a remote path.
+    # If native tar is unavailable, use the configured 7-Zip fallback.
+    $tarCommand = ''
+    if ($env:SystemRoot) {
+        $nativeTar = Join-Path $env:SystemRoot 'System32\tar.exe'
+        if (Test-Path -LiteralPath $nativeTar -PathType Leaf) {
+            $tarCommand = $nativeTar
+        }
+    }
+    if ([string]::IsNullOrEmpty($tarCommand)) {
         # 7-Zip can extract TAR directly. For TGZ/TAR.GZ it first produces
         # the contained TAR, which Process-File then recognizes recursively.
         Expand-SevenZipArchive $archivePath $display $mask $depth
@@ -189,7 +198,7 @@ function Expand-TarArchive([string]$archivePath, [string]$display,
     }
     $extractRoot = Join-Path $work ([Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $extractRoot | Out-Null
-    & $tarCommand.Source -xf $archivePath -C $extractRoot 2>$null
+    & $tarCommand -xf $archivePath -C $extractRoot 2>$null
     if ($LASTEXITCODE -ne 0) { return }
     $members = Get-RecursiveFiles $extractRoot
     foreach ($member in $members) {

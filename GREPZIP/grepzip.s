@@ -1,6 +1,6 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.30
-// Date    : 2026-11-12
+// Version : 1.0.0.0.33
+// Date    : 2026-11-13
 // LLM     : OpenAI Codex
 
 string searchSpecS[255] = ""
@@ -30,6 +30,20 @@ integer createLogB = FALSE
 integer logHandleI = -1
 string logPathS[255] = ""
 string logDirectoryS[255] = ""
+integer resultHighlightActiveB = FALSE
+integer resultViewActiveB = FALSE
+integer savedResultRowI = 0
+integer searchStartTicksI = 0
+integer searchElapsedTicksI = 0
+
+string proc FNElapsedText(integer ticksI)
+    integer hoursI = ticksI / 360000
+    integer minutesI = (ticksI / 6000) mod 60
+    integer secondsI = (ticksI / 100) mod 60
+    integer hundredthsI = ticksI mod 100
+    return(Format(hoursI:2:'0', ":", minutesI:2:'0', ":",
+                  secondsI:2:'0', ".", hundredthsI:2:'0'))
+end
 
 string proc FNLogStamp()
     integer monthI = 0
@@ -126,10 +140,100 @@ proc PROCAddIniWarning(integer lineI, string warningS)
     endif
 end
 
+// Results-only syntax highlighting, aligned with GREPZIPTSE. The text
+// between "[" and "]" is the actual text found by TSE, not the query.
+proc PROCDrawResultLine(integer isCursorLineB)
+    string fullTextS[255] = ""
+    string visibleS[255] = ""
+    string runS[255] = ""
+    integer horizontalI = CurrXoffset() + 1
+    integer openI = 0
+    integer closeI = 0
+    integer indexI = 0
+    integer positionI = 0
+    integer oldAttrI = Query(Attr)
+    integer wantedAttrI = Query(TextAttr)
+    integer runAttrI = -1
+
+    if ((GetBufferId() <> resultBufferI) or (not resultBufferI))
+        return()
+    endif
+    fullTextS = GetText(1, 255)
+    visibleS = GetText(horizontalI, Query(WindowCols))
+    if ((CurrLine() >= firstResultLineI) and
+        (CurrLine() < firstResultLineI + matchCountI))
+        for indexI = 1 to Length(fullTextS) - 3
+            if (SubStr(fullTextS, indexI, 4) == "): [")
+                openI = indexI + 3
+            endif
+        endfor
+        if (openI)
+            for indexI = openI + 1 to Length(fullTextS)
+                if (SubStr(fullTextS, indexI, 1) == "]")
+                    closeI = indexI
+                    break
+                endif
+            endfor
+        endif
+    endif
+    for indexI = 1 to Length(visibleS)
+        positionI = horizontalI + indexI - 1
+        wantedAttrI = Query(TextAttr)
+        if ((closeI > openI) and (positionI > openI) and
+            (positionI < closeI))
+            wantedAttrI = Query(HiLiteAttr)
+        elseif (isCursorLineB and
+                ((not openI) or (positionI <= openI)))
+            wantedAttrI = Query(CursorAttr)
+        endif
+        if (runAttrI <> wantedAttrI)
+            if (Length(runS))
+                Set(Attr, runAttrI)
+                PutStr(runS)
+            endif
+            runS = ""
+            runAttrI = wantedAttrI
+        endif
+        runS = runS + SubStr(visibleS, indexI, 1)
+    endfor
+    if (Length(runS))
+        Set(Attr, runAttrI)
+        PutStr(runS)
+    endif
+    Set(Attr, Query(TextAttr))
+    ClrEol()
+    Set(Attr, oldAttrI)
+end
+
+proc PROCDisplayBegin()
+end
+proc PROCDisplayEnd()
+end
+proc PROCHighlightNativeFound()
+    HiLiteFoundText()
+end
+
+proc PROCStartResultHighlight()
+    if ((not resultHighlightActiveB) and
+        (GetBufferId() == resultBufferI))
+        HookDisplay(PROCDrawResultLine, PROCDisplayBegin,
+                    PROCDisplayEnd, PROCHighlightNativeFound)
+        resultHighlightActiveB = TRUE
+    endif
+end
+
+proc PROCStopResultHighlight()
+    if (resultHighlightActiveB)
+        UnHookDisplay()
+        resultHighlightActiveB = FALSE
+    endif
+end
+
 proc PROCAddResult(string diskNameS, string displayNameS, integer lineI,
-                   integer columnI, string textS)
+                   integer columnI, string textS, string foundTextS)
     string outputS[255] = ""
-    outputS = Format(displayNameS, "(", lineI, ",", columnI, "): ", textS)
+    outputS = Format(displayNameS, "(", lineI, ",", columnI, "): [",
+                     foundTextS, "] ", textS)
     AddLine(outputS, resultBufferI)
     AddLine(Format(diskNameS, Chr(9), lineI, Chr(9), columnI),
             resultMapBufferI)
@@ -140,6 +244,7 @@ proc PROCSearchOneFile(string diskNameS, string displayNameS)
     integer sourceBufferI = 0
     integer foundI = FALSE
     string lineS[255] = ""
+    string foundTextS[255] = ""
 
     sourceBufferI = EditBuffer(diskNameS, _SYSTEM_)
     if (sourceBufferI)
@@ -147,13 +252,33 @@ proc PROCSearchOneFile(string diskNameS, string displayNameS)
         foundI = lFind(expressionS, findOptionsS)
         while (foundI)
             lineS = GetText(1, CurrLineLen())
-            PROCAddResult(diskNameS, displayNameS, CurrLine(), CurrCol(), lineS)
+            foundTextS = GetFoundText()
+            PROCAddResult(diskNameS, displayNameS, CurrLine(), CurrCol(),
+                          lineS, foundTextS)
             PROCLog(Format(displayNameS, "(", CurrLine(), ",", CurrCol(),
                            "): ", lineS))
             foundI = lRepeatFind()
         endwhile
         AbandonFile(sourceBufferI)
     endif
+end
+
+forward proc PROCResultEnter()
+forward proc PROCResultLeftClick()
+forward proc PROCGoToResults()
+forward proc PROCExitResults()
+
+keydef GREPZIPResultKeys
+    <Enter> PROCResultEnter()
+    <LeftBtn> PROCResultLeftClick()
+    <RightBtn> PROCGoToResults()
+    <Escape> PROCExitResults()
+end
+
+keydef GREPZIPSourceKeys
+    <CtrlAlt G> PROCGoToResults()
+    <RightBtn> PROCGoToResults()
+    <Escape> PROCExitResults()
 end
 
 proc PROCOpenResult()
@@ -171,6 +296,7 @@ proc PROCOpenResult()
         (CurrLine() >= firstResultLineI + matchCountI))
         return()
     endif
+    savedResultRowI = CurrLine()
     mapLineI = CurrLine() - firstResultLineI + 1
     GotoBufferId(resultMapBufferI)
     GotoLine(mapLineI)
@@ -191,11 +317,16 @@ proc PROCOpenResult()
     targetLineI = Val(SubStr(remainderS, 1, secondTabI - 1))
     targetColumnI = Val(SubStr(remainderS, secondTabI + 1,
                                 Length(remainderS) - secondTabI))
-    if (EditFile(Format('"', diskNameS, '"'), _DONT_PROMPT_))
+    PROCStopResultHighlight()
+    if (EditFile(diskNameS, _DONT_PROMPT_))
         GotoLine(targetLineI)
         GotoColumn(targetColumnI)
+        Disable(GREPZIPResultKeys)
+        Enable(GREPZIPSourceKeys)
+        UpdateDisplay(_DEFAULT_)
     else
         GotoBufferId(resultBufferI)
+        PROCStartResultHighlight()
         Warn("The selected result file is no longer available.")
     endif
 end
@@ -209,18 +340,46 @@ proc PROCResultEnter()
 end
 
 proc PROCResultLeftClick()
-    ChainCmd()
     if (GetBufferId() == resultBufferI)
+        MouseMarking(_INCLUSIVE_)
         PROCOpenResult()
+    else
+        ChainCmd()
     endif
 end
 
 proc PROCGoToResults()
-    if (resultBufferI)
-        GotoBufferId(resultBufferI)
+    if (resultViewActiveB and resultBufferI)
+        PROCStopResultHighlight()
+        if (GotoBufferId(resultBufferI))
+            if (savedResultRowI >= 1)
+                GotoLine(savedResultRowI)
+            endif
+            Disable(GREPZIPSourceKeys)
+            Enable(GREPZIPResultKeys)
+            UpdateDisplay(_DEFAULT_)
+            PROCStartResultHighlight()
+        endif
     else
         Warn("No GREPZIP results are available.")
     endif
+end
+
+proc PROCExitResults()
+    if (resultViewActiveB)
+        EndProcess()
+    endif
+end
+
+proc PROCViewResults()
+    resultViewActiveB = TRUE
+    savedResultRowI = firstResultLineI
+    Enable(GREPZIPResultKeys)
+    Process()
+    PROCStopResultHighlight()
+    Disable(GREPZIPResultKeys)
+    Disable(GREPZIPSourceKeys)
+    resultViewActiveB = FALSE
 end
 
 proc PROCParseHelperStats(string statsLineS)
@@ -595,16 +754,16 @@ proc Main()
         Warn("GREPZIP could not allocate all dedicated input histories.")
         return()
     endif
-    if (not Length(expressionS))
+    if (NumHistoryItems(searchStringHistoryI) > 0)
         expressionS = GetHistoryStr(searchStringHistoryI, 1)
     endif
-    if (not Length(searchOptionsS))
+    if (NumHistoryItems(searchOptionsHistoryI) > 0)
         searchOptionsS = GetHistoryStr(searchOptionsHistoryI, 1)
     endif
-    if (not Length(searchSpecS))
+    if (NumHistoryItems(searchSpecificationsHistoryI) > 0)
         searchSpecS = GetHistoryStr(searchSpecificationsHistoryI, 1)
     endif
-    if (not Length(searchArchivesS))
+    if (NumHistoryItems(searchArchivesHistoryI) > 0)
         searchArchivesS = GetHistoryStr(searchArchivesHistoryI, 1)
     endif
 
@@ -655,7 +814,7 @@ proc Main()
     endif
 
     PROCOpenLog()
-    PROCLog("GREPZIP version 1.0.0.0.30 started")
+    PROCLog("GREPZIP version 1.0.0.0.33 started")
     PROCLog(Format("Search expression=", expressionS,
                    "; options=", searchOptionsS,
                    "; specifications=", searchSpecS,
@@ -673,6 +832,8 @@ proc Main()
         return()
     endif
 
+    searchStartTicksI = GetTime()
+    searchElapsedTicksI = 0
     Message("GREPZIP: Enumerating files and expanding archives...")
     UpdateDisplay(_DEFAULT_)
     commandS = Format('powershell.exe -NoP -NonI -W Hidden -ExecutionPolicy Bypass -File "',
@@ -703,11 +864,13 @@ proc Main()
     EmptyBuffer()
     GotoBufferId(resultBufferI)
     EmptyBuffer()
-    AddLine(Format("GREPZIP results - search string: ", expressionS))
+    AddLine("GREPZIP version 1.0.0.0.33 - found results")
+    AddLine(Format("Search string: ", expressionS))
+    AddLine("Elapsed search time: 00:00:00.00")
     AddLine(Format("Search options: ", searchOptionsS))
     AddLine(Format("Search archived files: ", searchArchivesS))
     AddLine(Format("Source: ", searchSpecS))
-    AddLine("Enter/Left click: open result; Ctrl+Alt+G: return here")
+    AddLine("Enter/Left click: open; Right click/Ctrl+Alt+G: results; Escape: exit")
     AddLine("")
     firstResultLineI = NumLines() + 1
     matchCountI = 0
@@ -717,7 +880,17 @@ proc Main()
     helperErrorCountI = 0
     helperFirstErrorS = ""
     PROCSearchManifest()
+    searchElapsedTicksI = GetTime() - searchStartTicksI
+    if (searchElapsedTicksI < 0)
+        searchElapsedTicksI = searchElapsedTicksI + 8640000
+    endif
     GotoBufferId(resultBufferI)
+    GotoLine(3)
+    BegLine()
+    KillToEol()
+    InsertText(Format("Elapsed search time: ",
+                      FNElapsedText(searchElapsedTicksI)), _INSERT_)
+    EndFile()
     AddLine(Format("PowerShell source files enumerated: ",
                    helperEnumeratedCountI))
     AddLine(Format("PowerShell manifest entries written: ",
@@ -732,7 +905,8 @@ proc Main()
     if (not matchCountI)
         AddLine("No matching text was found.")
     endif
-    PROCLog(Format("SUMMARY matches=", matchCountI,
+    PROCLog(Format("SUMMARY elapsed=", FNElapsedText(searchElapsedTicksI),
+                   "; matches=", matchCountI,
                    "; files examined=", fileCountI,
                    "; source files enumerated=", helperEnumeratedCountI,
                    "; manifest entries=", helperManifestCountI,
@@ -743,16 +917,17 @@ proc Main()
     PROCCloseLog()
     BegFile()
     UpdateDisplay(_DEFAULT_)
+    PROCStartResultHighlight()
     Warn(Format(matchCountI, " matching line(s) found in ",
-                fileCountI, " file(s) examined.", Chr(13),
+                fileCountI, " file(s) examined; elapsed ",
+                FNElapsedText(searchElapsedTicksI), ".", Chr(13),
                 Chr(13),
                 "Click a found line or press Enter to open its file ",
                 "at that line and column.", Chr(13),
-                "Press Ctrl+Alt+G to return to the search results."))
+                "Right-click or press Ctrl+Alt+G to return to the search results.",
+                Chr(13), "Press Escape to exit the results viewer."))
+    PROCViewResults()
 end
 
 <CtrlAltShift F> Main()
-<CtrlAlt G> PROCGoToResults()
 <CtrlAltShift R> PROCRegexHelp()
-<Enter> PROCResultEnter()
-<LeftBtn> PROCResultLeftClick()

@@ -1,7 +1,7 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.30  
-**Date:** 2026-11-12  
+**Version:** 1.0.0.0.33  
+**Date:** 2026-11-13  
 **Authoring model:** OpenAI Codex
 
 GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts one or more directories, files, or file specifications and also searches files stored in ZIP, JAR, TAR, TGZ, 7Z and RAR archives. Supported archives stored inside other supported archives are expanded and searched recursively.
@@ -13,9 +13,9 @@ GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents 
 - `grepzip.ini` - configurable archive-tool paths and initial search values.
 - `build.bat` - SAL build command.
 - `grepzip_readme.md` - this documentation.
-- `grepzip_sample_archive.txt` - common comparison content.
-- `grepzip_sample.jar`, `.7z`, `.rar`, `.tar`, and `.tgz` - equivalent
-  archives containing that common comparison file.
+- `sample_archives/` - separate directory containing all comparison fixtures:
+  `grepzip_sample_archive.txt` plus equivalent `.jar`, `.7z`, `.rar`, `.tar`,
+  and `.tgz` archives containing that common comparison file.
 
 No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and the built-in .NET ZIP classes. TAR and TGZ support prefers Windows `tar.exe` and falls back to configured `7z.exe`. RAR support uses configured `rar.exe`, with `7z.exe` as a fallback. 7Z support uses `7z.exe`. All text matching remains in TSE's own search engine.
 
@@ -92,7 +92,7 @@ The log records the accepted search settings, matching result lines, helper
 errors and the final counters. Invalid and duplicate `CreateLog` settings are
 reported by the same INI validator as the other settings.
 
-The user can edit each prompt value before starting the search. Each `Ask()` prompt has its own named TSE history: `GREPZIP:searchstring`, `GREPZIP:searchoptions`, `GREPZIP:searchspecifications`, and `GREPZIP:searcharchives`. When the corresponding initial value is blank, GREPZIP recalls the newest value from that prompt's dedicated history. A nonempty INI or built-in value has priority as the initial text, while the user's accepted prompt input remains final.
+The user can edit each prompt value before starting the search. Each `Ask()` prompt has its own named TSE history: `GREPZIP:searchstring`, `GREPZIP:searchoptions`, `GREPZIP:searchspecifications`, and `GREPZIP:searcharchives`. Whenever a prompt has history, its most recent input is presented initially. The INI value is used only until that prompt has a history item. This matches GREPZIPTSE and makes every prompt consistently remember the user's last accepted input.
 
 `showfilenames=true` is the default. It shows each filename only on TSE's message bar and refreshes the display during the TSE search stage. The main editing window remains on the file that was active when GREPZIP started until the final results buffer is displayed. Use `false`, `no`, `0`, or `off` to disable filename progress.
 
@@ -200,24 +200,29 @@ Whether matching is case-sensitive follows the active TSE search behavior and ex
 The results buffer supports direct navigation:
 
 - Left-click a matching result line or place the cursor on it and press `Enter` to open the file at the reported line and column.
-- Press `Ctrl+Alt+G` to return to the current GREPZIP results buffer. The Shift
+- Right-click or press `Ctrl+Alt+G` in an opened source file to return to the current GREPZIP results buffer. The Shift
   modifier was removed because native TSE for Linux does not recognize it in
   this key combination.
+- Press `Escape` in the results or an opened source to end the scoped results viewer and restore the user's normal keys.
 - Header, instruction, blank, and summary lines are not navigation targets.
+
+The top of the results buffer follows GREPZIPTSE: version and `found results`, search string, elapsed search time, options, archived-files choice, source specifications, and navigation keys. The completion dialog also reports elapsed time.
+
+The exact text returned by TSE's `GetFoundText()` is displayed in brackets and highlighted with TSE's highlight attribute. The query remains in the header only; the highlighted result is the text actually found.
 
 For ordinary files, navigation opens the original file. For archive members, GREPZIP opens the physical temporary extraction file associated with the displayed virtual archive path. The extraction tree is retained after the search so those links remain usable. Starting the next GREPZIP search removes the previous extraction tree and creates a new one; an older archive-result link may therefore no longer be available after another search.
 
 Each match is shown as:
 
 ```text
-filename(line,column): matching line
+filename(line,column): [found text] matching line
 ```
 
 Archive members use `::` to show archive nesting, for example:
 
 ```text
-C:\DATA\outer.zip::docs/inner.zip::source/test.s(42,7): proc Main()
-C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
+C:\DATA\outer.zip::docs/inner.zip::source/test.s(42,7): [Main] proc Main()
+C:\DATA\outer.tgz::source.tar::source/test.s(42,7): [Main] proc Main()
 ```
 
 ## Archive behavior
@@ -246,6 +251,33 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.33 - 2026-11-13
+
+- Prevents Cygwin `/usr/bin/tar` from receiving Windows drive-letter paths
+  such as `F:\...`, which it misinterprets as a remote host specification.
+- Uses `%SystemRoot%\System32\tar.exe` explicitly for native Windows TAR/TGZ
+  extraction and falls back to configured 7-Zip when native tar is absent.
+
+### 1.0.0.0.32 - 2026-11-13
+
+- Moves all archive comparison examples and their common source text into the
+  separate package directory `sample_archives`.
+- Leaves the GREPZIP program, configuration, build file and documentation at
+  the package root.
+
+### 1.0.0.0.31 - 2026-11-12
+
+- Aligns the GREPZIP result viewer with GREPZIPTSE and MULTIREGEX.
+- Makes every `Ask()` prompt present its newest dedicated-history value.
+- Adds the version, `found results`, elapsed timer and full search information
+  at the top of the results buffer.
+- Displays and highlights the actual `GetFoundText()` result rather than
+  presenting the query as if it were the result.
+- Adds scoped Enter, left-click, right-click, `Ctrl+Alt+G`, and Escape result
+  navigation without changing the user's normal keys outside the viewer.
+- Retains per-file message-bar refresh only when `showfilenames=true`, and
+  refreshes the display after final results and navigation changes.
 
 ### 1.0.0.0.30 - 2026-11-12
 
