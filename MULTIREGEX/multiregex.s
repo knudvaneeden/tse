@@ -1,5 +1,5 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.26
+// Version: 1.0.0.0.27
 // Date: 2026-11-10
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
@@ -282,6 +282,9 @@ string mrOptions[255] = "ix"
 integer mrWindow = 4000
 integer mrAdaptiveWindow = 30000
 integer mrFastScan = TRUE
+// FALSE (default): keep source text offscreen during the search.
+// TRUE: retain the previous live source-file display behavior.
+integer mrShowSourceDuringSearch = FALSE
 // 1: exact two-byte cached line lengths; 0: original v19 planner (default).
 integer mrFastPlan = TRUE
 // Optional phase profiling; turn off for uninstrumented A/B benchmarks.
@@ -432,7 +435,7 @@ proc MR_PrependSummary(integer bufferId, integer lineCount,
     InsertLine(Format("Search options   : ", mrOptions))
     InsertLine(Format("Expression       : ", mrPattern))
     InsertLine("----------------------------------------------------------")
-    InsertLine("MULTIREGEX 1.0.0.0.26 - Search results")
+    InsertLine("MULTIREGEX 1.0.0.0.27 - Search results")
     if skippedLines > 0
         // Preserve the first match at row 13 by appending the warning at end.
         EndFile()
@@ -875,6 +878,11 @@ integer proc MR_Search(integer mode)
             AddLine("----------------------------------------------------------")
         endif
     endif
+    // In a ring search, MR_SearchRing owns one outer BufferVideo() pair.
+    // For a single-file search, suppress costly visible scrolling here.
+    if mode <> 3 and not mrShowSourceDuringSearch
+        BufferVideo()
+    endif
     GotoBufferId(sourceId)
     first = startLine
     mrPlanTicks = 0
@@ -1117,6 +1125,10 @@ integer proc MR_Search(integer mode)
     GotoBufferId(workId)
     AbandonFile()
     GotoBufferId(sourceId)
+    // Always balance BufferVideo before returning or entering a viewer.
+    if mode <> 3 and not mrShowSourceDuringSearch
+        UnBufferVideo()
+    endif
     if mode == 3
         // The ring driver owns the shared result buffer and its summary.
         mrAllLines = mrAllLines + scannedLinesI
@@ -1268,6 +1280,14 @@ proc MR_SearchRing()
     mrAllLines = 0
     mrAllSkipped = 0
     startTicks = GetTime()
+    // Keep the displayed results buffer steady, rather than redrawing each
+    // large source file on every GotoLine()/GotoBufferId() during the scan.
+    // Only one BufferVideo/UnBufferVideo pair is used for the whole ring.
+    if not mrShowSourceDuringSearch
+        GotoBufferId(resultId)
+        UpdateDisplay()
+        BufferVideo()
+    endif
     GotoBufferId(ringListId)
     plannedTotalI = NumLines()
     for fileIndex = 1 to plannedTotalI
@@ -1324,6 +1344,10 @@ proc MR_SearchRing()
     mrFirstResultRow = mrFirstResultRow + 1
     MR_PrependSummary(resultId, mrAllLines, mrAllHits,
                       elapsedTicks, mrAllSkipped, speedI)
+    // Display is restored before interactive navigation starts.
+    if not mrShowSourceDuringSearch
+        UnBufferVideo()
+    endif
     BegFile()
     mrResultsRow = mrFirstResultRow
     MR_ViewResults(resultId, startingId)
@@ -1370,13 +1394,18 @@ proc Main()
     if mrFastPlan <> 0
         mrFastPlan = TRUE
     endif
+    mrShowSourceDuringSearch = GetProfileInt("MultiRegex",
+        "ShowSourceDuringSearch", 0, mrIniPath)
+    if mrShowSourceDuringSearch <> 0
+        mrShowSourceDuringSearch = TRUE
+    endif
     mrFastScan = GetProfileInt("MultiRegex", "FastScan", 1, mrIniPath)
     if mrFastScan <> 0
         mrFastScan = TRUE
     endif
 
     pattern = mrPattern
-    if not Ask("MULTIREGEX 1.0.0.0.26 - multiline TSE regex:", pattern, historyPattern)
+    if not Ask("MULTIREGEX 1.0.0.0.27 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0
