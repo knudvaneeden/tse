@@ -1,5 +1,5 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.30
+// Version: 1.0.0.0.31
 // Date: 2026-11-10
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
@@ -310,6 +310,9 @@ integer mrChunkCount = 0
 integer mrAdaptiveCount = 0
 integer mrRegexCalls = 0
 integer mrOverlap = 2000
+// Increase only the physical-line cap for small ring files; never change
+// the character window/overlap or the large-file search path.
+integer mrRingMaxChunkLines = 4096
 integer mrSource = 0
 integer mrNextLine = 1
 integer mrNextColumn = 1
@@ -479,7 +482,7 @@ proc MR_PrependSummary(integer bufferId, integer lineCount,
     InsertLine(Format("Search options   : ", mrOptions))
     InsertLine(Format("Expression       : ", mrPattern))
     InsertLine("----------------------------------------------------------")
-    InsertLine("MULTIREGEX 1.0.0.0.28 - Search results")
+    InsertLine("MULTIREGEX 1.0.0.0.31 - Search results")
     if skippedLines > 0
         // Preserve the first match at row 13 by appending the warning at end.
         EndFile()
@@ -815,6 +818,16 @@ integer proc MR_Search(integer mode)
     sourceId = GetBufferId()
     sourceFileS = CurrFilename()
     total = NumLines()
+    // A 256-line cap can make a 4000-character chunk contain only a few
+    // hundred characters in files with many short/empty lines.  Since the
+    // 2000-character overlap then consumes the entire chunk, the legacy
+    // planner may advance just ONE line, recopying almost the same chunk
+    // thousands of times.  Permit more physical lines for small ring files,
+    // retaining EXACTLY the same byte-window limit and overlap calculation.
+    // Large files and non-ring searches keep the verified 256-line cap.
+    if mode == 3 and total <= 10000
+        maxChunkLines = mrRingMaxChunkLines
+    endif
     localLast = total
     if mrLocal
         blockKind = IsBlockInCurrFile()
@@ -1444,6 +1457,10 @@ proc Main()
     if mrProfileEnabled <> 0
         mrProfileEnabled = TRUE
     endif
+    mrRingMaxChunkLines = GetProfileInt("MultiRegex", "RingMaxChunkLines", 4096, mrIniPath)
+    if mrRingMaxChunkLines < 256 or mrRingMaxChunkLines > 4096
+        mrRingMaxChunkLines = 4096
+    endif
     mrFastPlan = GetProfileInt("MultiRegex", "FastPlan", 0, mrIniPath)
     if mrFastPlan <> 0
         mrFastPlan = TRUE
@@ -1459,7 +1476,7 @@ proc Main()
     endif
 
     pattern = mrPattern
-    if not Ask("MULTIREGEX 1.0.0.0.29 - multiline TSE regex:", pattern, historyPattern)
+    if not Ask("MULTIREGEX 1.0.0.0.31 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0

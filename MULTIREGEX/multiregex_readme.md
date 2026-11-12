@@ -1,35 +1,30 @@
-# MULTIREGEX 1.0.0.0.30 — TSE SAL
+# MULTIREGEX 1.0.0.0.31 — TSE SAL
 
-Built from version 1.0.0.0.29. The only functional change is removal of forced whole-screen `UpdateDisplay()` inside the ring search loop. With `ShowSourceDuringSearch=0`, the source file contents remain buffered while `Message()` reports the current file in the message bar. Search algorithm, result previews, navigation and cleanup are unchanged. Whether TSE 4.50.33 paints each message immediately under `BufferVideo()` must be confirmed by runtime testing.
+Based on version 1.0.0.0.30. Optimizes chunk construction for small source buffers in ring-wide (`a`) searches, without changing the regular-expression engine, character-window limit, source position mapping, overlap calculation, results, keyboard/mouse navigation or cleanup.
 
-## Existing INI settings
+## Root cause and fix
+
+The previous search used a hard limit of **256 physical source lines per chunk**, even when the lines were very short. With `MaximumWindow=4000` and `Overlap=2000`, a 256-line chunk shorter than 2000 characters could force advancement by **only one line**, copying almost identical chunks over and over. This explains why the 239-file search built ~378,502 chunks from only 439,447 lines, making planning and copy/flatten dominate runtime.
+
+Version 31 allows up to **4096 physical source lines** within the same `MaximumWindow`/`AdaptiveWindow` byte budget for ring-mode files of at most 10,000 lines. For large files and non-ring searches, the established 256-line cap remains unchanged.
+
+New `[MultiRegex]` INI setting:
 
 ```ini
-[MultiRegex]
-ResultPreviewLength=240
+; Limit for files of <=10000 lines in a ring-wide search. Range 256..4096.
+RingMaxChunkLines=4096
 ```
 
-Valid range is 20–240, default 240 (values outside this range revert to 240). Version 28 used a fixed 72-character preview. The preview uses `GetFoundText()` immediately after `LFind()`, replaces control characters with spaces, and uses `...` if shortened.
+Set `RingMaxChunkLines=256` for a strict A/B comparison against version 30. The previous settings, including `FastPlan=0`, `Overlap=2000`, `MaximumWindow=4000`, `ShowSourceDuringSearch=0` and `ResultPreviewLength=240`, are retained.
 
-**Note on SAL strings:** A result row is still at most 255 characters. The existing filename and `(line,column): ` or `line,column: ` prefix remains complete; the matched-text preview uses the **remaining** space on the same line. Therefore a very long full filename may reduce the displayed preview below 240 characters. No results are split into multiple lines, ensuring the existing row-to-source buffer mapping remains correct. `GetFoundText()` is itself limited by SAL's 255-character string size, so this is a preview rather than a guarantee of the full multiline match.
+The displayed macro version has been corrected in both `Ask()` and the search-results header to **1.0.0.0.31**.
 
-## Test
+## Testing
 
-1. Compile `sc32 multiregex.s` on TSE 4.50.33.
-2. Test `\.si.*\^File:` with `givx` on a known `compile.dat`, or `agivx` across the loaded version files.
-3. Confirm results retain filename, line, column and now show up to 240 preview characters (space permitting).
-4. Verify Enter and left-click visit the editable source, CtrlAlt G returns to the same result, Escape cleans up temporary buffers and restores the normal keys.
-5. Compare match counts/timing with 1.0.0.0.28; the search algorithm has not changed.
+1. Compile `sc32 multiregex.s`, explicitly reload `multiregex.mac` into TSE, and confirm the version 31 search prompt and results header.
+2. Repeat the 239-file `compile.dat` search with `agivx`; compare **239 matches** and 439,447 lines with the previous run, as well as the number of chunks and elapsed time.
+3. Set `RingMaxChunkLines=256`, reload and rerun as an A/B control, if desired.
+4. Test BIBTSE.S with `givx` (single file) to ensure the 256-line large-file path remains intact.
+5. Verify Enter/left click, CtrlAlt G, Escape and editable source navigation.
 
-## Package
-
-`multiregex.s`, `multiregex.ini`, `multiregex_readme.md`, `multiregex_test.txt`. Only the ZIP filename contains the version.
-
-This source was checked and packaged, but cannot be compiled with the Windows TSE SAL compiler in this environment.
-
-## Display-only change from v29
-
-- A single `UpdateDisplay()` occurs before the outer `BufferVideo()` is started, while the blank results buffer is active.
-- Each file is selected and scanned without another `UpdateDisplay()`. Progress is reported through `Message()` only.
-- `UnBufferVideo()` is called once at the end, before entering the results viewer.
-- Test with `agivx` and `ShowSourceDuringSearch=0`: the large editor pane should stay still; the message bar should ideally show the latest file progress. If TSE buffers messages as well, report this behavior; no unverified low-level screen API was introduced.
+**Status:** Source changes and packaging checked; no `sc32` compiler is available in this environment, so compilation and runtime speed/correctness must be confirmed on TSE 4.50.33.
