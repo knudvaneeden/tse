@@ -1,10 +1,21 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.41  
-**Date:** 2026-11-08  
-**Time:** 23:53 CET (UTC+01:00)  
+**Version:** 1.0.0.0.42  
+**Date:** 2026-11-12  
+**Time:** 13:19 CET (UTC+01:00)  
 **LLM:** OpenAI Codex  
 
+
+## Version 1.0.0.0.42 - renamed search defaults, logging, and return key
+
+- Renamed `[Search]` to `[SearchDefaults]`.
+- Renamed `topdirectory` to `topdirectories` and `searcharchive` to
+  `searcharchives` throughout the INI reader, validation, documentation, and
+  supplied configuration.
+- Added validated `[Logging]` settings `CreateLog` and `LogDirectory`.
+  Optional logs are named `filefin2_YYYYMMDDHHMMSS.log` and record the search
+  parameters, every match, and the final match count.
+- Added `<CtrlAlt G>` for returning to the latest FILEFIN2 results buffer.
 
 ## Version 1.0.0.0.41 - archive executable defaults
 
@@ -58,7 +69,7 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 - The reserved SAL names `FindFirst` and `FindNext` are replaced by `FNFindFirstI` and `FNFindNextI`.
 - Separate DLL search contexts preserve recursive searches.
 - The search input is split into two prompts: first the filename or wildcard mask, then the top directory list. Each prompt uses its own named TSE history: `FILEFIN2:filename` and `FILEFIN2:topdirectories`.
-- Search defaults come from `filefin2.ini`. When `searcharchive` is nonempty, its first character is queued with `PushKey()` and acts as the menu accelerator, automatically choosing **Yes** or **No**.
+- Search defaults come from `filefin2.ini`. When `searcharchives` is nonempty, its first character is queued with `PushKey()` and acts as the menu accelerator, automatically choosing **Yes** or **No**.
 - `FF.S` is standalone: its DLL declarations and ZIP helper are embedded directly, so compiling it does not open or retain `FF.INC` or `ZIP.INC` editor buffers.
 - Double quotes are ignored in both inputs. For example, `FF.S` and `"FF.S"`, or `C:\TEMP` and `"C:\TEMP"`, produce the same search.
 - Pressing **Ctrl+Alt+Shift+F** runs the FILEFIN2 search prompt directly while the compiled macro is loaded.
@@ -128,10 +139,10 @@ No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly
 1. Put the compiled `FF.MAC` where TSE loads macros.
 2. Keep `ff.dll`, `zip.dll`, `zip_nested.ps1`, and `filefin2.ini` together with the FILEFIN2 macro package in a directory from which Windows can load the DLLs.
 3. Restart TSE after replacing either DLL, because Windows/TSE may retain a loaded DLL in memory.
-4. Execute the `FF` macro, or press **Ctrl+Alt+Shift+F** while it is loaded. The macro creates and displays a dedicated results buffer.
+4. Execute the `FF` macro, or press **Ctrl+Alt+Shift+F** while it is loaded. The macro creates and displays a dedicated results buffer. Press **Ctrl+Alt+G** to return to the latest FILEFIN2 results buffer after navigating elsewhere.
 5. At the first prompt, enter the filename or wildcard mask only, such as `FF.S`, `*.S`, `e.*list`, `elist.?`, or `FILE?.TXT`.
 6. At the second prompt, enter one top directory or a semicolon-separated list, such as `C:\TEMP` or `C:\TEMP;F:\WORDPROC\tse32_v45024\MACDOWNLO;G:\ARCHIVE`. Empty items between semicolons are ignored.
-7. Choose whether member names inside ZIP, JAR, TAR, TGZ, RAR, and 7z files, including nested and mixed archives, should also be searched. With the distributed blank `searcharchive=` setting, the menu remains visible for this choice.
+7. Choose whether member names inside ZIP, JAR, TAR, TGZ, RAR, and 7z files, including nested and mixed archives, should also be searched. With the distributed blank `searcharchives=` setting, the menu remains visible for this choice.
 
 Both prompts retain their own dedicated TSE history. When the corresponding
 INI value is blank, the newest value in that prompt's history is used as its
@@ -155,21 +166,21 @@ supported archive files.
 
 ## Search defaults in `filefin2.ini`
 
-The `[Search]` section supplies the editable initial values displayed by the
+The `[SearchDefaults]` section supplies the editable initial values displayed by the
 two `Ask()` prompts and the archive menu:
 
 ```ini
-[Search]
+[SearchDefaults]
 filename=*foobar*
-topdirectory=c:\temp\
-searcharchive=
+topdirectories=c:\temp\
+searcharchives=
 ```
 
 - `filename` may contain the supported `*`, `.*`, and `?` wildcards.
-- `topdirectory` is the initial recursive-search directory or a semicolon-separated list of top directories. The complete value is limited to 255 characters by TSE's SAL string size.
-- The distributed default is `searcharchive=` so no key is queued and the user
-  can choose normally. Setting `searcharchive=yes` queues the `y` accelerator,
-  while `searcharchive=no` queues `n`. TSE immediately activates the matching
+- `topdirectories` is the initial recursive-search directory or a semicolon-separated list of top directories. The complete value is limited to 255 characters by TSE's SAL string size.
+- The distributed default is `searcharchives=` so no key is queued and the user
+  can choose normally. Setting `searcharchives=yes` queues the `y` accelerator,
+  while `searcharchives=no` queues `n`. TSE immediately activates the matching
   entry; no separate `<Enter>` is queued or required, and the menu might not be
   visibly displayed.
 
@@ -180,14 +191,38 @@ latest dedicated-history values and preserve the archive-menu history. The user 
 
 FILEFIN2 validates every active line in `filefin2.ini`. It reports unknown
 sections, unknown or empty parameter names, missing equals signs, duplicate
-parameters, parameters in the wrong section, and invalid `searcharchive`
-values in one consolidated warning. The common typo `opdirectory` is reported
-with a suggestion to use `topdirectory`. Comments beginning with `;` are
+parameters, parameters in the wrong section, and invalid `searcharchives` or
+`CreateLog` values in one consolidated warning. The obsolete names
+`topdirectory`, `searcharchive`, and `opdirectory` are reported with suggestions
+to use the new plural parameter names. Comments beginning with `;` are
 ignored. Valid settings remain available after the warning is dismissed.
 
-Accepted nonempty `searcharchive` values are `yes`, `y`, `no`, and `n`, without
+Accepted nonempty `searcharchives` values are `yes`, `y`, `no`, and `n`, without
 regard to letter case. A blank value continues to show the archive menu and
 lets the user choose normally.
+
+## Optional logging
+
+The distributed logging settings are:
+
+```ini
+[Logging]
+; true: create a timestamped log (optional, disabled by default).
+CreateLog=false
+; Empty: create the log beside the running filefin2.mac file.
+; Absolute paths are accepted. Relative paths resolve under the macro directory.
+; If unwritable, falls back to macro directory, then CurrDir().
+LogDirectory=
+```
+
+Set `CreateLog=true`, `yes`, `1`, or `on` to create a timestamped
+`filefin2_YYYYMMDDHHMMSS.log`. The values `false`, `no`, `0`, `off`, or an
+empty value disable logging. With an empty `LogDirectory`, the log is created
+beside the running FILEFIN2 macro. An absolute directory is used directly; a
+relative directory is resolved below the macro directory. If the requested
+directory is unwritable, FILEFIN2 falls back to the macro directory and then
+`CurrDir()`. A log contains the effective search parameters, every matching
+result line, and the final match count.
 
 ## Wildcard examples
 
@@ -254,6 +289,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.42 | 2026-11-12 | Renamed `[Search]` to `[SearchDefaults]`, renamed `topdirectory` and `searcharchive` to their plural forms, added validated optional timestamped logging with directory fallbacks, and added `<CtrlAlt G>` to return to the latest results buffer |
 | 1.0.0.0.41 | 2026-11-08 | Renamed the archive-tool INI parameters to `SevenZipExecutable` and `RarExecutable`, and set their defaults to the standard 7-Zip and WinRAR installation paths |
 | 1.0.0.0.40 | 2026-11-08 | Replaced shared `_EDIT_HISTORY_` use with dedicated named histories for the filename-mask and top-directory prompts; blank INI values now recall the newest value from the corresponding history, while nonempty INI defaults retain priority |
 | 1.0.0.0.39 | 2026-11-08 | Removed cleanup operations from both DLL entry points during process detach to mitigate the reported `ff.dll` loader-detach crash while preserving normal explicit cleanup paths |
