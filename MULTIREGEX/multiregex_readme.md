@@ -1,4 +1,4 @@
-# MULTIREGEX 1.0.0.0.34 — Beginning/end match highlighting
+# MULTIREGEX 1.0.0.0.35 — Beginning/end match highlighting
 
 Based on version 1.0.0.0.33. Retains version 31's ring-wide small-file speed fix, version 32's right-click / CtrlAlt G navigation, and the version 33 display hook. Search algorithm, source text, results format, file/line/column and scan-time behavior are unchanged.
 
@@ -37,3 +37,14 @@ Source and ZIP are checked, but **not compiled or executed in TSE 4.50.33** in t
 3. Confirm filenames/coordinates remain unchanged and horizontal scrolling works.
 4. Recheck navigation and ring-wide `agivx` results (239 matches in the previous dataset).
 5. Confirm no searching-time redraws/highlighting; close with Escape to unhook.
+
+
+## Version 1.0.0.0.35 — Ask() history
+
+- Search-expression and search-options prompts have separate native TSE histories.
+- The newest history item is used as the initial prompt value.
+- On first use, the last settings in multiregex.ini seed empty native histories.
+- Accepted settings are promoted to the newest history position, without duplicating the latest entry.
+- Older history items remain available through TSE's normal Ask() recall keys.
+- Session-to-session recall of the complete list requires TSE's `PersistentHistory` option; the latest defaults are also written to the INI.
+- Search algorithms, previews, highlighting, and navigation are unchanged.

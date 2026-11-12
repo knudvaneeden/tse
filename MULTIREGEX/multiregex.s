@@ -1,5 +1,5 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.34
+// Version: 1.0.0.0.35
 // Date: 2026-11-12
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
@@ -482,7 +482,7 @@ proc MR_PrependSummary(integer bufferId, integer lineCount,
     InsertLine(Format("Search options   : ", mrOptions))
     InsertLine(Format("Expression       : ", mrPattern))
     InsertLine("----------------------------------------------------------")
-    InsertLine("MULTIREGEX 1.0.0.0.34 - Search results")
+    InsertLine("MULTIREGEX 1.0.0.0.35 - Search results")
     if skippedLines > 0
         // Preserve the first match at row 13 by appending the warning at end.
         EndFile()
@@ -1645,14 +1645,30 @@ proc Main()
         mrFastScan = TRUE
     endif
 
+    // Initialize native Ask() histories from persisted INI defaults only when
+    // their lists are empty. GetHistoryStr(..., 1) is the newest entry.
+    // Never clear history: earlier entries must stay available in TSE.
+    if historyPattern > 0 and NumHistoryItems(historyPattern) == 0 and mrPattern <> ""
+        AddHistoryStr(mrPattern, historyPattern)
+    endif
+    if historyOptions > 0 and NumHistoryItems(historyOptions) == 0 and mrOptions <> ""
+        AddHistoryStr(mrOptions, historyOptions)
+    endif
+
     pattern = mrPattern
-    if not Ask("MULTIREGEX 1.0.0.0.34 - multiline TSE regex:", pattern, historyPattern)
+    if historyPattern > 0 and NumHistoryItems(historyPattern) > 0
+        pattern = GetHistoryStr(historyPattern, 1)
+    endif
+    if not Ask("MULTIREGEX 1.0.0.0.35 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0
         return()
     endif
     options = mrOptions
+    if historyOptions > 0 and NumHistoryItems(historyOptions) > 0
+        options = GetHistoryStr(historyOptions, 1)
+    endif
     if not Ask("Options (alphabetical: a,g,i,l,v,x; e.g. agivx):",
                options, historyOptions)
         return()
@@ -1687,6 +1703,24 @@ proc Main()
            oldBlockKind <> _NONINCLUSIVE_ and oldBlockKind <> _LINE_
             Warn("MULTIREGEX: unknown marked block type")
             return()
+        endif
+    endif
+
+    // Explicitly promote the accepted settings to the newest history item.
+    // Some Ask() configurations do not update custom histories reliably.
+    // Avoid inserting a duplicate when Ask() has already done this itself.
+    if historyPattern > 0
+        if NumHistoryItems(historyPattern) == 0
+            AddHistoryStr(pattern, historyPattern)
+        elseif GetHistoryStr(historyPattern, 1) <> pattern
+            AddHistoryStr(pattern, historyPattern)
+        endif
+    endif
+    if historyOptions > 0
+        if NumHistoryItems(historyOptions) == 0
+            AddHistoryStr(options, historyOptions)
+        elseif GetHistoryStr(historyOptions, 1) <> options
+            AddHistoryStr(options, historyOptions)
         endif
     endif
 
