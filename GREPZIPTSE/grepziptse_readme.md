@@ -1,8 +1,81 @@
-# GREPZIPTSE 1.0.0.0.44 — stable cross-platform baseline
+# GREPZIPTSE 1.0.0.0.54 — right-click routing in GREPZIPTSE only
+
+- No changes to `tse.ui` or user mouse macros.
+- Binds `<RightBtn>` directly to `GoToResults()` in GREPZIPTSE results and source keydefs, following the MULTIREGEX source-keymap pattern.
+- Removes the intermediary `ResultRightClick()` callback and its `ChainCmd()` fallback, so the GREPZIPTSE right-button action itself never deliberately passes through to the user mouse macro.
+- All other source operations, HookDisplay highlighting, Ask() latest-history behavior, timer, results layout, and archive test data are unchanged from version 53.
+- **Not tested in TSE**: because active TSE keymap precedence can still affect which macro receives `<RightBtn>`, test specifically whether the custom mouse prompt still appears after opening a result. If it does, do not change `tse.ui`; we will investigate how to prioritize the scoped source keymap.
+
+---
+
+# GREPZIPTSE 1.0.0.0.54 — complete-line match highlighting
+
+- Re-enables `HookDisplay()` for results-only match highlighting, using `PutStr()` and `ClrEol()` instead of the earlier absolute-coordinate `PutStrAttrXY()` which overlaid header rows while scrolling.
+- Every callback draws its entire visible line, including headers, separators and footers. The actual match between `[ ]` is colored with `HiLiteAttr`; the previous `Attr` value is restored afterward.
+- Display hooks are removed before source-file navigation and reinstated when returning to the results buffer.
+- Adds an explicit `<RightBtn>` binding while in the result list, preventing the results keymap from deliberately leaving that event to another handler; the source keymap already binds right-click to return to results. Interaction with user-installed higher-priority keymaps still requires runtime verification.
+- Preserves the version and elapsed timer in the top header, the confirmed latest-input `Ask()` history, search results, file mappings, and all archive fixture bytes.
+- This version is **uncompiled and untested** in TSE 4.50.33. If any repaint issue recurs, return to 1.0.0.0.52, where highlighting was disabled and scrolling worked.
+
+---
+
+# GREPZIPTSE 1.0.0.0.52 — Stable result display and top summary
+
+- Displays the version and elapsed search time in the *top* results header.
+- Writes the elapsed time into its reserved header line **without inserting or deleting lines**, preserving navigation indexes.
+- Temporarily disables the experimental `HookDisplay()` highlighting that caused the header/results to overwrite each other on PageUp, PageDown and return from source buffers. Matching previews are still visibly bracketed (`[foobar]`) but **not colored** in this version. TSE's ordinary drawing handles scrolling and repainting.
+- Preserves confirmed `Ask()` latest-history behavior from version 51, left-click/right-click navigation, search routines, archive samples and `CreateLog=false`.
+- Needs compilation and Windows/WSL/native Ubuntu runtime testing. Version 44 remains the known cross-platform baseline.
+
+---
+
+# GREPZIPTSE 1.0.0.0.51 — Ask() latest-history initialization
+
+- All six Ask() prompts (four main-search, two buffer-search) now initialize from `GetHistoryStr(history, 1)` when `NumHistoryItems(history) > 0`.
+- If a history is empty, the existing INI or in-source default is retained.
+- History identifiers, search algorithms, result navigation, mouse handling, highlighting, timer, archive support, and sample archive contents are unchanged from version 50.
+- Logging remains disabled by default (`CreateLog=false`).
+- Compile with `sc32 grepziptse.si` (TSE 4.50.33) and verify the first dialog value after two different inputs. Compilation is not verified in this environment.
+
+---
+
+# GREPZIPTSE 1.0.0.0.50 — KeyDef declaration-order compilation fix
+
+- Corrects SAL compiler Error 2336 (`KeyDef type expected`) from version 49 at `Disable(GZTResultKeys)`.
+- Moves the `GZTResultKeys` and `GZTSourceKeys` key definitions, together with their forward procedure declarations, before `OpenSelectedResult()` uses them.
+- Does not alter search logic, result handling, navigation semantics, timer, display hook or archive fixture bytes.
+- Updates the INI version comment. Logging remains disabled by default.
+- Compilation in TSE SAL 4.50.33 and runtime behavior still require validation.
+
+---
+
+# GREPZIPTSE 1.0.0.0.49 — results-header display correction
+
+Changes from 1.0.0.0.47:
+- Fixed the results display hook: all rows, including the header, separator and summary, are drawn with normal TSE attributes; highlighting is applied only to actual match rows.
+- The previous early return on non-result rows suppressed their rendering, leaving blank header space and a stale "End of File" indicator. It did not mean the result rows were stored beyond the end of the file.
+- Retains MULTIREGEX-style left-click handling (without chaining to other custom mouse macros inside the results buffer), right-click return and Ctrl+Alt+G.
+- Search algorithms, result mapping, archive handling, defaults and fixture bytes are unchanged.
+- Not yet compiled or tested in TSE; verify header display and navigation.
+
+---
+
+# GREPZIPTSE 1.0.0.0.47 — results display and mouse fix (test build)
+
+Changes from 1.0.0.0.46:
+- In the results buffer, left-click uses `MouseMarking(_INCLUSIVE_)` before opening the selected result, as MULTIREGEX does.
+- Does not call `ChainCmd()` on result-list left clicks; this avoids triggering separately installed custom filename open/run mouse handlers. Outside the results buffer, `ChainCmd()` remains active.
+- The result highlighting display callback no longer paints headers, footers, or informational rows; only recorded result rows may be highlighted.
+- The search algorithm, result mapping, archives, and test values are unchanged.
+- This build requires Windows/WSL/native Ubuntu testing. If the header stops being rendered on a particular TSE build, revert to 1.0.0.0.46 and report the display issue.
+
+---
+
+# GREPZIPTSE 1.0.0.0.47 — stable cross-platform baseline
 
 Changes from 1.0.0.0.43:
 - Sets `[Logging] CreateLog=false` in `grepziptse.ini`. Set it to `true` when diagnostic logs are needed.
-- Updates the source and documentation version identifiers to 1.0.0.0.44.
+- Updates the source and documentation version identifiers to 1.0.0.0.47.
 - No changes to search logic, result navigation, command execution, or archive fixtures.
 - Version 1.0.0.0.43 was reported working on Windows, Linux WSL, and native Ubuntu Linux. Version 44 still requires a compile/runtime test.
 
@@ -277,3 +350,29 @@ Ordinary files are not affected by those ZIP limitations.
    `grepziptse_sample_nested.zip::grepziptse_sample_stored.zip::...`.
 
 Version 1.0.0.0.35 remains the preceding fallback version.
+
+
+## Version 1.0.0.0.47 development test
+- Result rows show the exact matched text in square brackets before the original context line.
+- Right mouse button returns to retained result list; Ctrl+Alt+G is unchanged.
+- Results and opened-file navigation now call UpdateDisplay(_DEFAULT_).
+- Search matching and archive examples are unchanged.
+- Persistent per-token TSE syntax coloring in the result buffer remains a separate unimplemented enhancement.
+- TSE SAL compilation and Windows/WSL/native Linux validation required.
+
+## Version 1.0.0.0.47 development test
+- MULTIREGEX 1.0.0.0.34-inspired HookDisplay for matched-text color in the results buffer.
+- The visible match (from GetFoundText) is colored using TSE HiLiteAttr; other result data and navigation mapping remain unchanged.
+- The display hook is removed before opening a source result and restored when returning through Ctrl+Alt+G or right-click.
+- Removed per-file UpdateDisplay calls during scanning; final results and navigation continue to refresh.
+- All archive fixtures and search algorithms are unchanged.
+- Compile grepziptse.si with sc32, and verify Windows/WSL/native Ubuntu before replacing version 44.
+
+
+### Version 1.0.0.0.49 — result-view navigation and timing
+
+- Added elapsed wall-clock search time in `HH:MM:SS.cc` to the result summary and completion message (including directory enumeration and archive operations).
+- Results/source navigation uses temporary MULTIREGEX-style keymaps maintained by `Process()`. Right-click and Ctrl+Alt+G return from an opened source file; Escape exits the results viewer. Existing user mouse macros remain untouched outside the viewer.
+- On return, the display hook is removed before the native result-buffer refresh and reinstalled afterward to prevent result text being drawn over the header.
+- Retains the literal match brackets and display-only highlighting; actual match counts, mappings and archive fixtures are unchanged.
+- This source needs TSE SAL compilation and runtime testing.

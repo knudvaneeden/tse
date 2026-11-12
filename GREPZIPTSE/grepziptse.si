@@ -1,5 +1,5 @@
 // GREPZIPTSE - Pure TSE SAL recursive ordinary-file and ZIP search
-// Version: 1.0.0.0.44
+// Version: 1.0.0.0.54
 // Date: 2026-11-11
 // Experimental: ZIP member native TSE single-line regular-expression search (hybrid 32 KiB history).
 // No DLL, PowerShell helper or external ZIP executable is needed for ZIP/JAR.
@@ -237,7 +237,7 @@ end
         Warn("GREPZIPTSE: Unable to create a log in any directory.")
         return()
     endif
-    ReportInfo("GREPZIPTSE version 1.0.0.0.44 started")
+    ReportInfo("GREPZIPTSE version 1.0.0.0.54 started")
     if gWindowsPlatform
         ReportInfo("Platform backend: Windows cmd.exe")
     else
@@ -286,6 +286,126 @@ integer gCaptureBuffer = 0
 integer gCaptureOldBuffer = 0
 string gCaptureLine[255] = ""
 
+// Results-only display highlighting, adapted from MULTIREGEX 1.0.0.0.34.
+// Colors the actual GetFoundText() preview between [ and ] in result rows.
+// Never changes the stored result text or its hidden navigation mapping.
+integer gResultHighlightActive = FALSE
+integer gSearchStartTicks = 0
+integer gSearchElapsedTicks = 0
+integer gResultViewActive = FALSE
+integer gSavedResultRow = 0
+
+// GetTime() returns hundredths of a second since midnight in TSE SAL.
+// Handle a search that crosses midnight.
+string proc GZT_ElapsedText(integer ticks)
+    integer hh = ticks / 360000
+    integer mm = (ticks / 6000) mod 60
+    integer ss = (ticks / 100) mod 60
+    integer cc = ticks mod 100
+    return(Format(hh:2:'0', ":", mm:2:'0', ":",
+                  ss:2:'0', ".", cc:2:'0'))
+end
+
+
+// HookDisplay callbacks paint the CURRENT display line, not a fixed XY row.
+// Using PutStrAttrXY(..., VWhereY(), ...) here had overlaid results onto
+// header lines during scrolling.  Follow Semware's original HookDisplay
+// examples: PutStr(), ClrEol(), and always restore the previous attribute.
+proc GZT_DrawResultLine(integer isCursorLine)
+    string fullTextS[255] = ""
+    string visibleS[255] = ""
+    string runS[255] = ""
+    integer horizontalI = CurrXoffset() + 1
+    integer openI = 0
+    integer closeI = 0
+    integer i = 0
+    integer posI = 0
+    integer oldAttrI = Query(Attr)
+    integer wantAttrI = Query(TextAttr)
+    integer runAttrI = -1
+
+    if GetBufferId() <> gResultBuffer or gResultBuffer == 0
+        return()
+    endif
+
+    fullTextS = GetText(1, 255)
+    visibleS = GetText(horizontalI, Query(WindowCols))
+
+    // The header, separators and footer must also be painted completely.
+    // Only genuine result rows receive highlighted match bytes.
+    if CurrLine() >= gFirstResultLine and
+       CurrLine() < gFirstResultLine + gResultCount
+        // The result prefix terminates in "): [". Archive paths may
+        // themselves include colons, so use the LAST such separator.
+        for i = 1 to Length(fullTextS) - 3
+            if SubStr(fullTextS, i, 4) == "): ["
+                openI = i + 3
+            endif
+        endfor
+        if openI > 0
+            for i = openI + 1 to Length(fullTextS)
+                if SubStr(fullTextS, i, 1) == "]"
+                    closeI = i
+                    break
+                endif
+            endfor
+        endif
+    endif
+
+    // Group adjacent characters with the same attribute into one PutStr().
+    // No absolute screen coordinates are used; TSE supplies the output row.
+    for i = 1 to Length(visibleS)
+        posI = horizontalI + i - 1
+        wantAttrI = Query(TextAttr)
+        if closeI > openI and posI > openI and posI < closeI
+            wantAttrI = Query(HiLiteAttr)
+        elseif isCursorLine and (openI == 0 or posI <= openI)
+            wantAttrI = Query(CursorAttr)
+        endif
+        if runAttrI <> wantAttrI
+            if Length(runS) > 0
+                Set(Attr, runAttrI)
+                PutStr(runS)
+            endif
+            runS = ""
+            runAttrI = wantAttrI
+        endif
+        runS = runS + SubStr(visibleS, i, 1)
+    endfor
+    if Length(runS) > 0
+        Set(Attr, runAttrI)
+        PutStr(runS)
+    endif
+    Set(Attr, Query(TextAttr))
+    ClrEol()
+    Set(Attr, oldAttrI)
+end
+
+proc GZT_DisplayBegin()
+end
+proc GZT_DisplayEnd()
+end
+proc GZT_NativeFound()
+    HiLiteFoundText()
+end
+
+proc GZT_StartResultHighlight()
+    // Hook only while displaying the results buffer.  Always unhook before
+    // switching to a source buffer and rehook when returning to results.
+    if not gResultHighlightActive and GetBufferId() == gResultBuffer
+        HookDisplay(GZT_DrawResultLine, GZT_DisplayBegin,
+                    GZT_DisplayEnd, GZT_NativeFound)
+        gResultHighlightActive = TRUE
+    endif
+end
+
+proc GZT_StopResultHighlight()
+    if gResultHighlightActive
+        UnHookDisplay()
+        gResultHighlightActive = FALSE
+    endif
+end
+
 proc SaveResultState()
     SetGlobalInt("GREPZIPTSE_RESULT_BUFFER", gResultBuffer)
     SetGlobalInt("GREPZIPTSE_RESULT_MAP_BUFFER", gResultMapBuffer)
@@ -302,11 +422,13 @@ end
 
 proc AddSearchResult(string targetKind, string targetRef,
                      string displayName, integer lineNo, integer columnNo,
-                     string lineText, integer compressed)
+                     string lineText, string matchText, integer compressed)
     string output[255] = ""
     string mapping[255] = ""
-    output = Format(displayName, "(", lineNo, ",", columnNo, "): ",
-                    lineText)
+    // The matched text is the result, not the query expression.
+    // Keep the original source line for context and the mapping unchanged.
+    output = Format(displayName, "(", lineNo, ",", columnNo, "): [",
+                    matchText, "] ", lineText)
     mapping = Format(targetKind, Chr(9), targetRef, Chr(9), lineNo,
                      Chr(9), columnNo)
     if compressed
@@ -643,7 +765,7 @@ integer proc SearchFinish(string member, string expression, string findOptions)
         LogLine("INFO", Format(member, "(", lineNo, ",", columnNo,
                         "): ", found))
         AddSearchResult("F", gSearchFilePath, member, lineNo, columnNo,
-                        lineText, TRUE)
+                        lineText, found, TRUE)
         // Force progress, including for zero-width regex matches.
         if not Right()
             break
@@ -1630,12 +1752,20 @@ proc SearchCurrentBuffer()
     integer matches = 0
     integer expressionHistory = GetFreeHistory("GREPZIPTSE:bufferexpression")
     integer optionsHistory = GetFreeHistory("GREPZIPTSE:bufferoptions")
+    // Ask() uses the current variable as its initial value. Prefer the
+    // latest accepted entry from the dedicated history, if one exists.
+    if NumHistoryItems(expressionHistory) > 0
+        expression = GetHistoryStr(expressionHistory, 1)
+    endif
     if not Ask("GREPZIPTSE: Search expression:", expression,
                expressionHistory)
         return()
     endif
     if Length(expression) == 0
         return()
+    endif
+    if NumHistoryItems(optionsHistory) > 0
+        options = GetHistoryStr(optionsHistory, 1)
     endif
     if not Ask("Search options (blank, i, x, or ix):", options,
                optionsHistory)
@@ -1944,6 +2074,7 @@ integer proc SearchOrdinaryFile(string fileName, string expression,
     integer lineNo = 0
     integer columnNo = 0
     string lineText[255] = ""
+    string matchedText[255] = ""
 
     sourceBuffer = EditBuffer(fileName, _SYSTEM_)
     if sourceBuffer == 0
@@ -1954,13 +2085,14 @@ integer proc SearchOrdinaryFile(string fileName, string expression,
     found = lFind(expression, options)
     while found
         matches = matches + 1
+        matchedText = GetFoundText()
         lineNo = CurrLine()
         columnNo = CurrCol()
         lineText = GetText(1, CurrLineLen())
         LogLine("INFO", Format(fileName, "(", lineNo, ",", columnNo,
                                 "): ", lineText))
         AddSearchResult("F", fileName, fileName, lineNo, columnNo,
-                        lineText, FALSE)
+                        lineText, matchedText, FALSE)
         found = lRepeatFind()
     endwhile
     AbandonFile(sourceBuffer)
@@ -1975,6 +2107,7 @@ integer proc SearchExternalFile(string fileName, string displayName,
     integer lineNo = 0
     integer columnNo = 0
     string lineText[255] = ""
+    string matchedText[255] = ""
 
     sourceBuffer = EditBuffer(fileName, _SYSTEM_)
     if sourceBuffer == 0
@@ -1985,13 +2118,14 @@ integer proc SearchExternalFile(string fileName, string displayName,
     found = lFind(expression, options)
     while found
         matches = matches + 1
+        matchedText = GetFoundText()
         lineNo = CurrLine()
         columnNo = CurrCol()
         lineText = GetText(1, CurrLineLen())
         LogLine("INFO", Format(displayName, "(", lineNo, ",", columnNo,
                                 "): ", lineText))
         AddSearchResult("F", fileName, displayName, lineNo, columnNo,
-                        lineText, TRUE)
+                        lineText, matchedText, TRUE)
         found = lRepeatFind()
     endwhile
     AbandonFile(sourceBuffer)
@@ -2239,6 +2373,7 @@ end
 
 integer proc BeginResults(string specifications, string expression,
                           string options, string searchArchives)
+    GZT_StopResultHighlight()
     gResultBuffer = CreateTempBuffer()
     gResultMapBuffer = CreateTempBuffer()
     gZipResultBuffer = CreateTempBuffer()
@@ -2255,12 +2390,13 @@ integer proc BeginResults(string specifications, string expression,
     EmptyBuffer()
     GotoBufferId(gZipResultMapBuffer)
     EmptyBuffer()
-    AddLine(Format("GREPZIPTSE results - search string: ", expression),
-            gResultBuffer)
+    AddLine("GREPZIPTSE version 1.0.0.0.54 - found results", gResultBuffer)
+    AddLine(Format("Search string: ", expression), gResultBuffer)
+    AddLine("Elapsed search time: 00:00:00.00", gResultBuffer)
     AddLine(Format("Search options: ", options), gResultBuffer)
     AddLine(Format("Search archived files: ", searchArchives), gResultBuffer)
     AddLine(Format("Source: ", specifications), gResultBuffer)
-    AddLine("Enter/Left click: open result; Ctrl+Alt+G: return here",
+    AddLine("Enter/Left click: open; Right click/Ctrl+Alt+G: results; Escape: exit",
             gResultBuffer)
     AddLine("", gResultBuffer)
     GotoBufferId(gResultBuffer)
@@ -2297,6 +2433,8 @@ proc AppendCompressedResults()
     gZipResultMapBuffer = 0
 end
 
+forward proc GZT_ViewSession()
+
 proc FinishResults(integer filesExamined, integer ordinaryFiles,
                    integer zipFiles)
     AppendCompressedResults()
@@ -2307,18 +2445,50 @@ proc FinishResults(integer filesExamined, integer ordinaryFiles,
     AddLine(Format("Files examined: ", filesExamined,
                    " (ordinary: ", ordinaryFiles,
                    ", archives: ", zipFiles, ")"), gResultBuffer)
+    // Replace fixed header row 3 in-place: never insert/delete rows here,
+    // because gFirstResultLine and the result-map indices must stay valid.
+    GotoBufferId(gResultBuffer)
+    GotoLine(3)
+    BegLine()
+    KillToEol()
+    InsertText(Format("Elapsed search time: ",
+                      GZT_ElapsedText(gSearchElapsedTicks)), _INSERT_)
     if gResultCount == 0
         AddLine("No matching text was found.", gResultBuffer)
     endif
     GotoBufferId(gResultBuffer)
     BegFile()
     SaveResultState()
+    // Draw ordinary header and result rows before installing the display hook.
     UpdateDisplay(_DEFAULT_)
+    GZT_StartResultHighlight()
     Warn(Format(gResultCount, " matching line(s) found in ",
-                filesExamined, " file(s) examined.", Chr(13), Chr(13),
+                filesExamined, " file(s) examined; elapsed ",
+                GZT_ElapsedText(gSearchElapsedTicks), ".", Chr(13), Chr(13),
                 "Click a found line or press Enter to open its file ",
                 "at that line and column.", Chr(13),
                 "Press Ctrl+Alt+G to return to the search results."))
+    GZT_ViewSession()
+end
+
+// Scoped navigation keys, following MULTIREGEX 1.0.0.0.34.
+// The user's custom mouse macros remain untouched outside this viewer.
+forward proc ResultEnter()
+forward proc ResultLeftClick()
+forward proc GoToResults()
+forward proc GZT_ExitResults()
+
+keydef GZTResultKeys
+    <Enter> ResultEnter()
+    <LeftBtn> ResultLeftClick()
+    <RightBtn> GoToResults()
+    <Escape> GZT_ExitResults()
+end
+
+keydef GZTSourceKeys
+    <CtrlAlt G> GoToResults()
+    <RightBtn> GoToResults()
+    <Escape> GZT_ExitResults()
 end
 
 proc OpenSelectedResult()
@@ -2350,6 +2520,7 @@ proc OpenSelectedResult()
        CurrLine() >= gFirstResultLine + gResultCount
         return()
     endif
+    gSavedResultRow = CurrLine()
     mapLine = CurrLine() - gFirstResultLine + 1
     GotoBufferId(gResultMapBuffer)
     GotoLine(mapLine)
@@ -2387,17 +2558,20 @@ proc OpenSelectedResult()
         Warn("The selected result has an invalid file or position.")
         return()
     endif
+    GZT_StopResultHighlight()
     if targetKind == "B"
         targetBuffer = Val(targetRef)
         if targetBuffer <= 0
             LogLine("ERROR", "OpenSelectedResult: invalid ZIP buffer id")
             GotoBufferId(gResultBuffer)
+            GZT_StartResultHighlight()
             return()
         endif
         LogLine("INFO", "OpenSelectedResult: before GotoBufferId ZIP")
         GotoBufferId(targetBuffer)
         if GetBufferId() <> targetBuffer
             GotoBufferId(gResultBuffer)
+            GZT_StartResultHighlight()
             Warn("The decoded ZIP-member buffer is no longer available.")
             return()
         endif
@@ -2405,6 +2579,7 @@ proc OpenSelectedResult()
         if not FileExists(targetRef)
             LogLine("ERROR", Format("OpenSelectedResult: missing file: ", targetRef))
             GotoBufferId(gResultBuffer)
+            GZT_StartResultHighlight()
             Warn("The selected result file is no longer available.")
             return()
         endif
@@ -2413,6 +2588,7 @@ proc OpenSelectedResult()
         // EditFile expects a filename, not a shell-quoted command argument.
         if not EditFile(targetRef, _DONT_PROMPT_)
             LogLine("ERROR", Format("OpenSelectedResult: EditFile failed: ", targetRef))
+            GZT_StartResultHighlight()
             Warn("The selected result file could not be opened.")
             return()
         endif
@@ -2421,6 +2597,9 @@ proc OpenSelectedResult()
     LogLine("INFO", "OpenSelectedResult: before GotoLine/GotoColumn")
     GotoLine(targetLine)
     GotoColumn(targetColumn)
+    Disable(GZTResultKeys)
+    Enable(GZTSourceKeys)
+    UpdateDisplay(_DEFAULT_)
     LogLine("INFO", "OpenSelectedResult: navigation complete")
     if navigationLogOpened
         fClose(gLogHandle)
@@ -2438,20 +2617,55 @@ proc ResultEnter()
 end
 
 proc ResultLeftClick()
-    ChainCmd()
     LoadResultState()
-    if GetBufferId() == gResultBuffer
+    if gResultBuffer > 0 and GetBufferId() == gResultBuffer
+        // MULTIREGEX behavior: position the cursor on the clicked row.
+        // Do NOT ChainCmd here; that would trigger the user's existing
+        // filename-click macro (open/run prompt) before our handler.
+        MouseMarking(_INCLUSIVE_)
         OpenSelectedResult()
+    else
+        // Preserve the user's original mouse commands outside results.
+        ChainCmd()
     endif
 end
 
 proc GoToResults()
     LoadResultState()
-    if gResultBuffer
-        GotoBufferId(gResultBuffer)
-    else
-        Warn("No GREPZIPTSE results are available.")
+    if gResultViewActive and gResultBuffer > 0
+        // Do not redraw while HookDisplay is active: it previously overlaid
+        // result rows on top of header rows on returning from a source file.
+        GZT_StopResultHighlight()
+        if GotoBufferId(gResultBuffer)
+            if gSavedResultRow >= 1
+                GotoLine(gSavedResultRow)
+            endif
+            Disable(GZTSourceKeys)
+            Enable(GZTResultKeys)
+            UpdateDisplay(_DEFAULT_)
+            GZT_StartResultHighlight()
+        endif
     endif
+end
+
+
+proc GZT_ExitResults()
+    if gResultViewActive
+        EndProcess()
+    endif
+end
+
+proc GZT_ViewSession()
+    gResultViewActive = TRUE
+    gSavedResultRow = gFirstResultLine
+    Enable(GZTResultKeys)
+    // Process() keeps the scoped mouse/key bindings active until Escape,
+    // exactly as in MULTIREGEX.  Cursor movement remains native TSE.
+    Process()
+    GZT_StopResultHighlight()
+    Disable(GZTResultKeys)
+    Disable(GZTSourceKeys)
+    gResultViewActive = FALSE
 end
 
 proc RunRecursiveSearch(string specifications, string expression,
@@ -2467,6 +2681,8 @@ proc RunRecursiveSearch(string specifications, string expression,
     integer zipFiles = 0
     integer totalMatches = 0
 
+    gSearchStartTicks = GetTime()
+    gSearchElapsedTicks = 0
     gBatchSearch = TRUE
     manifestPath = PathJoin(TempDirectory(), "grepziptse_manifest.txt")
     Message("GREPZIPTSE: Enumerating files recursively...")
@@ -2502,7 +2718,7 @@ proc RunRecursiveSearch(string specifications, string expression,
         if Length(fileName) > 0
             GotoBufferId(originalBuffer)
             Message(Format("GREPZIPTSE: ", fileName))
-            UpdateDisplay(_DEFAULT_)
+            // Do not redraw the whole editor per file (MULTIREGEX model).
             if IsZipName(fileName) and searchArchives == "yes"
                 filesExamined = filesExamined + 1
                 zipFiles = zipFiles + 1
@@ -2526,7 +2742,11 @@ proc RunRecursiveSearch(string specifications, string expression,
     AbandonFile(manifestBuffer)
     GotoBufferId(originalBuffer)
     gBatchSearch = FALSE
-    LogLine("INFO", Format("GREPZIPTSE 1.0.0.0.44: ", totalMatches,
+    gSearchElapsedTicks = GetTime() - gSearchStartTicks
+    if gSearchElapsedTicks < 0
+        gSearchElapsedTicks = gSearchElapsedTicks + 8640000
+    endif
+    LogLine("INFO", Format("GREPZIPTSE 1.0.0.0.54: ", totalMatches,
                             " match(es) in ", filesExamined, " file(s); ",
                             ordinaryFiles, " ordinary file(s), ", zipFiles,
                             " archive(s)."))
@@ -2572,7 +2792,7 @@ proc Main()
         showStartupDiagnostics = TRUE
     endif
     if showStartupDiagnostics
-        Warn("GREPZIPTSE 1.0.0.0.44: Main() started.")
+        Warn("GREPZIPTSE 1.0.0.0.54: Main() started.")
         Warn("GREPZIPTSE: .si integer array test passed.")
     endif
     createLogText = Lower(TrimInput(GetProfileStr("Logging", "CreateLog",
@@ -2634,6 +2854,21 @@ proc Main()
     specificationsHistory = GetFreeHistory("GREPZIPTSE:searchspecifications")
     searchArchivesHistory = GetFreeHistory("GREPZIPTSE:searcharchives")
 
+    // GetHistoryStr(history, 1) is the most recently added value.
+    // Keep INI defaults when the corresponding history is empty.
+    if NumHistoryItems(expressionHistory) > 0
+        expression = GetHistoryStr(expressionHistory, 1)
+    endif
+    if NumHistoryItems(optionsHistory) > 0
+        options = GetHistoryStr(optionsHistory, 1)
+    endif
+    if NumHistoryItems(specificationsHistory) > 0
+        specifications = GetHistoryStr(specificationsHistory, 1)
+    endif
+    if NumHistoryItems(searchArchivesHistory) > 0
+        searchArchives = GetHistoryStr(searchArchivesHistory, 1)
+    endif
+
     if not Ask("GREPZIPTSE: Search expression:", expression,
                expressionHistory)
         CloseRunLog()
@@ -2692,6 +2927,3 @@ proc Main()
     CloseRunLog()
 end
 
-<CtrlAlt G> GoToResults()
-<Enter> ResultEnter()
-<LeftBtn> ResultLeftClick()
