@@ -1,5 +1,5 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.31
+// Version: 1.0.0.0.32
 // Date: 2026-11-10
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
@@ -482,7 +482,7 @@ proc MR_PrependSummary(integer bufferId, integer lineCount,
     InsertLine(Format("Search options   : ", mrOptions))
     InsertLine(Format("Expression       : ", mrPattern))
     InsertLine("----------------------------------------------------------")
-    InsertLine("MULTIREGEX 1.0.0.0.31 - Search results")
+    InsertLine("MULTIREGEX 1.0.0.0.32 - Search results")
     if skippedLines > 0
         // Preserve the first match at row 13 by appending the warning at end.
         EndFile()
@@ -590,6 +590,7 @@ end
 
 keydef MRSourceKeys
     <CtrlAlt G> MR_ReturnResults()
+    <RightBtn> MR_ReturnResults()
     <Escape> MR_ExitResults()
     <CtrlAltShift X> MR_ExitResults()
 end
@@ -671,7 +672,7 @@ proc MR_OpenResult()
     Disable(MRResultsKeys)
     Enable(MRSourceKeys)
     Message(Format("MULTIREGEX: source match at ", hitLine, ":", hitCol,
-                   "  - CtrlAlt G returns to results"))
+                   "  - CtrlAlt G/right-click returns to results"))
 end
 
 proc MR_MouseOpenResult()
@@ -1476,7 +1477,7 @@ proc Main()
     endif
 
     pattern = mrPattern
-    if not Ask("MULTIREGEX 1.0.0.0.31 - multiline TSE regex:", pattern, historyPattern)
+    if not Ask("MULTIREGEX 1.0.0.0.32 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0
