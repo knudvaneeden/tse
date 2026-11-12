@@ -1,6 +1,6 @@
 // GREPZIP - recursive TSE search, including nested archives
-// Version : 1.0.0.0.27
-// Date    : 2026-11-08
+// Version : 1.0.0.0.30
+// Date    : 2026-11-12
 // LLM     : OpenAI Codex
 
 string searchSpecS[255] = ""
@@ -26,6 +26,92 @@ integer showFileNamesB = TRUE
 integer iniWarningCountI = 0
 string iniWarningsS[255] = ""
 string helperFirstErrorS[255] = ""
+integer createLogB = FALSE
+integer logHandleI = -1
+string logPathS[255] = ""
+string logDirectoryS[255] = ""
+
+string proc FNLogStamp()
+    integer monthI = 0
+    integer dayI = 0
+    integer yearI = 0
+    integer dayOfWeekI = 0
+    integer hourI = 0
+    integer minuteI = 0
+    integer secondI = 0
+    integer hundredthI = 0
+
+    GetDate(monthI, dayI, yearI, dayOfWeekI)
+    GetTime(hourI, minuteI, secondI, hundredthI)
+    return(Format(yearI:4:'0', monthI:2:'0', dayI:2:'0',
+                  hourI:2:'0', minuteI:2:'0', secondI:2:'0'))
+end
+
+proc PROCLog(string messageS)
+    if (logHandleI <> -1)
+        fWrite(logHandleI, messageS + Chr(13) + Chr(10))
+    endif
+end
+
+string proc FNDirectoryWithSlash(string directoryS)
+    integer lengthI = Length(directoryS)
+
+    if (lengthI and (directoryS[lengthI] <> Chr(92)) and
+        (directoryS[lengthI] <> "/"))
+        return(directoryS + Chr(92))
+    endif
+    return(directoryS)
+end
+
+integer proc FNTryOpenLog(string directoryS, string fileNameS)
+    logPathS = FNDirectoryWithSlash(directoryS) + fileNameS
+    logHandleI = fCreate(logPathS)
+    return(logHandleI <> -1)
+end
+
+proc PROCOpenLog()
+    string macroDirectoryS[255] = ""
+    string requestedDirectoryS[255] = ""
+    string fileNameS[40] = ""
+
+    logHandleI = -1
+    logPathS = ""
+    if (not createLogB)
+        return()
+    endif
+    macroDirectoryS = SplitPath(CurrMacroFilename(), _DRIVE_|_PATH_)
+    fileNameS = "grepzip_" + FNLogStamp() + ".log"
+
+    if (Length(logDirectoryS))
+        requestedDirectoryS = logDirectoryS
+        if (not (((Length(requestedDirectoryS) >= 2) and
+                  (requestedDirectoryS[2] == ":")) or
+                 ((Length(requestedDirectoryS) >= 2) and
+                  (requestedDirectoryS[1] == Chr(92)) and
+                  (requestedDirectoryS[2] == Chr(92)))))
+            requestedDirectoryS = macroDirectoryS + requestedDirectoryS
+        endif
+        if (FNTryOpenLog(requestedDirectoryS, fileNameS))
+            return()
+        endif
+    endif
+    if (FNTryOpenLog(macroDirectoryS, fileNameS))
+        return()
+    endif
+    if (FNTryOpenLog(CurrDir(), fileNameS))
+        return()
+    endif
+    Warn(Format("GREPZIP could not create its log in the configured, macro, ",
+                "or current directory."))
+    logPathS = ""
+end
+
+proc PROCCloseLog()
+    if (logHandleI <> -1)
+        fClose(logHandleI)
+        logHandleI = -1
+    endif
+end
 
 proc PROCAddIniWarning(integer lineI, string warningS)
     string entryS[255] = ""
@@ -62,6 +148,8 @@ proc PROCSearchOneFile(string diskNameS, string displayNameS)
         while (foundI)
             lineS = GetText(1, CurrLineLen())
             PROCAddResult(diskNameS, displayNameS, CurrLine(), CurrCol(), lineS)
+            PROCLog(Format(displayNameS, "(", CurrLine(), ",", CurrCol(),
+                           "): ", lineS))
             foundI = lRepeatFind()
         endwhile
         AbandonFile(sourceBufferI)
@@ -249,9 +337,11 @@ proc PROCLoadIniDefaults()
     integer seenRarB = FALSE
     integer seenSearchStringB = FALSE
     integer seenSearchOptionsB = FALSE
-    integer seenTopDirectoryB = FALSE
+    integer seenTopDirectoriesB = FALSE
     integer seenShowFileNamesB = FALSE
     integer seenSearchArchivesB = FALSE
+    integer seenCreateLogB = FALSE
+    integer seenLogDirectoryB = FALSE
 
     iniWarningCountI = 0
     iniWarningsS = ""
@@ -274,7 +364,8 @@ proc PROCLoadIniDefaults()
             (lineS[Length(lineS)] == "]"))
             sectionS = Lower(SubStr(lineS, 2, Length(lineS) - 2))
             if ((sectionS <> "archivetools") and
-                (sectionS <> "searchdefaults"))
+                (sectionS <> "searchdefaults") and
+                (sectionS <> "logging"))
                 PROCAddIniWarning(lineI, Format("unknown section [",
                                                 sectionS, "]"))
             endif
@@ -334,17 +425,17 @@ proc PROCLoadIniDefaults()
                     if (sectionS == "searchdefaults")
                         seenSearchOptionsB = TRUE
                     endif
-                elseif (keyS == "topdirectory")
+                elseif (keyS == "topdirectories")
                     if (sectionS <> "searchdefaults")
                         PROCAddIniWarning(lineI,
-                            "topdirectory is outside [SearchDefaults]")
-                    elseif (seenTopDirectoryB)
-                        PROCAddIniWarning(lineI, "duplicate topdirectory")
+                            "topdirectories is outside [SearchDefaults]")
+                    elseif (seenTopDirectoriesB)
+                        PROCAddIniWarning(lineI, "duplicate topdirectories")
                     elseif (Length(valueS))
                         searchSpecS = valueS
                     endif
                     if (sectionS == "searchdefaults")
-                        seenTopDirectoryB = TRUE
+                        seenTopDirectoriesB = TRUE
                     endif
                 elseif (keyS == "showfilenames")
                     if (sectionS <> "searchdefaults")
@@ -393,9 +484,47 @@ proc PROCLoadIniDefaults()
                     if (sectionS == "searchdefaults")
                         seenSearchArchivesB = TRUE
                     endif
+                elseif (keyS == "createlog")
+                    if (sectionS <> "logging")
+                        PROCAddIniWarning(lineI,
+                            "CreateLog is outside [Logging]")
+                    elseif (seenCreateLogB)
+                        PROCAddIniWarning(lineI, "duplicate CreateLog")
+                    else
+                        valueS = Lower(valueS)
+                        if ((valueS == "true") or (valueS == "yes") or
+                            (valueS == "1") or (valueS == "on"))
+                            createLogB = TRUE
+                        elseif ((valueS == "false") or (valueS == "no") or
+                                (valueS == "0") or (valueS == "off") or
+                                (not Length(valueS)))
+                            createLogB = FALSE
+                        else
+                            PROCAddIniWarning(lineI,
+                                              "invalid CreateLog value")
+                        endif
+                    endif
+                    if (sectionS == "logging")
+                        seenCreateLogB = TRUE
+                    endif
+                elseif (keyS == "logdirectory")
+                    if (sectionS <> "logging")
+                        PROCAddIniWarning(lineI,
+                            "LogDirectory is outside [Logging]")
+                    elseif (seenLogDirectoryB)
+                        PROCAddIniWarning(lineI, "duplicate LogDirectory")
+                    else
+                        logDirectoryS = valueS
+                    endif
+                    if (sectionS == "logging")
+                        seenLogDirectoryB = TRUE
+                    endif
                 elseif (keyS == "opdirectory")
                     PROCAddIniWarning(lineI,
-                        "unknown 'opdirectory'; use 'topdirectory'")
+                        "unknown 'opdirectory'; use 'topdirectories'")
+                elseif (keyS == "topdirectory")
+                    PROCAddIniWarning(lineI,
+                        "unknown 'topdirectory'; use 'topdirectories'")
                 else
                     PROCAddIniWarning(lineI, Format("unknown parameter '",
                                                     keyS, "'"))
@@ -449,6 +578,8 @@ proc Main()
     searchOptionsS = "ix"
     searchArchivesS = "yes"
     searchSpecS = ""
+    createLogB = FALSE
+    logDirectoryS = ""
     PROCLoadIniDefaults()
     if (iniWarningCountI)
         Warn(Format("GREPZIP.INI has ", iniWarningCountI,
@@ -523,10 +654,19 @@ proc Main()
         return()
     endif
 
+    PROCOpenLog()
+    PROCLog("GREPZIP version 1.0.0.0.30 started")
+    PROCLog(Format("Search expression=", expressionS,
+                   "; options=", searchOptionsS,
+                   "; specifications=", searchSpecS,
+                   "; search archives=", searchArchivesS))
+
     // Never permit a failed helper launch to reuse an earlier search manifest.
     commandS = Format('cmd.exe /c del /q "', manifestS, '" 2>nul')
     Dos(commandS, _DONT_PROMPT_)
     if (FileExists(manifestS))
+        PROCLog("ERROR Could not remove the previous manifest.")
+        PROCCloseLog()
         Warn(Format("GREPZIP could not remove its previous manifest:",
                     Chr(13), manifestS, Chr(13),
                     "The search was stopped to prevent stale results."))
@@ -541,12 +681,16 @@ proc Main()
     Dos(commandS, _DONT_PROMPT_)
 
     if (not FileExists(manifestS))
+        PROCLog("ERROR PowerShell did not create a new manifest.")
+        PROCCloseLog()
         Warn(Format("PowerShell did not create a new GREPZIP manifest.",
                     Chr(13), "Check that GREPZIP_HELPER.PS1 can run and ",
                     "that PowerShell reports no error."))
         return()
     endif
     if (not FNManifestHasCurrentStats())
+        PROCLog("ERROR Manifest has no current #STATS marker.")
+        PROCCloseLog()
         Warn(Format("The new GREPZIP manifest has no current #STATS marker.",
                     Chr(13), "The helper may be an older or mismatched version.",
                     Chr(13), "Reinstall all files from the same GREPZIP ZIP."))
@@ -563,7 +707,7 @@ proc Main()
     AddLine(Format("Search options: ", searchOptionsS))
     AddLine(Format("Search archived files: ", searchArchivesS))
     AddLine(Format("Source: ", searchSpecS))
-    AddLine("Enter/Left click: open result; Ctrl+Alt+Shift+G: return here")
+    AddLine("Enter/Left click: open result; Ctrl+Alt+G: return here")
     AddLine("")
     firstResultLineI = NumLines() + 1
     matchCountI = 0
@@ -588,6 +732,15 @@ proc Main()
     if (not matchCountI)
         AddLine("No matching text was found.")
     endif
+    PROCLog(Format("SUMMARY matches=", matchCountI,
+                   "; files examined=", fileCountI,
+                   "; source files enumerated=", helperEnumeratedCountI,
+                   "; manifest entries=", helperManifestCountI,
+                   "; helper errors=", helperErrorCountI))
+    if (helperErrorCountI and Length(helperFirstErrorS))
+        PROCLog(Format("FIRST HELPER ERROR ", helperFirstErrorS))
+    endif
+    PROCCloseLog()
     BegFile()
     UpdateDisplay(_DEFAULT_)
     Warn(Format(matchCountI, " matching line(s) found in ",
@@ -595,11 +748,11 @@ proc Main()
                 Chr(13),
                 "Click a found line or press Enter to open its file ",
                 "at that line and column.", Chr(13),
-                "Press Ctrl+Alt+Shift+G to return to the search results."))
+                "Press Ctrl+Alt+G to return to the search results."))
 end
 
 <CtrlAltShift F> Main()
-<CtrlAltShift G> PROCGoToResults()
+<CtrlAlt G> PROCGoToResults()
 <CtrlAltShift R> PROCRegexHelp()
 <Enter> PROCResultEnter()
 <LeftBtn> PROCResultLeftClick()

@@ -181,7 +181,12 @@ function Expand-ZipArchive([string]$archivePath, [string]$display,
 function Expand-TarArchive([string]$archivePath, [string]$display,
                            [string]$mask, [int]$depth) {
     $tarCommand = Get-Command tar.exe -ErrorAction SilentlyContinue
-    if (-not $tarCommand) { return }
+    if (-not $tarCommand) {
+        # 7-Zip can extract TAR directly. For TGZ/TAR.GZ it first produces
+        # the contained TAR, which Process-File then recognizes recursively.
+        Expand-SevenZipArchive $archivePath $display $mask $depth
+        return
+    }
     $extractRoot = Join-Path $work ([Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $extractRoot | Out-Null
     & $tarCommand.Source -xf $archivePath -C $extractRoot 2>$null

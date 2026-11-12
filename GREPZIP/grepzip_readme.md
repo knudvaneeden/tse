@@ -1,7 +1,7 @@
 # GREPZIP
 
-**Version:** 1.0.0.0.27  
-**Date:** 2026-11-08  
+**Version:** 1.0.0.0.30  
+**Date:** 2026-11-12  
 **Authoring model:** OpenAI Codex
 
 GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents with a **TSE SAL regular expression**. It accepts one or more directories, files, or file specifications and also searches files stored in ZIP, JAR, TAR, TGZ, 7Z and RAR archives. Supported archives stored inside other supported archives are expanded and searched recursively.
@@ -13,15 +13,18 @@ GREPZIP is a portable TSE Pro SAL macro for recursively searching file contents 
 - `grepzip.ini` - configurable archive-tool paths and initial search values.
 - `build.bat` - SAL build command.
 - `grepzip_readme.md` - this documentation.
+- `grepzip_sample_archive.txt` - common comparison content.
+- `grepzip_sample.jar`, `.7z`, `.rar`, `.tar`, and `.tgz` - equivalent
+  archives containing that common comparison file.
 
-No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and the built-in .NET ZIP classes. TAR and TGZ support uses Windows `tar.exe`. RAR support uses configured `rar.exe`, with `7z.exe` as a fallback. 7Z support uses `7z.exe`. All text matching remains in TSE's own search engine.
+No Borland C++ DLL is required. ZIP and JAR support uses Windows PowerShell and the built-in .NET ZIP classes. TAR and TGZ support prefers Windows `tar.exe` and falls back to configured `7z.exe`. RAR support uses configured `rar.exe`, with `7z.exe` as a fallback. 7Z support uses `7z.exe`. All text matching remains in TSE's own search engine.
 
 ## Requirements
 
 - TSE Pro 4.50 for Windows.
 - The `sc32` SAL compiler.
 - Windows PowerShell 5.1 or another Windows PowerShell version providing `System.IO.Compression`.
-- Windows `tar.exe` for TAR, TGZ and TAR.GZ archives. It is included with current Windows 10 and Windows 11 installations.
+- Windows `tar.exe` or 7-Zip for TAR, TGZ and TAR.GZ archives. `tar.exe` is included with current Windows 10 and Windows 11 installations.
 - 7-Zip command-line program `7z.exe` for 7Z archives and as a fallback for RAR archives.
 - Optionally, WinRAR command-line program `rar.exe` for RAR archives.
 
@@ -56,9 +59,17 @@ RarExecutable=C:\Program Files\WinRAR\Rar.exe
 [SearchDefaults]
 searchstring=foobar
 searchoptions=ix
-topdirectory=c:\temp\
+topdirectories=c:\temp\
 showfilenames=true
 searcharchives=yes
+
+[Logging]
+; true: create a timestamped log (optional, disabled by default).
+CreateLog=false
+; Empty: create the log beside the running grepzip.mac file.
+; Absolute paths are accepted. Relative paths resolve under the macro directory.
+; If unwritable, falls back to macro directory, then CurrDir().
+LogDirectory=
 ```
 
 Paths may contain spaces and may optionally be enclosed in double quotes. Environment variables such as `%ProgramFiles%` are expanded. A configured path is used when it exists. If it is blank or invalid, GREPZIP searches `PATH` and the standard 7-Zip or WinRAR installation directories. If `rar.exe` cannot be found, GREPZIP tries `7z.exe` for RAR archives.
@@ -67,9 +78,19 @@ The prompt values under `[SearchDefaults]` provide the initial text displayed by
 
 - `searchstring` initializes the search-string prompt.
 - `searchoptions` initializes the options prompt, for example `i` or `ix`.
-- `topdirectory` initializes the directories or file-specifications prompt. It may contain a semicolon-separated list.
+- `topdirectories` initializes the directories or file-specifications prompt. It may contain a semicolon-separated list.
 - `showfilenames` controls whether each tested filename is displayed on TSE's message bar.
 - `searcharchives` initializes the archive-search prompt; use `yes` or `no`.
+
+`CreateLog=false` is the default. Set it to `true`, `yes`, `1`, or `on` to
+create a timestamped `grepzip_YYYYMMDDHHMMSS.log`. With an empty
+`LogDirectory`, the log is created beside `grepzip.mac`. An absolute directory
+is used directly; a relative directory is resolved below the macro directory.
+If the requested location is unwritable, GREPZIP falls back to the macro
+directory and then `CurrDir()`.
+The log records the accepted search settings, matching result lines, helper
+errors and the final counters. Invalid and duplicate `CreateLog` settings are
+reported by the same INI validator as the other settings.
 
 The user can edit each prompt value before starting the search. Each `Ask()` prompt has its own named TSE history: `GREPZIP:searchstring`, `GREPZIP:searchoptions`, `GREPZIP:searchspecifications`, and `GREPZIP:searcharchives`. When the corresponding initial value is blank, GREPZIP recalls the newest value from that prompt's dedicated history. A nonempty INI or built-in value has priority as the initial text, while the user's accepted prompt input remains final.
 
@@ -77,7 +98,7 @@ The user can edit each prompt value before starting the search. Each `Ask()` pro
 
 Before PowerShell begins enumerating files and expanding archives, GREPZIP displays `GREPZIP: Enumerating files and expanding archives...` on the message bar. That message remains visible during the synchronous enumeration stage. When enumeration finishes, changing filenames replace it during TSE's text-search stage.
 
-GREPZIP validates active lines in `grepzip.ini`. It reports unknown sections, unknown or empty parameter names, missing equals signs, duplicate parameters, parameters in the wrong section, and invalid `showfilenames` or `searcharchives` values in one consolidated warning. The common typo `opdirectory` is specifically reported with a suggestion to use `topdirectory`. Comments beginning with `;` are ignored. Valid settings remain available after the warning is dismissed.
+GREPZIP validates active lines in `grepzip.ini`. It reports unknown sections, unknown or empty parameter names, missing equals signs, duplicate parameters, parameters in the wrong section, and invalid `showfilenames`, `searcharchives`, or `CreateLog` values in one consolidated warning. The obsolete or mistyped names `topdirectory` and `opdirectory` are specifically reported with a suggestion to use `topdirectories`. Comments beginning with `;` are ignored. Valid settings remain available after the warning is dismissed.
 
 ## Run
 
@@ -179,7 +200,9 @@ Whether matching is case-sensitive follows the active TSE search behavior and ex
 The results buffer supports direct navigation:
 
 - Left-click a matching result line or place the cursor on it and press `Enter` to open the file at the reported line and column.
-- Press `Ctrl+Alt+Shift+G` to return to the current GREPZIP results buffer.
+- Press `Ctrl+Alt+G` to return to the current GREPZIP results buffer. The Shift
+  modifier was removed because native TSE for Linux does not recognize it in
+  this key combination.
 - Header, instruction, blank, and summary lines are not navigation targets.
 
 For ordinary files, navigation opens the original file. For archive members, GREPZIP opens the physical temporary extraction file associated with the displayed virtual archive path. The extraction tree is retained after the search so those links remain usable. Starting the next GREPZIP search removes the previous extraction tree and creates a new one; an older archive-result link may therefore no longer be available after another search.
@@ -216,12 +239,39 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 - TSE SAL integers are signed 32-bit.
 - Binary files may not be meaningful to TSE's text search.
 - Password-protected archives are not searched.
-- TAR/TGZ searching requires `tar.exe`; those formats are skipped if it is unavailable.
+- TAR/TGZ searching prefers `tar.exe` and falls back to `7z.exe`; those
+  formats are skipped only when neither tool is available.
 - 7Z searching requires `7z.exe`.
 - RAR searching requires either `rar.exe` or `7z.exe`.
 - Missing archive programs do not prevent GREPZIP from running; only their corresponding formats are skipped.
 
 ## Version history
+
+### 1.0.0.0.30 - 2026-11-12
+
+- Fixes SAL compiler error 2338 by avoiding assignments to constant string
+  parameters in both log-directory helper functions.
+
+### 1.0.0.0.29 - 2026-11-12
+
+- Renames the `[SearchDefaults]` key from `topdirectory` to
+  `topdirectories`.
+- Adds `[Logging] LogDirectory` with absolute and macro-relative path support.
+- Falls back to the macro directory and then `CurrDir()` when the requested
+  log directory is unwritable.
+
+### 1.0.0.0.28 - 2026-11-11
+
+- Confirms recursive TAR, TGZ and TAR.GZ searching and adds a 7-Zip fallback
+  when Windows `tar.exe` is unavailable.
+- Changes the return-to-results key from `Ctrl+Alt+Shift+G` to `Ctrl+Alt+G`
+  for compatibility with native TSE for Linux keyboard handling.
+- Adds validated `[Logging] CreateLog=true|false` configuration with
+  `CreateLog=false` as the supplied and built-in default.
+- Adds equivalent JAR, 7Z, RAR, TAR and TGZ comparison archives containing
+  `grepzip_sample_archive.txt` and the common search text `foobar`.
+- Retains recursive mixed nesting across ZIP, JAR, TAR, TGZ, TAR.GZ, 7Z and
+  RAR archives.
 
 ### 1.0.0.0.27 - 2026-11-08
 
@@ -296,7 +346,7 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 
 - Validates parameter and section names while reading `grepzip.ini`.
 - Detects missing equals signs, empty names, duplicates, misplaced parameters, and invalid `showfilenames` values.
-- Suggests `topdirectory` when the misspelling `opdirectory` is encountered.
+- Suggests `topdirectories` when the misspelling `opdirectory` is encountered.
 - Combines all detected configuration problems into one warning.
 - Continues with recognized settings and safe defaults after the warning.
 
@@ -310,7 +360,7 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 
 - Accepts one or more top directories, literal files, or file specifications.
 - Uses semicolons to separate source entries in the TSE `Ask()` prompt.
-- Applies the same semicolon-separated syntax to `topdirectory` in `grepzip.ini`.
+- Applies the same semicolon-separated syntax to `topdirectories` in `grepzip.ini`.
 - Combines all selected sources into one manifest, search, and results buffer.
 - Ignores empty entries and whitespace surrounding each source entry.
 
@@ -323,7 +373,7 @@ C:\DATA\outer.tgz::source.tar::source/test.s(42,7): proc Main()
 
 ### 1.0.0.0.13 - 2026-09-18
 
-- Adds `searchstring`, `searchoptions`, and `topdirectory` to `grepzip.ini`.
+- Adds `searchstring`, `searchoptions`, and `topdirectories` to `grepzip.ini`.
 - Initializes the three existing TSE input prompts from the non-empty INI values.
 - Keeps every prompt editable, so the INI entries are initial values rather than forced search parameters.
 - Falls back to the built-in GREPZIP defaults when an INI value is empty.
