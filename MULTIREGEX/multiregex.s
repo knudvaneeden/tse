@@ -1,5 +1,5 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.27
+// Version: 1.0.0.0.28
 // Date: 2026-11-10
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
@@ -388,6 +388,31 @@ string proc MR_ElapsedText(integer centisecondsI)
                   ":", MR_TwoDigits(secondsI), ".", MR_TwoDigits(fractionI)))
 end
 
+// Show the first characters of the ACTUAL native LFind() match.
+// TSE SAL strings are limited to 255 characters; previews are intentionally
+// short and control characters are replaced by spaces for a one-line listing.
+string proc MR_MatchPreview(string foundTextS)
+    string previewS[100] = ""
+    integer indexI = 1
+    integer charValueI = 0
+    integer limitI = Length(foundTextS)
+    if limitI > 72
+        limitI = 72
+    endif
+    for indexI = 1 to limitI
+        charValueI = Asc(SubStr(foundTextS, indexI, 1))
+        if charValueI < 32 or charValueI == 127
+            previewS = previewS + " "
+        else
+            previewS = previewS + SubStr(foundTextS, indexI, 1)
+        endif
+    endfor
+    if Length(foundTextS) > limitI
+        previewS = previewS + "..."
+    endif
+    return(previewS)
+end
+
 // Prepend, rather than append, the summary so it is visible immediately.
 // Existing match lines are preserved and their source coordinates unchanged.
 // GetTime() wraps at midnight; each sampled phase must handle the wrap.
@@ -435,7 +460,7 @@ proc MR_PrependSummary(integer bufferId, integer lineCount,
     InsertLine(Format("Search options   : ", mrOptions))
     InsertLine(Format("Expression       : ", mrPattern))
     InsertLine("----------------------------------------------------------")
-    InsertLine("MULTIREGEX 1.0.0.0.27 - Search results")
+    InsertLine("MULTIREGEX 1.0.0.0.28 - Search results")
     if skippedLines > 0
         // Preserve the first match at row 13 by appending the warning at end.
         EndFile()
@@ -542,7 +567,7 @@ keydef MRResultsKeys
 end
 
 keydef MRSourceKeys
-    <CtrlAltShift G> MR_ReturnResults()
+    <CtrlAlt G> MR_ReturnResults()
     <Escape> MR_ExitResults()
     <CtrlAltShift X> MR_ExitResults()
 end
@@ -557,7 +582,7 @@ end
 
 // Enter does not navigate or alter the generated results buffer.
 proc MR_ResultEnter()
-    return()
+    MR_OpenResult()
 end
 
 proc MR_OpenResult()
@@ -624,7 +649,7 @@ proc MR_OpenResult()
     Disable(MRResultsKeys)
     Enable(MRSourceKeys)
     Message(Format("MULTIREGEX: source match at ", hitLine, ":", hitCol,
-                   "  - CtrlAltShift G returns to results"))
+                   "  - CtrlAlt G returns to results"))
 end
 
 proc MR_MouseOpenResult()
@@ -649,7 +674,7 @@ proc MR_ReturnResults()
     endif
     Disable(MRSourceKeys)
     Enable(MRResultsKeys)
-    Message("MULTIREGEX: left-click to visit; Escape to close view")
+    Message("MULTIREGEX: left-click/Enter to visit; Escape to close view")
 end
 
 proc MR_ExitResults()
@@ -734,6 +759,7 @@ integer proc MR_Search(integer mode)
     integer targetLine = 0
     integer targetCol = 0
     integer matchCol = 0
+    string matchPreviewS[100] = ""
     integer accepted = FALSE
     integer complete = TRUE
     integer count = 0
@@ -873,8 +899,8 @@ integer proc MR_Search(integer mode)
     elseif showAll
         resultId = CreateTempBuffer()
         if resultId
-            AddLine("Left-click: visit. CtrlAltShift G: return. Escape: close.")
-            AddLine("line,column: matched expression")
+            AddLine("Left-click/Enter: visit. CtrlAlt G: return. Escape: close.")
+            AddLine("line,column: matched text (preview)")
             AddLine("----------------------------------------------------------")
         endif
     endif
@@ -1028,6 +1054,11 @@ integer proc MR_Search(integer mode)
                     if not regexFoundI
                         break
                     endif
+                    // Capture the real LFind match while its work buffer is
+                    // still current (mapping switches to the source buffer).
+                    if showAll and resultId
+                        matchPreviewS = MR_MatchPreview(GetFoundText())
+                    endif
                     matchCol = CurrCol()
                     if mrProfileEnabled
                         tickBeginI = GetTime()
@@ -1068,14 +1099,14 @@ integer proc MR_Search(integer mode)
                                 GotoBufferId(resultId)
                                 if mode == 3
                                     AddLine(Format(sourceFileS, "(", targetLine,
-                                                   ",", targetCol, "): ", mrPattern))
+                                                   ",", targetCol, "): ", matchPreviewS))
                                     GotoBufferId(mrAllMap)
                                     AddLine(Format(sourceId, ",", targetLine,
                                                    ":", targetCol))
                                     mrAllHits = mrAllHits + 1
                                 else
                                     AddLine(Format(targetLine, ",", targetCol,
-                                                   ": ", mrPattern))
+                                                   ": ", matchPreviewS))
                                 endif
                                 if mrProfileEnabled
                                     mrResultTicks = mrResultTicks + MR_TickDelta(tickBeginI, GetTime())
@@ -1260,8 +1291,8 @@ proc MR_SearchRing()
         return()
     endif
     resultId = mrAllResults
-    AddLine("Left-click: edit source. CtrlAltShift G: return. Escape: close.")
-    AddLine("filename(line,column): matched expression")
+    AddLine("Left-click/Enter: edit source. CtrlAlt G: return. Escape: close.")
+    AddLine("filename(line,column): matched text (preview)")
     AddLine("----------------------------------------------------------")
     mrAllMap = CreateTempBuffer()
     if not mrAllMap
@@ -1405,7 +1436,7 @@ proc Main()
     endif
 
     pattern = mrPattern
-    if not Ask("MULTIREGEX 1.0.0.0.27 - multiline TSE regex:", pattern, historyPattern)
+    if not Ask("MULTIREGEX 1.0.0.0.28 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0
