@@ -1,5 +1,5 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.28
+// Version: 1.0.0.0.30
 // Date: 2026-11-10
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
@@ -281,6 +281,8 @@ string mrPattern[255] = ""
 string mrOptions[255] = "ix"
 integer mrWindow = 4000
 integer mrAdaptiveWindow = 30000
+// Maximum displayed source-match text; result filename/coordinates stay intact.
+integer mrResultPreviewLength = 240
 integer mrFastScan = TRUE
 // FALSE (default): keep source text offscreen during the search.
 // TRUE: retain the previous live source-file display behavior.
@@ -388,16 +390,17 @@ string proc MR_ElapsedText(integer centisecondsI)
                   ":", MR_TwoDigits(secondsI), ".", MR_TwoDigits(fractionI)))
 end
 
-// Show the first characters of the ACTUAL native LFind() match.
-// TSE SAL strings are limited to 255 characters; previews are intentionally
-// short and control characters are replaced by spaces for a one-line listing.
+// Preview the ACTUAL native LFind() match (not the search pattern).
+// GetFoundText() supplies at most one SAL string (255 characters). Keep
+// filename and source coordinates intact by fitting the preview into the
+// space remaining on each result line. No extra result rows are introduced.
 string proc MR_MatchPreview(string foundTextS)
-    string previewS[100] = ""
+    string previewS[255] = ""
     integer indexI = 1
     integer charValueI = 0
     integer limitI = Length(foundTextS)
-    if limitI > 72
-        limitI = 72
+    if limitI > mrResultPreviewLength
+        limitI = mrResultPreviewLength
     endif
     for indexI = 1 to limitI
         charValueI = Asc(SubStr(foundTextS, indexI, 1))
@@ -407,10 +410,26 @@ string proc MR_MatchPreview(string foundTextS)
             previewS = previewS + SubStr(foundTextS, indexI, 1)
         endif
     endfor
-    if Length(foundTextS) > limitI
+    if Length(foundTextS) > limitI and limitI <= 252
         previewS = previewS + "..."
     endif
     return(previewS)
+end
+
+// TSE SAL Format()/string values cannot exceed 255 characters. Preserve the
+// entire coordinate prefix and use as much of the preview as will fit.
+string proc MR_ResultText(string prefixS, string previewS)
+    integer remainingI = 255 - Length(prefixS)
+    if remainingI <= 0
+        return(prefixS)
+    endif
+    if Length(previewS) > remainingI
+        if remainingI > 3
+            return(prefixS + SubStr(previewS, 1, remainingI - 3) + "...")
+        endif
+        return(prefixS + SubStr(previewS, 1, remainingI))
+    endif
+    return(prefixS + previewS)
 end
 
 // Prepend, rather than append, the summary so it is visible immediately.
@@ -759,7 +778,7 @@ integer proc MR_Search(integer mode)
     integer targetLine = 0
     integer targetCol = 0
     integer matchCol = 0
-    string matchPreviewS[100] = ""
+    string matchPreviewS[255] = ""
     integer accepted = FALSE
     integer complete = TRUE
     integer count = 0
@@ -1098,15 +1117,15 @@ integer proc MR_Search(integer mode)
                                 GotoLine(targetLine)
                                 GotoBufferId(resultId)
                                 if mode == 3
-                                    AddLine(Format(sourceFileS, "(", targetLine,
-                                                   ",", targetCol, "): ", matchPreviewS))
+                                    AddLine(MR_ResultText(Format(sourceFileS, "(", targetLine,
+                                                   ",", targetCol, "): "), matchPreviewS))
                                     GotoBufferId(mrAllMap)
                                     AddLine(Format(sourceId, ",", targetLine,
                                                    ":", targetCol))
                                     mrAllHits = mrAllHits + 1
                                 else
-                                    AddLine(Format(targetLine, ",", targetCol,
-                                                   ": ", matchPreviewS))
+                                    AddLine(MR_ResultText(Format(targetLine, ",", targetCol,
+                                                   ": "), matchPreviewS))
                                 endif
                                 if mrProfileEnabled
                                     mrResultTicks = mrResultTicks + MR_TickDelta(tickBeginI, GetTime())
@@ -1327,12 +1346,12 @@ proc MR_SearchRing()
         fileId = Val(GetText(1, CurrLineLen()))
         if fileId > 0 and GotoBufferId(fileId)
             mrAllFiles = mrAllFiles + 1
-            // Refresh the progress line BEFORE starting this file's long
-            // synchronous scan. UpdateDisplay() is a native SAL command.
-            // Call it only at file boundaries to avoid slowing the search.
+            // Refresh only the message bar.  Do NOT call UpdateDisplay()
+            // here: it redraws the newly selected source file despite the
+            // outer BufferVideo() and can slow a many-file ring search.
+            // TSE's Message() reports progress without a forced screen repaint.
             Message(Format("MULTIREGEX: searching ring file ", mrAllFiles,
                            "/", plannedTotalI, ": ", CurrFilename()))
-            UpdateDisplay()
             MR_Search(3)
             plannedI = plannedI + mrPlanTicks
             buildTotalI = buildTotalI + mrBuildTicks
@@ -1406,6 +1425,10 @@ proc Main()
         mrPattern = GetProfileStr("MultiRegex", "SearchExpression", mrPattern, mrIniPath)
         mrOptions = GetProfileStr("MultiRegex", "SearchOptions", mrOptions, mrIniPath)
     endif
+    mrResultPreviewLength = GetProfileInt("MultiRegex", "ResultPreviewLength", 240, mrIniPath)
+    if mrResultPreviewLength < 20 or mrResultPreviewLength > 240
+        mrResultPreviewLength = 240
+    endif
     mrWindow = GetProfileInt("MultiRegex", "MaximumWindow", 4000, mrIniPath)
     if mrWindow < 100 or mrWindow > 30000
         Warn("MULTIREGEX: invalid MaximumWindow in INI; using 4000")
@@ -1436,7 +1459,7 @@ proc Main()
     endif
 
     pattern = mrPattern
-    if not Ask("MULTIREGEX 1.0.0.0.28 - multiline TSE regex:", pattern, historyPattern)
+    if not Ask("MULTIREGEX 1.0.0.0.29 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0
