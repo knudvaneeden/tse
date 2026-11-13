@@ -1,7 +1,7 @@
 /* FILEFIN2 archive reader for TSE 4.50.
    Supports ZIP/JAR directly and nested ZIP/JAR/TAR/TGZ/RAR/7Z through PowerShell.
    Uses Win32 only: no Borland C runtime library is required.
-   Version 1.0.0.0.42 - 2026-11-12 - OpenAI Codex */
+   Version 1.0.0.0.44 - 2026-11-13 - OpenAI Codex */
 
 #include <windows.h>
 

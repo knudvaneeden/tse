@@ -1,6 +1,6 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.42
-// Date    : 2026-11-12
+// Version : 1.0.0.0.44
+// Date    : 2026-11-13
 // LLM     : OpenAI Codex
 //
 // TSE 4.50 / Windows 11 port using ff.dll and zip.dll.
@@ -16,12 +16,27 @@ string file_time[8]
 integer lLookInZip = TRUE
 integer origId
 integer resultCount = 0
+integer firstResultLineI = 0
+integer resultHighlightActiveB = FALSE
+integer searchStartTicksI = 0
+integer searchElapsedTicksI = 0
 integer iniWarningCountI = 0
 string iniWarningsS[255] = ""
 integer createLogB = FALSE
 integer logHandleI = -1
 string logPathS[255] = ""
 string logDirectoryS[255] = ""
+
+string proc FNElapsedText(integer ticksI)
+    integer hoursI = ticksI / 360000
+    integer remainderI = ticksI mod 360000
+    integer minutesI = remainderI / 6000
+    integer secondsI = (remainderI mod 6000) / 100
+    integer hundredthsI = ticksI mod 100
+
+    return(Format(hoursI:2:'0', ":", minutesI:2:'0', ":",
+                  secondsI:2:'0', ".", hundredthsI:2:'0'))
+end
 
 dll "ff.dll"
     integer proc FF_TreeOpen(string directoryS, string maskS,
@@ -331,6 +346,108 @@ proc PROCSetZip(integer setI)
     lLookInZip = setI
 end
 
+// Results-only display highlighting. The highlighted text is the filename
+// that was actually found, rather than the wildcard entered by the user.
+proc PROCDrawResultLine(integer isCursorLineB)
+    string fullTextS[255] = ""
+    string visibleS[255] = ""
+    string runS[255] = ""
+    integer horizontalI = CurrXoffset() + 1
+    integer delimiterI = 0
+    integer nameStartI = 0
+    integer nameEndI = 0
+    integer indexI = 0
+    integer positionI = 0
+    integer oldAttrI = Query(Attr)
+    integer wantedAttrI = Query(TextAttr)
+    integer runAttrI = -1
+
+    if ((GetBufferId() <> origId) or (not origId))
+        return()
+    endif
+    fullTextS = GetText(1, 255)
+    visibleS = GetText(horizontalI, Query(WindowCols))
+    if ((CurrLine() >= firstResultLineI) and
+        (CurrLine() < firstResultLineI + resultCount))
+        delimiterI = Pos("  <-  ", fullTextS)
+        if (delimiterI)
+            nameEndI = delimiterI - 1
+        else
+            nameEndI = Length(fullTextS)
+        endif
+        nameStartI = 33
+        for indexI = 33 to nameEndI
+            if ((SubStr(fullTextS, indexI, 1) == Chr(92)) or
+                (SubStr(fullTextS, indexI, 1) == "/"))
+                nameStartI = indexI + 1
+            endif
+        endfor
+    endif
+    for indexI = 1 to Length(visibleS)
+        positionI = horizontalI + indexI - 1
+        wantedAttrI = Query(TextAttr)
+        if ((positionI >= nameStartI) and (positionI <= nameEndI) and
+            (nameStartI > 0))
+            wantedAttrI = Query(HiLiteAttr)
+        elseif (isCursorLineB)
+            wantedAttrI = Query(CursorAttr)
+        endif
+        if (runAttrI <> wantedAttrI)
+            if (Length(runS))
+                Set(Attr, runAttrI)
+                PutStr(runS)
+            endif
+            runS = ""
+            runAttrI = wantedAttrI
+        endif
+        runS = runS + SubStr(visibleS, indexI, 1)
+    endfor
+    if (Length(runS))
+        Set(Attr, runAttrI)
+        PutStr(runS)
+    endif
+    // As in GREPZIPTSE, paint through the end of every screen row. This
+    // removes remnants of a previously longer result line.
+    Set(Attr, Query(TextAttr))
+    ClrEol()
+    Set(Attr, oldAttrI)
+end
+
+proc PROCDisplayBegin()
+end
+proc PROCDisplayEnd()
+end
+proc PROCHighlightNativeFound()
+    HiLiteFoundText()
+end
+
+proc PROCStartResultHighlight()
+    if ((not resultHighlightActiveB) and (GetBufferId() == origId))
+        HookDisplay(PROCDrawResultLine, PROCDisplayBegin,
+                    PROCDisplayEnd, PROCHighlightNativeFound)
+        resultHighlightActiveB = TRUE
+    endif
+end
+
+proc PROCStopResultHighlight()
+    if (resultHighlightActiveB)
+        UnHookDisplay()
+        resultHighlightActiveB = FALSE
+    endif
+end
+
+forward proc PROCResultLeftClick()
+forward proc PROCGoToResults()
+
+keydef FILEFIN2ResultKeys
+    <LeftBtn> PROCResultLeftClick()
+end
+
+keydef FILEFIN2SourceKeys
+    <RightBtn> PROCGoToResults()
+    <CtrlAlt G> PROCGoToResults()
+end
+
 menu ZipSearch()
     history
     "Search Archive Files?", , Divide
@@ -417,10 +534,11 @@ proc PROCSearchTree()
 
             if (lLookInZip and FF_TreeIsZip(stateS))
                 Message(Format("Scanning archive: ", pathS))
+                // Refresh before a potentially long archive operation.
+                UpdateDisplay(_DEFAULT_)
             else
                 Message(pathS)
             endif
-            UpdateDisplay(_DEFAULT_)
 
             if (FF_TreeMatches(stateS))
                 file_date = ""
@@ -475,9 +593,30 @@ end
 
 proc PROCGoToResults()
     if (origId)
-        GotoBufferId(origId)
+        PROCStopResultHighlight()
+        if (GotoBufferId(origId))
+            Disable(FILEFIN2SourceKeys)
+            Enable(FILEFIN2ResultKeys)
+            UpdateDisplay(_DEFAULT_)
+            PROCStartResultHighlight()
+        endif
     else
         Warn("No FILEFIN2 results are available.")
+    endif
+end
+
+
+proc PROCResultLeftClick()
+    if (GetBufferId() == origId)
+        // Allow the user's existing result-click command to run. Unhook the
+        // result-only renderer first, then make right-click available for
+        // returning from whichever buffer that command opens.
+        PROCStopResultHighlight()
+        Disable(FILEFIN2ResultKeys)
+        Enable(FILEFIN2SourceKeys)
+        ChainCmd()
+    else
+        ChainCmd()
     endif
 end
 
@@ -485,13 +624,17 @@ proc Main()
     string iniFilenameS[255] = ""
     integer filenameHistoryI = 0
     integer topDirectoriesHistoryI = 0
+    string historyValueS[255] = ""
 
-    // Built-in FF.S defaults. Blank INI values do not replace them.
+    // Built-in ff.s defaults. Blank INI values do not replace them.
     fileInput = ""
     directoryInput = ""
     searchArchiveInput = ""
     createLogB = FALSE
     logDirectoryS = ""
+    PROCStopResultHighlight()
+    Disable(FILEFIN2ResultKeys)
+    Disable(FILEFIN2SourceKeys)
     PROCCloseLog()
     iniFilenameS = SplitPath(CurrMacroFileName(), _DRIVE_|_PATH_) +
                    "filefin2.ini"
@@ -507,11 +650,22 @@ proc Main()
         Warn("FILEFIN2 could not allocate its dedicated input histories.")
         return()
     endif
-    if ((not Length(fileInput)) and filenameHistoryI)
-        fileInput = GetHistoryStr(filenameHistoryI, 1)
+    // Seed empty histories from the INI once. The newest accepted Ask() value
+    // then always has priority over the INI default.
+    if ((NumHistoryItems(filenameHistoryI) == 0) and Length(fileInput))
+        AddHistoryStr(fileInput, filenameHistoryI)
     endif
-    if ((not Length(directoryInput)) and topDirectoriesHistoryI)
-        directoryInput = GetHistoryStr(topDirectoriesHistoryI, 1)
+    if ((NumHistoryItems(topDirectoriesHistoryI) == 0) and
+        Length(directoryInput))
+        AddHistoryStr(directoryInput, topDirectoriesHistoryI)
+    endif
+    historyValueS = GetHistoryStr(filenameHistoryI, 1)
+    if (Length(historyValueS))
+        fileInput = historyValueS
+    endif
+    historyValueS = GetHistoryStr(topDirectoriesHistoryI, 1)
+    if (Length(historyValueS))
+        directoryInput = historyValueS
     endif
 
     if (not Ask("Enter filename or file mask (*, .*, ?):", fileInput,
@@ -529,6 +683,15 @@ proc Main()
         return()
     endif
 
+    // Explicitly promote accepted values: some TSE configurations do not
+    // reliably update custom Ask() histories themselves.
+    if (GetHistoryStr(filenameHistoryI, 1) <> fileInput)
+        AddHistoryStr(fileInput, filenameHistoryI)
+    endif
+    if (GetHistoryStr(topDirectoriesHistoryI, 1) <> directoryInput)
+        AddHistoryStr(directoryInput, topDirectoriesHistoryI)
+    endif
+
     PROCSetFileMask(fileInput)
     if (Length(fileToFind) and Length(directoryInput))
         fileToFind = Upper(fileToFind)
@@ -538,7 +701,7 @@ proc Main()
         ZipSearch()
 
         PROCOpenLog()
-        PROCLog("FILEFIN2 version 1.0.0.0.42 started")
+        PROCLog("FILEFIN2 version 1.0.0.0.44 started")
         PROCLog(Format("File mask=", fileToFind,
                        "; top directories=", directoryInput,
                        "; search archives=", lLookInZip))
@@ -546,7 +709,9 @@ proc Main()
         origId = CreateTempBuffer()
         GotoBufferId(origId)
         EmptyBuffer()
-        AddLine(Format("FILEFIN2 results for filename: ", fileToFind), origId)
+        AddLine("FILEFIN2 version 1.0.0.0.44 - found results", origId)
+        AddLine(Format("File mask: ", fileToFind), origId)
+        AddLine("Elapsed search time: 00:00:00.00", origId)
         AddLine("Filename matching: DOS wildcards, case-insensitive", origId)
         if (lLookInZip)
             AddLine("Search archive files: Yes", origId)
@@ -554,21 +719,41 @@ proc Main()
             AddLine("Search archive files: No", origId)
         endif
         AddLine(Format("Starting directories: ", directoryInput), origId)
-        AddLine(Format("File mask: ", fileToFind), origId)
+        AddLine("Right click/Ctrl+Alt+G: return to results", origId)
         AddLine("", origId)
+        firstResultLineI = NumLines() + 1
         resultCount = 0
 
+        searchStartTicksI = GetTime()
+        searchElapsedTicksI = 0
         PROCSearchDirectoryList(directoryInput)
-        UpdateDisplay(_DEFAULT_)
+        searchElapsedTicksI = GetTime() - searchStartTicksI
+        if (searchElapsedTicksI < 0)
+            searchElapsedTicksI = searchElapsedTicksI + 8640000
+        endif
 
         if (not resultCount)
             AddLine("No matching files were found.", origId)
         endif
-        PROCLog(Format("SUMMARY matches=", resultCount))
+        GotoBufferId(origId)
+        GotoLine(3)
+        BegLine()
+        KillToEol()
+        InsertText(Format("Elapsed search time: ",
+                          FNElapsedText(searchElapsedTicksI)), _INSERT_)
+        PROCLog(Format("SUMMARY elapsed=", FNElapsedText(searchElapsedTicksI),
+                       "; matches=", resultCount))
         PROCCloseLog()
         GotoBufferId(origId)
-        GotoLine(1)
+        if (resultCount)
+            GotoLine(firstResultLineI)
+        else
+            EndFile()
+        endif
         GotoColumn(1)
+        UpdateDisplay(_DEFAULT_)
+        PROCStartResultHighlight()
+        Enable(FILEFIN2ResultKeys)
     endif
 end
 

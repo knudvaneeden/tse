@@ -1,9 +1,31 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.42  
-**Date:** 2026-11-12  
+**Version:** 1.0.0.0.44  
+**Date:** 2026-11-13  
 **Time:** 13:19 CET (UTC+01:00)  
 **LLM:** OpenAI Codex  
+
+## Version 1.0.0.0.44 - clean result-row rendering
+
+- The result highlighting callback now follows GREPZIPTSE's run-based
+  `PutStr()` rendering and finishes every displayed row with `ClrEol()`. Text
+  from a previously longer result row can therefore no longer remain visible
+  beside shorter header or result lines.
+- Renamed the packaged SAL source from `FF.S` to lowercase `ff.s` and retained
+  lowercase naming for the package and all other supplied files.
+
+## Version 1.0.0.0.43 - result viewer, timing, and latest Ask values
+
+- The filename and top-directory prompts now always present their newest
+  dedicated-history values. INI values seed an empty history on first use.
+- The result buffer now identifies the FILEFIN2 version, reports elapsed
+  search time, lists navigation help, and initially selects the first found
+  result instead of the query header.
+- Results-only syntax highlighting colors the filename that was actually
+  found, rather than the wildcard query.
+- Right-click and **Ctrl+Alt+G** return to the latest result buffer.
+- Full display refreshes no longer occur for every ordinary filesystem entry;
+  archive handoffs and final result rendering still refresh immediately.
 
 
 ## Version 1.0.0.0.42 - renamed search defaults, logging, and return key
@@ -20,7 +42,7 @@
 ## Version 1.0.0.0.41 - archive executable defaults
 
 - Renamed the `[ArchiveTools]` parameters to `SevenZipExecutable` and
-  `RarExecutable` in `filefin2.ini`, `FF.S`, the PowerShell archive helper,
+  `RarExecutable` in `filefin2.ini`, `ff.s`, the PowerShell archive helper,
   validation messages, and this documentation.
 - Set their distributed defaults to `C:\Program Files\7-Zip\7z.exe` and
   `C:\Program Files\WinRAR\Rar.exe`.
@@ -70,7 +92,7 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 - Separate DLL search contexts preserve recursive searches.
 - The search input is split into two prompts: first the filename or wildcard mask, then the top directory list. Each prompt uses its own named TSE history: `FILEFIN2:filename` and `FILEFIN2:topdirectories`.
 - Search defaults come from `filefin2.ini`. When `searcharchives` is nonempty, its first character is queued with `PushKey()` and acts as the menu accelerator, automatically choosing **Yes** or **No**.
-- `FF.S` is standalone: its DLL declarations and ZIP helper are embedded directly, so compiling it does not open or retain `FF.INC` or `ZIP.INC` editor buffers.
+- `ff.s` is standalone: its DLL declarations and ZIP helper are embedded directly, so compiling it does not open or retain include-file editor buffers.
 - Double quotes are ignored in both inputs. For example, `FF.S` and `"FF.S"`, or `C:\TEMP` and `"C:\TEMP"`, produce the same search.
 - Pressing **Ctrl+Alt+Shift+F** runs the FILEFIN2 search prompt directly while the compiled macro is loaded.
 - Filename masks accept `*` or `.*` anywhere for zero or more characters and `?` anywhere for exactly one character. This applies identically to ordinary filenames and members of ZIP, JAR, TAR, TGZ, RAR, and 7z archives.
@@ -85,7 +107,7 @@ This package ports the 1994 FILEFIN2 macro to 32-bit TSE Pro 4.50 on Windows 11.
 
 | File | Purpose |
 |---|---|
-| `FF.S` | Updated main TSE SAL macro |
+| `ff.s` | Updated main TSE SAL macro |
 | `ff_dll.c` | Borland C source for `ff.dll` |
 | `zip_dll.c` | Borland C source for `zip.dll`, including ZIP/JAR central-directory support and archive-helper integration |
 | `zip_nested.ps1` | PowerShell helper for recursively reading ZIP, JAR, TAR, TGZ, RAR, and 7z members |
@@ -129,10 +151,10 @@ stops before producing the cascade of secondary declaration errors.
 After both DLLs build successfully, compile the updated macro with the TSE SAL Compiler:
 
 ```bat
-sc32 FF.S
+sc32 ff.s
 ```
 
-No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly in `FF.S`.
+No `.INC` files are required. Version 1.0.0.0.9 embeds the declarations directly in `ff.s`.
 
 ## Install and run
 
@@ -184,7 +206,7 @@ searcharchives=
   entry; no separate `<Enter>` is queued or required, and the menu might not be
   visibly displayed.
 
-`FF.S` first establishes its built-in defaults. Only nonempty INI values
+`ff.s` first establishes its built-in defaults. Only nonempty INI values
 override those initial values. Blank keys let the two prompts use their own
 latest dedicated-history values and preserve the archive-menu history. The user can still edit either
 `Ask()` value or choose another menu entry, so interactive input is final.
@@ -240,12 +262,12 @@ result line, and the final match count.
 - Confirm that both DLLs are reachable from the TSE process.
 - Restart TSE after rebuilding the DLLs.
 - Run `tdump -ee ff.dll` and `tdump -ee zip.dll` to inspect the export tables.
-- Confirm that the exported names match the `dll` declarations near the top of `FF.S` exactly.
+- Confirm that the exported names match the `dll` declarations near the top of `ff.s` exactly.
 - Confirm that `-u-` is present in both `bcc32` commands.
 
 ### The SAL compiler still reports `Binary not supported`
 
-Compile the updated standalone `FF.S`. It contains no `binary` declarations and needs no FILEFIN2 include files.
+Compile the updated standalone `ff.s`. It contains no `binary` declarations and needs no FILEFIN2 include files.
 
 ### The SAL compiler reports that `FindFirst` is reserved
 
@@ -258,7 +280,7 @@ For ZIP and JAR files, the DLL searches the central directory, so compression me
 TAR/TGZ and nested archive searching require `zip_nested.ps1` beside `zip.dll` and Windows PowerShell 5.1 or later. Standard TAR/USTAR names and GZip-compressed TAR archives are supported. Encrypted, corrupted, unsupported, or incorrectly named archive members are skipped.
 
 RAR and 7z searching uses the optional paths in `filefin2.ini`, which must be
-kept beside `FF.S` and `zip_nested.ps1`:
+kept beside `ff.s` and `zip_nested.ps1`:
 
 ```ini
 [ArchiveTools]
@@ -289,6 +311,8 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.0.0.0.44 | 2026-11-13 | Cleared stale display-row contents after result highlighting and standardized the packaged SAL source as lowercase `ff.s` |
+| 1.0.0.0.43 | 2026-11-12 | Made dedicated Ask histories reopen on their newest accepted values, added version and elapsed-time result headers, selected and highlighted actual found filenames, added scoped right-click return behavior, and reduced unnecessary display refreshes |
 | 1.0.0.0.42 | 2026-11-12 | Renamed `[Search]` to `[SearchDefaults]`, renamed `topdirectory` and `searcharchive` to their plural forms, added validated optional timestamped logging with directory fallbacks, and added `<CtrlAlt G>` to return to the latest results buffer |
 | 1.0.0.0.41 | 2026-11-08 | Renamed the archive-tool INI parameters to `SevenZipExecutable` and `RarExecutable`, and set their defaults to the standard 7-Zip and WinRAR installation paths |
 | 1.0.0.0.40 | 2026-11-08 | Replaced shared `_EDIT_HISTORY_` use with dedicated named histories for the filename-mask and top-directory prompts; blank INI values now recall the newest value from the corresponding history, while nonempty INI defaults retain priority |
