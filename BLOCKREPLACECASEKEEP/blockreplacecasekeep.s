@@ -1,6 +1,7 @@
 /*
+   blockreplacecasekeep.s - version 1.0.0.0.2
    FNBlockReplaceCaseKeepB()
-   TSE SAL - standalone library function (no Main, no helper macros).
+   TSE SAL - self-contained library function with an optional Main() wrapper.
 
    Based on the case-copying replacement algorithm in ccRepl.s
    by Carlo Hogeveen (30 June 1999).
@@ -15,7 +16,8 @@
    Supports ordinary lFind options, but NOT regex (x), ViewFinds (v),
    or multiline search strings. 'l' (local/marked block) is always forced; 'g' is removed.
 
-   No Main() is supplied: call FNBlockReplaceCaseKeepB() from your library.
+   Call FNBlockReplaceCaseKeepB() from your library or run this macro directly.
+   Persistent Ask() defaults saved in blockreplacecasekeep.ini.
 */
 
 integer proc FNBlockReplaceCaseKeepB()
@@ -32,21 +34,46 @@ integer proc FNBlockReplaceCaseKeepB()
     string searchopt[255] = ""
     string old2[255] = ""
     string new2[255] = ""
+    string iniFile[255] = ""
+    integer findHist = 0
+    integer replaceHist = 0
+    integer optionHist = 0
 
     if not IsBlockInCurrFile()
         Warn("FNBlockReplaceCaseKeepB: Please mark a block in the current file")
         return(0)
     endif
 
-    if not Ask("Block: Search for:", old, 168)
+    // Locate the INI without changing the current working directory.
+    // A companion INI in TSEPath is preferred; otherwise use StartUpPath.
+    iniFile = SearchPath("blockreplacecasekeep.ini", Query(TSEPath), ".")
+    if Length(iniFile) == 0
+        iniFile = Query(StartUpPath) + "blockreplacecasekeep.ini"
+    endif
+
+    // Dedicated named TSE histories, plus INI defaults for future sessions.
+    findHist = GetFreeHistory("BLOCKREPLACECASEKEEP:find")
+    replaceHist = GetFreeHistory("BLOCKREPLACECASEKEEP:replace")
+    optionHist = GetFreeHistory("BLOCKREPLACECASEKEEP:options")
+    old = GetProfileStr("History", "SearchFor", "", iniFile)
+    new = GetProfileStr("History", "ReplaceWith", "", iniFile)
+    opt = GetProfileStr("History", "Options", "i", iniFile)
+
+    if not Ask("Block: Search for:", old, findHist)
         return(0)
     endif
-    if not Ask("Block: Replace with:", new, 169)
+    // Save each successful answer immediately, even if a later prompt is cancelled.
+    WriteProfileStr("History", "SearchFor", old, iniFile)
+    if not Ask("Block: Replace with:", new, replaceHist)
         return(0)
     endif
-    if not Ask("Block: Options [acinw^$#] (l forced, i default):", opt, 161)
+    WriteProfileStr("History", "ReplaceWith", new, iniFile)
+    if not Ask("Block: Options [acinw^$#] (l forced, i default):", opt, optionHist)
         return(0)
     endif
+
+    WriteProfileStr("History", "Options", opt, iniFile)
+    FlushProfile(iniFile)
 
     opt = Lower(opt)
     if Length(old) == 0
@@ -72,12 +99,13 @@ integer proc FNBlockReplaceCaseKeepB()
         endif
     endfor
 
-    // Rebuild options, stripping any user-supplied global/wrap controls,
+    // Rebuild options, stripping global/backward/wrap controls,
     // the local flag (added exactly once), and numeric count.
     searchopt = ""
     for i = 1 to Length(opt)
         if not (opt[i] in "0" .. "9")
         and opt[i] <> "g"
+        and opt[i] <> "b"
         and opt[i] <> "l"
         and opt[i] <> "+"
             searchopt = searchopt + opt[i]
