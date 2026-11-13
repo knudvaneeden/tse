@@ -1,6 +1,6 @@
 // MULTIREGEX.S
-// Version: 1.0.0.0.38
-// Date: 2026-11-12
+// Version: 1.0.0.0.41
+// Date: 2026-11-13
 // TSE SAL only. Prototype chunked search, global/local (inclusive, noninclusive, line block), repeat-forward.
 // Experimental SAL-only implementation: compile and test before large files.
 
@@ -305,6 +305,14 @@ string mrExcludeDirectories[255] = ".git;node_modules"
 integer mrDiskRecursive = TRUE
 integer mrDiskMaxFiles = 10000
 integer mrDiskMaxDepth = 32
+// Optional per-run diagnostic logging, disabled by default.
+integer mrCreateLog = FALSE
+string mrLogDirectory[255] = ""
+string mrLogPath[255] = ""
+integer mrLogHandle = -1
+integer mrDiskOpenFailed = 0
+integer mrDiskNotCurrent = 0
+integer mrDiskProbeHits = 0
 
 integer mrAllResults = 0
 integer mrAllMap = 0
@@ -383,6 +391,97 @@ string proc MR_IniFilename()
         j = j - 1
     endwhile
     return(MR_DiskJoin(CurrDir(), "multiregex.ini"))
+end
+
+// Use the directory containing the loaded macro for portable log defaults.
+string proc MR_MacroDirectory()
+    string filenameS[255] = CurrMacroFilename()
+    integer j = Length(filenameS)
+    while j > 0
+        if SubStr(filenameS, j, 1) == "\" or SubStr(filenameS, j, 1) == "/"
+            return(SubStr(filenameS, 1, j))
+        endif
+        j = j - 1
+    endwhile
+    return(CurrDir())
+end
+
+// Logging uses native SAL file operations; no shell, DLL or helper process.
+// Avoid buffer navigation or UpdateDisplay() in the search loop.
+proc MR_Log(string lineS)
+    if mrLogHandle <> -1
+        fWrite(mrLogHandle, GetDateStr() + " " + GetTimeStr() + " " + lineS + Chr(13) + Chr(10))
+    endif
+end
+
+proc MR_StartLog()
+    integer monthI = 0
+    integer dayI = 0
+    integer yearI = 0
+    integer dowI = 0
+    integer hourI = 0
+    integer minuteI = 0
+    integer secondI = 0
+    integer hundredthI = 0
+    string baseS[255] = ""
+    string timestampS[40] = ""
+    string candidateS[255] = ""
+    if not mrCreateLog
+        return()
+    endif
+    GetDate(monthI, dayI, yearI, dowI)
+    GetTime(hourI, minuteI, secondI, hundredthI)
+    timestampS = Format(yearI:4:'0', monthI:2:'0', dayI:2:'0',
+                        hourI:2:'0', minuteI:2:'0', secondI:2:'0')
+    if mrLogDirectory == ""
+        baseS = MR_MacroDirectory()
+    else
+        if SubStr(mrLogDirectory, 1, 1) == "/" or
+           SubStr(mrLogDirectory, 1, 1) == "\" or
+           SubStr(mrLogDirectory, 2, 1) == ":"
+            baseS = mrLogDirectory
+        else
+            baseS = MR_DiskJoin(MR_MacroDirectory(), mrLogDirectory)
+        endif
+    endif
+    candidateS = MR_DiskJoin(baseS, "multiregex" + timestampS + ".log")
+    mrLogHandle = -1
+    if Length(candidateS) <= 250
+        mrLogHandle = fCreate(candidateS)
+    endif
+    if mrLogHandle == -1
+        baseS = MR_MacroDirectory()
+        candidateS = MR_DiskJoin(baseS, "multiregex" + timestampS + ".log")
+        if Length(candidateS) <= 250
+            mrLogHandle = fCreate(candidateS)
+        endif
+    endif
+    if mrLogHandle == -1
+        candidateS = MR_DiskJoin(CurrDir(), "multiregex" + timestampS + ".log")
+        if Length(candidateS) <= 250
+            mrLogHandle = fCreate(candidateS)
+        endif
+    endif
+    if mrLogHandle <> -1
+        mrLogPath = candidateS
+        MR_Log("INFO MULTIREGEX 1.0.0.0.41 started")
+        MR_Log(Format("INFO expression=", mrPattern, " options=", mrOptions))
+        MR_Log(Format("INFO roots=", mrTopDirectories, " masks=", mrFileMasks))
+    else
+        Message("MULTIREGEX: log requested, but no writable log directory found")
+    endif
+end
+
+proc MR_StopLog()
+    if mrLogHandle <> -1
+        MR_Log(Format("INFO completed; files=", mrAllFiles,
+                      " lines=", mrAllLines, " matches=", mrAllHits,
+                      " failed opens=", mrDiskOpenFailed,
+                      " wrong active buffers=", mrDiskNotCurrent))
+        fClose(mrLogHandle)
+        mrLogHandle = -1
+        Message(Format("MULTIREGEX: diagnostic log: ", mrLogPath))
+    endif
 end
 
 // Reject unsupported letters and duplicates; always display g,i,l,v,x order.
@@ -521,10 +620,13 @@ proc MR_PrependSummary(integer bufferId, integer lineCount,
     if mrAllMode
         InsertLine(Format("Files searched   : ", mrAllFiles))
     endif
+    if mrDiskMode
+        InsertLine(Format("File masks       : ", mrFileMasks))
+    endif
     InsertLine(Format("Search options   : ", mrOptions))
     InsertLine(Format("Expression       : ", mrPattern))
     InsertLine("----------------------------------------------------------")
-    InsertLine("MULTIREGEX 1.0.0.0.38 - Search results")
+    InsertLine("MULTIREGEX 1.0.0.0.41 - Search results")
     if skippedLines > 0
         // Preserve the first match at row 13 by appending the warning at end.
         EndFile()
@@ -620,12 +722,17 @@ integer mrHighlightMatchBeginning = 15
 integer mrHighlightMatchEnding = 25
 
 proc MR_DrawResultLine(integer isCursorLine)
+    // Capture the row BEFORE reading text or querying screen attributes.
+    // A late VWhereY() is unsafe while Process() scrolls the normal buffer.
+    integer drawRowI = VWhereY()
     string fullTextS[255] = ""
     string screenTextS[255] = ""
     string attrsS[255] = ""
     string charAttrS[1] = ""
     integer horizontalI = CurrXoffset() + 1
     integer visibleLenI = 0
+    integer windowWidthI = Query(WindowCols)
+    integer fillI = 0
     integer prefixLenI = 0
     integer previewLenI = 0
     integer beginningLenI = 0
@@ -640,10 +747,20 @@ proc MR_DrawResultLine(integer isCursorLine)
         return()
     endif
     fullTextS = GetText(1, 255)
-    screenTextS = GetText(horizontalI, Query(WindowCols))
-    visibleLenI = Length(screenTextS)
-    if visibleLenI <= 0
+    // A display hook must repaint the COMPLETE visible row. Otherwise an old
+    // long result remains visible to the right of a shorter summary/header
+    // row after PgUp/PgDn or other vertical scrolling.
+    if windowWidthI > 255
+        windowWidthI = 255
+    endif
+    if windowWidthI <= 0
         return()
+    endif
+    screenTextS = GetText(horizontalI, windowWidthI)
+    visibleLenI = Length(screenTextS)
+    if visibleLenI < windowWidthI
+        fillI = windowWidthI - visibleLenI
+        screenTextS = screenTextS + Format("": fillI: " ")
     endif
     // Read the exact separator in the results generated by MR_ResultText.
     // The path may contain ':', hence find the last '): ' separator.
@@ -706,7 +823,7 @@ proc MR_DrawResultLine(integer isCursorLine)
         charAttrS = Chr(attrI)
         attrsS = attrsS + charAttrS
     endfor
-    PutStrAttrXY(1, VWhereY(), screenTextS, attrsS)
+    PutStrAttrXY(1, drawRowI, screenTextS, attrsS)
 end
 
 proc MR_HighlightDisplayStart()
@@ -1636,7 +1753,7 @@ proc MR_SearchRing()
         mrFirstResultRow = mrFirstResultRow + 10
     endif
     // One additional "Files searched" row in the ring-mode header.
-    mrFirstResultRow = mrFirstResultRow + 1
+    mrFirstResultRow = mrFirstResultRow + 2
     MR_PrependSummary(resultId, mrAllLines, mrAllHits,
                       elapsedTicks, mrAllSkipped, speedI)
     // Display is restored before interactive navigation starts.
@@ -1852,6 +1969,12 @@ proc MR_SearchDisk(integer includeRingI)
     mrAllFiles = 0
     mrAllLines = 0
     mrAllSkipped = 0
+    mrDiskOpenFailed = 0
+    mrDiskNotCurrent = 0
+    mrDiskProbeHits = 0
+    MR_StartLog()
+    MR_Log(Format("INFO disk roots queued=", rootI - 1,
+                  " combined ring search=", includeRingI))
     startTicks = GetTime()
     if not mrShowSourceDuringSearch
         GotoBufferId(resultId)
@@ -1901,6 +2024,8 @@ proc MR_SearchDisk(integer includeRingI)
             directoryS = SubStr(dirRowS, separatorI + 1, 255)
             MR_DiskListFiles(directoryS, filesId)
             MR_DiskListDirectories(directoryS, dirsId, depthI)
+            MR_Log(Format("INFO scanned directory depth=", depthI,
+                          " path=", directoryS))
         endif
         dirI = dirI + 1
     endwhile
@@ -1915,6 +2040,13 @@ proc MR_SearchDisk(integer includeRingI)
         // Never close any buffer that was already in the editor's ring.
         openedId = EditThisFile(filenameS, _DONT_PROMPT_)
         if openedId > 0
+            // Re-select by the actual returned id.  Ensure every MR_Search(3)
+            // starts on the intended file, not the queue/results buffer.
+            if GetBufferId() <> openedId
+                mrDiskNotCurrent = mrDiskNotCurrent + 1
+                MR_Log(Format("WARNING opened buffer not current: ", filenameS,
+                              " returned=", openedId, " active=", GetBufferId()))
+            endif
             existedI = MR_IsOriginalRingFile(originalIdsI, openedId)
             // A ring file already contributed its matches in combined mode.
             // Keep disk-only semantics: disk mode still searches that file.
@@ -1924,7 +2056,44 @@ proc MR_SearchDisk(integer includeRingI)
                 mrDiskActivePath = filenameS
                 mrDiskActivePathValid = TRUE
                 Message(Format("MULTIREGEX: disk file ", mrAllFiles, ": ", filenameS))
-                MR_Search(3)
+                // A successful EditThisFile should return the active buffer id.
+                // Explicitly enforce it after all temporary buffer lookups.
+                if GotoBufferId(openedId)
+                    MR_Log(Format("INFO BEGIN disk file=", filenameS,
+                                  " active=", CurrFilename(),
+                                  " lines=", NumLines(), " buffer=", openedId))
+                    // On the first few compile.dat files, verify that TSE
+                    // actually loaded the expected record contents. This is
+                    // diagnostic only; it runs only with logging enabled.
+                    if mrLogHandle <> -1 and mrDiskProbeHits < 8 and
+                       Lower(SubStr(filenameS, Length(filenameS) - 10, 11)) == "compile.dat"
+                        mrDiskProbeHits = mrDiskProbeHits + 1
+                        PushPosition()
+                        BegFile()
+                        if LFind("\.si", "x")
+                            MR_Log(Format("INFO PROBE literal .si at ", CurrLine(),
+                                          ":", CurrCol()))
+                        else
+                            MR_Log("WARNING PROBE .si absent in open file")
+                        endif
+                        BegFile()
+                        if LFind("\^File:", "x")
+                            MR_Log(Format("INFO PROBE literal ^File: at ", CurrLine(),
+                                          ":", CurrCol()))
+                        else
+                            MR_Log("WARNING PROBE ^File: absent in open file")
+                        endif
+                        PopPosition()
+                    endif
+                    MR_Search(3)
+                    MR_Log(Format("INFO END file=", filenameS,
+                                  " total_matches=", mrAllHits,
+                                  " chunks=", mrChunkCount,
+                                  " regex_calls=", mrRegexCalls))
+                else
+                    mrDiskOpenFailed = mrDiskOpenFailed + 1
+                    MR_Log(Format("ERROR unable to select buffer: ", filenameS))
+                endif
                 plannedI = plannedI + mrPlanTicks
                 buildTotalI = buildTotalI + mrBuildTicks
                 regexTotalI = regexTotalI + mrRegexTicks
@@ -1937,6 +2106,9 @@ proc MR_SearchDisk(integer includeRingI)
             if not existedI and GotoBufferId(openedId)
                 AbandonFile()
             endif
+        else
+            mrDiskOpenFailed = mrDiskOpenFailed + 1
+            MR_Log(Format("ERROR unable to open ", filenameS))
         endif
         fileI = fileI + 1
     endwhile
@@ -1974,6 +2146,7 @@ proc MR_SearchDisk(integer includeRingI)
     mrFirstResultRow = mrFirstResultRow + 1
     MR_PrependSummary(resultId, mrAllLines, mrAllHits,
                       elapsedTicks, mrAllSkipped, speedI)
+    MR_StopLog()
     if not mrShowSourceDuringSearch
         UnBufferVideo()
     endif
@@ -1990,6 +2163,8 @@ proc Main()
     integer oldBlockKind = 0
     integer historyPattern = GetFreeHistory("multiregex:pattern")
     integer historyOptions = GetFreeHistory("multiregex:options")
+    integer historyDirectories = GetFreeHistory("multiregex:directories")
+    integer historyMasks = GetFreeHistory("multiregex:masks")
 
     // Replace earlier non-view repeat bindings; even cancel paths are clean.
     if mrSearchKeysActive
@@ -2047,6 +2222,8 @@ proc Main()
     mrTopDirectories = GetProfileStr("MultiRegex", "TopDirectories", CurrDir(), mrIniPath)
     mrFileMasks = GetProfileStr("MultiRegex", "FileMasks", "*.s;*.si;*.txt;*.dat", mrIniPath)
     mrExcludeDirectories = GetProfileStr("MultiRegex", "ExcludeDirectories", ".git;node_modules", mrIniPath)
+    mrCreateLog = GetProfileStr("Logging", "CreateLog", "false", mrIniPath) == "true"
+    mrLogDirectory = GetProfileStr("Logging", "LogDirectory", "", mrIniPath)
     mrDiskRecursive = GetProfileInt("MultiRegex", "Recursive", 1, mrIniPath)
     mrDiskMaxFiles = GetProfileInt("MultiRegex", "DiskMaxFiles", 10000, mrIniPath)
     if mrTopDirectories == ""
@@ -2078,7 +2255,7 @@ proc Main()
     if historyPattern > 0 and NumHistoryItems(historyPattern) > 0
         pattern = GetHistoryStr(historyPattern, 1)
     endif
-    if not Ask("MULTIREGEX 1.0.0.0.38 - multiline TSE regex:", pattern, historyPattern)
+    if not Ask("MULTIREGEX 1.0.0.0.41 - multiline TSE regex:", pattern, historyPattern)
         return()
     endif
     if Length(pattern) == 0
@@ -2093,15 +2270,60 @@ proc Main()
         return()
     endif
     if Pos("d", Lower(options)) > 0
+        // Both disk prompts use the newest native history entry first.
+        // When native history is empty, fall back to the persisted INI.
+        if historyDirectories > 0
+            if NumHistoryItems(historyDirectories) == 0
+                if mrTopDirectories <> ""
+                    AddHistoryStr(mrTopDirectories, historyDirectories)
+                endif
+            else
+                mrTopDirectories = GetHistoryStr(historyDirectories, 1)
+            endif
+        endif
         if not Ask("Top directories (; separated):", mrTopDirectories,
-                   GetFreeHistory("multiregex:directories"))
+                   historyDirectories)
             return()
         endif
-        if not Ask("File masks (; separated):", mrFileMasks,
-                   GetFreeHistory("multiregex:masks"))
+        if mrTopDirectories == ""
+            Warn("MULTIREGEX: top directories cannot be empty")
             return()
         endif
-        WriteProfileStr("MultiRegex", "TopDirectories", mrTopDirectories, mrIniPath)
+        if historyDirectories > 0
+            if NumHistoryItems(historyDirectories) == 0
+                AddHistoryStr(mrTopDirectories, historyDirectories)
+            elseif GetHistoryStr(historyDirectories, 1) <> mrTopDirectories
+                AddHistoryStr(mrTopDirectories, historyDirectories)
+            endif
+        endif
+        // Save immediately so cancellation at the next prompt cannot
+        // discard an accepted new directory list.
+        WriteProfileStr("MultiRegex", "TopDirectories",
+                        mrTopDirectories, mrIniPath)
+
+        if historyMasks > 0
+            if NumHistoryItems(historyMasks) == 0
+                if mrFileMasks <> ""
+                    AddHistoryStr(mrFileMasks, historyMasks)
+                endif
+            else
+                mrFileMasks = GetHistoryStr(historyMasks, 1)
+            endif
+        endif
+        if not Ask("File masks (; separated):", mrFileMasks, historyMasks)
+            return()
+        endif
+        if mrFileMasks == ""
+            Warn("MULTIREGEX: file masks cannot be empty")
+            return()
+        endif
+        if historyMasks > 0
+            if NumHistoryItems(historyMasks) == 0
+                AddHistoryStr(mrFileMasks, historyMasks)
+            elseif GetHistoryStr(historyMasks, 1) <> mrFileMasks
+                AddHistoryStr(mrFileMasks, historyMasks)
+            endif
+        endif
         WriteProfileStr("MultiRegex", "FileMasks", mrFileMasks, mrIniPath)
     endif
     normalized = MR_NormalizeOptions(options)
