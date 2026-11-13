@@ -1,5 +1,5 @@
 // FILEFIN2 - recursive Win32 file finder for TSE Pro
-// Version : 1.0.0.0.44
+// Version : 1.0.0.0.49
 // Date    : 2026-11-13
 // LLM     : OpenAI Codex
 //
@@ -16,13 +16,20 @@ string file_time[8]
 integer lLookInZip = TRUE
 integer origId
 integer resultCount = 0
+integer ordinaryMatchCountI = 0
+integer archiveMatchCountI = 0
+integer ordinaryExaminedI = 0
+integer archiveExaminedI = 0
+integer archiveMemberExaminedI = 0
+string resultsFileS[255] = ""
+
 integer firstResultLineI = 0
 integer resultHighlightActiveB = FALSE
 integer searchStartTicksI = 0
 integer searchElapsedTicksI = 0
 integer iniWarningCountI = 0
 string iniWarningsS[255] = ""
-integer createLogB = FALSE
+integer createLogB = TRUE
 integer logHandleI = -1
 string logPathS[255] = ""
 string logDirectoryS[255] = ""
@@ -67,10 +74,26 @@ string proc FNLogStamp()
                   hourI:2:'0', minuteI:2:'0', secondI:2:'0'))
 end
 
+// Unified per-search logging. Prefixes are explicit and searchable.
+// MATCH contains the complete displayed result including archive context.
 proc PROCLog(string messageS)
-    if (logHandleI <> -1)
-        fWrite(logHandleI, messageS + Chr(13) + Chr(10))
+    string levelS[8] = "INFO"
+    string detailS[255] = messageS
+    if (logHandleI == -1)
+        return()
     endif
+    if (SubStr(detailS, 1, 6) == "MATCH ")
+        levelS = "MATCH"
+        detailS = SubStr(detailS, 7, 255)
+    elseif (SubStr(detailS, 1, 5) == "WARN ")
+        levelS = "WARN"
+        detailS = SubStr(detailS, 6, 255)
+    elseif (SubStr(detailS, 1, 6) == "ERROR ")
+        levelS = "ERROR"
+        detailS = SubStr(detailS, 7, 255)
+    endif
+    fWrite(logHandleI, Format(FNLogStamp(), " ", levelS, " ",
+                              detailS, Chr(13), Chr(10)))
 end
 
 string proc FNDirectoryWithSlash(string directoryS)
@@ -439,6 +462,40 @@ end
 forward proc PROCResultLeftClick()
 forward proc PROCGoToResults()
 
+// Write a plain-text snapshot because the results live in a temporary buffer.
+// Saving is best-effort: an unwritable macro directory falls back to CurrDir().
+proc PROCSaveResultSnapshot()
+    integer fileHandleI = -1
+    integer savedBufferI = GetBufferId()
+    integer savedLineI = CurrLine()
+    integer lineI = 1
+    string snapshotNameS[80] = ""
+    string macroDirectoryS[255] = ""
+
+    snapshotNameS = "filefin2_results_" + FNLogStamp() + ".txt"
+    macroDirectoryS = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
+    resultsFileS = FNDirectoryWithSlash(macroDirectoryS) + snapshotNameS
+    fileHandleI = fCreate(resultsFileS)
+    if (fileHandleI == -1)
+        resultsFileS = FNDirectoryWithSlash(CurrDir()) + snapshotNameS
+        fileHandleI = fCreate(resultsFileS)
+    endif
+    if (fileHandleI == -1)
+        resultsFileS = ""
+        return()
+    endif
+    GotoBufferId(origId)
+    for lineI = 1 to NumLines()
+        GotoLine(lineI)
+        fWrite(fileHandleI, GetText(1, CurrLineLen()) + Chr(13) + Chr(10))
+    endfor
+    fClose(fileHandleI)
+    GotoLine(savedLineI)
+    if (savedBufferI <> origId)
+        GotoBufferId(savedBufferI)
+    endif
+end
+
 keydef FILEFIN2ResultKeys
     <LeftBtn> PROCResultLeftClick()
 end
@@ -504,6 +561,7 @@ proc PROCZipLook(string pathS)
 
     if (ZIP_Open(pathS, stateS))
         while (ZIP_Next(stateS))
+            archiveMemberExaminedI = archiveMemberExaminedI + 1
             if (ZIP_NameMatches(stateS, fileToFind))
                 nameS = ""
                 dateS = ""
@@ -517,6 +575,7 @@ proc PROCZipLook(string pathS)
                 AddLine(cTmpLine, origId)
                 PROCLog(Format("MATCH ", cTmpLine))
                 resultCount = resultCount + 1
+                archiveMatchCountI = archiveMatchCountI + 1
             endif
         endwhile
         ZIP_Close(stateS)
@@ -529,6 +588,11 @@ proc PROCSearchTree()
 
     if (FF_TreeOpen(startPath, fileToFind, lLookInZip, stateS))
         while (FF_TreeNext(stateS))
+            if (lLookInZip and FF_TreeIsZip(stateS))
+                archiveExaminedI = archiveExaminedI + 1
+            else
+                ordinaryExaminedI = ordinaryExaminedI + 1
+            endif
             pathS = ""
             FF_TreeGetPath(stateS, pathS)
 
@@ -551,6 +615,7 @@ proc PROCSearchTree()
                 AddLine(cTmpLine, origId)
                 PROCLog(Format("MATCH ", cTmpLine))
                 resultCount = resultCount + 1
+                ordinaryMatchCountI = ordinaryMatchCountI + 1
             endif
 
             if (lLookInZip and FF_TreeIsZip(stateS))
@@ -630,7 +695,7 @@ proc Main()
     fileInput = ""
     directoryInput = ""
     searchArchiveInput = ""
-    createLogB = FALSE
+    createLogB = TRUE
     logDirectoryS = ""
     PROCStopResultHighlight()
     Disable(FILEFIN2ResultKeys)
@@ -701,7 +766,7 @@ proc Main()
         ZipSearch()
 
         PROCOpenLog()
-        PROCLog("FILEFIN2 version 1.0.0.0.44 started")
+        PROCLog("FILEFIN2 version 1.0.0.0.49 started")
         PROCLog(Format("File mask=", fileToFind,
                        "; top directories=", directoryInput,
                        "; search archives=", lLookInZip))
@@ -709,7 +774,7 @@ proc Main()
         origId = CreateTempBuffer()
         GotoBufferId(origId)
         EmptyBuffer()
-        AddLine("FILEFIN2 version 1.0.0.0.44 - found results", origId)
+        AddLine("FILEFIN2 version 1.0.0.0.49 - found results", origId)
         AddLine(Format("File mask: ", fileToFind), origId)
         AddLine("Elapsed search time: 00:00:00.00", origId)
         AddLine("Filename matching: DOS wildcards, case-insensitive", origId)
@@ -723,6 +788,12 @@ proc Main()
         AddLine("", origId)
         firstResultLineI = NumLines() + 1
         resultCount = 0
+        ordinaryMatchCountI = 0
+        archiveMatchCountI = 0
+        ordinaryExaminedI = 0
+        archiveExaminedI = 0
+        archiveMemberExaminedI = 0
+        resultsFileS = ""
 
         searchStartTicksI = GetTime()
         searchElapsedTicksI = 0
@@ -735,14 +806,35 @@ proc Main()
         if (not resultCount)
             AddLine("No matching files were found.", origId)
         endif
+        AddLine("", origId)
+        AddLine(Format("Matches: ", resultCount, " (ordinary: ",
+                       ordinaryMatchCountI, ", archive members: ",
+                       archiveMatchCountI, ")"), origId)
+        AddLine(Format("Files examined: ", ordinaryExaminedI + archiveExaminedI,
+                       " (ordinary: ", ordinaryExaminedI,
+                       ", archives: ", archiveExaminedI, ")"), origId)
+        AddLine(Format("Archive member entries examined: ",
+                       archiveMemberExaminedI), origId)
         GotoBufferId(origId)
         GotoLine(3)
         BegLine()
         KillToEol()
         InsertText(Format("Elapsed search time: ",
                           FNElapsedText(searchElapsedTicksI)), _INSERT_)
+        // A complete MATCH stream is already recorded in the .log.
+        // Retain legacy .txt export only if logging was disabled or failed.
+        if (logHandleI == -1)
+            PROCSaveResultSnapshot()
+        endif
+        PROCLog(Format("SUMMARY ordinary=", ordinaryMatchCountI,
+                       "; archive members=", archiveMatchCountI,
+                       "; files examined=", ordinaryExaminedI + archiveExaminedI,
+                       "; archive member entries=", archiveMemberExaminedI))
         PROCLog(Format("SUMMARY elapsed=", FNElapsedText(searchElapsedTicksI),
                        "; matches=", resultCount))
+        if (resultCount == 0)
+            PROCLog("WARN No matching filenames were found")
+        endif
         PROCCloseLog()
         GotoBufferId(origId)
         if (resultCount)

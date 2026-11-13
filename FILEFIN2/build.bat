@@ -2,7 +2,7 @@
 setlocal
 
 rem FILEFIN2 DLL build for Borland C++ 5.5.1
-rem Version 1.0.0.0.44 - 2026-11-13 - OpenAI Codex
+rem Version 1.0.0.0.49 - 2026-11-13 - OpenAI Codex
 rem Run from the directory containing this file.
 
 set "BCC32_EXE="

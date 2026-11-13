@@ -1,7 +1,7 @@
 /* FILEFIN2 archive reader for TSE 4.50.
    Supports ZIP/JAR directly and nested ZIP/JAR/TAR/TGZ/RAR/7Z through PowerShell.
    Uses Win32 only: no Borland C runtime library is required.
-   Version 1.0.0.0.44 - 2026-11-13 - OpenAI Codex */
+   Version 1.0.0.0.49 - 2026-11-13 - OpenAI Codex */
 
 #include <windows.h>
 
@@ -115,7 +115,14 @@ static const char *member_base_name(const char *name)
 {
     const char *base = name;
     while (*name) {
-        if (*name == '/' || *name == '\\') base = name + 1;
+        if (*name == '/' || *name == '\\') {
+            base = name + 1;
+        } else if (name[0] == ':' && name[1] == ':') {
+            /* Nested archive path separator. Only the final member's
+             * basename may match the requested filename mask. */
+            base = name + 2;
+            name++;
+        }
         name++;
     }
     return base;

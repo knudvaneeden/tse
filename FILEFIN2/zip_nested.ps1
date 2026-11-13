@@ -1,4 +1,4 @@
-# FILEFIN2 nested archive helper
+# FILEFIN2 nested archive helper — version 1.0.0.0.49
 # Version 1.0.0.0.44 - 2026-11-13 - OpenAI Codex
 
 param(

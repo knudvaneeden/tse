@@ -1,11 +1,11 @@
 # FILEFIN2 Win32 DLL port
 
-**Version:** 1.0.0.0.44  
+**Version:** 1.0.0.0.49  
 **Date:** 2026-11-13  
 **Time:** 13:19 CET (UTC+01:00)  
 **LLM:** OpenAI Codex  
 
-## Version 1.0.0.0.44 - clean result-row rendering
+## Version 1.0.0.0.49 - clean result-row rendering
 
 - The result highlighting callback now follows GREPZIPTSE's run-based
   `PutStr()` rendering and finishes every displayed row with `ClrEol()`. Text
@@ -311,7 +311,7 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 
 | Version | Date | Changes |
 |---|---|---|
-| 1.0.0.0.44 | 2026-11-13 | Cleared stale display-row contents after result highlighting and standardized the packaged SAL source as lowercase `ff.s` |
+| 1.0.0.0.49 | 2026-11-13 | Cleared stale display-row contents after result highlighting and standardized the packaged SAL source as lowercase `ff.s` |
 | 1.0.0.0.43 | 2026-11-12 | Made dedicated Ask histories reopen on their newest accepted values, added version and elapsed-time result headers, selected and highlighted actual found filenames, added scoped right-click return behavior, and reduced unnecessary display refreshes |
 | 1.0.0.0.42 | 2026-11-12 | Renamed `[Search]` to `[SearchDefaults]`, renamed `topdirectory` and `searcharchive` to their plural forms, added validated optional timestamped logging with directory fallbacks, and added `<CtrlAlt G>` to return to the latest results buffer |
 | 1.0.0.0.41 | 2026-11-08 | Renamed the archive-tool INI parameters to `SevenZipExecutable` and `RarExecutable`, and set their defaults to the standard 7-Zip and WinRAR installation paths |
@@ -356,3 +356,39 @@ TSE SAL integers are signed 32-bit values. Sizes above 2,147,483,647 bytes are c
 | 1.0.0.0.22 | 2026-09-15 | Replaced the queued-key workaround with documented variable menu history: `history = archiveMenuItemI`, reset to entry 2 (**Yes**) before every menu call |
 | 1.0.0.0.23 | 2026-09-15 | Restored the original plain `history` archive menu and removed all forced-default variables and queued keys because current TSE versions behave inconsistently with forced selection |
 | 1.0.0.0.24 | 2026-09-15 | Added recursive `.rar` and `.7z` filename searching through `7z.exe`, including mixed nested archive chains and automatic 7-Zip executable discovery |
+
+
+## Version 1.0.0.0.49 (2026-11-13)
+
+Adds FILEFIN2TSE-style result statistics: ordinary and archive-member matches, ordinary files and archives examined, plus archive-member entries inspected. Results are also automatically copied to `filefin2_results_YYYYMMDDHHMMSS.txt` beside the compiled macro (or the current directory if unwritable). This snapshot uses the existing temporary results buffer and does not change search semantics or DLLs. Archive-member counts include ZIP_Open/ZIP_Next entries; deeper traversal internal to the archive DLL is not separately counted.
+
+
+## Version 1.0.0.0.49 compiler correction
+
+Restored `forward proc PROCGoToResults()` before the snapshot procedure; a misplaced `forward` declaration caused compilation errors 2211 and 2333. The 1.0.0.0.45 search and results changes are preserved.
+
+
+## 1.0.0.0.49 compiler correction
+Removed an unintended empty `proc PROCGoToResults()` before `keydef FILEFIN2ResultKeys`. The actual procedure later in `ff.s` remains intact. This resolves the syntax error reported at line 485 in version 46. The source has not been verified with `sc32` in this environment.
+
+
+## Version 1.0.0.0.49 — consolidated logging
+
+`[Logging] CreateLog=true` is the default. A timestamped `filefin2_*.log` includes INFO search parameters, MATCH lines for each ordinary and archive member, WARN when no results were found, and INFO SUMMARY counts and elapsed time. ERROR is a reserved log severity for fatal operations. The separate results `.txt` is written only if logging is disabled or could not start. Existing navigation and result highlighting are unchanged.
+
+
+## Version 1.0.0.0.49 — strict matching of nested archive member filenames
+
+- Corrected `ZIP_NameMatches` in `zip_dll.c` so that it matches only the final
+  member's basename, after any nested-archive `::` delimiters and directory
+  separators (`/` and `\`).
+- For a search mask of `*grep*`, `grep3230.zip::dialog.mac` is **not** a match;
+  `grep3230.zip::grep.s` **is** a match.
+- The containing archive's name does not qualify nonmatching members as hits.
+- Recursive enumeration, extraction and result navigation are unchanged.
+- The C DLL `zip.dll` **must be rebuilt** using `build.bat` and deployed alongside
+  the version 0.49 SAL macro. Merely recompiling `ff.s` cannot fix this bug.
+- The reference run of FILEFIN2 v0.48 had 400 results; inspection of its
+  exported list identified 23 definite nonmatching nested archive member names.
+  The exact v0.49 result count requires runtime testing; do not assume equality
+  with FILEFIN2TSE v0.9 until the remaining entries are compared.
