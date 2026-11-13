@@ -1,5 +1,5 @@
 // FILEFIN2TSE - Pure TSE SAL recursive filename / archive-member finder
-// Version: 1.0.0.0.11
+// Version: 1.0.0.0.13
 // Date: 2026-11-13
 // Experimental v1: filename wildcard matching; ZIP/JAR local-header enumeration.
 // No DLL, PowerShell helper or external ZIP executable is needed for ZIP/JAR.
@@ -239,7 +239,7 @@ end
         Warn("FILEFIN2TSE: Unable to create a log in any directory.")
         return()
     endif
-    ReportInfo("FILEFIN2TSE version 1.0.0.0.11 started")
+    ReportInfo("FILEFIN2TSE version 1.0.0.0.13 started")
     if gWindowsPlatform
         ReportInfo("Platform backend: Windows cmd.exe")
     else
@@ -2699,7 +2699,7 @@ integer proc BeginResults(string specifications, string expression,
     EmptyBuffer()
     GotoBufferId(gZipResultMapBuffer)
     EmptyBuffer()
-    AddLine("FILEFIN2TSE version 1.0.0.0.11 - found results", gResultBuffer)
+    AddLine("FILEFIN2TSE version 1.0.0.0.13 - found results", gResultBuffer)
     AddLine(Format("Filename mask: ", expression), gResultBuffer)
     AddLine("Elapsed search time: 00:00:00.00", gResultBuffer)
     AddLine("Filename matching: DOS wildcards, case-insensitive", gResultBuffer)
@@ -3124,7 +3124,7 @@ proc RunRecursiveSearch(string specifications, string expression,
     if gSearchElapsedTicks < 0
         gSearchElapsedTicks = gSearchElapsedTicks + 8640000
     endif
-    LogLine("INFO", Format("FILEFIN2TSE 1.0.0.0.11: ", totalMatches,
+    LogLine("INFO", Format("FILEFIN2TSE 1.0.0.0.13: ", totalMatches,
                             " match(es) in ", filesExamined, " file(s); ",
                             ordinaryFiles, " ordinary file(s), ", zipFiles,
                             " archive(s)."))
@@ -3170,7 +3170,7 @@ proc Main()
         showStartupDiagnostics = TRUE
     endif
     if showStartupDiagnostics
-        Warn("FILEFIN2TSE 1.0.0.0.11: Main() started.")
+        Warn("FILEFIN2TSE 1.0.0.0.13: Main() started.")
         Warn("FILEFIN2TSE: .si integer array test passed.")
     endif
     createLogText = Lower(TrimInput(GetProfileStr("Logging", "CreateLog",
@@ -3237,6 +3237,23 @@ proc Main()
     gTarExecutable = CleanToolPath(gTarExecutable)
     gSevenZipExecutable = CleanToolPath(gSevenZipExecutable)
     gRarExecutable = CleanToolPath(gRarExecutable)
+
+    // GREPZIPTSE Linux backend: native Linux and WSL both report _LINUX_.
+    // On newer Ubuntu releases the 7-Zip binary can be named 7zz rather
+    // than 7z.  Fall back only for an absent standard /usr/bin/7z path;
+    // do not silently override a custom Linux INI executable setting.
+    if gLinuxPlatform
+        if gSevenZipExecutable == "/usr/bin/7z" and
+           not FileExists(gSevenZipExecutable)
+            if FileExists("/usr/bin/7zz")
+                gSevenZipExecutable = "/usr/bin/7zz"
+            elseif FileExists("/usr/bin/7za")
+                gSevenZipExecutable = "/usr/bin/7za"
+            endif
+        endif
+        LogLine("INFO", Format("Linux external tools: tar=", gTarExecutable,
+                "; 7z=", gSevenZipExecutable, "; rar=", gRarExecutable))
+    endif
 
     expressionHistory = GetFreeHistory("FILEFIN2TSE:searchstring")
     optionsHistory = GetFreeHistory("FILEFIN2TSE:searchoptions")

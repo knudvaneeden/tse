@@ -1,12 +1,156 @@
 # FILEFIN2TSE — native TSE SAL filename finder
 
-**Version:** 1.0.0.0.11 (nested external archives)  
+**Version:** 1.0.0.0.13 (validated Windows, WSL, and native Ubuntu; logging disabled by default)
 **Date:** 2026-11-13  
 **Reference code:** FILEFIN2 1.0.0.0.84 and GREPZIPTSE 1.0.0.0.84
 
 ## Purpose
 
 FILEFIN2TSE is a new TSE SAL `.si` implementation of the FILEFIN2 filename finder. It does not call `ff.dll`, `zip.dll`, or PowerShell. It uses TSE SAL for DOS wildcard matching, results display, and ZIP/JAR central-directory inspection. It reuses GREPZIPTSE's existing cross-platform shell-based filesystem enumeration and optional external archive extraction (TAR/TGZ via `tar`, RAR/7z via configured tools); this is not a wholly self-contained runtime for those archive types.
+
+## Version 1.0.0.0.13 — normal operation
+
+- Logging is disabled by default (`[Logging] CreateLog=false`).
+- Logging remains available for troubleshooting by setting `CreateLog=true`.
+- The filename search, archive extraction, and navigation logic are unchanged from the validated 1.0.0.0.12 release.
+- Windows, WSL Ubuntu and native Ubuntu validation completed with zero reported external extraction failures.
+
+## Version 1.0.0.0.12 — Linux and WSL testing
+
+The base source comes from successfully Windows-tested FILEFIN2TSE 1.0.0.0.11,
+and follows the existing GREPZIPTSE 1.0.0.0.54 platform backend. It identifies
+Windows versus Linux with native TSE `WhichOS()`. **WSL is Linux**, so native
+Linux paths and Linux commands are used on both WSL and Ubuntu installations.
+
+- ZIP/JAR and nested ZIP/JAR: native SAL processing, no unzip dependency.
+- TAR/TGZ/TAR.GZ: `/usr/bin/tar` or another configured TAR binary.
+- 7Z and RAR: configurable `[Linux]` executables. If the default
+  `/usr/bin/7z` is absent, the program tries `/usr/bin/7zz` then
+  `/usr/bin/7za`. RAR is processed with the configured `rar` when present,
+  otherwise with the configured 7-Zip executable.
+- External staging uses `$TMPDIR` (or `/tmp`) and `/bin/sh`; all output files
+  remain under Linux-accessible directories.
+- `TopDirectories` in `[Linux]` sets the initial location; the most recent
+  interactive Ask() history may override this default.
+
+### WSL example
+
+Compile with the **Linux** `sc32` (TSE SAL 4.50.33), not the Windows binary:
+
+```sh
+sc32 filefin2tse.si
+```
+
+For a Windows `F:` drive mounted by WSL, start a search with these prompts:
+
+```text
+Filename mask:      *grep*
+Starting directory: /mnt/f/BBC/taal/
+Search archives:    yes
+```
+
+### Native Ubuntu example
+
+Use a real Linux directory, e.g. `/home/<user>/test_archives/` or `/tmp/`.
+Set the archive executables in the `[Linux]` section of `filefin2tse.ini`
+when their installed paths differ. Verify the commands with
+`command -v tar; command -v 7z; command -v 7zz; command -v rar`.
+
+**Test status (2026-11-13):** Version 1.0.0.0.13 has been tested successfully
+on Windows (377 matching filenames) and WSL Ubuntu with Linux 7-Zip installed
+(377 matching filenames: 215 ordinary, 162 archive members; 32 successful
+external extractions, zero failures, 14 7z attempts, zero separate rar attempts).
+Native Ubuntu (non-WSL) runtime validation is the next test.
+
+
+### Ubuntu / WSL prerequisites: install archive utilities
+
+These instructions apply to Ubuntu inside WSL and to native Ubuntu, unless
+specifically marked **WSL-only**. All commands run in the Linux terminal.
+ZIP/JAR listing is implemented natively in SAL; external utilities are used
+for TAR/TGZ, 7Z and RAR archives.
+
+Check which tools are installed (an empty `command -v` result means that the
+command is not found in `PATH`):
+
+```sh
+command -v tar
+command -v 7z
+command -v rar
+command -v unrar
+```
+
+**Install 7-Zip (recommended):**
+
+```sh
+sudo apt update
+sudo apt install 7zip
+command -v 7z
+7z i
+```
+
+On some older Ubuntu releases the available package is `p7zip-full` instead
+of `7zip` (`sudo apt install p7zip-full`). Executable names can differ (`7z`,
+`7zz`, or `7za`); confirm the actual binary with `command -v`. The `[Linux]`
+INI defaults use `SevenZipExecutable=/usr/bin/7z` and include fallbacks for
+`/usr/bin/7zz` and `/usr/bin/7za`.
+
+**Install RAR (optional, but supported):**
+
+```sh
+sudo apt update
+sudo apt install rar
+command -v rar
+```
+
+The `rar` package may not be available in every Ubuntu repository or release.
+On Ubuntu editions using the `multiverse` repository, enable it if appropriate
+(e.g. `sudo add-apt-repository multiverse`, followed by `sudo apt update`).
+If only *extraction* is needed, `unrar` may also be installable via
+`sudo apt install unrar`, but FILEFIN2TSE's `[Linux] RarExecutable` expects a
+compatible `rar` CLI, **not** an interchangeable `unrar` command. Do not point
+`RarExecutable` at `unrar` unless the source command syntax has been adapted.
+The tested FILEFIN2TSE fallback uses the `7z` executable for supported RAR
+archives whenever `rar` is unavailable, so installing `rar` is not mandatory.
+
+Confirm TAR is installed:
+
+```sh
+command -v tar
+sudo apt install tar   # Only if the previous check returned nothing
+```
+
+After installation, retest `*grep*` with `Search archives=yes`; the controlled
+Windows/WSL regression data produced 377 matches when all tools were present.
+Different directories or archive contents may produce different totals.
+
+### WSL-only: reset a forgotten Ubuntu sudo password
+
+The password requested by `sudo` is the **Linux user password**, not normally
+the Windows sign-in password. Characters are not echoed when typing.
+
+If the Ubuntu password was forgotten, open **Windows PowerShell**, start the
+WSL distribution as root, then reset the Linux account's password:
+
+```powershell
+wsl -u root
+```
+
+If Ubuntu is not the default WSL distribution, specify its exact name from
+`wsl -l -v`, for example `wsl -d Ubuntu -u root`.
+
+In the resulting **root Linux shell**, replace `knud_` if the installed Linux
+username differs:
+
+```sh
+passwd knud_
+exit
+```
+
+Enter and confirm a new password when `passwd` prompts. Then reopen a normal
+WSL session and use `sudo` with this new Linux password. Resetting this password
+does not change the Windows account password. **Do not use `wsl -u root` on
+native Ubuntu**; native Ubuntu uses its own account recovery procedure.
 
 ## Initial implementation
 
