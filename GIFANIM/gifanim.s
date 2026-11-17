@@ -1,5 +1,35 @@
-// GIFANIM 1.0.0.0.23 - TSE SAL launcher, ASCII only.
+// GIFANIM 1.0.0.0.24 - TSE SAL launcher, ASCII only.
 // Resolve companion files beside the running gifanim.mac (compiled from gifanim.s).
+// Dedicated histories are saved beside the macro, including across TSE restarts.
+integer proc FNAskPersistent(string promptS, var string replyS, string keyS, string iniS)
+    integer historyI = GetFreeHistory("GIFANIM:" + keyS)
+    integer itemI
+    string sectionS[80] = "History_" + keyS
+    string entryS[255]
+    if historyI == 0
+        historyI = _EDIT_HISTORY_
+    endif
+    for itemI = 20 to 1 by -1
+        entryS = GetProfileStr(sectionS, Str(itemI), "", iniS)
+        if entryS <> ""
+            AddHistoryStr(entryS, historyI)
+        endif
+    endfor
+    if not Ask(promptS, replyS, historyI)
+        return(FALSE)
+    endif
+    AddHistoryStr(replyS, historyI)
+    for itemI = 1 to 20
+        entryS = ""
+        if itemI <= NumHistoryItems(historyI)
+            entryS = GetHistoryStr(historyI, itemI)
+        endif
+        WriteProfileStr(sectionS, Str(itemI), entryS, iniS)
+    endfor
+    FlushProfile(iniS)
+    return(TRUE)
+end
+
 proc Main()
     string macroDirS[255] = SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_)
     string packageDirS[255] = macroDirS
@@ -12,6 +42,8 @@ proc Main()
     string outputS[255]
     string outputDirS[255]
     string currentDirS[255]
+    string widthS[16]
+    string heightS[16]
     string delayS[16]
     string qualityS[16]
     string commandS[255]
@@ -33,23 +65,35 @@ proc Main()
     outputS = GetProfileStr("GifAnim", "output", "01.gif", iniFileS)
     outputDirS = GetProfileStr("GifAnim", "outputdirectory", "", iniFileS)
     delayS = GetProfileStr("GifAnim", "delay_cs", "10", iniFileS)
+    widthS = GetProfileStr("GifAnim", "width", "0", iniFileS)
+    heightS = GetProfileStr("GifAnim", "height", "0", iniFileS)
     qualityS = GetProfileStr("GifAnim", "quality", "sharp", iniFileS)
-    if not Ask("Numbered PNG selection (e.g. *.png):", sequenceS, _EDIT_HISTORY_)
+    if not FNAskPersistent("Numbered PNG selection (e.g. *.png):", sequenceS, "sequenceS", iniFileS)
         return()
     endif
-    if not Ask("INPUT PNG directory (blank = macro; relative = CurrDir):", directoryS, _EDIT_HISTORY_)
+    if not FNAskPersistent("INPUT PNG directory (blank = macro; relative = CurrDir):", directoryS, "directoryS", iniFileS)
         return()
     endif
-    if not Ask("Output GIF filename:", outputS, _EDIT_HISTORY_)
+    if not FNAskPersistent("Output GIF filename:", outputS, "outputS", iniFileS)
         return()
     endif
-    if not Ask("GIF output directory (blank = PNG; relative = CurrDir):", outputDirS, _EDIT_HISTORY_)
+    if not FNAskPersistent("GIF output directory (blank = PNG; relative = CurrDir):", outputDirS, "outputDirS", iniFileS)
         return()
     endif
-    if not Ask("Delay per frame (hundredths of a second; 100 = 1 second; max 65535):", delayS, _EDIT_HISTORY_)
+    if not FNAskPersistent("Delay per frame (hundredths of a second; 100 = 1 second; max 65535):", delayS, "delayS", iniFileS)
         return()
     endif
-    if not Ask("Resize quality (sharp, smooth, fast):", qualityS, _EDIT_HISTORY_)
+    if not FNAskPersistent("Resize quality (sharp, smooth, fast):", qualityS, "qualityS", iniFileS)
+        return()
+    endif
+    if not FNAskPersistent("GIF width in pixels (0 = automatic):", widthS, "width", iniFileS)
+        return()
+    endif
+    if not FNAskPersistent("GIF height in pixels (0 = automatic):", heightS, "height", iniFileS)
+        return()
+    endif
+    if Val(widthS) < 0 or Val(widthS) > 65535 or Val(heightS) < 0 or Val(heightS) > 65535
+        Warn("GIFANIM: width and height must be 0 through 65535.")
         return()
     endif
     qualityS = Lower(qualityS)
@@ -103,6 +147,14 @@ proc Main()
     endif
     if not WriteProfileStr("GifAnim", "quality", qualityS, runIniFileS)
         Warn("GIFANIM: could not write gifanim_run.ini beside gifanim.mac.")
+        return()
+    endif
+    if not WriteProfileStr("GifAnim", "width", widthS, runIniFileS)
+        Warn("GIFANIM: could not write gifanim_run.ini.")
+        return()
+    endif
+    if not WriteProfileStr("GifAnim", "height", heightS, runIniFileS)
+        Warn("GIFANIM: could not write gifanim_run.ini.")
         return()
     endif
     FlushProfile(runIniFileS)

@@ -1,4 +1,7 @@
+# GIFANIM 1.0.0.0.24 - OpenAI Codex
 param(
+ [ValidateRange(0,65535)][int]$Width = 0,
+ [ValidateRange(0,65535)][int]$Height = 0,
  [string]$FrameDirectory = '',
  [string]$OutputFile = '01.gif',
  [string]$OutputDirectory = '',
@@ -16,9 +19,11 @@ Set-Location -LiteralPath $PSScriptRoot
 # Plain ASCII INI: one key=value per line; command-line arguments take priority.
 if (Test-Path -LiteralPath $IniFile) {
  foreach ($line in [IO.File]::ReadAllLines((Resolve-Path -LiteralPath $IniFile).Path)) {
-  if ($line -match '^\s*(directory|sequence|output|outputdirectory|delay_cs|quality)\s*=\s*(.*?)\s*$') {
+  if ($line -match '^\s*(directory|sequence|output|outputdirectory|delay_cs|quality|width|height)\s*=\s*(.*?)\s*$') {
    $key = $matches[1].ToLowerInvariant(); $value = $matches[2]
    switch ($key) {
+    width { if (-not $PSBoundParameters.ContainsKey('Width')) { $Width = [int]$value } }
+    height { if (-not $PSBoundParameters.ContainsKey('Height')) { $Height = [int]$value } }
     directory { if (-not $PSBoundParameters.ContainsKey('FrameDirectory')) { $FrameDirectory = $value } }
     sequence { if (-not $PSBoundParameters.ContainsKey('Sequence')) { $Sequence = $value } }
     output { if (-not $PSBoundParameters.ContainsKey('OutputFile')) { $OutputFile = $value } }
@@ -29,6 +34,7 @@ if (Test-Path -LiteralPath $IniFile) {
   }
  }
 }
+if ($Width -lt 0 -or $Width -gt 65535 -or $Height -lt 0 -or $Height -gt 65535) { throw 'width and height must be 0 through 65535' }
 if (-not $Sequence) { $Sequence = '*.png' }
 if (-not $FrameDirectory) { $FrameDirectory = $PSScriptRoot }
 if (-not [IO.Path]::IsPathRooted($FrameDirectory)) {
@@ -110,6 +116,15 @@ function GifParts($path, $targetWidth, $targetHeight) {
      $targetHeight = $probe.Height
     }
    } finally { $probe.Dispose() }
+  }
+  if ($Width -gt 0 -and $Height -gt 0) {
+   $targetWidth = $Width; $targetHeight = $Height
+  } elseif ($Width -gt 0) {
+   $targetHeight = [Math]::Max(1, [int][Math]::Round($targetHeight * ($Width / [double]$targetWidth)))
+   $targetWidth = $Width
+  } elseif ($Height -gt 0) {
+   $targetWidth = [Math]::Max(1, [int][Math]::Round($targetWidth * ($Height / [double]$targetHeight)))
+   $targetHeight = $Height
   }
   if ($targetWidth -gt 65535 -or $targetHeight -gt 65535) { throw 'GIF frame dimensions must not exceed 65535 pixels' }
   $first = GifParts $frames[0].FullName $targetWidth $targetHeight
