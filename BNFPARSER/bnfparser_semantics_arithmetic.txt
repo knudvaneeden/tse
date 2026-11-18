@@ -1,0 +1,126 @@
+// Optional example-specific semantic module (arithmetic expressions).
+// NOT part of the generic BNF/EBNF grammar parser. Generate only when
+// [Generator] SemanticModule=arithmetic is explicitly selected.
+integer gAPos, gAOk
+string gAError[255]
+
+proc GASkipWhite()
+    while gAPos <= Length(gInput)
+        if Pos(SubStr(gInput, gAPos, 1), " " + Chr(9)) == 0
+            break
+        endif
+        gAPos = gAPos + 1
+    endwhile
+end
+
+string proc GAPeek()
+    GASkipWhite()
+    if gAPos > Length(gInput)
+        return ("")
+    endif
+    return (SubStr(gInput, gAPos, 1))
+end
+
+// Precedence-climbing arithmetic evaluator. Uses integer values only.
+// 1: addition/subtraction, 2: multiplication/division, 3: unary signs.
+integer proc GAParse(integer minPrec, integer depth)
+    integer leftValue, rightValue, precedence, digitCount, sign
+    string ch[1], operation[1]
+    if depth > 80
+        gAOk = FALSE
+        gAError = "Arithmetic nesting exceeds limit"
+        return (0)
+    endif
+    ch = GAPeek()
+    if (ch == "+") or (ch == "-")
+        sign = 1
+        if ch == "-"
+            sign = -1
+        endif
+        gAPos = gAPos + 1
+        leftValue = GAParse(3, depth + 1) * sign
+    elseif ch == "("
+        gAPos = gAPos + 1
+        leftValue = GAParse(1, depth + 1)
+        if GAPeek() <> ")"
+            gAOk = FALSE
+            gAError = "Missing closing parenthesis"
+            return (0)
+        endif
+        gAPos = gAPos + 1
+    elseif Pos(ch, "0123456789") > 0
+        leftValue = 0
+        digitCount = 0
+        while Pos(GAPeek(), "0123456789") > 0
+            if gAPos > Length(gInput)
+                break
+            endif
+            digitCount = digitCount + 1
+            if digitCount > 8
+                gAOk = FALSE
+                gAError = "Integer literal exceeds 8 digits"
+                return (0)
+            endif
+            leftValue = leftValue * 10 + Val(GAPeek())
+            gAPos = gAPos + 1
+        endwhile
+    else
+        gAOk = FALSE
+        gAError = "Expected arithmetic value at column " + Str(gAPos)
+        return (0)
+    endif
+    if not gAOk
+        return (0)
+    endif
+    while gAOk
+        ch = GAPeek()
+        precedence = 0
+        if (ch == "+") or (ch == "-")
+            precedence = 1
+        elseif (ch == "*") or (ch == "/")
+            precedence = 2
+        endif
+        if precedence < minPrec
+            break
+        endif
+        operation = ch
+        gAPos = gAPos + 1
+        rightValue = GAParse(precedence + 1, depth + 1)
+        if not gAOk
+            return (0)
+        endif
+        if operation == "+"
+            leftValue = leftValue + rightValue
+        elseif operation == "-"
+            leftValue = leftValue - rightValue
+        elseif operation == "*"
+            leftValue = leftValue * rightValue
+        else
+            if rightValue == 0
+                gAOk = FALSE
+                gAError = "Division by zero"
+                return (0)
+            endif
+            leftValue = leftValue / rightValue
+        endif
+    endwhile
+    return (leftValue)
+end
+
+string proc GPPostParse()
+    integer value
+    gAPos = 1
+    gAOk = TRUE
+    gAError = ""
+    value = GAParse(1, 0)
+    if gAOk
+        if Length(GAPeek()) > 0
+            gAOk = FALSE
+            gAError = "Unexpected arithmetic text at column " + Str(gAPos)
+        endif
+    endif
+    if not gAOk
+        return ("SEMANTIC ERROR: " + gAError)
+    endif
+    return ("RESULT = " + Str(value))
+end

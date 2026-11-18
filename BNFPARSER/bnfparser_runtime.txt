@@ -1,0 +1,321 @@
+// BNFPARSER generated recognizer - standalone TSE SAL macro
+// Generated using BNF/EBNF rules. Optional semantic module is separately selected.
+// Grammar records are inserted after the marker below.
+integer gGrammarBuf, gInputPos, gGrammarCount, gTreeBuf, gTreeCount, gTreeDepth, gFarthest
+string gInput[255], gKind[12], gValue[255], gBuildText[255], gExpected[255]
+
+proc GPRead(integer tokenNo)
+    integer old, sep
+    string record[255]
+    old = GetBufferId()
+    GotoBufferId(gGrammarBuf)
+    GotoLine(tokenNo)
+    record = GetText(1, 255)
+    sep = Pos(Chr(9), record)
+    gKind = SubStr(record, 1, sep - 1)
+    gValue = SubStr(record, sep + 1, Length(record) - sep)
+    GotoBufferId(old)
+end
+
+
+// Track failures independently of backtracking, so a restored input position
+// cannot hide the farthest point reached by any attempted alternative.
+// At equal positions, collect distinct expected terminal descriptions.
+proc GPExpect(integer atColumn, string expected)
+    string item[255]
+    item = "'" + expected + "'"
+    if atColumn > gFarthest
+        gFarthest = atColumn
+        gExpected = item
+    elseif atColumn == gFarthest
+        if Pos(item, gExpected) == 0
+            if Length(gExpected) + Length(item) + 2 <= 255
+                if Length(gExpected) > 0
+                    gExpected = gExpected + ", "
+                endif
+                gExpected = gExpected + item
+            endif
+        endif
+    endif
+end
+
+proc GPSkipWhite()
+    while gInputPos <= Length(gInput)
+        if Pos(SubStr(gInput, gInputPos, 1), " " + Chr(9)) == 0
+            break
+        endif
+        gInputPos = gInputPos + 1
+    endwhile
+end
+
+// Tree nodes are emitted in parse order. Backtracking removes abandoned nodes.
+// The tree buffer is an internal temporary buffer and is not left on screen.
+string proc GPTreeIndent()
+    integer i
+    string result[180]
+    result = ""
+    for i = 1 to gTreeDepth
+        result = result + "  "
+    endfor
+    return (result)
+end
+
+proc GPTreeAdd(string label)
+    integer old
+    old = GetBufferId()
+    AddLine(GPTreeIndent() + label, gTreeBuf)
+    gTreeCount = gTreeCount + 1
+    GotoBufferId(old)
+end
+
+proc GPTreeRollback(integer checkpoint)
+    integer old
+    old = GetBufferId()
+    GotoBufferId(gTreeBuf)
+    while gTreeCount > checkpoint
+        GotoLine(gTreeCount)
+        DelLine()
+        gTreeCount = gTreeCount - 1
+    endwhile
+    GotoBufferId(old)
+end
+
+// mode 0: alternatives; 1: sequence; 2: named rule at token index first
+integer proc GPParse(integer mode, integer first, integer last, integer depth)
+    integer i, j, level, part, before, matchIndex, ruleEnd, found, count, checkpoint, success, startPos
+    string kind[12], value[255], opener[1]
+    if depth > 80
+        GPExpect(gInputPos, "recursion limit")
+        return(FALSE)
+    endif
+    if mode == 2
+        checkpoint = gTreeCount
+        // Report the first non-whitespace input column for each rule.
+        // The same whitespace behavior already applies to literal matches.
+        GPSkipWhite()
+        startPos = gInputPos
+        GPRead(first)
+        // Emit parent at the current depth. Its children are one level deeper.
+        GPTreeAdd("RULE " + gValue + " [column " + Str(startPos) + "]")
+        gTreeDepth = gTreeDepth + 1
+        ruleEnd = first + 2
+        while ruleEnd <= gGrammarCount
+            GPRead(ruleEnd)
+            if gKind == ";"
+                success = GPParse(0, first + 2, ruleEnd - 1, depth + 1)
+                gTreeDepth = gTreeDepth - 1
+                if not success
+                    GPTreeRollback(checkpoint)
+                endif
+                return(success)
+            endif
+            ruleEnd = ruleEnd + 1
+        endwhile
+        gTreeDepth = gTreeDepth - 1
+        GPTreeRollback(checkpoint)
+        GPExpect(gInputPos, "rule terminator")
+        return(FALSE)
+    endif
+    if mode == 0
+        // Find top-level alternatives, leaving nested groups undisturbed.
+        part = first
+        level = 0
+        i = first
+        while i <= last + 1
+            kind = "|"
+            if i <= last
+                GPRead(i)
+                kind = gKind
+            endif
+            if (kind == "(") or (kind == "[") or (kind == "{")
+                level = level + 1
+            elseif (kind == ")") or (kind == "]") or (kind == "}")
+                level = level - 1
+            endif
+            if (kind == "|") and (level == 0)
+                before = gInputPos
+                checkpoint = gTreeCount
+                if GPParse(1, part, i - 1, depth + 1)
+                    return(TRUE)
+                endif
+                gInputPos = before
+                GPTreeRollback(checkpoint)
+                part = i + 1
+            endif
+            i = i + 1
+        endwhile
+        return(FALSE)
+    endif
+    // Sequence: concatenate atoms, interpreting optional/repetition groups.
+    i = first
+    while i <= last
+        GPRead(i)
+        kind = gKind
+        value = gValue
+        if kind == ","
+            i = i + 1
+        elseif kind == "LIT"
+            GPSkipWhite()
+            if SubStr(gInput, gInputPos, Length(value)) <> value
+                GPExpect(gInputPos, value)
+                return(FALSE)
+            endif
+            GPTreeAdd("LITERAL " + value + " [column " + Str(gInputPos) + "]")
+            gInputPos = gInputPos + Length(value)
+            i = i + 1
+        elseif kind == "ID"
+            found = FALSE
+            for j = 1 to gGrammarCount - 1
+                GPRead(j)
+                if (gKind == "ID") and (gValue == value)
+                    GPRead(j + 1)
+                    if gKind == "="
+                        found = TRUE
+                        matchIndex = j
+                        break
+                    endif
+                endif
+            endfor
+            if not found
+                GPExpect(gInputPos, "defined rule " + value)
+                return(FALSE)
+            endif
+            if not GPParse(2, matchIndex, 0, depth + 1)
+                return(FALSE)
+            endif
+            i = i + 1
+        elseif (kind == "(") or (kind == "[") or (kind == "{")
+            opener = kind
+            level = 1
+            j = i + 1
+            while j <= last
+                GPRead(j)
+                if (gKind == "(") or (gKind == "[") or (gKind == "{")
+                    level = level + 1
+                elseif (gKind == ")") or (gKind == "]") or (gKind == "}")
+                    level = level - 1
+                    if level == 0
+                        break
+                    endif
+                endif
+                j = j + 1
+            endwhile
+            if level <> 0
+                GPExpect(gInputPos, "matching group delimiter")
+                return(FALSE)
+            endif
+            if opener == "("
+                if not GPParse(0, i + 1, j - 1, depth + 1)
+                    return(FALSE)
+                endif
+            elseif opener == "["
+                before = gInputPos
+                checkpoint = gTreeCount
+                if not GPParse(0, i + 1, j - 1, depth + 1)
+                    gInputPos = before
+                    GPTreeRollback(checkpoint)
+                endif
+            else
+                count = 0
+                while count < 255
+                    before = gInputPos
+                    checkpoint = gTreeCount
+                    if not GPParse(0, i + 1, j - 1, depth + 1)
+                        gInputPos = before
+                        GPTreeRollback(checkpoint)
+                        break
+                    endif
+                    if gInputPos == before
+                        GPTreeRollback(checkpoint)
+                        break
+                    endif
+                    count = count + 1
+                endwhile
+            endif
+            i = j + 1
+        else
+            return(FALSE)
+        endif
+    endwhile
+    return(TRUE)
+end
+
+// @@SEMANTICS@@
+
+proc Main()
+    integer matched, originalBuffer
+    string semanticResult[255]
+    originalBuffer = GetBufferId()
+    gGrammarBuf = CreateTempBuffer()
+    gTreeBuf = CreateTempBuffer()
+    gTreeCount = 0
+    gTreeDepth = 0
+    gGrammarCount = 0
+    gFarthest = 0
+    gExpected = ""
+    // @@GRAMMAR@@
+    // The generated recognizer has its own optional INI beside its .mac.
+    // Persistent Ask history (212) takes precedence when previously used;
+    // the INI supplies the initial/fallback input.
+    gInput = GetProfileStr("Defaults", "InputText", "(12 + 5) * 3", SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_) + "generatedparser.ini")
+    if Length(gInput) == 0
+        gInput = "(12 + 5) * 3"
+    endif
+    Set(PersistentHistory, ON)
+    // Load the grammar only once. Each Ask() starts a fresh parsing session.
+    // Escape cancels Ask() and exits the generated parser.
+    while TRUE
+        GotoBufferId(originalBuffer)
+        if not Ask("Input text to parse (Escape to quit):", gInput, 212)
+            break
+        endif
+
+        // No nodes, failed expectations, or recursion depth state may leak
+        // from a previous input into this one.
+        gTreeDepth = 0
+        GPTreeRollback(0)
+        gInputPos = 1
+        gFarthest = 0
+        gExpected = ""
+        matched = GPParse(2, 1, 0, 0)
+        GPSkipWhite()
+        if matched and (gInputPos > Length(gInput))
+            // Semantic evaluation is optional and independent of parsing.
+            semanticResult = GPPostParse()
+            if Length(semanticResult) > 0
+                GPTreeAdd(semanticResult)
+            endif
+            GotoBufferId(gTreeBuf)
+            SaveAs(SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_) + "generatedparser_tree.txt", _OVERWRITE_)
+            GotoBufferId(originalBuffer)
+            if Length(semanticResult) > 0
+                Warn("PARSE OK. ", semanticResult)
+            else
+                Warn("PARSE OK: syntax tree saved to generatedparser_tree.txt")
+            endif
+        else
+            if matched and (gInputPos <= Length(gInput))
+                if gFarthest <= gInputPos
+                    gFarthest = 0
+                    gExpected = ""
+                endif
+                GPExpect(gInputPos, "end of input")
+            endif
+            if gFarthest < 1
+                gFarthest = gInputPos
+            endif
+            if Length(gExpected) == 0
+                gExpected = "valid input"
+            endif
+            GPTreeRollback(0)
+            GPTreeAdd("PARSE FAILED at input column " + Str(gFarthest))
+            GPTreeAdd("Possible expected terminals: " + gExpected)
+            GotoBufferId(gTreeBuf)
+            SaveAs(SplitPath(CurrMacroFilename(), _DRIVE_ | _PATH_) + "generatedparser_tree.txt", _OVERWRITE_)
+            GotoBufferId(originalBuffer)
+            Warn("PARSE FAILED at column ", gFarthest, ". Possible: ", gExpected)
+        endif
+    endwhile
+    // Always restore the original TSE editor buffer.
+    GotoBufferId(originalBuffer)
+end

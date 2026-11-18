@@ -1,0 +1,4 @@
+start = value, { missing } ;
+value = "ok" ;
+value = "duplicate" ;
+wrong = ( "unclosed" ;
