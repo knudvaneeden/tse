@@ -1,0 +1,15 @@
+(* Implemented input grammar, v1.0.0.0.1. *)
+program      = { expression } ;
+expression   = atom | list | quote ;
+list         = "(" , { expression } , ")" ;
+quote        = "'" , expression ;
+atom         = number | symbol | string ;
+(* Lexical definitions: *)
+number       = [ "+" | "-" ] , ( digit , { digit } , [ "." , { digit } ]
+             | "." , digit , { digit } ) ;
+symbol       = non_delimiter , { non_delimiter } ;
+string       = '"' , { escaped_character | normal_string_character } , '"' ;
+(* Whitespace and ; through end of line are ignored by lexer.
+   Digits in a symbol do not force numeric interpretation.
+   Atom classification accepts signed integers and decimals including 1. and .5.
+   A standalone dot is a symbol; dotted-pair syntax is NOT implemented. *)
