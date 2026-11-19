@@ -1,0 +1,13 @@
+(* forthparser 1.0.0.0.5: restricted integer FORTH, not complete ANS Forth *)
+program       = { definition | item } ;
+definition    = ":", name, { item }, ";" ;
+item          = integer | name | print_string ;
+integer       = [ "+" | "-" ], digit, { digit } ;
+name          = name_char, { name_char } ;
+print_string  = '."', { non_quote }, '"' ;
+digit         = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+(* name_char: any non-whitespace character except : ; ( and backslash *)
+(* A backslash comments to the end of its physical line. *)
+(* Parentheses enclose comments, including comments across lines. *)
+(* Semantic words include + - * / MOD = < > DUP DROP SWAP OVER . .S CR IF ELSE THEN. *)
+(* IF / ELSE / THEN are interpreted conditionally, not grammar-level nesting. *)

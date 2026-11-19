@@ -1,0 +1,14 @@
+FORTH EXECUTION - 1.0.0.0.5
+ Square of 5: 
+25
+ Cube of 3: 
+27
+ Absolute value of -8: 
+8
+ 3 + 4 = 
+7
+ 5 is greater than 2: 
+ yes
+ Remaining stack: 
+Stack depth: 0
+Execution complete. Stack depth: 0
