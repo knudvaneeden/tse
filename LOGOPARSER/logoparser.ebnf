@@ -1,0 +1,23 @@
+(* LOGOPARSER 1.0.0.0.1 - implemented LOGO subset. *)
+program        = { newline | statement, [ newline ] } ;
+statement      = move | turn | pen | home | clear | make | print | repeat ;
+move           = ("FORWARD" | "FD" | "BACK" | "BK"), expression ;
+turn           = ("RIGHT" | "RT" | "LEFT" | "LT"), expression ;
+pen            = "PENUP" | "PU" | "PENDOWN" | "PD" ;
+home           = "HOME" ;
+clear          = "CLEARSCREEN" | "CS" ;
+make           = "MAKE", quoted_name, expression ;
+print          = ("PRINT" | "PR"), expression ;
+repeat         = "REPEAT", expression, "[", { newline | statement, [ newline ] }, "]" ;
+expression     = term, { ("+" | "-"), term } ;
+term           = factor, { ("*" | "/"), factor } ;
+factor         = number | variable | "(", expression, ")" | ("+" | "-"), factor ;
+quoted_name    = '"', identifier ;
+variable       = ":", identifier ;
+identifier     = letter, { letter | digit | "_" } ;
+number         = digit, { digit } ;
+letter         = "A" | ... | "Z" | "a" | ... | "z" | "_" ;
+digit          = "0" | "1" | ... | "9" ;
+newline        = ? end of physical source line ? ;
+(* Semicolon starts a comment; commands are line-oriented. *)
+(* This EBNF documents the grammar; it is not loaded dynamically. *)

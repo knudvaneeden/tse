@@ -1,0 +1,19 @@
+; LOGO square and variables
+MAKE "SIDE 80
+PRINT :SIDE + 20
+REPEAT 4 [
+  FORWARD :SIDE
+  RIGHT 90
+]
+PENUP
+FORWARD 25
+PENDOWN
+REPEAT 3 [
+  REPEAT 2 [
+    FD 10
+    RT 90
+  ]
+  LEFT 120
+]
+HOME
+PRINT 7 * (3 + 2)

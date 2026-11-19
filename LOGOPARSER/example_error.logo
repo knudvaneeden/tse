@@ -1,0 +1,6 @@
+; Error detection demonstration
+MAKE "SIDE 50
+REPEAT 4 [
+  FD :SIDE
+  RT 90
+; missing closing ]
