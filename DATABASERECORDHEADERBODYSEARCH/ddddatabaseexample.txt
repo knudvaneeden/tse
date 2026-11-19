@@ -1,0 +1,141 @@
+Q. File: Operation: Upload: List: GoogleGroups: How to [<How to>] [<Research>]
+
+A.
+[kn, am, fr, 26-03-2010 18:10:18]
+[.gf fileoperuplolistgooghow_]
+---
+File: Operation: Upload: List: GoogleGroups: How to
+
+Steps: Overview:
+
+ 1. -Goto the Google group
+
+     1. -E.g.
+
+          http://groups-beta.google.com/group/semware
+
+ 2. -Click on link 'Sign in'
+
+ 3. -Login using your usual Google account details
+     (e.g. your Gmail account settings)
+
+ 4. -Click on link 'Files'
+
+ 5. -Click on link 'Upload new file'
+
+ 6. -Click button 'Browse' to navigate to the file you want to upload
+
+ 7. -The file is uploaded
+
+ 8. -To check, you should see that file appear in the list of already
+     uploaded files
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+Q. Computer: Editor: Text: TSE: Internet: TSE: Macro: File: Operation: Get: How to get all the TSE Macro files? Method: get HTML source at a given URL using Microsoft Windows API URLDownloadToFile [screen scraping] [<How to>] [<Research>] [<Technical>] [<Published>]
+
+A.
+[kn, ri, mo, 27-04-2009 00:22:41]
+[.gf tseintetsemacrfileopergethowget_]
+---
+TSE: Internet: TSE: Macro: File: Operation: Get: How to get all the TSE Macro files? Method: get HTML source at a given URL using Microsoft Windows API URLDownloadToFile
+
+[Internet: source: https://www.knudvaneeden.com/tinyurl.php?urlKey=url000278]
+
+----------------------------------------------------------------------
+--- Knud van Eeden --- 27 April 2009 - 00:22 am ----------------------
+
+TSE: Internet: TSE: Macro: File: How to get all the TSE Macro files? Method: get HTML source at a given URL using Microsoft Windows API URLDownloadToFile
+
+===
+
+--- cut here: begin --------------------------------------------------
+
+ // PROC PROCFileGetInternetDownloadTseMacro( STRING fileDirectoryOutputS )
+
+
+--- cut here: end ----------------------------------------------------
+
+===
+
+Book: see also:
+
+
+
+===
+
+Diagram: see also:
+
+
+
+===
+
+File: see also:
+
+
+
+===
+
+Help: see also:
+
+
+
+===
+
+Image: see also:
+
+<IMG
+  SRC="01.jpg"
+/>
+
+===
+
+Internet: see also:
+
+Internet: Forum: List: Client: Yahoo: Groups: File: Operation: Get: How to get the files from a Yahoo group? Link: Overview
+http://goo.gl/xxPO1
+
+===
+
+Podcast: see also:
+
+
+
+===
+
+Screencast: see also:
+
+
+
+===
+
+Table: see also:
+
+
+
+===
+
+Video: see also:
+
+
+
+
+
+---
+
+
+
+----------------------------------------------------------------------
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+Q. Internet: Forum: List: Client: Google: Groups: File: Operation: Get: How to get the files from a Google group? Directory: Source: Paperport [<File source>] [<Research>]
+
+A.
+[kn, ri, su, 26-04-2009 23:18:59]
+[.gf inteforulistcliegooggroufileoperget_]
+---
+Internet: Forum: List: Client: Google: Groups: File: Operation: Get: How to get the files from a Google group? Directory: Source: Paperport
+
+--- cut here: begin --------------------------------------------------
+
+"H:\MYDOWNLOADFILES\FROM_JOB_TO_HOME\TODO\COMPUTER\EDITOR\TEXT\TSE\HOW TO\LIST\GROUP\FILE\YAHOO\How to automatically download all files from Google Groups"
+
+--- cut here: end ----------------------------------------------------
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
