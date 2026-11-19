@@ -1,0 +1,76 @@
+REGEXENGINE 1.0.0.0.23 - MANUAL REGRESSION TEST PLAN
+
+Load the sample text into TSE, run regexengine.mac, enter pattern and options.
+Input text:
+procedure Calculate()
+    integer result
+    result = 25
+end
+
+Suggested smoke tests / intended results:
+  procedure             => line 1 column 1
+  {procedure}           => line 1 column 1
+  [A-Za-z]#             => word at line 1 column 1 (maximum closure NOT YET CORRECTLY VERIFIED)
+  [~A-Za-z]             => first nonletter, at opening space or punctuation
+  ^procedure            => line 1 column 1
+  procedure|integer     => line 1 column 1 (alternation precedence may differ)
+  procedure.*\n.*integer => lines 1 to 2 with option m (NEW BEHAVIOR)
+  procedure\c.*\n.*\cinteger => last cursor marker takes precedence
+  \x70rocedure          => line 1 (hex escape)
+  \d112rocedure         => line 1 (decimal escape)
+  \o160rocedure         => line 1 (octal escape)
+
+TSE COMPARISON SUITE TO IMPLEMENT:
+1. Order/precedence of |: {Begin}|{End}File versus Begin|EndFile.
+2. Lazy * + and greedy @ # including trailing quantified expressions.
+3. Escaped chars within classes: [\t], [\]], escaped dash, escaped tilde.
+4. Class matching with ignore-case enabled: class still case-sensitive.
+5. Tagged groups 1..9, captures, nested groups and replacement \0..\9.
+6. Multiple \c markers (last wins) and insertion position at match end.
+7. ^ and $ in rectangular/local blocks.
+8. Literal embedded \n and \r in binary mode distinct from line boundaries.
+9. Very long lines, empty lines, NFA state overflow, performance on huge files.
+
+Do NOT regard the initial source package as passing these tests.
+
+MULTILINE REGRESSION TESTS (user-observed examples; repeat on each engine change):
+  first\nsecond                 => consecutive lines; observed successful in v1.0.0.0.23
+  first{\n}@second              => blank intervening lines; observed successful in v1.0.0.0.23
+  Ampersand{.|\n}*manager        => general arbitrary-text intervening lines; reported successful
+  Ampersand.*{\n}@.*manager     => restricted case; does NOT match arbitrary nonempty intervening lines
+
+For the third test, use the two-line sample from ddd(5).txt:
+  -TSE: Menu: Ampersand: Batch: Create goto Next version: Check if total menu lines in the menu is smaller than 68
+  -TSE: Create a menumanager.zip. Block. Operations: sort on '&', sort on 'operation', input general search regular expression
+
+IMPORTANT: Check both coordinates and cursor position. Matching beyond MaxMatchCharacters remains unsupported.
+
+REGRESSION AREA PREFIX OPTIMIZER REGRESSION
+Literal-prefix: Ampersand{.|\n}*manager -> native Find candidate Ampersand
+Literal-only: Ampersand -> native Find candidate Ampersand
+Unsafe optional: ab?cd -> prefix a only (b cannot be required)
+Unsafe group: {Ampersand}?manager -> no prefix / fallback
+Unsafe class: [Aa]mpersand -> no prefix / fallback
+Unsafe escaped prefix: \x41mpersand -> no prefix / fallback
+First candidate failure: Ampersand xyz / Ampersand...manager -> second candidate succeeds
+Very long match: verify MaxMatchCharacters warning rather than definite no-match
+
+
+REGEXENGINE v1.0.0.0.23 DISTANCE REGRESSIONS
+-------------------------------------------
+Expression: Ampersand{.|\n}*manager
+Expected: match across >30,000 intervening characters (test-generated data).
+Expected: match at final two lines of large file when no earlier match exists.
+Expected: no match when manager never appears after Ampersand.
+Expected: match in original ddd(5).txt regression fixture.
+
+
+REGRESSION AREA FAST ENDPOINT TESTS
+--------------------------------------
+010     \+ Java{.|\n}*1,114,486,798   => first following number, even 15m lines later
+Ampersand{.|\n}*manager               => nearest following manager
+Ampersand{.|\n}@manager               => last following manager
+No prefix or suffix / no match / only prefix / 1-line match / multiple suffix occurrences
+Other regexes: verify fallback unchanged.
+
+Regression area: compiler check for reserved keywords; rerun native two-endpoint search.

@@ -1,0 +1,77 @@
+fixture,expression,options,expected_found,expected_start,purpose
+01_literal.txt,Ampersand,im,YES,2:1,Literal; prefix native Find
+02_multiline_consecutive.txt,first\nsecond,im,YES,1:1,Adjacent-line boundary
+03_multiline_blanks.txt,first{\n}@second,im,YES,1:1,Grouped maximum closure over blank lines
+04_multiline_nonempty.txt,Ampersand{.|\n}*manager,im,YES,1:1,General universal gap; fast two-endpoint path
+04_multiline_nonempty.txt,Ampersand.*{\n}@.*manager,im,NO,,Restricted blank-line expression
+05_case_and_classes.txt,[A-Z]#,im,YES,2:1,Character classes ignore-case behavior; report exact
+06_closure.txt,ab*,im,YES,1:1,Minimum closure stops at a
+06_closure.txt,ab@,im,YES,1:1,Maximum closure consumes bbb
+07_alternation.txt,{whatever}|{what},im,YES,1:1,Left alternative takes precedence
+08_cursor.txt,Hello \cWorld!,im,YES,1:1,"Cursor at W, 1:7"
+09_endpoint_minmax.txt,Ampersand{.|\n}*manager,im,YES,1:1,Minimum closure ends at first manager
+09_endpoint_minmax.txt,Ampersand{.|\n}@manager,im,YES,1:1,Maximum closure ends at last manager
+10_prefix_before_suffix.txt,Ampersand{.|\n}*manager,im,YES,1:1,First prefix can already reach suffix; sanity
+11_missing_suffix.txt,Ampersand{.|\n}*manager,im,NO,,No following suffix
+12_escaped_plus.txt,"010     \+ Java{.|\n}*1,114,486,798",im,YES,1:1,Escaped plus and numeric suffix; optimized path
+13_empty_and_anchor.txt,^$,im,YES,1:1,Empty line
+14_long_span.txt,Ampersand{.|\n}*manager,im,YES,1:1,"Over 30,000 characters apart; should be fast"
+15_class_ranges.txt,[A-Z]#,im,YES,1:1,Class range uppercase only despite i; expected end 1:2
+15_class_ranges.txt,[a-z]#,im,YES,1:2,Lowercase range; expected end 1:4
+15_class_ranges.txt,[0-9]#,im,YES,1:5,Numeric range; expected end 1:7
+15_class_ranges.txt,[~0-9]#,im,YES,1:1,Complement numeric range; expected end 1:5
+16_case_classes.txt,[A-Z]#,im,YES,2:1,Ignore case does not affect bracket classes; expected end 2:4
+16_case_classes.txt,ABC,im,YES,1:1,Ignore case applies to ordinary literals; expected end 1:4
+17_class_punctuation.txt,[-x],im,YES,1:1,Dash at beginning of class is literal; expected end 1:2
+17_class_punctuation.txt,[x-],im,YES,1:1,Dash at end of class is literal; expected end 1:2
+17_class_punctuation.txt,[x~],im,YES,1:2,Tilde not at first class position is literal; expected end 1:3
+18_numeric_escapes.txt,\x40#,im,YES,1:1,Hexadecimal fixed-width escape; expected end 1:4
+18_numeric_escapes.txt,\d064#,im,YES,1:1,Decimal fixed-width escape; not shorthand digit class; expected end 1:4
+18_numeric_escapes.txt,\o100#,im,YES,1:1,Octal fixed-width escape; expected end 1:4
+19_tab_escapes.txt,\tA,im,YES,1:1,Tab control escape; expected end 1:3
+19_tab_escapes.txt,\x09A,im,YES,1:1,Tab hexadecimal escape; expected end 1:3
+19_tab_escapes.txt,\d009A,im,YES,1:1,Tab decimal escape; expected end 1:3
+20_optional.txt,colou?r,im,YES,1:1,Optional u matches color; expected end 1:6
+20_optional.txt,colou#r,im,YES,2:1,One-or-more maximum closure matches colour; expected end 2:7
+21_closure_variants.txt,ab+,im,YES,1:1,One-or-more minimum closure; expected end 1:3
+21_closure_variants.txt,ab#,im,YES,1:1,One-or-more maximum closure; expected end 1:5
+21_closure_variants.txt,ab*,im,YES,1:1,Zero-or-more minimum closure; expected end 1:2
+21_closure_variants.txt,ab@,im,YES,1:1,Zero-or-more maximum closure; expected end 1:5
+22_nested_groups.txt,{{ab}c}#,im,YES,1:1,Nested TSE brace groups with maximum closure; expected end 1:7
+22_nested_groups.txt,{abc}#,im,YES,1:1,Grouped closure repeats three-character unit; expected end 1:7
+23_multiple_cursor.txt,Hello \cWor\cld!,im,YES,1:1,Last cursor placement marker wins; expected end 1:13
+23_multiple_cursor.txt,Hello \cWorld!,im,YES,1:1,Single cursor placement marker; expected end 1:13
+24_line_anchors.txt,^abc$,im,YES,1:1,Full-line anchors; expected end 1:4
+24_line_anchors.txt,^xyz$,im,YES,2:1,Anchors on later line; expected end 2:4
+24_line_anchors.txt,^bc,im,NO,,Beginning anchor rejects midline
+25_dot_newline.txt,a.b,im,NO,,Dot does not match line boundary
+25_dot_newline.txt,a\nb,im,YES,1:1,Extended newline crosses boundary; expected end 2:2
+26_escaped_metacharacters.txt,a\+b,im,YES,1:1,Escaped plus literal; expected end 1:4
+26_escaped_metacharacters.txt,\?,im,YES,1:4,Escaped question mark literal; expected end 1:5
+26_escaped_metacharacters.txt,\{,im,YES,1:8,Escaped left brace literal; expected end 1:9
+27_alternative_order.txt,{whatever}|{what},im,YES,1:1,Longer left branch first; expected end 1:9
+27_alternative_order.txt,{what}|{whatever},im,YES,1:1,Shorter left branch wins; expected end 1:5
+28_complement_space.txt,[~ ]#,im,YES,1:2,Negation excludes literal space; expected end 1:3
+30_prefix_case.txt,Ampersand,im,YES,2:1,Native literal prefix case insensitive; expected end 2:10
+29_invalid_patterns.txt,\x4,im,COMPILE ERROR,,Incomplete hex escape
+29_invalid_patterns.txt,\d25,im,COMPILE ERROR,,Incomplete decimal escape
+29_invalid_patterns.txt,\o400,im,COMPILE ERROR,,Octal escape out of byte range
+29_invalid_patterns.txt,[abc,im,COMPILE ERROR,,Unterminated class
+29_invalid_patterns.txt,{abc,im,COMPILE ERROR,,Unterminated brace group
+# REGEXENGINE 1.0.0.0.23: 16 additional synthetic Local boundary predicate tests (see regexengine_test.inc)
+SYNTHETIC_LOCAL,line inside,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,line before,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,line past last,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,line multiline inside,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,inclusive before,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,inclusive start,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,inclusive last,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,inclusive past,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,noninclusive last,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,noninclusive past,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,column inside,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,column left,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,column right,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,column across lines,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,column outside lines,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
+SYNTHETIC_LOCAL,local disabled,l,SEE TEST RUNNER,,RxLocalSpanOK predicate
