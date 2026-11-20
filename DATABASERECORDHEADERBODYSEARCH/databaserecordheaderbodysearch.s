@@ -153,21 +153,30 @@ FORWARD STRING PROC FNDBIniValueS( STRING keyS, STRING fallbackS )
 FORWARD PROC PROCDBShowResults()
 FORWARD PROC PROCDBRightBtn()
 FORWARD PROC PROCDBInitializeOutput( STRING pathS )
+FORWARD INTEGER PROC FNDBMarkRecordForwardB( INTEGER headerLineI )
 FORWARD PROC PROCDBScanFile( STRING headerS, STRING bodyS, STRING headerOptionsS, STRING bodyOptionsS )
 FORWARD STRING PROC FNDBFindOptionsS( STRING optionsS )
 FORWARD INTEGER PROC FNDBOptionsValidB( STRING headerOptionsS, STRING bodyOptionsS )
 FORWARD PROC PROCDBDrawLine( INTEGER isCursorLineB )
+FORWARD PROC PROCDBLogEvent( STRING levelS, STRING stageS, STRING sourceS, INTEGER lineI )
+FORWARD PROC PROCDBInitializeLog()
+FORWARD PROC PROCDBLogFlush( INTEGER forceB )
+FORWARD INTEGER PROC FNDBLogTimeHundredthsI()
+FORWARD STRING PROC FNDBLogTimestampS()
+FORWARD STRING PROC FNDBPad2S( INTEGER numberI )
 FORWARD PROC PROCDBInitHistories()
 FORWARD STRING PROC FNDBAskHistoryS( STRING promptS, STRING defaultS, INTEGER historyI )
 // --- MAIN --- //
-// databaserecordheaderbodysearch 1.0.0.0.24
+// databaserecordheaderbodysearch 1.0.0.0.35
 // Keep this compiled macro loaded for the <CtrlAlt G> results shortcut.
 
 STRING dbHeaderPatternGS[255] = ""
 STRING dbBodyPatternGS[255] = ""
 INTEGER dbBodyAfterMaxGI = 255
-INTEGER dbShowProgressGB = TRUE
+INTEGER dbShowProgressGB = FALSE
 INTEGER dbProgressIntervalGI = 1
+INTEGER dbShowMessageProgressGB = TRUE
+INTEGER dbProgressLineStepGI = 10000
 INTEGER dbHeaderColorGI = 0
 INTEGER dbBodyColorGI = 0
 STRING dbSourceGS[255] = ""
@@ -183,7 +192,20 @@ STRING dbHeaderSearchOptionsGS[255] = ""
 STRING dbBodySearchOptionsGS[255] = ""
 INTEGER dbAllFilesGB = FALSE
 INTEGER dbViewHitGB = FALSE
+INTEGER dbResultsListOpenGB = FALSE
 INTEGER dbMatchCountGI = 0
+// Diagnostic log. Writing/saving is intentionally infrequent when enabled.
+INTEGER dbLogEnabledGB = FALSE
+INTEGER dbLogLevelGI = 1
+INTEGER dbLogIntervalHeadersGI = 250
+STRING dbLogFileGS[255] = ""
+INTEGER dbLogHeaderCountGI = 0
+INTEGER dbLogEntriesPendingGI = 0
+INTEGER dbLogSaveIntervalGI = 100
+INTEGER dbLogSaveIntervalSecondsGI = 30
+INTEGER dbLogSaveOnErrorGB = TRUE
+INTEGER dbLogSavedTimeGI = 0
+
 
 // Show only the filename in the results view. Keep full path in the map.
 STRING PROC FNDBBaseNameS( STRING pathS )
@@ -308,6 +330,98 @@ STRING PROC FNDBIniValueS( STRING keyS, STRING fallbackS )
  RETURN( GetProfileStr( "default", keyS, fallbackS, iniS ) )
 END
 
+// Fixed two-digit decimal field, independent of editor date/time settings.
+STRING PROC FNDBPad2S( INTEGER numberI )
+ IF numberI < 10 RETURN( "0" + Str( numberI ) ) ENDIF
+ RETURN( Str( numberI ) )
+END
+
+// Timestamp for diagnostics, evaluated only when logging is enabled.
+// GetDate/GetTime supply the actual local system date and time.
+STRING PROC FNDBLogTimestampS()
+ INTEGER monthI = 0
+ INTEGER dayI = 0
+ INTEGER yearI = 0
+ INTEGER dayOfWeekI = 0
+ INTEGER hourI = 0
+ INTEGER minuteI = 0
+ INTEGER secondI = 0
+ INTEGER hundredthsI = 0
+ GetDate( monthI, dayI, yearI, dayOfWeekI )
+ GetTime( hourI, minuteI, secondI, hundredthsI )
+ RETURN( Str( yearI ) + "-" + FNDBPad2S( monthI ) + "-" + FNDBPad2S( dayI ) + " " + FNDBPad2S( hourI ) + ":" + FNDBPad2S( minuteI ) + ":" + FNDBPad2S( secondI ) )
+END
+
+// Current local time in hundredths of a second (0..8639999).
+INTEGER PROC FNDBLogTimeHundredthsI()
+ RETURN( GetTime() )
+END
+
+// Flush pending diagnostic entries to disk, but not more frequently than
+// configured. Call this at safe checkpoints, including before expensive work.
+PROC PROCDBLogFlush( INTEGER forceB )
+ INTEGER currentTimeI = 0
+ INTEGER elapsedI = 0
+ INTEGER sourceIdI = 0
+ IF NOT dbLogEnabledGB OR dbLogFileGS == "" RETURN() ENDIF
+ IF dbLogEntriesPendingGI <= 0 RETURN() ENDIF
+ currentTimeI = FNDBLogTimeHundredthsI()
+ elapsedI = currentTimeI - dbLogSavedTimeGI
+ IF elapsedI < 0 elapsedI = elapsedI + 8640000 ENDIF
+ IF NOT forceB
+  IF dbLogEntriesPendingGI < dbLogSaveIntervalGI AND elapsedI < dbLogSaveIntervalSecondsGI * 100
+   RETURN()
+  ENDIF
+ ENDIF
+ sourceIdI = GetBufferId()
+ PushPosition()
+ IF EditFile( dbLogFileGS )
+  SaveFile()
+  dbLogEntriesPendingGI = 0
+  dbLogSavedTimeGI = currentTimeI
+ ENDIF
+ GotoBufferId( sourceIdI )
+ PopPosition()
+END
+
+// Keep INFO/WARN/ERROR checkpoints in a TSE buffer. Save every N entries,
+// or after N seconds at the next checkpoint; ERROR is saved immediately.
+PROC PROCDBLogEvent( STRING levelS, STRING stageS, STRING sourceS, INTEGER lineI )
+ INTEGER eventLevelI = 1
+ INTEGER sourceIdI = 0
+ IF NOT dbLogEnabledGB RETURN() ENDIF
+ IF levelS == "WARN" eventLevelI = 2 ENDIF
+ IF levelS == "ERROR" eventLevelI = 3 ENDIF
+ IF eventLevelI < dbLogLevelGI RETURN() ENDIF
+ IF dbLogFileGS == "" RETURN() ENDIF
+ sourceIdI = GetBufferId()
+ PushPosition()
+ IF EditFile( dbLogFileGS )
+  EndFile()
+  AddLine( FNDBLogTimestampS() + " | " + levelS + " | " + stageS + " | file=" + FNDBBaseNameS( sourceS ) + " | line=" + Str( lineI ) + " | hits=" + Str( dbMatchCountGI ) )
+  dbLogEntriesPendingGI = dbLogEntriesPendingGI + 1
+ ENDIF
+ GotoBufferId( sourceIdI )
+ PopPosition()
+ IF levelS == "ERROR" AND dbLogSaveOnErrorGB
+  PROCDBLogFlush( TRUE )
+ ELSE
+  PROCDBLogFlush( FALSE )
+ ENDIF
+END
+
+PROC PROCDBInitializeLog()
+ IF NOT dbLogEnabledGB RETURN() ENDIF
+ // Start each run with a fresh log. Save SEARCH_BEGIN immediately.
+ EraseDiskFile( dbLogFileGS )
+ EditFile( dbLogFileGS )
+ AbandonFile()
+ dbLogEntriesPendingGI = 0
+ dbLogSavedTimeGI = FNDBLogTimeHundredthsI()
+ PROCDBLogEvent( "INFO", "SEARCH_BEGIN", dbSourceGS, 1 )
+ PROCDBLogFlush( TRUE )
+END
+
 PROC PROCDBShowResults()
  INTEGER choiceI = 0
  INTEGER resultRowI = 0
@@ -315,6 +429,7 @@ PROC PROCDBShowResults()
  STRING currentS[255] = ""
  STRING mapLineS[255] = ""
  STRING targetFileS[255] = ""
+ IF dbResultsListOpenGB RETURN() ENDIF
  IF NOT dbResultsReadyGB
   Warn( "No results yet. Run <F12> from a database file first." )
   RETURN()
@@ -326,9 +441,11 @@ PROC PROCDBShowResults()
   RETURN()
  ENDIF
  BegFile()
+ dbResultsListOpenGB = TRUE
  HookDisplay( PROCDBDrawLine, , , )
  choiceI = List( "Select matching record | CtrlAlt G / RightBtn: overview", 150 )
  UnhookDisplay()
+ dbResultsListOpenGB = FALSE
  IF choiceI == 0
   IF currentS <> "" EditFile( currentS ) ENDIF
   RETURN()
@@ -359,7 +476,7 @@ PROC PROCDBShowResults()
 END
 
 PROC PROCDBRightBtn()
- IF dbViewHitGB
+ IF dbResultsReadyGB
   PROCDBShowResults()
  ENDIF
 END
@@ -371,6 +488,7 @@ PROC Main()
  STRING bodyOptionsS[255] = ""
  STRING outputS[255] = ""
  STRING fallbackS[255] = ""
+ STRING outputMapS[255] = ""
  PROCDBInitHistories()
  IF CurrFilename() == dbResultsGS AND dbSourceGS <> ""
   EditFile( dbSourceGS )
@@ -399,9 +517,31 @@ PROC Main()
  IF dbBodyAfterMaxGI > 255 dbBodyAfterMaxGI = 255 ENDIF
  dbHeaderColorGI = Val( FNDBIniValueS( "headercolor", "249" ) )
  dbBodyColorGI = Val( FNDBIniValueS( "bodycolor", "244" ) )
- dbShowProgressGB = Val( FNDBIniValueS( "showsearchprogress", "1" ) ) <> 0
+ dbShowProgressGB = Val( FNDBIniValueS( "showsearchprogress", "0" ) ) <> 0
  dbProgressIntervalGI = Val( FNDBIniValueS( "progressinterval", "1" ) )
  IF dbProgressIntervalGI < 1 dbProgressIntervalGI = 1 ENDIF
+ dbShowMessageProgressGB = Val( FNDBIniValueS( "showmessageprogress", "1" ) ) <> 0
+ dbProgressLineStepGI = Val( FNDBIniValueS( "messagelineinterval", "10000" ) )
+ IF dbProgressLineStepGI < 1 dbProgressLineStepGI = 1 ENDIF
+ // Log output uses the macro directory unless given an absolute path.
+ dbLogEnabledGB = Val( FNDBIniValueS( "logenabled", "0" ) ) <> 0
+ dbLogFileGS = FNDBResolvePathS( FNDBIniValueS( "logfilename", "databaserecordheaderbodysearch.log" ) )
+ dbLogIntervalHeadersGI = Val( FNDBIniValueS( "logintervalheaders", "250" ) )
+ IF dbLogIntervalHeadersGI < 1 dbLogIntervalHeadersGI = 1 ENDIF
+ dbLogLevelGI = 1
+ IF FNDBIniValueS( "loglevel", "INFO" ) == "WARN" dbLogLevelGI = 2 ENDIF
+ IF FNDBIniValueS( "loglevel", "INFO" ) == "ERROR" dbLogLevelGI = 3 ENDIF
+ outputMapS = outputS + ".map"
+ IF ( dbLogFileGS == outputS ) OR ( dbLogFileGS == outputMapS ) OR ( dbLogFileGS == CurrFilename() )
+  Warn( "Log filename must be different from source/results/map files." )
+  RETURN()
+ ENDIF
+ dbLogSaveIntervalGI = Val( FNDBIniValueS( "logsaveinterval", "100" ) )
+ IF dbLogSaveIntervalGI < 1 dbLogSaveIntervalGI = 1 ENDIF
+ dbLogSaveIntervalSecondsGI = Val( FNDBIniValueS( "logsaveintervalseconds", "30" ) )
+ IF dbLogSaveIntervalSecondsGI < 1 dbLogSaveIntervalSecondsGI = 1 ENDIF
+ dbLogSaveOnErrorGB = Val( FNDBIniValueS( "logsaveonerror", "1" ) ) <> 0
+ dbLogHeaderCountGI = 0
  dbResultsReadyGB = FALSE
  dbHeaderSearchOptionsGS = headerOptionsS
  dbBodySearchOptionsGS = bodyOptionsS
@@ -410,6 +550,7 @@ PROC Main()
 END
 
 <F12> Main()
+
 <CtrlAlt G> PROCDBShowResults()
 <RightBtn> PROCDBRightBtn()
 
@@ -452,7 +593,38 @@ PROC PROCDBInitializeOutput( STRING pathS )
  AbandonFile()
 END
 
-// Search one database file, from Q. until its record separator.
+// Forward-only, single separator search for a Q&A record.
+// The active search does NOT call recogont.mac, gotowist.mac,
+// PROCRecordSelectMark_CurrentSeparator(), or any backward line walk.
+// The separator regex is the SAME configured exact box-drawing separator
+// that the existing database libraries use (anchored at both ends).
+// Mark only the lines BEFORE the separator, never the separator itself.
+INTEGER PROC FNDBMarkRecordForwardB( INTEGER headerLineI )
+ INTEGER separatorLineI = 0
+ INTEGER endLineI = 0
+ STRING separatorPatternS[255] = ""
+ UnMarkBlock()
+ GotoLine( headerLineI )
+ BegLine()
+ separatorPatternS = FNStringGetRecordSearchSeparatorDefaultExpressionRegularS()
+ IF separatorPatternS == ""
+  // A missing separator pattern must not silently merge unrelated records.
+  RETURN( FALSE )
+ ENDIF
+ IF LFind( separatorPatternS, "x+" )
+  separatorLineI = CurrLine()
+  endLineI = separatorLineI - 1
+ ELSE
+  // A final record may have no trailing separator.
+  endLineI = NumLines()
+ ENDIF
+ IF endLineI < headerLineI
+  RETURN( FALSE )
+ ENDIF
+ RETURN( MarkLine( headerLineI, endLineI ) )
+END
+
+// Search one database file using one forward-only separator lookup per Q. header.
 // At most one body result is added for each matching Q. record.
 PROC PROCDBScanFile( STRING headerS, STRING bodyS, STRING headerOptionsS, STRING bodyOptionsS )
  INTEGER bodyOffsetI = 0
@@ -460,6 +632,7 @@ PROC PROCDBScanFile( STRING headerS, STRING bodyS, STRING headerOptionsS, STRING
  INTEGER sourceLineI = 0
  INTEGER bodyColumnI = 0
  INTEGER headerLineI = 0
+ INTEGER nextMessageLineI = 0
  INTEGER nextRecordLineI = 0
  STRING sourceS[255] = CurrFilename()
  STRING headerLineS[255] = ""
@@ -473,20 +646,47 @@ PROC PROCDBScanFile( STRING headerS, STRING bodyS, STRING headerOptionsS, STRING
  INTEGER bodyRoomI = 0
  STRING headerFindS[255] = ""
  STRING bodyFindS[255] = ""
- IF sourceS == dbResultsGS OR sourceS == dbMapGS OR sourceS == "" RETURN() ENDIF
+ IF sourceS == dbResultsGS OR sourceS == dbMapGS OR sourceS == dbLogFileGS OR sourceS == "" RETURN() ENDIF
+ PROCDBLogEvent( "INFO", "FILE_BEGIN", sourceS, 1 )
  headerFindS = "^Q\. .*" + headerS
  bodyFindS = FNDBFindOptionsS( bodyOptionsS ) + "l+"
  PushPosition()
  PushBlock()
  BegFile()
+ nextMessageLineI = dbProgressLineStepGI
+ IF dbShowMessageProgressGB
+  Message( "Searching ", FNDBBaseNameS( sourceS ), "  line 1 / ", NumLines(), "  hits ", dbMatchCountGI )
+  IF WaitForKeyPressed( 0 ) ENDIF
+ ENDIF
  WHILE LFind( headerFindS, FNDBFindOptionsS( headerOptionsS ) + "x+" )
   headerLineI = CurrLine()
+  dbLogHeaderCountGI = dbLogHeaderCountGI + 1
+  PROCDBLogFlush( FALSE )
+  // Checkpoints are sampled; turn logintervalheaders down to 1 to trace
+  // every matched HEADER when investigating a difficult record.
+  IF ( ( dbLogHeaderCountGI MOD dbLogIntervalHeadersGI ) == 0 )
+   PROCDBLogEvent( "INFO", "HEADER_FOUND", sourceS, headerLineI )
+  ENDIF
+  // Message-bar progress is independent of the expensive screen redraws.
+  // Report only when the source line passes the configured threshold.
+  IF dbShowMessageProgressGB AND headerLineI >= nextMessageLineI
+   Message( "Searching ", FNDBBaseNameS( sourceS ), "  line ", headerLineI, " / ", NumLines(), "  hits ", dbMatchCountGI )
+   IF WaitForKeyPressed( 0 ) ENDIF
+   nextMessageLineI = headerLineI + dbProgressLineStepGI
+  ENDIF
   headerLineS = GetText( 1, 255 )
   // The header expression may be a regular expression. Use its first matching
   // position for highlighting, without changing the header-search algorithm.
   headerMatchColI = StrFind( headerS, headerLineS, FNDBFindOptionsS( headerOptionsS ) )
   headerMatchedS = headerS
-  PROCRecordSelectMark_CurrentSeparator()
+  // Mark current record in one forward search. No backward search,
+  // no external macro invocation and no screen scrolling here.
+  IF NOT FNDBMarkRecordForwardB( headerLineI )
+   PROCDBLogEvent( "WARN", "RECORD_BOUNDARY_UNAVAILABLE", sourceS, headerLineI )
+   GotoLine( headerLineI )
+   IF NOT Down() BREAK ENDIF
+   BREAK
+  ENDIF
   GotoBlockBegin()
   // A.+1 date, +2 metadata, +3 ---, +4 repeated title,
   // +5 starts the answer BODY below the repeated title.
@@ -500,6 +700,10 @@ PROC PROCDBScanFile( STRING headerS, STRING bodyS, STRING headerOptionsS, STRING
    ENDFOR
    IF bodyValidB
     BegLine()
+    IF ( ( dbLogHeaderCountGI MOD dbLogIntervalHeadersGI ) == 0 )
+     PROCDBLogEvent( "INFO", "BODY_SEARCH_BEGIN", sourceS, CurrLine() )
+     PROCDBLogFlush( TRUE )
+    ENDIF
     IF LFind( bodyS, bodyFindS )
      sourceLineI = CurrLine()
      bodyColumnI = CurrCol()
@@ -539,6 +743,9 @@ PROC PROCDBScanFile( STRING headerS, STRING bodyS, STRING headerOptionsS, STRING
      AddLine( Str( headerLineI ) + "|" + sourceS )
      PopPosition()
      dbMatchCountGI = dbMatchCountGI + 1
+     IF ( ( dbLogHeaderCountGI MOD dbLogIntervalHeadersGI ) == 0 )
+      PROCDBLogEvent( "INFO", "BODY_MATCH", sourceS, sourceLineI )
+     ENDIF
      // Refresh ONLY for records matching both HEADER and BODY.
      // Keep the Q. HEADER at the TOP, while selecting the matching BODY
      // line by its absolute line number. MarkLine(row,row) does not
@@ -559,17 +766,35 @@ PROC PROCDBScanFile( STRING headerS, STRING bodyS, STRING headerOptionsS, STRING
       PopBlock()
       PopPosition()
      ENDIF
+    ELSE
+     IF ( ( dbLogHeaderCountGI MOD dbLogIntervalHeadersGI ) == 0 )
+      PROCDBLogEvent( "INFO", "BODY_NO_MATCH", sourceS, CurrLine() )
+     ENDIF
     ENDIF
+   ELSE
+    PROCDBLogEvent( "WARN", "BODY_START_UNAVAILABLE", sourceS, headerLineI )
    ENDIF
+  ELSE
+   PROCDBLogEvent( "WARN", "ANSWER_LINE_NOT_FOUND", sourceS, headerLineI )
   ENDIF
   GotoBlockEnd()
   UnMarkBlock()
+  // Report the post-record position only for sampled header checkpoints.
+  IF ( ( dbLogHeaderCountGI MOD dbLogIntervalHeadersGI ) == 0 )
+   PROCDBLogEvent( "INFO", "RECORD_ADVANCE", sourceS, CurrLine() )
+  ENDIF
   // Advance to another Q. without revisiting this record.
   IF CurrLine() <= headerLineI
    GotoLine( headerLineI )
    IF NOT Down() BREAK ENDIF
   ENDIF
  ENDWHILE
+ PROCDBLogEvent( "INFO", "FILE_END", sourceS, NumLines() )
+ PROCDBLogFlush( TRUE )
+ IF dbShowMessageProgressGB
+  Message( "Scanned ", FNDBBaseNameS( sourceS ), "  line ", NumLines(), " / ", NumLines(), "  hits ", dbMatchCountGI )
+  IF WaitForKeyPressed( 0 ) ENDIF
+ ENDIF
  PopBlock()
  PopPosition()
 END
@@ -597,6 +822,8 @@ PROC PROCRecordGotoSearchHeaderBodyFileView( STRING searchRecordHeaderS, STRING 
  EditFile( dbResultsGS )
  EditFile( dbMapGS )
  GotoBufferId( sourceIdI )
+ PROCDBInitializeLog()
+ GotoBufferId( sourceIdI )
  IF dbAllFilesGB
   // Take the ring size AFTER the output buffers have been created.
   // Include them in traversal, but never search either output buffer.
@@ -621,6 +848,8 @@ PROC PROCRecordGotoSearchHeaderBodyFileView( STRING searchRecordHeaderS, STRING 
  EditFile( dbMapGS )
  SaveFile()
  GotoBufferId( sourceIdI )
+ PROCDBLogEvent( "INFO", "SEARCH_END", sourceS, CurrLine() )
+ PROCDBLogFlush( TRUE )
  dbResultsReadyGB = TRUE
  PROCDBShowResults()
 END
