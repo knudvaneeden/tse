@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!-- riemannhypothesisgraph_template.html - version 1.0.0.0.9 -->
+<html lang="en" data-theme="__RIEMANN_INITIAL_THEME__"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Riemann zeta surface - version 1.0.0.0.9</title>
+<style>
+:root{color-scheme:light;--bg:#f5f7fb;--fg:#17283e;--panel:#fff;--edge:#cfdae6;--header:#e9f0f7;--muted:#536b83;--button:#e5edf6;--plot:#ffffff;--grid:#e7edf4;--axis:#8292a6;--re:#ce8c21;--im:#138ba0;--critical:#cc4771;--trivial:#368448;--zero:#cc4771}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#090f1c;--fg:#dce8ff;--panel:#101b2e;--edge:#293b58;--header:#172640;--muted:#b6c6de;--button:#203553;--plot:#101b2e;--grid:#263651;--axis:#8193a9;--re:#f1cb67;--im:#76d6e2;--critical:#ff8d99;--trivial:#93e783;--zero:#ff829e}*{box-sizing:border-box}body{margin:0;font:14px system-ui,Segoe UI,Arial;background:var(--bg);color:var(--fg)}
+header{padding:17px 26px;background:var(--header);border-bottom:1px solid var(--edge)}h1{font-size:22px;font-weight:650;margin:0 0 5px}p{margin:6px 0;color:var(--muted)}
+.wrap{display:grid;grid-template-columns:minmax(0,3fr) minmax(310px,1fr);gap:18px;margin:18px}
+.panel{background:var(--panel);border:1px solid var(--edge);border-radius:12px;overflow:hidden;position:relative}
+.panel h2{font-size:15px;margin:0;padding:13px 17px;border-bottom:1px solid var(--edge)}
+#plane,#image{width:100%;height:660px;display:block;touch-action:none}#surface{width:100%;height:580px;display:block;touch-action:none;cursor:grab}#surface:active{cursor:grabbing}
+#slice{width:100%;height:310px;display:block}.controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:var(--header)}
+button{border:1px solid var(--edge);background:var(--button);color:var(--fg);padding:8px 11px;border-radius:7px;cursor:pointer}
+small{color:var(--muted)}.right{padding:16px}.key{display:flex;align-items:center;gap:9px;margin:12px 0}.swatch{width:14px;height:14px;border-radius:4px;flex-shrink:0}
+.stat{border-top:1px solid var(--edge);padding:9px 0}.zeros{line-height:1.8;overflow-wrap:anywhere}.note{margin:16px 18px 24px;line-height:1.6;color:var(--muted)}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}#surface{height:480px}#plane,#image{height:530px}}
+</style></head><body>
+<header><h1>Riemann zeta function &mdash; |&zeta;(&sigma; + it)|</h1>
+<p>Smooth images of coordinate lines under w = zeta(s), with optional s-plane contours and a 3D magnitude surface. Drag the surface to rotate. Version 1.0.0.0.9.</p></header>
+<div class="wrap"><section class="panel"><h2 id="viewTitle">Mapped curves in the w-plane: w = zeta(s)</h2>
+<div class="controls"><button id="imageBtn">Mapped zeta curves</button><button id="planeBtn">Domain contours + zeros</button><button id="surfaceBtn">3D magnitude surface</button><button id="themeBtn">Switch light/dark</button><button id="contourBtn">Toggle contour families</button></div>
+<canvas id="image"></canvas><canvas id="plane" style="display:none"></canvas><canvas id="surface" style="display:none"></canvas><div class="controls"><button id="reset">Reset view</button><button id="gridToggle">Toggle surface</button><button id="zeroToggle">Toggle zeros</button>
+<small>Horizontal: Re(s) &nbsp; / &nbsp; depth: Im(s) &nbsp; / &nbsp; vertical: capped |zeta(s)|</small></div></section>
+<section class="panel"><h2>Legend and results</h2><div class="right">
+<div class="key"><span class="swatch" style="background:var(--re)"></span>Images of lines with fixed Re(s), calculated by zeta(s)</div><div class="key"><span class="swatch" style="background:var(--im)"></span>Images of lines with fixed Im(s), calculated by zeta(s)</div><div class="key"><span class="swatch" style="background:#29d8fc"></span>Optional 3D magnitude surface</div>
+<div class="key"><span class="swatch" style="background:var(--critical)"></span>Critical line Re(s) = 1/2</div>
+<div class="key"><span class="swatch" style="background:var(--zero)"></span>Non-trivial zeros located numerically on that line</div>
+<div class="key"><span class="swatch" style="background:var(--trivial)"></span>Trivial zeros at -2, -4, -6, ...</div>
+<div class="stat" id="ranges"></div><div class="stat"><strong>Trivial zeros in view:</strong><div class="zeros" id="trivial"></div></div>
+<div class="stat"><strong>Detected zeros on critical line:</strong><div class="zeros" id="nontrivial"></div></div>
+<div class="stat"><strong>Generated:</strong> <span id="generated"></span></div>
+</div><h2>Magnitude along the critical line</h2><canvas id="slice"></canvas></section></div>
+<div class="note"><strong>Mathematical note:</strong> The trivial zeros are at negative even integers. The critical line has real part 1/2; zeros found on it are displayed. The Riemann Hypothesis asserts that every non-trivial zero lies on that line; this graph does not establish that assertion. At s=1, zeta has a pole. Heights are clipped for readability, and the surface is sampled/approximated rather than mathematically exhaustive. The main view is the complex image w=zeta(s) of selected straight lines in the input s-plane. All zeros map to w=0, so their distinct locations are shown in the domain-plane view. The domain-plane view contains level curves of Re(zeta) and Im(zeta). Curves are sampled numerical approximations; the 3D view uses magnitude as height.</div>
+<script>
+/*__RIEMANN_DATA__*/
+'use strict';
+const $=id=>document.getElementById(id), canvas=$('surface'),ctx=canvas.getContext('2d'),slice=$('slice'),sc=slice.getContext('2d');
+$('ranges').textContent=`Real axis [${DATA.xmin}, ${DATA.xmax}], imaginary axis [${DATA.ymin}, ${DATA.ymax}]. Vertical magnitude clipped at ${DATA.cap}. Samples: ${DATA.nx} x ${DATA.ny}.`;
+$('trivial').textContent=DATA.trivial.length?DATA.trivial.map(p=>`s = ${p.x}`).join(' · '):'None in this window (or t=0 is outside view).';
+$('nontrivial').textContent=DATA.nontrivial.length?DATA.nontrivial.map(p=>`t ≈ ${p.y.toFixed(8)}`).join(' · '):'No critical-line zeros detected in this window.';
+$('generated').textContent=DATA.generated;
+let az=0.67,el=0.60,zoom=1.0,showMesh=true,showZeros=true,drag=false,px=0,py=0;
+function resize(c){const r=c.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);const c2=c.getContext('2d');c2.setTransform(d,0,0,d,0,0);return [r.width,r.height];}
+function project(x,y,h,w,ht){let X=(x-DATA.xmin)/(DATA.xmax-DATA.xmin)-.5,Y=(y-DATA.ymin)/(DATA.ymax-DATA.ymin)-.5,Z=h/DATA.cap;
+X*=2.2;Y*=2.6;Z*=1.65;
+let ca=Math.cos(az),sa=Math.sin(az),ce=Math.cos(el),se=Math.sin(el),u=X*ca-Y*sa,v=X*sa+Y*ca;
+let vert=Z*ce-v*se,depth=Z*se+v*ce;
+let scale=Math.min(w/3.8,ht/3.3)*zoom/(1+0.07*depth);
+return [w*.5+u*scale,ht*.72-vert*scale,depth];}
+function pathLine(points,color,width,dashes,w,h){ctx.beginPath();points.forEach((p,i)=>{const q=project(...p,w,h);if(i===0)ctx.moveTo(q[0],q[1]);else ctx.lineTo(q[0],q[1]);});ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dashes||[]);ctx.stroke();ctx.setLineDash([]);}
+function pointMark(x,y,h,color,label,w,ht){const p=project(x,y,h,w,ht);ctx.beginPath();ctx.arc(p[0],p[1],5.8,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle='#061223';ctx.lineWidth=1.6;ctx.stroke();ctx.fillStyle='#f7f9ff';ctx.font='12px system-ui';ctx.fillText(label,p[0]+8,p[1]-8);}
+function render(){const [w,h]=resize(canvas);ctx.fillStyle='#101b2e';ctx.fillRect(0,0,w,h);
+  for(const [a,b] of [[DATA.xmin,DATA.ymin],[DATA.xmax,DATA.ymin],[DATA.xmax,DATA.ymax],[DATA.xmin,DATA.ymax]]){
+    const p=project(a,b,0,w,h);ctx.strokeStyle='#37516e';ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(p[0],p[1]-2);ctx.stroke();}
+  for(let n=0;n<=6;n++){let x=DATA.xmin+(DATA.xmax-DATA.xmin)*n/6;pathLine([[x,DATA.ymin,0],[x,DATA.ymax,0]],'#23334f',.8,[],w,h);}
+  for(let n=0;n<=7;n++){let y=DATA.ymin+(DATA.ymax-DATA.ymin)*n/7;pathLine([[DATA.xmin,y,0],[DATA.xmax,y,0]],'#23334f',.8,[],w,h);}
+  if(showMesh){let quads=[];for(let j=0;j<DATA.ny-1;j++)for(let i=0;i<DATA.nx-1;i++){
+    let x0=DATA.xmin+(DATA.xmax-DATA.xmin)*i/(DATA.nx-1),x1=DATA.xmin+(DATA.xmax-DATA.xmin)*(i+1)/(DATA.nx-1);
+    let y0=DATA.ymin+(DATA.ymax-DATA.ymin)*j/(DATA.ny-1),y1=DATA.ymin+(DATA.ymax-DATA.ymin)*(j+1)/(DATA.ny-1);
+    let vals=[DATA.surface[j][i],DATA.surface[j][i+1],DATA.surface[j+1][i+1],DATA.surface[j+1][i]];
+    let coords=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]].map((p,k)=>project(p[0],p[1],vals[k],w,h));
+    let mean=vals.reduce((a,b)=>a+b,0)/4,depth=coords.reduce((a,p)=>a+p[2],0)/4;
+    quads.push({coords,mean,depth});}
+    quads.sort((a,b)=>a.depth-b.depth);
+    for(const q of quads){const light=Math.min(1,q.mean/DATA.cap),hue=200-170*light;
+      ctx.beginPath();q.coords.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
+      ctx.fillStyle=`hsla(${hue},80%,${38+16*light}%,.88)`;ctx.fill();ctx.strokeStyle='rgba(14,30,55,.16)';ctx.lineWidth=.35;ctx.stroke();}
+  }
+  if(DATA.xmin<=.5&&DATA.xmax>=.5) {
+    pathLine([[.5,DATA.ymin,.025*DATA.cap],[.5,DATA.ymax,.025*DATA.cap]],'#ffca56',3,[],w,h);
+    pathLine([[.5,DATA.ymin,0],[.5,DATA.ymax,0]],'#ffca5688',1,[6,5],w,h);
+  }
+  if(showZeros){for(let p of DATA.trivial)pointMark(p.x,p.y,0,'#93e783',` ${p.x}`,w,h);
+    for(let p of DATA.nontrivial)pointMark(p.x,p.y,0,'#fb668d',p.y.toFixed(4),w,h);}
+  for(const [a,b,label] of [[DATA.xmin,DATA.ymin,`Re=${DATA.xmin}`],[DATA.xmax,DATA.ymin,`Re=${DATA.xmax}`],[DATA.xmin,DATA.ymax,`Im=${DATA.ymax}`]]){
+     const p=project(a,b,0,w,h);ctx.fillStyle='#b7cbe6';ctx.font='12px system-ui';ctx.fillText(label,p[0]+4,p[1]+14);}
+  const axis=project(DATA.xmin,DATA.ymin,DATA.cap,w,h);ctx.fillStyle='#d3e5ff';ctx.fillText(`|ζ| cap ${DATA.cap}`,axis[0]+5,axis[1]-4);
+}
+function renderSlice(){const [w,h]=resize(slice);sc.fillStyle='#101b2e';sc.fillRect(0,0,w,h);
+const left=47,right=w-16,top=14,bottom=h-36;
+sc.strokeStyle='#58708d';sc.strokeRect(left,top,right-left,bottom-top);sc.fillStyle='#b8c8df';sc.font='11px system-ui';
+for(let k=0;k<=4;k++){let v=DATA.cap*k/4,y=bottom-(bottom-top)*k/4;sc.fillText(v.toFixed(1),7,y+4);sc.strokeStyle='#243751';sc.beginPath();sc.moveTo(left,y);sc.lineTo(right,y);sc.stroke();}
+if(DATA.critical.length){sc.beginPath();DATA.critical.forEach((p,i)=>{let x=left+(right-left)*(p.t-DATA.ymin)/(DATA.ymax-DATA.ymin),y=bottom-(bottom-top)*p.m/DATA.cap;i?sc.lineTo(x,y):sc.moveTo(x,y)});
+sc.strokeStyle='#40d8f8';sc.lineWidth=2;sc.stroke();for(let p of DATA.nontrivial){const x=left+(right-left)*(p.y-DATA.ymin)/(DATA.ymax-DATA.ymin);sc.beginPath();sc.moveTo(x,top);sc.lineTo(x,bottom);sc.strokeStyle='#fa648b99';sc.lineWidth=1;sc.stroke();}}
+sc.fillStyle='#b9cbe5';sc.fillText(DATA.ymin.toString(),left,bottom+17);sc.fillText(DATA.ymax.toString(),right-27,bottom+17);sc.fillText('Im(s) →',right-77,bottom+30);
+}
+canvas.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;az+=(e.clientX-px)*.008;el=Math.max(-.1,Math.min(1.5,el+(e.clientY-py)*.007));px=e.clientX;py=e.clientY;render()});
+canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.min(3.2,Math.max(.35,zoom*(e.deltaY>0?.9:1.1)));render()},{passive:false});
+$('reset').onclick=()=>{az=.67;el=.6;zoom=1;render()};$('gridToggle').onclick=()=>{showMesh=!showMesh;render()};$('zeroToggle').onclick=()=>{showZeros=!showZeros;render()};
+window.addEventListener('resize',()=>{render();renderSlice()});render();renderSlice();
+</script><script>
+(function(){
+ const c=document.getElementById('image'),g=c.getContext('2d'),root=document.documentElement;
+ const css=k=>getComputedStyle(root).getPropertyValue(k).trim();
+ function draw(){
+  const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),W=r.width,H=r.height;
+  if(W<=0||H<=0)return;
+  c.width=Math.round(W*d);c.height=Math.round(H*d);g.setTransform(d,0,0,d,0,0);
+  const L=48,T=26,R=24,B=45,ww=W-L-R,hh=H-T-B;
+  const xMin=DATA.imageXMin,xMax=DATA.imageXMax,yMin=DATA.imageYMin,yMax=DATA.imageYMax;
+  const spanX=xMax-xMin,spanY=yMax-yMin;
+  // Square complex units: preserve geometry of circles rather than stretching them.
+  const scale=Math.min(ww/spanX,hh/spanY),cx=L+ww/2,cy=T+hh/2;
+  const X=v=>cx+(v-(xMin+xMax)/2)*scale,Y=v=>cy-(v-(yMin+yMax)/2)*scale;
+  g.fillStyle=css('--plot');g.fillRect(0,0,W,H);
+  g.save();g.beginPath();g.rect(L,T,ww,hh);g.clip();
+  const sx=Number.isFinite(spanX)?Math.max(1,Math.ceil(spanX/14)):1;
+  const sy=Number.isFinite(spanY)?Math.max(1,Math.ceil(spanY/14)):1;
+  g.strokeStyle=css('--grid');g.lineWidth=.7;
+  for(let i=Math.ceil(xMin/sx);i*sx<=xMax;i++){g.beginPath();g.moveTo(X(i*sx),T);g.lineTo(X(i*sx),T+hh);g.stroke()}
+  for(let j=Math.ceil(yMin/sy);j*sy<=yMax;j++){g.beginPath();g.moveTo(L,Y(j*sy));g.lineTo(L+ww,Y(j*sy));g.stroke()}
+  g.strokeStyle=css('--axis');g.lineWidth=1.8;
+  if(xMin<=0&&xMax>=0){g.beginPath();g.moveTo(X(0),T);g.lineTo(X(0),T+hh);g.stroke()}
+  if(yMin<=0&&yMax>=0){g.beginPath();g.moveTo(L,Y(0));g.lineTo(L+ww,Y(0));g.stroke()}
+  const palettes=(root.dataset.theme==='dark')?{
+    sigma:['#9be6e2','#67c6db','#4ba0d4','#737de5','#b39cf2'],
+    t:['#f6c174','#edaa79','#df8895','#d16b9a','#a8c06d']
+  }:{sigma:['#174f9a','#246fb1','#1788a5','#158f75','#5659a4'],
+       t:['#d65b38','#cf8327','#a75d99','#398d53','#8562ad']};
+  let drawn=0;
+  function strokeSamples(samples,col,thickness){
+    g.strokeStyle=col;g.lineWidth=thickness;g.lineJoin='round';g.lineCap='round';
+    g.beginPath();let previous=null,active=false;
+    for(const [u,v] of samples){
+      if(u===null||v===null||!Number.isFinite(u)||!Number.isFinite(v)) {previous=null;active=false;continue}
+      const px=X(u),py=Y(v);
+      // Discontinuities around the pole must not connect across the viewport.
+      if(previous && Math.hypot(px-previous[0],py-previous[1])<Math.min(W,H)*0.35){g.lineTo(px,py);active=true}
+      else{g.moveTo(px,py)}
+      previous=[px,py];
+    }
+    g.stroke();drawn++;
+  }
+  function selectIndexes(count,total){
+    const a=[];for(let k=0;k<count;k++){let i=Math.round(k*(total-1)/(count-1));if(!a.includes(i))a.push(i)}return a;
+  }
+  // First family: fix sigma, vary t. Second family: fix t, vary sigma.
+  selectIndexes(DATA.sigmaLines,DATA.nx).forEach((i,k)=>{
+    const a=[];for(let j=0;j<DATA.ny;j++)a.push([DATA.re[j][i],DATA.im[j][i]]);
+    strokeSamples(a,palettes.sigma[k%palettes.sigma.length],DATA.imageLineWidth);
+  });
+  selectIndexes(DATA.tLines,DATA.ny).forEach((j,k)=>{
+    const a=[];for(let i=0;i<DATA.nx;i++)a.push([DATA.re[j][i],DATA.im[j][i]]);
+    strokeSamples(a,palettes.t[k%palettes.t.length],DATA.imageLineWidth);
+  });
+  // Re(s)=0.5 is computed separately in PowerShell at EXACTLY sigma=0.5.
+  // Its image under zeta is a curved path in this w-plane, never a straight x=0.5 line.
+  if(DATA.mappedCritical && DATA.mappedCritical.length){
+    g.setLineDash([7,4]);strokeSamples(DATA.mappedCritical,css('--critical'),3);g.setLineDash([]);
+  }
+  // Every trivial and non-trivial zero maps to the same point in the image plane.
+  if(xMin<=0&&xMax>=0&&yMin<=0&&yMax>=0){g.beginPath();g.arc(X(0),Y(0),4,0,2*Math.PI);g.fillStyle=css('--zero');g.fill()}
+  g.restore();g.strokeStyle=css('--axis');g.lineWidth=.8;g.strokeRect(L,T,ww,hh);
+  g.fillStyle=css('--fg');g.font='12px Segoe UI,Arial';
+  for(let i=0;i<=6;i++){const v=xMin+i*spanX/6;g.fillText(v.toFixed(1),X(v)-12,H-20)}
+  g.fillText('Re(zeta(s))',W/2-36,H-5);g.fillText('Im(zeta(s))',8,15);
+  g.fillText('w = zeta(s)',L+7,T+17);
+  // Coordinate inset: in the INPUT plane s = sigma + it, the critical line IS x=0.5.
+  // Keep it separate from the w-plane to avoid falsely assigning a straight line to zeta(s).
+  const insetW=Math.min(246,Math.max(185,W*.23)), insetH=Math.min(230,Math.max(160,H*.32));
+  const bx=W-R-insetW-8,by=T+8,margin=28;
+  const iw=insetW-margin-12,ih=insetH-margin-18;
+  g.save();g.fillStyle=css('--panel');g.strokeStyle=css('--edge');g.lineWidth=1;
+  g.fillRect(bx,by,insetW,insetH);g.strokeRect(bx+.5,by+.5,insetW-1,insetH-1);
+  const u0=bx+margin,v0=by+18,ix=x=>u0+(x-DATA.xmin)/(DATA.xmax-DATA.xmin)*iw;
+  const iy=y=>v0+ih-(y-DATA.ymin)/(DATA.ymax-DATA.ymin)*ih;
+  g.beginPath();g.rect(u0,v0,iw,ih);g.clip();
+  g.strokeStyle=css('--grid');g.lineWidth=.7;
+  for(let x=Math.ceil(DATA.xmin);x<=DATA.xmax;x++){g.beginPath();g.moveTo(ix(x),v0);g.lineTo(ix(x),v0+ih);g.stroke()}
+  if(DATA.xmin<=0&&DATA.xmax>=0){g.strokeStyle=css('--axis');g.beginPath();g.moveTo(ix(0),v0);g.lineTo(ix(0),v0+ih);g.stroke()}
+  if(DATA.ymin<=0&&DATA.ymax>=0){g.strokeStyle=css('--axis');g.beginPath();g.moveTo(u0,iy(0));g.lineTo(u0+iw,iy(0));g.stroke()}
+  if(DATA.xmin<=.5&&DATA.xmax>=.5){
+    g.strokeStyle=css('--critical');g.lineWidth=2.6;g.setLineDash([6,3]);
+    g.beginPath();g.moveTo(ix(.5),v0);g.lineTo(ix(.5),v0+ih);g.stroke();g.setLineDash([]);
+    for(const p of DATA.nontrivial){g.beginPath();g.arc(ix(.5),iy(p.y),3.5,0,Math.PI*2);g.fillStyle=css('--zero');g.fill()}
+  }
+  for(const p of DATA.trivial){g.beginPath();g.arc(ix(p.x),iy(0),3.5,0,Math.PI*2);g.fillStyle=css('--trivial');g.fill()}
+  g.restore();g.strokeStyle=css('--edge');g.strokeRect(u0,v0,iw,ih);
+  g.fillStyle=css('--fg');g.font='bold 11px Segoe UI,Arial';
+  g.fillText('Input s-plane: Re(s) = 0.5',bx+8,by+13);
+  g.font='10px Segoe UI,Arial';g.fillText('Re(s)',u0+iw-26,by+insetH-4);
+  g.fillText('Im(s)',bx+3,by+31);
+
+ }
+ window.riemannDrawImage=draw;
+ window.addEventListener('resize',()=>{if(c.style.display!=='none')draw()});
+})();
+</script>
+<script>
+(function(){
+ const plane=document.getElementById('plane'),g=plane.getContext('2d');
+ const root=document.documentElement;
+ let theme=DATA.theme||'dark',view=DATA.default_view||'image',families=3;
+ const levels=[-8,-5,-3,-2,-1,-.5,0,.5,1,2,3,5,8];
+ function css(n){return getComputedStyle(root).getPropertyValue(n).trim()}
+ function frame(){
+   const r=plane.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);
+   plane.width=Math.round(r.width*d);plane.height=Math.round(r.height*d);
+   g.setTransform(d,0,0,d,0,0);
+   const W=r.width,H=r.height,margin=47;
+   const xx=x=>margin+(x-DATA.xmin)/(DATA.xmax-DATA.xmin)*(W-2*margin);
+   const yy=y=>H-margin-(y-DATA.ymin)/(DATA.ymax-DATA.ymin)*(H-2*margin);
+   g.fillStyle=css('--plot');g.fillRect(0,0,W,H);
+   g.save();g.beginPath();g.rect(margin,margin,W-2*margin,H-2*margin);g.clip();
+   g.lineWidth=1;
+   g.strokeStyle=css('--grid');
+   for(let x=Math.ceil(DATA.xmin);x<=DATA.xmax;x++){g.beginPath();g.moveTo(xx(x),margin);g.lineTo(xx(x),H-margin);g.stroke()}
+   for(let y=Math.ceil(DATA.ymin);y<=DATA.ymax;y++){g.beginPath();g.moveTo(margin,yy(y));g.lineTo(W-margin,yy(y));g.stroke()}
+   g.lineWidth=1.4;g.strokeStyle=css('--axis');
+   if(DATA.xmin<=0&&DATA.xmax>=0){g.beginPath();g.moveTo(xx(0),margin);g.lineTo(xx(0),H-margin);g.stroke()}
+   if(DATA.ymin<=0&&DATA.ymax>=0){g.beginPath();g.moveTo(margin,yy(0));g.lineTo(W-margin,yy(0));g.stroke()}
+   // Marching squares: interpolate each isoline intersection along the four cell edges.
+   function contours(values,color){
+      if(!values||!values.length)return;
+      g.strokeStyle=color;g.lineWidth=1.15;
+      for(const level of levels){
+        g.beginPath();
+        for(let j=0;j<DATA.ny-1;j++)for(let i=0;i<DATA.nx-1;i++){
+          const vs=[values[j][i],values[j][i+1],values[j+1][i+1],values[j+1][i]];
+          if(vs.some(v=>v===null||!Number.isFinite(Number(v))))continue;
+          const x0=DATA.xmin+(DATA.xmax-DATA.xmin)*i/(DATA.nx-1);
+          const x1=DATA.xmin+(DATA.xmax-DATA.xmin)*(i+1)/(DATA.nx-1);
+          const y0=DATA.ymin+(DATA.ymax-DATA.ymin)*j/(DATA.ny-1);
+          const y1=DATA.ymin+(DATA.ymax-DATA.ymin)*(j+1)/(DATA.ny-1);
+          const corners=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];
+          const hits=[];
+          for(let e=0;e<4;e++){
+            const n=(e+1)%4,a=Number(vs[e]),b=Number(vs[n]);
+            if((a<level&&b>=level)||(b<level&&a>=level)){
+              const q=(level-a)/(b-a);
+              hits.push([e,xx(corners[e][0]+q*(corners[n][0]-corners[e][0])),yy(corners[e][1]+q*(corners[n][1]-corners[e][1]))]);
+            }
+          }
+          if(hits.length===2){g.moveTo(hits[0][1],hits[0][2]);g.lineTo(hits[1][1],hits[1][2])}
+          else if(hits.length===4){ // standard saddle-case pairing
+            const avg=vs.reduce((a,b)=>a+Number(b),0)/4;
+            const sorted=hits.sort((a,b)=>a[0]-b[0]);
+            const pairs=avg>=level?[[0,1],[2,3]]:[[0,3],[1,2]];
+            for(const pair of pairs){const a=sorted[pair[0]],b=sorted[pair[1]];g.moveTo(a[1],a[2]);g.lineTo(b[1],b[2])}
+          }
+        }
+        g.stroke();
+      }
+   }
+   if(families&1)contours(DATA.re,css('--re'));
+   if(families&2)contours(DATA.im,css('--im'));
+   if(DATA.xmin<=.5&&DATA.xmax>=.5){g.strokeStyle=css('--critical');g.lineWidth=2;g.setLineDash([6,5]);g.beginPath();g.moveTo(xx(.5),margin);g.lineTo(xx(.5),H-margin);g.stroke();g.setLineDash([])}
+   function mark(x,y,color,label){const X=xx(x),Y=yy(y);g.fillStyle=color;g.beginPath();g.arc(X,Y,4.7,0,Math.PI*2);g.fill();g.font='12px Segoe UI,Arial';g.fillText(label,X+8,Y-7)}
+   for(const p of DATA.trivial)mark(p.x,p.y,css('--trivial'),String(p.x));
+   for(const p of DATA.nontrivial)mark(p.x,p.y,css('--zero'),Number(p.y).toFixed(3));
+   g.restore();g.strokeStyle=css('--axis');g.strokeRect(margin,margin,W-2*margin,H-2*margin);
+   g.fillStyle=css('--fg');g.font='12px Segoe UI,Arial';
+   for(let i=0;i<=5;i++){let x=DATA.xmin+(DATA.xmax-DATA.xmin)*i/5;g.fillText(x.toFixed(1),xx(x)-14,H-margin+18)}
+   for(let i=0;i<=6;i++){let y=DATA.ymin+(DATA.ymax-DATA.ymin)*i/6;g.fillText(y.toFixed(0),5,yy(y)+4)}
+   g.fillText('Re(s)',W/2,H-8);g.fillText('Im(s)',8,18);
+ }
+ function setView(v){view=v;plane.style.display=v==='plane'?'block':'none';document.getElementById('image').style.display=v==='image'?'block':'none';canvas.style.display=v==='surface'?'block':'none';document.getElementById('viewTitle').textContent=v==='image'?'Images of coordinate lines under w = zeta(s)':v==='plane'?'Domain-plane contours, critical line and zeros':'3D magnitude surface, critical line and zeros';if(v==='plane')frame();else if(v==='image')window.riemannDrawImage();else render()}
+ function setTheme(v){theme=v;root.dataset.theme=v; if(view==='plane')frame();else if(view==='image')window.riemannDrawImage();else render();renderSlice()}
+ document.getElementById('imageBtn').onclick=()=>setView('image');
+ document.getElementById('planeBtn').onclick=()=>setView('plane');
+ document.getElementById('surfaceBtn').onclick=()=>setView('surface');
+ document.getElementById('themeBtn').onclick=()=>setTheme(theme==='light'?'dark':'light');
+ document.getElementById('contourBtn').onclick=()=>{families=(families+1)%4;if(view==='plane')frame()};
+ window.addEventListener('resize',()=>{if(view==='plane')frame()});
+ setTheme(theme);setView(view);
+})();
+</script></body></html>

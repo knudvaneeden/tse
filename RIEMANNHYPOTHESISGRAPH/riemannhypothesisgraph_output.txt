@@ -1,0 +1,10 @@
+Riemann Hypothesis Graph - version 1.0.0.0.9
+Generated: 2026-11-21 17:01:15
+HTML graph: F:\BBC\taal\riemannhypothesisgraph\riemannhypothesisgraph.html
+Numerical data: F:\BBC\taal\riemannhypothesisgraph\riemannhypothesisgraph_data.json
+Settings: F:\BBC\taal\riemannhypothesisgraph\riemannhypothesisgraph.ini
+Default view: mapping w = zeta(s), with a critical-line domain inset and optional domain contours and 3D surface
+Trivial zeros shown: 3
+Numerically located critical-line zeros: 2
+The critical line is not a proof of the Riemann Hypothesis.
+Note: zero detection and surface values are numerical approximations.
