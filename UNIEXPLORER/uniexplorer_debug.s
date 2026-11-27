@@ -4,7 +4,7 @@
   Website         eCarlo.nl/tse
   Compatibility   Windows GUI TSE v4.50.27 upwards
   Version         v0.0.0.1   30 Oct 2026
-  Local package   1.0.0.0.18   27 Nov 2026 (debug code unchanged)
+  Local package   1.0.0.0.19   27 Nov 2026 (debug code unchanged)
 
 
   This macro is part of a work-around to run UniExplorer in TSE's debugger.
@@ -12,8 +12,8 @@
   The work-around:
   - Autoload UniExplorer_debug instead of UniExplorer.
   - Open a file from Windows File Explorer.
-    UniExplorer_debug remembers the filename and opens UniExplorer.s instead.
-  - Apply the menu Macro -> Debug on the open UniExplorer.s file.
+    UniExplorer_debug remembers the filename and opens uniexplorer.s instead.
+  - Apply the menu Macro -> Debug on the open uniexplorer.s file.
     UniExplorer runs in TSE's debugger and uses the remembered filename.
 
 */

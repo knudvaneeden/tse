@@ -4,7 +4,7 @@
   Website         eCarlo.nl/tse
   Compatibility   Windows GUI TSE 4.50.33 target (compile); 4.50.35+ upstream runtime
   Version         v0.0.0.8   BETA   25 Nov 2026
-  Local patch     1.0.0.0.18   27 Nov 2026 (unofficial compatibility build)
+  Local patch     1.0.0.0.19   27 Nov 2026 (unofficial compatibility build)
 
 
   This extension fixes five possible TSE v4.50.35-upwards bugs that can occur
@@ -353,7 +353,7 @@
   #define INTERNAL_VERSION 0
 #endif
 
-// Local compatibility patch 1.0.0.0.18.
+// Local compatibility patch 1.0.0.0.19.
 // Experimental legacy runtime is enabled by default in this release.
 // Set FALSE to disable legacy runtime; test with disposable files only.
 #define UNIEXPLORER_LEGACY_RUNTIME TRUE
@@ -3156,7 +3156,7 @@ proc WhenLoaded()
 
   MACRO_NAME    = SplitPath(CurrMacroFilename(), _NAME_)
   ue_log_init()
-  ue_log('===== UniExplorer compatibility 1.0.0.0.18 WhenLoaded =====')
+  ue_log('===== UniExplorer compatibility 1.0.0.0.19 WhenLoaded =====')
   ue_log(Format('Compiler INTERNAL_VERSION='; INTERNAL_VERSION))
   ue_log('Macro path: ' + CurrMacroFilename())
   ue_log('Initial buffer: ' + CurrFilename())

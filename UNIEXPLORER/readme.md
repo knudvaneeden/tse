@@ -1,12 +1,12 @@
-# UniExplorer compatibility 1.0.0.0.18
+# UniExplorer compatibility 1.0.0.0.19
 27 November 2026 — unofficial adaptation of Carlo Hogeveen's UniExplorer v0.0.0.8 BETA.
 
 **Important — open files one at a time:** After double-clicking a filename in Windows Explorer, wait until that file is fully loaded and visibly displayed in the original TSE editing window before double-clicking the next filename. If the Buffer List, a menu or a dialog is open, close it first (for example, press Escape). This allows the mailbox receiver to finish loading and acknowledging the current request. Opening another file too early may cause a timeout or leave an additional TSE instance open.
 
 ## Mandatory installation and Explorer configuration
 
-1. Compile `UniExplorer.s` with the compiler belonging to the intended TSE installation (`sc32 *.s`). Install the resulting `UniExplorer.mac` and `uniexplorer.ini` together.
-2. Adding `UniExplorer.mac` to TSE's AutoLoad list is **mandatory and essential**: its `WhenLoaded()` procedure must intercept the original Unicode command line before TSE processes the filename. Do not autoload `UniExplorer_debug.mac`. Save the AutoLoad configuration and restart TSE.
+1. Compile `uniexplorer.s` with the compiler belonging to the intended TSE installation (`sc32 *.s`). Install the resulting `uniexplorer.mac` and `uniexplorer.ini` together.
+2. Adding `uniexplorer.mac` to TSE's AutoLoad list is **mandatory and essential**: its `WhenLoaded()` procedure must intercept the original Unicode command line before TSE processes the filename. Do not autoload `uniexplorer_debug.mac`. Save the AutoLoad configuration and restart TSE.
 3. Set native TSE Single Instance to OFF, save the configuration and completely restart TSE. UniExplorer supplies its own forwarding mechanism.
 4. In Windows Explorer, right-click a test file, choose **Open with** > **Choose another app** (or **Open with TSE** if already correctly configured), then browse to the exact `g32.exe` you want to use. On Windows 11 the browse option may be labelled **Choose an app on your PC**. Confirm the intended executable; repeat for other extensions if necessary. Optionally set it as the default app to enable double-click opening. All participating TSE instances must use the same macro path and version.
 5. Wait until each file is fully loaded and visibly displayed in TSE before opening the next file. Close the Buffer List, menus and dialogs first.
@@ -26,6 +26,10 @@ Wait for the file to be fully displayed. Repeat with a different Unicode file. T
 For Explorer integration, the equivalent opening command is `"F:\WORDPROC\tse32_v45033\g32.exe" -1- "%1"`. The ordinary Open with dialog selects an executable, not its arguments, and does not automatically add this switch. Version 17 does not change registry associations or install a launcher. If the chosen g32.exe is already the default application for that file extension, simply double-clicking the filename in Explorer may be sufficient when native Single Instance is OFF (or when its opening command already includes `-1-`). Do not use `-1` for incoming Unicode requests when native forwarding would bypass AutoLoad.
 
 Reference: https://ecarlo.nl/tse/files/TseHelp.html (command-line options).
+
+## Version 19 — logging off by default
+
+The supplied `uniexplorer.ini` sets `logging=false`. To enable diagnostic logging, set `logging=true` in `[UniExplorer]` and restart all TSE instances. Enable logging before performing any diagnostic tests that require a log. If the INI or logging key is missing, the original program fallback remains enabled. Existing log files are not removed automatically. All package filenames outside `tests/files` are lowercase; all 16 test filenames and contents are unchanged. No runtime logic has changed.
 
 ## Version 18 — expanded test suite
 
@@ -52,7 +56,7 @@ backup=0
 2. Copy test 06 into a separate disposable directory using Explorer. Double-click the copy, wait until the contents are visible, append a distinctive line, press Ctrl+S. Check the log for `Backup disabled by INI` and `Save-back ReplaceFileW succeeded`. Open the actual original with a Unicode-aware editor to verify the new line, and verify no new `.bak` appeared beside it. Repeat a second save to test snapshot refresh.
 3. Close all TSE instances, set `backup=1`, restart and repeat with a fresh disposable test file. Verify the adjacent backup contains the pre-save bytes. Revert `backup=0` when finished.
 4. Open a fresh disposable original, change it using another Unicode-aware editor, then edit and save the TSE buffer. Expect a refusal, the external modification to remain, and the edited temporary copy to be retained. Also test an ASCII file (normal TSE save), and the empty and nested Unicode fixtures in separate disposable copies.
-5. Upload the log. If any original save fails, do not discard the temporary copy or staging files. Version 18 requires compilation and runtime testing of the expanded suite; use disposable files.
+5. Upload the log. If any original save fails, do not discard the temporary copy or staging files. Version 19 requires compilation and runtime testing of the expanded suite; use disposable files.
 
 ## Version 15 regression isolation
 Version 14 successfully selected duplicate test 06 twice, then stopped receiving requests. The primary may have been displaying the Buffer List or another nonediting menu; this is not established. Version 15 logs pending requests during _NONEDIT_IDLE_ once per sender and never loads files in that state. Close menus before sending the next request. Duplicate selection now uses EditThisFile with the existing temporary path, verifying the existing buffer ID, rather than directly selecting with GotoBufferId. The original atomic mailbox send, retry, acknowledgment and closure logic is unchanged.
@@ -74,13 +78,13 @@ In uniexplorer.ini, [Mailbox] retryintervalms=100, busytimeoutms=10000, acktimeo
 
 ## Install and test
 1. Close all TSE processes before replacing the macro. Set native Single Instance OFF, save configuration, and restart as necessary.
-2. Compile sc32 *.s. Install UniExplorer.mac and uniexplorer.ini together; AutoLoad UniExplorer (not the debug macro). All participating instances must use the same macro path and version.
+2. Compile sc32 *.s. Install uniexplorer.mac and uniexplorer.ini together; AutoLoad UniExplorer (not the debug macro). All participating instances must use the same macro path and version.
 3. Rotate uniexplorer.log. Double-click only-ă.txt (test 06) from Explorer with no TSE running.
 4. Leave that primary editing window open, not in a menu or dialog. Double-click pair-ă.txt (test 04). Expected: correct 04 content in primary, secondary closes normally, focus returns to primary.
 5. Repeat with 中文.txt (07), plain.txt (01), and remaining fixtures. Check the TSE ring and Windows taskbar/processes; upload the log if any extra windows remain. Do not save during loading-only tests.
 6. Optional stress test only, after the ordinary sequential test passes: open several additional files rapidly (including ASCII files), then check for Mailbox busy; waiting and Mailbox acquired after waiting. A persistent busy timeout is a fallback, not a successful handoff. Look for Mailbox request sender PID, Mailbox receiver PID, Mailbox receiver selected, Mailbox acknowledged successful load, foreground requested/denied, WM_CLOSE posted, and secondary cleanup. A posted message is not proof of closure: verify the window actually disappears.
 
 ## Limitations and safety
-SAL and native Windows system DLLs only. No external launcher, registry edits, or custom DLL. Optional PowerShell fixture verifier is not used by the runtime. Log format YYYY-MM-DD HH:MM:SS INFO|WARN|ERROR <message>; logging defaults on. Single-slot mailbox with configurable busy and acknowledgment timeouts. If the receiver remains busy, absent or fails, secondary opens locally and stays open. A timeout during loading may leave copies in both rings. Experimental save-back is now available; no automatic temporary cleanup yet. One quoted filename per invocation only; multi-select not supported. Separate manual starts without a file request stay open. Primary idle receiver may not run while a modal dialog is open. If a process dies during a request, close all TSE instances to reset. Upstream path retained for newer TSE builds. Version 17 passed the 13-file loading, editing, Ctrl+S and reopening test. Version 18 has not yet been compiled or run under Windows; focus and WM_CLOSE behavior remain best effort. Keep version 17 available for rollback. Test only disposable files.
+SAL and native Windows system DLLs only. No external launcher, registry edits, or custom DLL. Optional PowerShell fixture verifier is not used by the runtime. Log format YYYY-MM-DD HH:MM:SS INFO|WARN|ERROR <message>; logging defaults off in the supplied INI. Single-slot mailbox with configurable busy and acknowledgment timeouts. If the receiver remains busy, absent or fails, secondary opens locally and stays open. A timeout during loading may leave copies in both rings. Experimental save-back is now available; no automatic temporary cleanup yet. One quoted filename per invocation only; multi-select not supported. Separate manual starts without a file request stay open. Primary idle receiver may not run while a modal dialog is open. If a process dies during a request, close all TSE instances to reset. Upstream path retained for newer TSE builds. Version 17 passed the 13-file loading, editing, Ctrl+S and reopening test. Version 19 has not yet been compiled or run under Windows; focus and WM_CLOSE behavior remain best effort. Keep version 17 available for rollback. Test only disposable files.
 
 Reference: https://ecarlo.nl/tse/files/TseHelp.html (GetWinHandle, Hook, _IDLE_, _NONEDIT_IDLE_, UpdateDisplay).
