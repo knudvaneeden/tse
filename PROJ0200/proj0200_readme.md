@@ -1,8 +1,8 @@
-# PROJ0200 - 1.0.0.0.534
+# PROJ0200 - 1.0.0.0.536
 
-Updated: 2026-11-28 00:11:31
+Updated: 2026-11-28 04:11:53
 
-Version 1.0.0.0.534 replaces the five bundled compiler/example/syntax directories with the supplied updates, preserving the current pjl.txt.
+Version 1.0.0.0.536 audits and repairs the five compiler/example/syntax directories.
 
 Search > Bookmarks navigation remains observable and useful.
 When an earlier or later search-audit position is found, the complete menu chain
@@ -926,7 +926,41 @@ The unmodified distribution and example are also retained in
 Build with `build.bat` and restart TSE. This integration has static checks;
 SAL compilation and live scope/results tests must be performed in TSE.
 
+## Ctags language audit
+
+The current 88 compiler-rule entries were checked against the active Ctags
+configuration. 87 are mapped; BrainF has no named symbols. This update adds
+21 declaration parsers, missing extension mappings, SQL definition support,
+BBC BASIC/Rocq patterns, and fixes duplicate/commented SAL procedures.
+All 85 symbol fixtures pass with both tested Linux Exuberant and Universal
+Ctags builds. Windows SAL compilation and F12 navigation were not tested here.
+
+After installation, regenerate the Ctags index. The configured `ctags=` path is
+unchanged. Full coverage, shared-extension choices, parser limits and repeatable
+test instructions are in [DOCS/ctags_language_audit.md](DOCS/ctags_language_audit.md).
+
+## Compiler/example/syntax directory audit
+
+The five bundled directories have been cross-checked: 88 compiler rules and
+1,129 example-loader targets resolve. The supplied computerlanguages.txt and
+listsynext.txt are included unchanged. Missing dialect aliases, the Access helper,
+PowerShell self-test paths, HTML extensions and the C++ example were repaired.
+
+34 execution/format checks and an additional JavaScript helper syntax check passed.
+Windows BAT/COM, TSE jump-to-error and syntax rendering remain untested here.
+All seven supplied syntax binaries are included: aspx, basicbbc, forth, latex,
+ml, r and ruby. Every syntax text now has a matching .syn filename; live rendering
+and TXT/SYN equivalence still require verification in TSE.
+See [the full audit](DOCS/language_directories_audit.md) for coverage, changes,
+execution results, all rule links and remaining test requirements.
+
 ## HISTORY
+
+- Audited all five language resource directories; included supplied mapping/language lists, repaired 114 catalogue aliases, restored Access helper, fixed PowerShell test paths, HTML rules and C++ example; supplied seven missing mapped syntax texts and included all seven user-supplied SYN binaries.
+
+
+- Audited all 88 compiler rules; added 21 Ctags declaration parsers and missing mappings, SQL/BBC BASIC/Rocq rules, fixed SAL duplicates and Rust kind conflicts; tested 85 symbol fixtures with both Ctags engines.
+
 
 - Replaced compiler programs, compiler settings, error examples, Hello World examples and syntax highlights from the five supplied archives; preserved the current pjl.txt.
 
